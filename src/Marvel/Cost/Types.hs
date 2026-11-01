@@ -5,7 +5,7 @@ import Marvel.Status (StatusCard)
 
 import Data.List (nub)
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
-import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, EnemyMatcher, SupportMatcher, UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, EnemyMatcher, IdentityMatcher, SupportMatcher, UpgradeMatcher)
 import Marvel.Id (EnemyId)
 import Marvel.Ref
 import Marvel.Resource.Types
@@ -108,6 +108,7 @@ data Cost
   | SearchEncounterMinionCost
   | -- | "deal yourself 1 facedown encounter card"
     DealEncounterCardCost
+  | DealEncounterCardToPlayerCost IdentityMatcher
   | -- | "discard the top card of the encounter deck" (Leading Blow), the card paid with
     DiscardTopEncounterCardCost
   | LookAtTopEncounterCardsAndDiscardOneCost Natural
@@ -190,6 +191,7 @@ costResources (ShuffleEncounterCardsIntoOwnDeckCost _) = []
 costResources SearchEncounterSideSchemeCost = []
 costResources SearchEncounterMinionCost = []
 costResources DealEncounterCardCost = []
+costResources (DealEncounterCardToPlayerCost _) = []
 costResources DiscardTopEncounterCardCost = []
 costResources (LookAtTopEncounterCardsAndDiscardOneCost _) = []
 costResources TargetPrintedCost = []

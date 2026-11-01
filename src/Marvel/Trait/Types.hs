@@ -166,6 +166,8 @@ data Trait
   | Controlled
   | Weather
   | Morlock
+  | PsiEnergy
+  | Excalibur
   | XForce
   | Thief
   | Guild

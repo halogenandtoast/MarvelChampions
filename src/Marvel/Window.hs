@@ -12,7 +12,9 @@ import Marvel.Card.Id (HasCardId (toCardId))
 import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
 import Marvel.Status (StatusCard (ToughStatus))
+import Marvel.Modifier.Types (Modifier (DirectedForceApplied))
 import Marvel.Damage
+import Marvel.Keyword (Keyword (Ranged))
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -43,8 +45,26 @@ windowMatches matcher w source = case matcher of
   MainSchemeWouldComplete matcher' -> case windowType w of
     MainSchemeCompleting mid | windowTiming w == Would -> schemeMatches matcher' (SchemeMainSchemeId mid)
     _ -> pure False
+  BasicAttackDamagedEnemy matcher' -> case windowType w of
+    BasicAttackDamaged you enemies | windowTiming w == After && notNull enemies -> identityMatches matcher' you
+    _ -> pure False
+  AllyAttackDamagedEnemy allyMatcher enemyMatcher -> case windowType w of
+    AllyAttackDamaged aid enemy confused | windowTiming w == After -> do
+      matchesAlly <- allyMatches allyMatcher aid
+      matchesEnemy <- if enemyMatcher == ConfusedEnemy then pure confused else enemyMatches (DefeatedEnemy enemyMatcher) enemy
+      pure $ matchesAlly && matchesEnemy
+    _ -> pure False
+  MakesKeywordAttack timing matcher' keywords -> case windowType w of
+    MakingFriendlyKeywordAttack you from _ present | windowTiming w == timing && any (`elem` present) keywords -> do
+      used <- elem DirectedForceApplied <$> getModifiers from
+      if used then pure False else identityMatches matcher' you
+    MakingKeywordAttack you from _ present _ | windowTiming w == timing && any (`elem` present) keywords -> do
+      used <- elem DirectedForceApplied <$> getModifiers from
+      if used then pure False else identityMatches matcher' you
+    _ -> pure False
   MakesRangedAttack timing matcher' -> case windowType w of
     MakingRangedAttack you _ _ | windowTiming w == timing -> identityMatches matcher' you
+    MakingFriendlyKeywordAttack you _ _ keywords | windowTiming w == timing, Ranged `elem` keywords -> identityMatches matcher' you
     _ -> pure False
   CardsDiscardedBy identityMatcher -> case windowType w of
     PlayerDiscardedFromEncounterDeck actor card | windowTiming w == After -> (&&) <$> identityMatches identityMatcher actor <*> discardResponseAvailable (toCardId card)
@@ -185,7 +205,12 @@ windowMatches matcher w source = case matcher of
             (characterMatches characterMatcher ident)
             (enemyMatches enemyMatcher enemyId)
     _ -> pure False
+  IdentityTargetsEnemy timing identityMatcher enemyMatcher -> case windowType w of
+    IdentityAttackTarget ident enemyId | windowTiming w == timing ->
+      (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
+    _ -> pure False
   IdentityAttacked timing identityMatcher enemyMatcher -> case windowType w of
+    FriendlyPlayerAttack ident _ | windowTiming w == timing && enemyMatcher == AnyEnemy -> identityMatches identityMatcher ident
     FriendlyCharacterAttack (IdentityCharacter ident) _
       | windowTiming w == timing && enemyMatcher == AnyEnemy -> identityMatches identityMatcher ident
     IdentityAttack ident enemyId

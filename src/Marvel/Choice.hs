@@ -49,6 +49,7 @@ resolveChoice ident = \case
       -- a choice is asked even of one: the player picks what their card does
       pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- targets]]
     TargetMatches entityMatcher -> case entityMatcher of
+      SourceEntity target -> pure [CreatedEffect def source (SourceEntity target)]
       IdentityEntity matcher -> do
         targets <- selectList matcher
         let f = CreatedEffect def source . IdentityEntity . IdentityWithId
@@ -165,7 +166,8 @@ resolveChoice ident = \case
           _ -> [Ask who $ ChooseOne choices]
       Nothing -> do
         attackKeywords <- case damageSource damage' of
-          FromPlayerAttack attacker -> (<>) <$> getModifiers (IdentityRef attacker) <*> getModifiers source
+          FromPlayerAttack attacker -> if source == IdentityRef attacker then getModifiers source else (<>) <$> getModifiers (IdentityRef attacker) <*> getModifiers source
+          FromAllyAttack attacker -> getModifiers (AllyRef attacker)
           _ -> pure []
         -- each instance of damage the source deals may be increased, as by Embiggen!
         -- (excess damage carried on by overkill has had it already)
@@ -208,7 +210,7 @@ resolveChoice ident = \case
         reduction <- if fromAttack then attackReduction else pure 0
         cap <- if fromAttack then attackCap else pure Nothing
         let
-          incoming = damageAmount damage' + bonus
+          incoming = damageAmount damage' + bonus + sum [n | AttackDamageToEnemyModifier e n <- attackKeywords, e == enemy, damageAmount damage' > 0]
           increased = if incoming == 0 then 0 else fromIntegral (max 0 (fromIntegral incoming + taken))
           reduced = subtractNatural reduction increased
           damage = damage'
@@ -243,13 +245,27 @@ resolveChoice ident = \case
             else pure []
           _ -> pure []
         begun <- sourceHasBegunLabeledAttack source
+        targeted <- sourceHasAttackedTarget source enemy
         let attackingWindow = case damageSource damage of
-              FromPlayerAttack who | not begun -> [CheckWindows [Window When $ W.IdentityAttack who enemy]]
+              FromPlayerAttack who ->
+                [CheckWindows windows | let windows = [Window When $ W.IdentityAttack who enemy | not begun] <> [Window When $ W.IdentityAttackTarget who enemy | not targeted], notNull windows]
               _ -> []
         let rangedWindow = case damageSource damage of
               FromPlayerAttack who | damageRanged damage -> [CheckWindows [Window When $ W.MakingRangedAttack who source enemy]]
               _ -> []
-        pure $ ignored <> attackingWindow <> rangedWindow <>
+        let keywordWindow = case damageSource damage of
+              FromPlayerAttack who ->
+                [CheckWindows [Window When $ W.MakingKeywordAttack who source enemy
+                  ([Overkill | damageOverkill damage] <> [Piercing | damagePiercing damage] <> [Ranged | damageRanged damage])
+                  (not (damageOverkill damage' || damagePiercing damage' || damageRanged damage' || any (\k -> KeywordModifier k `elem` attackKeywords) [Overkill, Piercing, Ranged]))]]
+              _ -> []
+        let damageMetadata = case damageSource damage of
+              FromPlayerAttack who -> [CardSpecific GameRef "playerAttackDamageBeforeTarget" (toJSON (who, source, enemy, damage { damageAmount = damageAmount damage' + bonus
+                , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
+                , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
+                , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords }))]
+              _ -> []
+        pure $ ignored <> attackingWindow <> rangedWindow <> keywordWindow <> damageMetadata <>
           ( case enemy of
               EnemyVillainId vid ->
                 [VillainMessage vid $ VillainDamaged source damage]

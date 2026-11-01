@@ -39,3 +39,11 @@ instance Eq CharacterMatcher
 instance ToJSON CharacterMatcher
 instance FromJSON CharacterMatcher
 instance Hashable CharacterMatcher
+
+data IdentityMatcher
+
+instance Show IdentityMatcher
+instance Eq IdentityMatcher
+instance ToJSON IdentityMatcher
+instance FromJSON IdentityMatcher
+instance Hashable IdentityMatcher

@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CARDS = ROOT / "frontend" / "public" / "data" / "cards.json"
 OUT = ROOT / "src" / "Marvel" / "Card" / "WhenDefeated.hs"
-TYPES = {"minion", "side_scheme", "villain", "ally"}
+TYPES = {"minion", "side_scheme", "villain", "ally", "player_side_scheme"}
 
 cards = json.loads(CARDS.read_text())["cards"]
 ability_label = re.compile(r"<b>\s*When Defeated\s*(?:</b>\s*:|:\s*</b>)", re.IGNORECASE)

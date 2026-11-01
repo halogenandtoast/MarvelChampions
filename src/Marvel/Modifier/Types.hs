@@ -14,7 +14,8 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = BaseAttack Natural
+  = MinionAttackConsequentialDamageReduction Natural
+  | BaseAttack Natural
   | AdditionalReadyCost Cost
   | BaseThwart Natural
   | DamageTakenFromPrintedResource Resource Int
@@ -32,6 +33,9 @@ data Modifier
   | AttackConsequentialDamageReduction Natural
   | AttacksAgainstGainKeyword Keyword
   | AttackDamageTakenModifier Int
+  | AttackDamageToEnemyModifier EnemyId Natural
+  | DirectedForceApplied
+  | CannotFlipPsiEnergy
   | IdentityCountersAsResources
   | CanHaveAnyNumberOfToughStatusCards
   | AdditionalToughStatusCards Natural

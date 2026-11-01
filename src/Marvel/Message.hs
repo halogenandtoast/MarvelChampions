@@ -31,7 +31,7 @@ import Marvel.Card.Types
 import Marvel.Cost.Types (Cost)
 import Marvel.Game.Source
 import Marvel.Attack (sourceEnemy)
-import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromOverkill, FromRetaliate), toDamage)
+import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromOverkill, FromRetaliate, FromPlayerAttack, FromAllyAttack), toDamage)
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
@@ -221,6 +221,41 @@ attackedYou enemy character = do
       CheckWindows [Window After (EnemyAttack enemy' _)] -> enemy' == enemy
       _ -> False
 
+-- | Record actual damage on the completion window already waiting for this attack.
+-- Keeping this on its continuation also preserves attribution of overkill damage.
+recordPlayerAttackDamage :: (HasGame m, HasQueue m) => EnemyId -> Source -> Damage -> m ()
+recordPlayerAttackDamage enemy source damage = when (damageAmount damage > 0 && isAttack) $ do
+  confused <- characterHasCondition ConfusedStatus $ case enemy of
+    EnemyVillainId v -> VillainCharacter v
+    EnemyMinionId m -> MinionCharacter m
+  replaceMatchingMessage (mapWindow confused) isCompletion
+ where
+  isAttack = case damageSource damage of
+    FromPlayerAttack _ -> True
+    FromAllyAttack _ -> True
+    FromOverkill -> True
+    _ -> False
+  isCompletion = \case
+    CheckWindows ws -> any completion ws
+    _ -> False
+  completion (Window After w) = case (source, w) of
+    (IdentityRef you, W.MadeBasicAttack who) -> you == who
+    (AllyRef aid, W.AllyAttack who _) -> aid == who
+    (AllyRef aid, W.AllyAttackCompletedAgainst who _) -> aid == who
+    _ -> False
+  completion _ = False
+  mapWindow confused (CheckWindows ws) = [CheckWindows $ map update ws <> case source of
+    IdentityRef you -> [Window After $ W.BasicAttackDamaged you [enemy] | not (any (hasBasic you) ws)]
+    AllyRef aid -> [Window After $ W.AllyAttackDamaged aid enemy confused | not (any (hasAllyEnemy aid) ws)]
+    _ -> []]
+  mapWindow _ message = [message]
+  update window@(Window timing (W.BasicAttackDamaged who enemies)) | source == IdentityRef who = Window timing $ W.BasicAttackDamaged who (nub $ enemies <> [enemy])
+  update window = window
+  hasBasic you (Window _ (W.BasicAttackDamaged who _)) = who == you
+  hasBasic _ _ = False
+  hasAllyEnemy aid (Window _ (W.AllyAttackDamaged who target _)) = who == aid && target == enemy
+  hasAllyEnemy _ _ = False
+
 -- | After an enemy's attack deals damage to a character, the window for it.
 attackDealtDamage :: Source -> Damage -> CharacterId -> [Message]
 attackDealtDamage source damage character =
@@ -239,6 +274,7 @@ simultaneousDamage dealt = [CheckWindows attacks | notNull attacks] <> concatMap
   (befores, damage, afters) = unzip3 $ map splitDamage dealt
   attacks = nub [w | CheckWindows ws <- concat befores, w <- ws, isAttack w]
   isAttack (Window When (W.IdentityAttack _ _)) = True
+  isAttack (Window When (W.IdentityAttackTarget _ _)) = True
   isAttack _ = False
   withoutAttacks (CheckWindows ws) = [CheckWindows rest | let rest = filter (not . isAttack) ws, notNull rest]
   withoutAttacks message = [message]
@@ -252,6 +288,7 @@ splitDamage msgs = (before, now, after)
   (now, after) = splitAt 1 rest
   isWindow = \case
     CheckWindows _ -> True
+    CardSpecific GameRef "playerAttackDamageBeforeTarget" _ -> True
     _ -> False
 
 -- | The attack by the character on the enemy is resolved: the enemy's retaliate, if it is

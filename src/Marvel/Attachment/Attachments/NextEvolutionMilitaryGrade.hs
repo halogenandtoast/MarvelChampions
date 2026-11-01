@@ -98,7 +98,7 @@ instance RunMessage MilitaryGradeAttachment where
       pure a
     RanAbility _ (isTarget attrs -> True) _ _ _ -> a <$ removeFromPlay attrs
     CheckWindows windows | toCardCode attrs == "40091" -> do
-      let starts (W.Window W.When (W.IdentityAttack _ enemy)) = Just enemy == attachmentEnemy attrs
+      let starts (W.Window W.When (W.IdentityAttackTarget _ enemy)) = Just enemy == attachmentEnemy attrs
           starts (W.Window W.When (W.AllyAttack _ enemy)) = Just enemy == attachmentEnemy attrs
           starts _ = False
           damages = [damageAmount damage | W.Window W.After (W.EnemyTookDamageFrom enemy damage _) <- windows,

@@ -98,6 +98,7 @@ getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 sourceHasBegunLabeledAttack :: (HasGame m) => Source -> m Bool
+sourceHasAttackedTarget :: HasGame m => Source -> EnemyId -> m Bool
 
 getAllyControlSource :: (HasGame m) => AllyId -> m (Maybe Source)
 

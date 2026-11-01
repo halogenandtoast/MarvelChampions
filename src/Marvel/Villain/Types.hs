@@ -4,6 +4,7 @@ module Marvel.Villain.Types (
 ) where
 
 import Marvel.Prelude
+import Marvel.Message (recordPlayerAttackDamage)
 import Control.Monad (replicateM_)
 
 import Data.HashSet qualified as HashSet
@@ -380,7 +381,8 @@ runVillainMessage msg attrs = case msg of
       | preventedAttackDamage attrs source damage -> pure attrs
       | villainTough attrs && preventedByTough dealt -> pure $ attrs & toughL .~ False
       | otherwise -> do
-        when (damageAmount damage > 0) $
+        when (damageAmount damage > 0) $ do
+          recordPlayerAttackDamage (toEnemyId attrs) source damage
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
           ( not infinite && not held && subtractNatural

@@ -996,11 +996,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       weapons <- selectList $ restrictedMatcher <> UpgradeWithTrait Weapon
       let others = filter (`notElem` weapons) restricted
       let
-        discardOf us =
+        discardOf us = do
+          discardable <- filterM (fmap not . upgradeMatches (UpgradeWithKeyword Permanent)) us
           chooseOnePrompted
             playerIdentityId
             "$label.discardARestrictedCard"
-            [targeting u (removeFromPlay u >> identityStep playerIdentityId CheckRestrictedLimit) | u <- us]
+            [targeting u (removeFromPlay u >> identityStep playerIdentityId CheckRestrictedLimit) | u <- discardable]
       -- the Weapon-only slots cannot hold the others
       if
         | length others > fromIntegral anyLimit -> discardOf others

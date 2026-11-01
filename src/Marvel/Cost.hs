@@ -5,6 +5,7 @@ module Marvel.Cost (
 
 import Marvel.Prelude
 
+import Marvel.Card.Id (CardId (..))
 import Marvel.Card.Def (printedResources, getCardDef, cdCost, cdKeywords, cardMatch, CardMatcher (CardWithType), CardType (MinionType, SideSchemeType))
 
 import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate))
@@ -33,6 +34,36 @@ import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Status (StatusCard (ToughStatus))
 import Marvel.Modifier.Types (Modifier (CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, DamageReduction))
+
+-- | Resource restrictions apply to the card whose ability is paid for, just as
+-- they do to a card being played (RR Cost). This is context, never a payment source.
+resourcePaymentCard :: HasGame m => IdentityId -> Source -> m (Maybe PlayerCard)
+resourcePaymentCard payer source = do
+  def <- getsGame (\g -> abilityCardDef g $ refocus source)
+  pure $ MkPlayerCard <$> sourceId source <*> def <*> pure (Just payer) <*> pure (Just payer)
+ where
+  sourceId :: Ref focus -> Maybe CardId
+  sourceId = \case
+    CardIdRef cid -> Just cid
+    IdentityRef (IdentityId x) -> Just $ CardId x
+    AllyRef (AllyId x) -> Just $ CardId x
+    UpgradeRef (UpgradeId x) -> Just $ CardId x
+    SupportRef (SupportId x) -> Just $ CardId x
+    EventRef (EventId x) -> Just $ CardId x
+    AttachmentRef (AttachmentId x) -> Just $ CardId x
+    ObligationRef (ObligationId x) -> Just $ CardId x
+    MinionRef (MinionId x) -> Just $ CardId x
+    VillainRef (VillainId x) -> Just $ CardId x
+    TreacheryRef (TreacheryId x) -> Just $ CardId x
+    SideSchemeRef (SideSchemeId x) -> Just $ CardId x
+    MainSchemeRef (MainSchemeId x) -> Just $ CardId x
+    EnvironmentRef (EnvironmentId x) -> Just $ CardId x
+    CharacterRef c -> sourceId $ characterRef c
+    EnemyRef (EnemyMinionId mid) -> sourceId $ MinionRef mid
+    EnemyRef (EnemyVillainId vid) -> sourceId $ VillainRef vid
+    SchemeRef (SchemeMainSchemeId sid) -> sourceId $ MainSchemeRef sid
+    SchemeRef (SchemeSideSchemeId sid) -> sourceId $ SideSchemeRef sid
+    _ -> Nothing
 
 passesCanAffordCost ::
   ( HasQueue m
@@ -176,8 +207,9 @@ canAffordCost identityId source cost = do
       (>= n) . fromIntegral . length
         <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     CountersFromThisCost n -> (>= n) <$> getCountersOn source
-    ResourcesFromHandCost c ->
-      coversResources (costResources c) <$> (concatMapM (`resourcesFor` Nothing) =<< getAvailablePaymentSources identityId)
+    ResourcesFromHandCost c -> do
+      context <- resourcePaymentCard identityId source
+      coversResources (costResources c) <$> (concatMapM (`resourcesFor` context) . filter notPlaying =<< getAvailablePaymentSources identityId)
     ExhaustAlliesMatchingCost matcher n ->
       (>= n) <$> selectListCount (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     ExhaustCharacterCost matcher -> notNull <$> readyCharacterCandidates identityId matcher
@@ -198,6 +230,7 @@ canAffordCost identityId source cost = do
     SearchEncounterMinionCost -> any (cardMatch $ CardWithType MinionType) <$> ((<>) <$> getEncounterDeck <*> getEncounterDiscard)
     PlaceThreatOnMainSchemeCost _ -> selectAny MainScheme
     DealEncounterCardCost -> pure True
+    DealEncounterCardToPlayerCost matcher -> selectAny matcher
     DiscardTopEncounterCardCost -> pure True
     LookAtTopEncounterCardsAndDiscardOneCost n -> (n > 0 &&) . notNull <$> getEncounterDeck
     TargetPrintedCost -> pure True
@@ -243,8 +276,7 @@ canAffordCost identityId source cost = do
         Just r -> r `elem` resources || Wild `elem` resources
     MultiResourceCost mr -> coversResources mr <$> availableResources
     PrintedResourceCost rs -> coversPrintedResources rs <$> (concatMapM printedResourcesFor . filter notPlaying =<< getAvailablePaymentSources identityId)
-    DifferentResourcesCost n ->
-      coversDifferentTypes n <$> getAvailableResourcesFor identityId Nothing
+    DifferentResourcesCost n -> coversDifferentTypes n <$> availableResources
     -- the Milano exhausted to pay, its own resource is not there to spend as well
     Costs xs | ExhaustMilanoCost `elem` xs -> do
       milano <- getMilano
@@ -301,12 +333,14 @@ canAffordCost identityId source cost = do
   discardableSupports matcher = filterM discardable =<< selectList (SupportMatches [matcher, SupportControlledBy (IdentityWithId identityId)])
   -- a card's ability used from its owner's hand (Pip the Troll) is not paid for with
   -- that card
-  availableResources = case source of
-    CardIdRef _ -> do
-      abilities <- concatMapM abilityResources =<< getResourceAbilities identityId Nothing
-      cards <- filter notPlaying <$> getAvailablePaymentSources identityId
-      (<> abilities) <$> concatMapM (`resourcesFor` Nothing) cards
-    _ -> getAvailableResourcesFor identityId Nothing
+  availableResources = do
+    context <- resourcePaymentCard identityId source
+    case source of
+      CardIdRef _ -> do
+        abilities <- concatMapM abilityResources =<< getResourceAbilities identityId context
+        cards <- filter notPlaying <$> getAvailablePaymentSources identityId
+        (<> abilities) <$> concatMapM (`resourcesFor` context) cards
+      _ -> getAvailableResourcesFor identityId context
 
 -- | Alliance may split costs among players. Character exhaustions are allocated
 -- together so a dual-trait character cannot pay two exhaustions by itself.

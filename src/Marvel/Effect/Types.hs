@@ -133,6 +133,7 @@ effect f cardDef =
 
 effectValidFor :: (HasGame m) => Attrs Effect -> Target -> m Bool
 effectValidFor e target = case (target, effectMatcher e) of
+  (_, SourceEntity source) -> pure $ refocus target == source
   -- the target first: matching every identity or ally runs their modifiers, which
   -- each run this again
   (IdentityRef ident, IdentityEntity matcher) -> selectAny (IdentityWithId ident <> matcher)

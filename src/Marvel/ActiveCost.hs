@@ -46,6 +46,13 @@ import Marvel.Window (windowMatches)
 import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (IdentityTookDamage, PlayedCardFromHand, ResolvedAbility, GeneratedResources))
 
 
+-- | The card receiving resources includes the source of a paid card ability.
+activeCostPaymentCard :: HasGame m => ActiveCost -> m (Maybe PlayerCard)
+activeCostPaymentCard cost = case activeCostTarget cost of
+  ForCard card -> pure $ Just card
+  ForAbility _ -> resourcePaymentCard (activeCostIdentityId cost) (activeCostSource cost)
+  _ -> pure Nothing
+
 -- | Pay this part of the cost. Resources are paid first, so a cost that cannot be paid
 -- in full is given up before anything else is paid.
 payCostPart :: (ReverseQueue m) => ActiveCost -> Cost -> m ()
@@ -360,6 +367,10 @@ payCostPartAs contributing activeCost cost = do
         chooseOneSearchedIn iid "$label.searchEncounterDeck" [("$label.encounterDeck", map EncounterCard deck), ("$label.encounterDiscard", map EncounterCard discard)]
           [targeting card (paid (SearchedMinionPayment $ MinionId $ unCardId $ ecCardId card) >> putEncounterCardIntoPlay iid card >> shuffleEncounterDeck) | card <- found]
     PlaceThreatOnMainSchemeCost n -> traverse_ (`placeThreat` n) =<< selectList MainScheme
+    DealEncounterCardToPlayerCost matcher -> do
+      players <- selectList matcher
+      if null players then abortPayment acid else chooseOne iid
+        [targeting (IdentityRef player) (dealEncounterCard player >> paid (TargetPayment $ IdentityRef player)) | player <- players]
     DealEncounterCardCost -> dealEncounterCard iid
     IdentityCountersCost n -> removeCounters (IdentityRef iid) n
     CountersFromThisCost n -> do
@@ -424,10 +435,8 @@ payCostPartAs contributing activeCost cost = do
     _ -> chooseOne iid [targeting x (f x) | x <- xs]
   -- only what can be spent on it is offered: "you can only spend [physical] resources"
   resourcePayment payer contributor = do
+    mcard <- activeCostPaymentCard activeCost
     let
-      mcard = case activeCostTarget activeCost of
-        ForCard card -> Just card
-        _ -> Nothing
       spendable = any (canSpendOn $ maybe NoCriteria (cdCriteria . getCardDef) mcard)
     -- a card's ability used from hand (Pip the Troll) is not paid for with that card
     let notTheSource c = activeCostSource activeCost /= CardIdRef (pcCardId c)
@@ -752,9 +761,8 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
       cardSpecific (ActiveCostRef ident) "finishSpendingCard" (discard, resources, printed)
       pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
     Spent ident discard | ident == activeCostId activeCost -> do
-      resources <- resourcesFor discard $ case activeCostTarget activeCost of
-        ForCard card -> Just card
-        _ -> Nothing
+      context <- activeCostPaymentCard activeCost
+      resources <- resourcesFor discard context
       printed <- printedResourcesFor discard
       molecularAccelerationSpent (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) discard
       cardSpecific (ActiveCostRef ident) "finishSpendingCard" (discard, resources, printed)
@@ -764,7 +772,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           paid $ GeneratedByPayment (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) <> PrintedResourcesPayment printed <> mconcat (map ResourcePayment resources)
           pure activeCost
     Paid payment -> do
-      let def = case activeCostTarget activeCost of ForCard card -> Just (getCardDef card); _ -> Nothing
+      def <- fmap getCardDef <$> activeCostPaymentCard activeCost
       expanded <- for (payments payment) $ \receipt -> (receipt,) <$> case receipt of
         ResourcePayment r -> pure $ mconcat $ map ResourcePayment (doubleWildResources def [r])
         p@(ResourcePaymentFromCard _) -> mconcat . map ResourcePayment . doubleWildResources def <$> paymentResources p

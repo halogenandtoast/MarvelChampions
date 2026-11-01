@@ -17,7 +17,8 @@ import Marvel.Status
 import Marvel.Trait.Types
 
 data EntityMatcher
-  = IdentityEntity IdentityMatcher
+  = SourceEntity Source
+  | IdentityEntity IdentityMatcher
   | AllyEntity AllyMatcher
   | UpgradeEntity UpgradeMatcher
   | VillainsAndEngagedMinions IdentityId
@@ -157,6 +158,8 @@ upgradeControlledBy = UpgradeControlledBy . IdentityWithId
 
 data UpgradeMatcher
   = UpgradeCanBeReadied
+  | -- | A Psi-Energy weapon whose current face is permitted to flip.
+    UpgradeCanFlipPsiEnergy
   | UpgradeWithUses GameValueMatcher
   | UpgradeControlledBy IdentityMatcher
   | UpgradeWithTrait Trait

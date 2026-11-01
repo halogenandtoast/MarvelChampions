@@ -16,6 +16,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
+import Marvel.Status (StatusCard (StunnedStatus))
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Window
@@ -44,14 +45,21 @@ instance HasAbilities SuperhumanStrength where
         (RunAbility (toRef a) 1)
     ]
 
-getEnemyTarget :: [WindowType] -> EnemyId
-getEnemyTarget [] = error "Wrong window"
-getEnemyTarget (IdentityAttack _ eid : _) = eid
-getEnemyTarget (_ : xs) = getEnemyTarget xs
+getAttackedCharacter :: [WindowType] -> Maybe CharacterId
+getAttackedCharacter [] = Nothing
+getAttackedCharacter (IdentityAttack _ enemy : _) = Just $ case enemy of
+  EnemyVillainId vid -> VillainCharacter vid
+  EnemyMinionId mid -> MinionCharacter mid
+getAttackedCharacter (FriendlyPlayerAttack _ character : _) = Just character
+getAttackedCharacter (FriendlyCharacterAttack (IdentityCharacter _) target : _) = Just (IdentityCharacter target)
+getAttackedCharacter (_ : windows) = getAttackedCharacter windows
 
 instance RunMessage SuperhumanStrength where
   runMessage msg u@(SuperhumanStrength attrs) = runQueueT $ case msg of
-    RanAbility _ (isTarget attrs -> True) 1 (getEnemyTarget -> enemy) _ -> do
-      stun enemy attrs
+    RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
+      for_ (getAttackedCharacter windows) $ \case
+        VillainCharacter vid -> stun vid attrs
+        MinionCharacter mid -> stun mid attrs
+        character -> giveStatus character StunnedStatus
       pure u
     _ -> SuperhumanStrength <$> runMessage msg attrs

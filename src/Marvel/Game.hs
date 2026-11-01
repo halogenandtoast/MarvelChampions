@@ -66,7 +66,7 @@ import Marvel.Environment
 import Marvel.Environment.Types (Environment, Field (EnvironmentCounters, EnvironmentOwner))
 import Marvel.Entity
 import Marvel.Event
-import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith, eventAttacked, eventThwarted), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
+import Marvel.Event.Types (Attrs (eventCardDef, eventController, eventPaidWith, eventAttacked, eventThwarted, eventAttackStarted), Event (..), eventTargets, eventAbilitySubTypes, eventExhaustionCostValid)
 import Marvel.Exception
 import Marvel.Hand
 import Marvel.Hero.Cards
@@ -920,7 +920,11 @@ runPreGameMessage msg g = runQueueT $ case msg of
     -- here is essential: offered abilities capture their triggering occurrence
     -- before costs, even when a cost returns/discards their source.
     endCheckWindows
-    let attacksDone = [you | W.Window W.After (W.IdentityAttack you _) <- windows]
+    let attacksDone = [you | W.Window W.After event <- windows, you <- case event of
+          W.IdentityAttack ident _ -> [ident]
+          W.FriendlyPlayerAttack ident _ -> [ident]
+          W.FriendlyCharacterAttack (IdentityCharacter ident) _ -> [ident]
+          _ -> []]
         thwartsDone = [you | W.Window W.After event <- windows, you <- case event of
           W.HeroThwartComplete ident -> [ident]
           W.MadeBasicThwart ident -> [ident]
@@ -1365,6 +1369,45 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           else for_ mystiques \minion -> do
             hero <- selectAny (IdentityWithId you <> HeroIdentity)
             if hero then enemyAttacks (toId minion) you else minionSchemes (toId minion)
+      _ -> pure ()
+    pure g
+  CardSpecific GameRef "psylockeRedirectAttackWindows" (fromJSON -> Success (you :: IdentityId, source :: Source, enemy :: EnemyId, friend :: CharacterId, keywords :: [Keyword])) -> do
+    let adjust window = case W.windowType window of
+          W.IdentityAttackTarget who target | who == you && target == enemy -> Nothing
+          W.IdentityAttack who target | who == you && target == enemy && W.windowTiming window == W.When ->
+            Just window {W.windowType = W.FriendlyPlayerAttack you friend}
+          W.MakingKeywordAttack who from target _ _ | who == you && from == source && target == enemy ->
+            Just window {W.windowType = W.MakingFriendlyKeywordAttack you source friend keywords}
+          _ -> Just window
+    pure g {gameWindows = case g.gameWindows of [] -> []; current : rest -> mapMaybe adjust current : rest}
+  CardSpecific GameRef "psylockeRedirectedAttackDamage" (fromJSON -> Success (_you :: IdentityId, source :: Source, friend :: CharacterId, damage :: Damage)) -> do
+    modifiers <- getModifiers (characterRef friend)
+    let def = abilityCardDef g (refocus source)
+        taken = sum [n | DamageTakenModifier n <- modifiers]
+          + sum [n | AttackDamageTakenModifier n <- modifiers]
+          + sum [n | DamageTakenFromPrintedResource resource n <- modifiers, maybe False (elem resource . printedResources) def]
+        amount = if damageAmount damage == 0 then 0 else fromIntegral (max 0 (fromIntegral (damageAmount damage) + taken))
+    damageCharacter friend source damage {damageAmount = amount}
+    pure g
+  CardSpecific GameRef "psylockeFriendlyAttackResolved" (fromJSON -> Success (you :: IdentityId, source :: Source, friend :: CharacterId, ranged :: Bool)) -> do
+    present <- selectAny (CharacterWithId friend)
+    modifiers <- getModifiers (characterRef friend)
+    keywords <- case friend of
+      IdentityCharacter who -> getsGame (lookup who . gamePlayers) >>= maybe (pure []) getModifiedKeywords
+      AllyCharacter aid -> do
+        blanked <- isBlanked (AllyRef aid)
+        let printed = if blanked then [] else maybe [] (toList . cdKeywords . getCardDef) (lookup aid $ gameAllies g)
+        pure $ filter (\k -> LoseKeyword k `notElem` modifiers) (printed <> [k | KeywordModifier k <- modifiers])
+      _ -> pure []
+    attackerModifiers <- getModifiers (IdentityRef you)
+    when (present && not ranged && AttacksIgnoreRetaliate `notElem` attackerModifiers) do
+      let n = sum [amount | Retaliate amount <- keywords]
+      when (n > 0) $ retaliate (characterRef friend) (IdentityCharacter you) n
+    checkWindows [W.Window W.After $ W.FriendlyPlayerAttack you friend]
+    case source of
+      EventRef eid -> do
+        let attacked = maybe [] (eventAttacked . toAttrs) (lookup eid $ gameEvents g)
+        when (null attacked) $ checkWindows [W.Window W.After $ W.PlayerAttackResolved source you []]
       _ -> pure ()
     pure g
   CardSpecific GameRef "mgDivideHealing" (fromJSON -> Success (you :: IdentityId, source :: Source, n :: Natural, matcher)) -> do
@@ -2777,6 +2820,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- queue: its window then closes, so a second cancel is not offered
     -- likewise damage prevented in full: nothing more answers it
     let open = \case
+          W.Window W.When (W.IdentityAttackTarget you enemy) -> isQueued (\case
+            VillainMessage vid (VillainDamaged _ damage) -> enemy == EnemyVillainId vid && damageSource damage == FromPlayerAttack you
+            MinionMessage mid (MinionDamaged _ damage) -> enemy == EnemyMinionId mid && damageSource damage == FromPlayerAttack you
+            EventMessage _ (EventAttacked who target _) -> who == you && target == enemy
+            _ -> False)
           W.Window W.When (W.UsedRecovery iid) -> isQueued (\case IdentityMessage iid' (SideMessage Recovered) -> iid == iid'; IdentityMessage iid' (SideMessage (RecoveredWithBonus _)) -> iid == iid'; _ -> False)
           W.Window W.Would (W.MinionLeavingPlay mid) -> isQueued \case
             ResolveMinionLeavingPlay mid' _ -> mid == mid'
@@ -4096,9 +4144,17 @@ cardController g a = case abilitySource a of
 sourceHasBegunLabeledAttack :: (HasGame m) => Source -> m Bool
 sourceHasBegunLabeledAttack (EventRef eid) = do
   labels <- sourceAbilitySubTypes (EventRef eid)
-  attacked <- getsGame $ maybe False (notNull . eventAttacked . toAttrs) . lookup eid . gameEvents
+  attacked <- getsGame $ maybe False (\e -> eventAttackStarted (toAttrs e) || notNull (eventAttacked $ toAttrs e)) . lookup eid . gameEvents
   pure $ Ability.Attack `elem` labels && attacked
 sourceHasBegunLabeledAttack _ = pure False
+
+-- | Whether this enemy has already been chosen as a target of a labeled event.
+sourceHasAttackedTarget :: HasGame m => Source -> EnemyId -> m Bool
+sourceHasAttackedTarget (EventRef eid) enemy = do
+  labels <- sourceAbilitySubTypes (EventRef eid)
+  attacked <- getsGame $ maybe [] (eventAttacked . toAttrs) . lookup eid . gameEvents
+  pure $ Ability.Attack `elem` labels && any (\(_, target, _) -> target == enemy) attacked
+sourceHasAttackedTarget _ _ = pure False
 
 -- | The effect that currently owns a controlled minion conversion.
 getAllyControlSource :: HasGame m => AllyId -> m (Maybe Source)
@@ -4460,7 +4516,7 @@ resourceAbilitiesForLivingIdentity ident mc = asYou ident do
           _ -> Nothing
         context = gamePayingForAbility g <|> active
         matches = \case
-          PayingForAbility code index -> isNothing mc && context == Just (code, index)
+          PayingForAbility code index -> context == Just (code, index) && maybe True ((== code) . toCardCode) mc
           Criteria cs -> all matches cs
           AnyCriteria cs -> any matches cs
           _ -> True
@@ -4829,6 +4885,8 @@ gameSelectUpgrade m = do
     UnexhaustedUpgrade -> pure . not . isExhausted
     UpgradeWithUses gameValueMatcher ->
       gameValueMatches gameValueMatcher . getUpgradeUses
+    UpgradeCanFlipPsiEnergy -> \u ->
+      if PsiEnergy `member` cdTraits (getCardDef u) then notElem CannotFlipPsiEnergy <$> getModifiers u else pure False
     UpgradeWithTrait t -> pure . member t . cdTraits . getCardDef
     UpgradeWithKeyword k -> pure . member k . cdKeywords . getCardDef
     UpgradeWithResolvableSpecial -> \u -> do
@@ -5616,7 +5674,9 @@ getActiveCost = do
 
 -- | The original payer, even while a contributor pays one of this cost's parts.
 getActiveCostCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
-getActiveCostCard acid = getsGame $ \g -> headMay [c | cost <- gameActiveCost g, acid == activeCostId cost, ForCard c <- [activeCostTarget cost]]
+getActiveCostCard acid = do
+  cost <- getsGame $ headMay . filter ((== acid) . activeCostId) . gameActiveCost
+  maybe (pure Nothing) activeCostPaymentCard cost
 
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
 getActiveCostPayer acid = getsGame $ fmap activeCostIdentityId . find ((== acid) . activeCostId) . gameActiveCost
@@ -5840,7 +5900,7 @@ assignIndirectDamage chooser idents source damage assigned next exhaustDamaged =
     _ | n == 0 || null open ->
       pushAll . simultaneousDamage =<< traverse (\(c, k) -> capture do
         before <- characterDamageNow c
-        damageCharacter c source damage {damageAmount = k}
+        damageCharacter c source damage {damageAmount = k, damageIndirect = True}
         when exhaustDamaged $ push $ ExhaustIfDamaged c before) (HashMap.toList $ HashMap.fromListWith (+) assigned)
     [(c, room)] -> assign c (min n room)
     _ -> chooseOnePrompted chooser "$label.assignIndirectDamage" [targeting (characterRef c) (assign c 1) | (c, _) <- open]
@@ -5931,6 +5991,7 @@ accelerationIconsIn g aid =
   sum [cdAcceleration (getCardDef scheme) | (sid, scheme) <- HashMap.toList (gameSideSchemes g), (areaId <$> areaOfTarget g (SideSchemeRef sid)) == Just aid, not (blankIn g $ SideSchemeRef sid)]
     + sum (map (sideSchemeAccelerationTokens . toAttrs) (inArea g aid SideSchemeRef (gameSideSchemes g)))
     + sum (map (cdAcceleration . getCardDef) (inArea g aid VillainRef (gameVillains g)))
+    + sum (map (cdAcceleration . getCardDef) (inArea g aid IdentityRef (gamePlayers g)))
     -- an obligation in a player's play area, in theirs
     + sum
       [ cdAcceleration (getCardDef o)

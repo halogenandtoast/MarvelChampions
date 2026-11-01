@@ -33,8 +33,11 @@ instance RunMessage ConcussiveBlow where
         enemies <- selectList AttackableEnemy
         chooseOne identityId
           [ targeting enemy do
-              confuse enemy attrs
-              when physical $ dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack identityId)
+              if physical
+                then confuseThenDealDamage enemy attrs (toDamage 3 $ FromPlayerAttack identityId)
+                else do
+                  attackEnemyWithoutDamage identityId enemy attrs
+                  confuse enemy attrs
           | enemy <- enemies
           ]
         pure e

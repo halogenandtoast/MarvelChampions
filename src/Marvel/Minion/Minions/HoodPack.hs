@@ -108,7 +108,7 @@ instance HasAbilities HoodMinion where
     <> [windowAbility a 2 (W.EnemyActivates W.When enemy AnyIdentity) ForcedInterrupt NoCost (runAbility a 2) | code == "24018"]
     <> [windowAbility a 3 (W.EnemyAttacked W.After enemy AnyIdentity) ForcedResponse NoCost (runAbility a 3) | code `elem` ["24044","24068"]]
     <> [windowAbility a 4 matcher ForcedResponse NoCost (runAbility a 4) | code == "24045", matcher <- attacked W.After]
-    <> [windowAbility a 5 matcher ForcedInterrupt NoCost (runAbility a 5) | code == "24046", matcher <- attacked W.When]
+    <> [windowAbility a 5 matcher ForcedInterrupt NoCost (runAbility a 5) | code == "24046", matcher <- [W.IdentityTargetsEnemy W.When AnyIdentity enemy, W.AllyAttacked W.When AnyAlly enemy]]
     <> [windowAbility a 6 (W.EnemyWouldAttack enemy AnyIdentity) ForcedInterrupt NoCost (runAbility a 6) | code == "24047"]
    where
     code = toCardCode a
@@ -186,7 +186,8 @@ instance RunMessage HoodMinion where
       for_ chars $ \c -> damageCharacter c attrs (toDamage 1 FromAbility)
       pure e
     RanAbility you (isTarget attrs -> True) n windows _ | n `elem` [4,5] -> do
-      let attackers = [IdentityCharacter who | W.IdentityAttack who _ <- windows]
+      let attackers = [IdentityCharacter who | W.IdentityAttack who _ <- windows, n == 4]
+            <> [IdentityCharacter who | W.IdentityAttackTarget who _ <- windows, n == 5]
             <> [AllyCharacter aid | W.AllyAttack aid _ <- windows]
       for_ (headMay attackers) $ \c -> if n == 4 then giveStatus c StunnedStatus else case c of
         IdentityCharacter who -> enemyAttacks (minionId attrs) who

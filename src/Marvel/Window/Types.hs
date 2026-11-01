@@ -7,6 +7,7 @@ import Marvel.Resource.Types (Resource)
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.PlayerCard.Types
+import Marvel.Keyword (Keyword)
 import Marvel.Damage
 import Marvel.Status (StatusCard)
 import Marvel.Id
@@ -39,6 +40,9 @@ data WindowMatcher
   = PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
   | MainSchemeWouldComplete SchemeMatcher
   | MakesRangedAttack WindowTiming IdentityMatcher
+  | MakesKeywordAttack WindowTiming IdentityMatcher [Keyword]
+  | BasicAttackDamagedEnemy IdentityMatcher
+  | AllyAttackDamagedEnemy AllyMatcher EnemyMatcher
   | CardsDiscardedFromPlayerDeck IdentityMatcher
   | CardsDiscardedBy IdentityMatcher
   | -- | A named identity ability (the index on that identity), not an ability on
@@ -77,6 +81,7 @@ data WindowMatcher
   | EnemyAttackedAnyTarget WindowTiming EnemyMatcher
   | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
+  | IdentityTargetsEnemy WindowTiming IdentityMatcher EnemyMatcher
   | AllyThwarted WindowTiming AllyMatcher SchemeMatcher
   | AllyAttacked WindowTiming AllyMatcher EnemyMatcher
   | TreacheryRevealed WindowTiming TreacheryMatcher RevealSource
@@ -277,6 +282,7 @@ data WindowType
     EnemyAttacksAndDamages EnemyId CharacterId Natural
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
+  | IdentityAttackTarget IdentityId EnemyId
   | PlayerAttackResolved Source IdentityId [EnemyId]
   | AllyThwart AllyId SchemeId
   | AllyAttackCompletedAgainst AllyId [EnemyId]
@@ -301,6 +307,11 @@ data WindowType
   | PlayerCardEnteredPlay IdentityId PlayerCard
   | MainSchemeCompleting MainSchemeId
   | MakingRangedAttack IdentityId Source EnemyId
+  | MakingKeywordAttack IdentityId Source EnemyId [Keyword] Bool
+  | MakingFriendlyKeywordAttack IdentityId Source CharacterId [Keyword]
+  | FriendlyPlayerAttack IdentityId CharacterId
+  | BasicAttackDamaged IdentityId [EnemyId]
+  | AllyAttackDamaged AllyId EnemyId Bool
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
   | -- | the side scheme has been defeated, by the player, and by what removed its last

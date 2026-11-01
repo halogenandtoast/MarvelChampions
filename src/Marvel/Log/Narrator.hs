@@ -179,6 +179,9 @@ narrationFor = \case
         who <- playerRef' p
         one $ action [ikeyPart "log.changesToEnergyForm" ["player" ~> who, "form" ~> form]]
       Nothing -> pure []
+  CardSpecific (UpgradeRef uid) "flipPsiEnergy" _ -> Just do
+    locked <- elem CannotFlipPsiEnergy <$> getModifiers (UpgradeRef uid)
+    if locked then pure [] else simply "log.flips" (UpgradeRef uid)
   CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \form ->
     getSourceController (UpgradeRef uid) >>= \case
       Just p -> do

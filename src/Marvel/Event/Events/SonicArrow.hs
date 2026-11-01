@@ -34,8 +34,7 @@ instance RunMessage SonicArrow where
         [ targeting (enemyRef enemy) do
             already <- selectAny $ EnemyWithId enemy <> ConfusedEnemy
             dmg <- arrowDamage identityId (if already then 5 else 3)
-            confuse enemy attrs
-            dealDamage enemy attrs dmg
+            confuseThenDealDamage enemy attrs dmg
         | enemy <- enemies
         ]
       pure e

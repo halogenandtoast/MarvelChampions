@@ -6,6 +6,7 @@ module Marvel.Minion.Runner (
 ) where
 
 import Marvel.Prelude
+import Marvel.Message (recordPlayerAttackDamage)
 
 import Marvel.Card.Code as X
 import Marvel.Entity as X
@@ -76,7 +77,8 @@ runMinionMessage msg attrs = case msg of
       | cannotTakeDamage -> pure attrs
       | minionTough attrs && preventedByTough originalDamage -> pure $ removeOneTough attrs
       | otherwise -> do
-        when (damageAmount damage > 0) $
+        when (damageAmount damage > 0) $ do
+          recordPlayerAttackDamage (toEnemyId attrs) source damage
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when (damageAmount damage + minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers) do
           let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)

@@ -46,7 +46,7 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Modifier.Types (Modifier (AttacksAgainstGainKeyword, AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -271,10 +271,69 @@ chooseUpgrade you matcher = resolveAs you . ChooseUpgrade matcher . toTarget
 dealDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m ()
 dealDamage enemy source = resolve . DamageEnemy (EnemyRef $ toEnemy enemy) (toSource source)
 
+-- | Register a target of an attack-labeled event that deals no damage (for example,
+-- Flurry of Blades' confusion). It is still attacked, but damage modifiers cannot turn
+-- the status effect into damage.
+attackEnemyWithoutDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => IdentityId -> enemy -> source -> m ()
+attackEnemyWithoutDamage you enemy source = do
+  let target = toEnemy enemy
+      from = toSource source
+  begun <- sourceHasBegunLabeledAttack from
+  targeted <- sourceHasAttackedTarget from target
+  modifiers <- (<>) <$> getModifiers (IdentityRef you) <*> getModifiers from
+  targetModifiers <- getModifiers (enemyRef target)
+  let ranged = KeywordModifier Ranged `elem` modifiers || AttacksAgainstGainKeyword Ranged `elem` targetModifiers
+  let windows = [Window When $ W.IdentityAttack you target | not begun] <> [Window When $ W.IdentityAttackTarget you target | not targeted]
+  unless (null windows) $ checkWindows windows
+  case from of
+    EventRef eid -> eventStep eid (EventAttacked you target ranged)
+    _ -> do
+      unless ranged $ enemyRetaliates target (IdentityCharacter you)
+      checkWindows [Window After $ W.IdentityAttack you target]
+
+-- | Initiate the attack before its status effect, then land its damage. Keeping
+-- the generated status and damage together allows an attack-target replacement to
+-- redirect both while retaining the card's printed order.
+confuseThenDealDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m ()
+confuseThenDealDamage enemy source damage = do
+  messages <- capture $ dealDamage enemy source damage
+  let initiates = \case
+        CheckWindows windows -> any (\w -> case (windowTiming w, windowType w) of (When, W.IdentityAttack _ _) -> True; (When, W.IdentityAttackTarget _ _) -> True; _ -> False) windows
+        _ -> False
+  pushAll $ filter initiates messages
+  confuse enemy source
+  pushAll $ filter (not . initiates) messages
+
+-- | Increase only the pending portion against the selected enemy. Damage against
+-- other enemies in the same simultaneous group is unchanged.
+addToCurrentAttackAgainst :: ReverseQueue m => IdentityId -> Source -> EnemyId -> Natural -> m ()
+addToCurrentAttackAgainst you source enemy n = do
+  let matching = \case
+        VillainMessage vid (VillainDamaged from d) -> from == source && enemy == EnemyVillainId vid && damageSource d == FromPlayerAttack you
+        MinionMessage mid (MinionDamaged from d) -> from == source && enemy == EnemyMinionId mid && damageSource d == FromPlayerAttack you
+        _ -> False
+      raise = \case
+        VillainMessage vid (VillainDamaged from d) -> [VillainMessage vid (VillainDamaged from d {damageAmount = damageAmount d + n})]
+        MinionMessage mid (MinionDamaged from d) -> [MinionMessage mid (MinionDamaged from d {damageAmount = damageAmount d + n})]
+        msg -> [msg]
+  replaceMatchingMessage raise matching
+
+-- | Increase the keyword-bearing portion of the attack whose window is answered.
+addToKeywordAttackDamage :: ReverseQueue m => IdentityId -> Natural -> m ()
+addToKeywordAttackDamage you n = do
+  windows <- getCurrentWindows
+  for_ (headMay [(source, enemy, targetSpecific) | Window _ (W.MakingKeywordAttack who source enemy _ targetSpecific) <- windows, who == you]) $ \(source, enemy, targetSpecific) ->
+    if targetSpecific then addToCurrentAttackAgainst you source enemy n else modifyCurrentPlayerAttack you n []
+  when (any (\case Window _ (W.MakingFriendlyKeywordAttack who _ _ _) -> who == you; _ -> False) windows) $
+    modifyCurrentPlayerAttack you n []
+
+
 -- | Increase only the ranged attack whose interrupt is being answered.
 addToRangedAttackDamage :: ReverseQueue m => IdentityId -> Natural -> m ()
 addToRangedAttackDamage you n = do
   windows <- getCurrentWindows
+  when (any (\case Window _ (W.MakingFriendlyKeywordAttack who _ _ keywords) -> who == you && Ranged `elem` keywords; _ -> False) windows) $
+    modifyCurrentPlayerAttack you n []
   for_ (headMay [(source, enemy) | Window _ (W.MakingRangedAttack who source enemy) <- windows, who == you]) $ \(source, enemy) -> do
     let increase damage = damage {damageAmount = damageAmount damage + n}
         matching = \case
@@ -2494,6 +2553,8 @@ currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attack
     ResolveEnemyDamage original -> attackSource original
     VillainMessage _ (VillainDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
     MinionMessage _ (MinionDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
+    CardSpecific GameRef "psylockeRedirectedAttackDamage" (fromJSON -> Success (who :: IdentityId, source :: Source, _ :: CharacterId, _ :: Damage)) | who == you -> [source]
+    EventMessage eid (EventAttacked attacker _ _) | attacker == you -> [EventRef eid]
     Simultaneously messages -> concatMap attackSource messages
     _ -> []
 
@@ -2516,6 +2577,12 @@ modifyCurrentPlayerAttack you n keywords = do
     ResolveEnemyDamage original -> ResolveEnemyDamage (change current original)
     VillainMessage v (VillainDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> VillainMessage v (VillainDamaged source $ improve d)
     MinionMessage m (MinionDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> MinionMessage m (MinionDamaged source $ improve d)
+    CardSpecific GameRef "psylockeRedirectedAttackDamage" (fromJSON -> Success (who :: IdentityId, source :: Source, friend :: CharacterId, d :: Damage)) | who == you && source == current ->
+      CardSpecific GameRef "psylockeRedirectedAttackDamage" (toJSON (who, source, friend, improve d))
+    CardSpecific GameRef "psylockeFriendlyAttackResolved" (fromJSON -> Success (who :: IdentityId, source :: Source, friend :: CharacterId, ranged :: Bool)) | who == you && source == current ->
+      CardSpecific GameRef "psylockeFriendlyAttackResolved" (toJSON (who, source, friend, ranged || Ranged `elem` keywords))
+    CardSpecific GameRef "playerAttackDamageBeforeTarget" (fromJSON -> Success (who :: IdentityId, source :: Source, enemy :: EnemyId, d :: Damage)) | who == you && source == current ->
+      CardSpecific GameRef "playerAttackDamageBeforeTarget" (toJSON (who, source, enemy, improve d))
     Simultaneously messages -> Simultaneously (map (change current) messages)
     CheckWindows windows | any (fromCurrent current) windows -> CheckWindows (map (improveWindow current) windows)
     message -> message
@@ -2750,3 +2817,72 @@ increasePendingCharacterDamage (toCharacter -> character) n = replaceMatchingMes
 -- | A minion's attack with its own ATK change and gained keywords.
 minionAttacksWithChange :: ReverseQueue m => MinionId -> IdentityId -> Int -> [Keyword] -> m ()
 minionAttacksWithChange mid you n keywords = minionStep mid (MinionAttacksWithChange you n keywords)
+
+
+-- | Flip one of Psylocke's two-sided weapons, retaining its identity and exhaustion.
+flipPsiEnergy :: ReverseQueue m => UpgradeId -> m ()
+flipPsiEnergy uid = cardSpecific uid "flipPsiEnergy" ()
+
+putPsiEnergyIntoPlay :: ReverseQueue m => IdentityId -> m ()
+putPsiEnergyIntoPlay you = do
+  weapons <- filter (\c -> toCardCode c == "41002a" && pcOwner c == Just you) <$> getSetAsidePlayerCards
+  for_ weapons $ \card -> do
+    removeFromGame (CardIdRef $ pcCardId card)
+    putIntoPlay you card
+
+
+-- | Replace only the currently pending target of a player's attack. Subsequent
+-- card-specific choices are left intact; they select their targets when reached.
+redirectCurrentPlayerAttack :: ReverseQueue m => IdentityId -> EnemyId -> CharacterId -> m ()
+redirectCurrentPlayerAttack you enemy friend = do
+  current <- currentPlayerAttackSource you
+  for_ current $ \source -> do
+    pending <- withQueue $ \queue -> (queue, headMay [d | message <- concatMap queuedMessageLeaves queue, d <- damageFor source message])
+    beforeTarget <- withQueue $ \queue -> (queue, headMay [d | CardSpecific GameRef "playerAttackDamageBeforeTarget" (fromJSON -> Success (who :: IdentityId, from :: Source, target :: EnemyId, d :: Damage)) <- concatMap queuedMessageLeaves queue, who == you, from == source, target == enemy])
+    pendingRanged <- withQueue $ \queue -> (queue, headMay [ranged | EventMessage eid (EventAttacked who target ranged) <- concatMap queuedMessageLeaves queue, source == EventRef eid, who == you, target == enemy])
+    withQueue_ $ concatMap (rewrite source beforeTarget)
+    let inherited = beforeTarget <|> pending
+        ranged = maybe (fromMaybe False pendingRanged) damageRanged inherited
+        inheritedKeywords = maybe [] (\d -> [Overkill | damageOverkill d] <> [Piercing | damagePiercing d] <> [Ranged | damageRanged d]) inherited
+        resolved = CardSpecific GameRef "psylockeFriendlyAttackResolved" (toJSON (you, source, friend, ranged))
+    cardSpecific GameRef "psylockeRedirectAttackWindows" (you, source, enemy, friend, inheritedKeywords)
+    case source of
+      EventRef eid -> do
+        cardSpecific (EventRef eid) "playerAttackStarted" ()
+        replaceMatchingMessage (\msg -> [resolved, msg]) (== EventMessage eid ResolvedEvent)
+      _ -> replaceMatchingMessage (\msg -> [resolved, msg]) (\case
+        CheckWindows windows -> any (\w -> case windowType w of W.PlayerAttackResolved from attacker _ -> from == source && attacker == you; _ -> False) windows
+        _ -> False)
+ where
+  damageFor source = \case
+    VillainMessage vid (VillainDamaged from d) | enemy == EnemyVillainId vid && source == from && damageSource d == FromPlayerAttack you -> [d]
+    MinionMessage mid (MinionDamaged from d) | enemy == EnemyMinionId mid && source == from && damageSource d == FromPlayerAttack you -> [d]
+    _ -> []
+  rewrite source beforeTarget message = case damageFor source message of
+    d : _ -> [CardSpecific GameRef "psylockeRedirectedAttackDamage" (toJSON (you, source, friend, fromMaybe d beforeTarget))]
+    [] -> case message of
+      PrepareEnemyDamage original -> rewrite source beforeTarget original
+      ResolveEnemyDamage original -> rewrite source beforeTarget original
+      EventMessage eid (EventAttacked attacker target _) | source == EventRef eid && attacker == you && target == enemy -> []
+      VillainMessage vid (VillainRetaliates (IdentityCharacter attacker)) | enemy == EnemyVillainId vid && attacker == you -> []
+      MinionMessage mid (MinionRetaliates (IdentityCharacter attacker)) | enemy == EnemyMinionId mid && attacker == you -> []
+      VillainMessage vid (VillainStunned from) | enemy == EnemyVillainId vid && from == source -> [GiveStatus (characterRef friend) StunnedStatus]
+      MinionMessage mid (MinionStunned from) | enemy == EnemyMinionId mid && from == source -> [GiveStatus (characterRef friend) StunnedStatus]
+      VillainMessage vid (VillainConfused from) | enemy == EnemyVillainId vid && from == source -> [GiveStatus (characterRef friend) ConfusedStatus]
+      MinionMessage mid (MinionConfused from) | enemy == EnemyMinionId mid && from == source -> [GiveStatus (characterRef friend) ConfusedStatus]
+      CheckWindows windows -> [CheckWindows filtered | let filtered = mapMaybe (keepWindow source beforeTarget) windows, notNull filtered]
+      CheckWindowsFor players windows -> [CheckWindowsFor players filtered | let filtered = mapMaybe (keepWindow source beforeTarget) windows, notNull filtered]
+      Simultaneously messages -> [Simultaneously $ concatMap (rewrite source beforeTarget) messages]
+      _ -> [message]
+  keepWindow source beforeTarget window = case windowType window of
+    W.IdentityAttack attacker target | attacker == you && target == enemy ->
+      if windowTiming window == When then Just window {windowType = W.FriendlyPlayerAttack you friend} else Nothing
+    W.IdentityAttackTarget attacker target | attacker == you && target == enemy -> Nothing
+    W.MadeBasicAttackAgainst attacker target | attacker == you && target == enemy -> Nothing
+    W.MakingRangedAttack attacker from target | attacker == you && target == enemy && from == source -> Nothing
+    W.MakingKeywordAttack attacker from target _ _ | attacker == you && target == enemy && from == source ->
+      let keywords = maybe [] (\d -> [Overkill | damageOverkill d] <> [Piercing | damagePiercing d] <> [Ranged | damageRanged d]) beforeTarget
+       in Just window {windowType = W.MakingFriendlyKeywordAttack you source friend keywords}
+    W.PlayerAttackResolved from attacker targets | from == source && attacker == you ->
+      Just window {windowType = W.PlayerAttackResolved from attacker (filter (/= enemy) targets)}
+    _ -> Just window

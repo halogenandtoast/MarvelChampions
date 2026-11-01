@@ -211,7 +211,8 @@ instance RunMessage (Attrs Ally) where
         present <- selectAny (AllyWithId ident)
         when present $ do
           modifiers <- getModifiers a
-          let reduction = maximum (0 : [n | AttackConsequentialDamageReductionAgainst enemy n <- modifiers, enemy `elem` enemies])
+          let reduction = maximum (0 : [n | AttackConsequentialDamageReductionAgainst enemy n <- modifiers, enemy `elem` enemies]
+                <> [n | MinionAttackConsequentialDamageReduction n <- modifiers, any (\case EnemyMinionId _ -> True; _ -> False) enemies])
           consequential <- subtractNatural reduction <$> getModifiedAttackConsequentialDamage a
           when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a

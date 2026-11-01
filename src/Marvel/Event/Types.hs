@@ -53,6 +53,7 @@ instance Entity Event where
     , eventController :: IdentityId
     , eventPaidWith :: Payment
     , eventThwarted :: Bool
+    , eventAttackStarted :: Bool
     , -- | whom a labeled attack attacked, for the windows after it
       eventAttacked :: [(IdentityId, EnemyId, Bool)]
     }
@@ -73,6 +74,7 @@ instance Entity Event where
 
 instance FromJSON (Attrs Event) where
   parseJSON = withObject "EventAttrs" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ existing -> existing) "eventAttackStarted" (Bool False) $
     KeyMap.insertWith (\_ existing -> existing) "eventThwarted" (Bool False) $
     KeyMap.insertWith (\_ existing -> existing) "eventPaidWith" (toJSON NoPayment) o
 
@@ -116,6 +118,7 @@ event f cardDef =
             , eventController = ident
             , eventPaidWith = NoPayment
             , eventThwarted = False
+            , eventAttackStarted = False
             , eventAttacked = []
             }
     }
@@ -135,6 +138,7 @@ instance IsCard (Attrs Event) where
 
 instance RunMessage (Attrs Event) where
   runMessage msg e = runQueueT $ case msg of
+    CardSpecific (EventRef ident) "playerAttackStarted" _ | ident == eventId e -> pure e {eventAttackStarted = True}
     EventMessage ident msg' | ident == eventId e -> case msg' of
       EventPaidWith p -> pure e {eventPaidWith = p}
       EventThwarted -> pure e {eventThwarted = True}
@@ -147,14 +151,14 @@ instance RunMessage (Attrs Event) where
         discardCard e
         when (cdAbilityType (eventCardDef e) `elem` map Just [Ability.Interrupt, Ability.AlterEgoInterrupt, Ability.HeroInterrupt, Ability.ForcedInterrupt, Ability.Response, Ability.AlterEgoResponse, Ability.HeroResponse, Ability.ForcedResponse]) $
           checkWindows [W.Window W.After $ W.EventAbilityResolved (eventController e) (eventId e) (eventCardDef e)]
-        pure e {eventAttacked = [], eventThwarted = False}
+        pure e {eventAttacked = [], eventThwarted = False, eventAttackStarted = False}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy ranged -> do
         let card = MkPlayerCard (CardId $ unEventId $ eventId e) (eventCardDef e) (Just $ eventController e) (Just $ eventController e)
         labels <- cdAbilitySubTypes <$> effectivePlayerCardDef (eventController e) card
         -- one attack, however many instances of damage it deals the enemy
         if Ability.Attack `elem` labels
-          then pure e {eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
+          then pure e {eventAttackStarted = True, eventAttacked = eventAttacked e <> [(attacker, enemy, ranged) | (attacker, enemy, ranged) `notElem` eventAttacked e]}
           else do
             attackResolved attacker enemy ranged
             checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource e) attacker [enemy]]
