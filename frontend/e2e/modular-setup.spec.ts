@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 const user = { id: 1, username: 'modular-test', email: 'modular@example.com', admin: false, beta: true, guest: false, allowSpectatorsByDefault: false }
-const choices = ['BombScare', 'MastersOfEvil', 'UnderAttack', 'GoblinGimmicks', 'Temporal', 'Anachronauts', 'MasterOfTime']
+const choices = ['StreetsOfMayhem', 'BeastyBoys', 'BrothersGrimm', 'CrossfiresCrew', 'MisterHydeSet', 'RansackedArmory', 'SinisterSyndicate', 'StateOfEmergency', 'WreckingCrewModular', 'Crime', 'Fantasy', 'Horror', 'SciFi', 'Sitcom', 'Western', 'LongshotSet', 'BombScare', 'MastersOfEvil', 'UnderAttack', 'GoblinGimmicks', 'Temporal', 'Anachronauts', 'MasterOfTime']
 const scenarios = [
+  { code: '39001a', modulars: [] },
+  { code: '39012a', modulars: [] },
   { code: '01094', modulars: ['BombScare'] },
   { code: '01113', modulars: ['MastersOfEvil'] },
   { code: '01134', modulars: ['UnderAttack'] },
@@ -45,6 +47,18 @@ test('the Hood has no recommended selection and requires seven deliberate choice
   await expect(page.locator('.modular-guidance ol li').last()).toHaveText('Wrecking Crew')
 })
 
+test('The Hood shows all nine pack modulars in its own group', async ({ page }) => {
+  await page.getByRole('radio', { name: 'The Hood', exact: true }).click()
+  const product = page.locator('.modular-group').first()
+  await expect(product).toHaveAttribute('aria-label', 'The Hood')
+  await expect(product.getByRole('button')).toHaveCount(9)
+  for (const name of ['Streets of Mayhem', 'Beasty Boys', 'Brothers Grimm', "Crossfire's Crew", 'Mister Hyde', 'Ransacked Armory', 'Sinister Syndicate', 'State of Emergency', 'Wrecking Crew']) {
+    await expect(product.getByRole('button', { name, exact: true })).toBeVisible()
+  }
+  await page.getByLabel('Standard encounter set', { exact: true }).selectOption('StandardII')
+  await expect(page.getByText('0/7 modular sets selected.', { exact: false })).toBeVisible()
+})
+
 test('printed recommendations remain selected for Rhino', async ({ page }) => {
   await page.getByRole('radio', { name: 'Rhino Core Set', exact: true }).click()
   await expect(page.locator('.set-chip.on')).toHaveCount(1)
@@ -62,15 +76,40 @@ test('printed recommendations remain selected for Rhino', async ({ page }) => {
   await expect(page.locator('.set-chip.on')).toHaveCount(1)
 })
 
+test('MaGog shows its random genre pool separately and allows a specific choice', async ({ page }) => {
+  await page.getByRole('radio', { name: 'Magog Mojo Mania', exact: true }).click()
+  const random = page.getByRole('button', { name: 'Random genre (recommended)', exact: true })
+  await expect(random).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByText('One of these six genre sets is chosen at random when the game starts.')).toBeVisible()
+  await page.getByRole('button', { name: 'Fantasy', exact: true }).click()
+  await expect(random).toHaveAttribute('aria-pressed', 'false')
+  await page.getByRole('button', { name: 'Horror', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Fantasy', exact: true })).toHaveAttribute('aria-pressed', 'false')
+  await random.click()
+  await expect(random).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('sets from the scenario product stay visible without opening the library', async ({ page }) => {
+  await page.getByRole('radio', { name: 'The Once and Future Kang', exact: true }).click()
+  await expect(page.locator('.modular-group').first()).toHaveAttribute('aria-label', 'The Once and Future Kang')
+  await expect(page.locator('.modular-group').nth(1)).toHaveAttribute('aria-label', 'Core Set')
+  await expect(page.getByRole('button', { name: 'Anachronauts', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Master of Time', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Anachronauts', exact: true }).click()
+  await page.getByRole('button', { name: 'Anachronauts', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Anachronauts', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Goblin Gimmicks', exact: true })).toBeHidden()
+})
+
 for (const [tile, text] of [
-  ['Rhino', "The core sets' difficulty ratings run from 1 to 5."],
-  ['Risky Business', 'Each Green Goblin scenario calls for one modular encounter set'],
-  ['The Wrecking Crew', "does not use other encounter sets"],
-  ['The Rise of Red Skull', 'three for Crossbones, two for Red Skull'],
-  ['The Once and Future Kang', 'Temporal (difficulty 4) for a first game'],
-  ["The Galaxy's Most Wanted", 'Band of Badoon, Menagerie Medley, Space Pirates, or Kree Militants'],
-  ["The Mad Titan's Shadow", 'one for Tower Defense, or two for Ebony Maw'],
-  ['The Hood', 'Choose any seven modular encounter sets'],
+  ['Rhino', "You can swap the recommended modular sets for others."],
+  ['Risky Business', 'You can swap the recommended modular sets for others.'],
+  ['The Wrecking Crew', "does not use modular sets"],
+  ['The Rise of Red Skull', 'You can swap the recommended modular sets for others.'],
+  ['The Once and Future Kang', 'Temporal (difficulty 4)'],
+  ["The Galaxy's Most Wanted", 'You can swap the recommended modular sets for others.'],
+  ["The Mad Titan's Shadow", 'You can swap the recommended modular sets for others.'],
+  ['The Hood', 'Choose seven modular sets'],
 ]) {
   test(`shows product modular instructions for ${tile}`, async ({ page }) => {
     const label = tile === 'Rhino' ? 'Rhino Core Set' : tile === 'Risky Business' ? 'Risky Business The Green Goblin' : tile

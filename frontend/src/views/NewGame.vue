@@ -24,6 +24,8 @@ const creating = ref(false)
 const scenario = ref<ScenarioOption | null>(null)
 const modulars = ref<string[]>([])
 const difficulty = ref<'Normal' | 'Expert'>('Normal')
+const standardSet = ref('Standard')
+const expertSet = ref('ExpertSet')
 const gameName = ref('')
 
 const seatCount = ref(1)
@@ -53,7 +55,16 @@ const choose = (option: ScenarioOption) => {
   scenario.value = option
   modulars.value = [...option.modulars]
 }
+const isMagog = computed(() => !!scenario.value && baseCode(scenario.value.code) === '39001')
+const genreSets = ['Crime', 'Fantasy', 'Horror', 'SciFi', 'Sitcom', 'Western']
+const magogGenres = computed(() => sortedModulars.value.filter((set) => genreSets.includes(set)))
+const randomMagogGenre = computed(() => isMagog.value && modulars.value.every((set) => set === 'LongshotSet'))
+const useRandomGenre = () => { modulars.value = modulars.value.filter((set) => set === 'LongshotSet') }
 const toggleModular = (set: string) => {
+  if (isMagog.value && genreSets.includes(set) && !modulars.value.includes(set)) {
+    modulars.value = [...modulars.value.filter((s) => s === 'LongshotSet'), set]
+    return
+  }
   modulars.value = modulars.value.includes(set) ? modulars.value.filter((s) => s !== set) : [...modulars.value, set]
 }
 const { releaseOf, modularRules, modularName, modularRelease, portraits, art: villainArt, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
@@ -84,9 +95,22 @@ const modularSearch = ref('')
 // Keep the common choices and current lineup visible without opening the library.
 const sortedModulars = computed(() => byRelease(modularSets.value, modularRelease, modularName))
 const pinnedModulars = computed(() => sortedModulars.value.filter(
-  (set) => modularRelease(set).code === 'core' || scenario.value?.modulars.includes(set) || modulars.value.includes(set),
+  (set) => !(isMagog.value && genreSets.includes(set)) && (modularRelease(set).code === 'core'
+    || (!!scenario.value && modularRelease(set).code === releaseOf(scenario.value.code).code)
+    || scenario.value?.modulars.includes(set) || modulars.value.includes(set)),
 ))
-const otherModulars = computed(() => sortedModulars.value.filter((set) => !pinnedModulars.value.includes(set)))
+const modularGroups = computed(() => {
+  const product = scenario.value ? releaseOf(scenario.value.code) : null
+  const productSets = pinnedModulars.value.filter((set) => modularRelease(set).code === product?.code)
+  const coreSets = pinnedModulars.value.filter((set) => modularRelease(set).code === 'core' && product?.code !== 'core')
+  const remaining = pinnedModulars.value.filter((set) => !productSets.includes(set) && !coreSets.includes(set))
+  return [
+    { key: 'product', name: product?.name ?? '', sets: productSets },
+    { key: 'core', name: modularRelease(coreSets[0] ?? '').name, sets: coreSets },
+    { key: 'selected', name: t('newGame.otherSelectedSets'), sets: remaining },
+  ].filter((group) => group.sets.length)
+})
+const otherModulars = computed(() => sortedModulars.value.filter((set) => !pinnedModulars.value.includes(set) && !(isMagog.value && genreSets.includes(set))))
 const shownModulars = computed(() => {
   const search = modularSearch.value.trim().toLowerCase()
   return otherModulars.value.filter(
@@ -116,7 +140,7 @@ const create = async () => {
   try {
     const { id } = await createGame({
       name: gameName.value.trim() || defaultName.value,
-      scenario: { scenarioCode: scenario.value.code, modulars: modulars.value, difficulty: difficulty.value },
+      scenario: { scenarioCode: scenario.value.code, modulars: [...modulars.value, ...(modularGuidance.value?.usesModulars && standardSet.value === 'StandardII' ? ['StandardII'] : []), ...(modularGuidance.value?.usesModulars && difficulty.value === 'Expert' && expertSet.value === 'ExpertII' ? ['ExpertII'] : [])], difficulty: difficulty.value },
       decks: [],
       seats: seatCount.value,
       allowSpectators: allowSpectators.value,
@@ -294,13 +318,20 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
             </details>
           </div>
           <template v-if="modularGuidance?.usesModulars">
-            <div class="modular-heading">
-              <span class="field-title">{{ $t('newGame.quickPickSets') }}</span>
-              <span class="hint" role="status">{{ $t('newGame.selectedSets', { count: modulars.length }) }}</span>
-            </div>
+            <template v-if="isMagog">
+              <h4 class="field-title">{{ $t('newGame.magogGenres') }}</h4>
+              <p class="hint" role="status">{{ randomMagogGenre ? $t('newGame.magogRandomGenre') : $t('newGame.magogCustomGenre') }}</p>
+              <div class="chips">
+                <button type="button" class="set-chip" :class="{ on: randomMagogGenre }" :aria-pressed="randomMagogGenre" @click="useRandomGenre">{{ $t('newGame.randomGenre') }}</button>
+                <button v-for="set in magogGenres" :key="set" type="button" class="set-chip" :class="{ on: modulars.includes(set) }" :aria-pressed="modulars.includes(set)" @click="toggleModular(set)">{{ modularName(set) }}</button>
+              </div>
+            </template>
+            <span class="hint" role="status">{{ $t('newGame.selectedSets', { count: modulars.length }) }}</span>
+            <section v-for="group in modularGroups" :key="group.key" class="modular-group" :aria-label="group.name">
+              <h4 class="field-title">{{ group.name }}</h4>
             <div class="chips">
               <button
-                v-for="set in pinnedModulars"
+                v-for="set in group.sets"
                 :key="set"
                 type="button"
                 class="set-chip"
@@ -313,6 +344,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
                 <small v-if="scenario.modulars.includes(set)">{{ $t('newGame.recommended') }}</small>
               </button>
             </div>
+            </section>
             <details class="modular-library">
               <summary>{{ $t('newGame.browseSets') }} <span class="hint">{{ $t('newGame.moreSets', { count: otherModulars.length }) }}</span></summary>
               <div class="filters">
@@ -343,6 +375,22 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
           <h3 class="field-title">{{ $t('newGame.difficulty') }}</h3>
           <SegmentedToggle v-model="difficulty" :options="difficultyOptions" :label="$t('newGame.difficulty')" />
           <p class="hint">{{ $t('newGame.difficultyHint') }}</p>
+          <div v-if="modularGuidance?.usesModulars" class="filters">
+            <label class="field">
+              <span class="field-title">{{ $t('newGame.standardSet') }}</span>
+              <select v-model="standardSet" class="input" :aria-label="$t('newGame.standardSet')">
+                <option value="Standard">{{ $t('newGame.standardOriginal') }}</option>
+                <option value="StandardII">{{ $t('newGame.standardII') }}</option>
+              </select>
+            </label>
+            <label v-if="difficulty === 'Expert'" class="field">
+              <span class="field-title">{{ $t('newGame.expertSet') }}</span>
+              <select v-model="expertSet" class="input" :aria-label="$t('newGame.expertSet')">
+                <option value="ExpertSet">{{ $t('newGame.expertOriginal') }}</option>
+                <option value="ExpertII">{{ $t('newGame.expertII') }}</option>
+              </select>
+            </label>
+          </div>
 
           <label class="field">
             <span class="field-title">{{ $t('newGame.gameName') }}</span>
@@ -443,8 +491,8 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .villain-sets { margin: 4px 14px 0; font-size: 0.75rem; color: var(--text-faint); }
 .tick { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: var(--crimson); color: #fff; }
 
-.modular-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
-.modular-heading .field-title { margin: 0; }
+.modular-group { display: grid; gap: 8px; }
+.modular-group .field-title { margin: 0; }
 .set-check { width: 14px; height: 14px; flex-shrink: 0; align-self: center; }
 .modular-library { margin-top: 4px; border-block: 1px solid var(--line); }
 .modular-library summary { padding: 12px 0; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
