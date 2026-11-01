@@ -10,6 +10,7 @@ import Marvel.Cost (getAbilityCost, canAffordCost)
 import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Damage
 import Marvel.Exception
+import Marvel.Matchers (identityMatches)
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword (Keyword (Guard, Patrol, Overkill, Piercing, Ranged))
@@ -49,6 +50,7 @@ resolveChoice ident = \case
       -- a choice is asked even of one: the player picks what their card does
       pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- targets]]
     TargetMatches entityMatcher -> case entityMatcher of
+      EventsMatching _ -> pure [CreatedEffect def source entityMatcher]
       SourceEntity target -> pure [CreatedEffect def source (SourceEntity target)]
       IdentityEntity matcher -> do
         targets <- selectList matcher
@@ -143,7 +145,12 @@ resolveChoice ident = \case
     windows <- getCurrentWindows
     payment <- getCurrentPayment
     pure [RanAbility ident target n (map windowType windows) payment, ClearRemoved]
-  ChangeForm -> pure [IdentityMessage ident ChooseOtherForm]
+  ChangeForm -> do
+    alterEgo <- identityMatches AlterEgoIdentity ident
+    modifiers <- getModifiers ident
+    let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo]
+    pure $ if additional == NoCost then [IdentityMessage ident ChooseOtherForm]
+      else [CardSpecific (IdentityRef ident) "choosePaidHeroForm" Null]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
   PlayCard x mWindow -> pure [CardSpecific (IdentityRef ident) "playFromHand" (toJSON (x, mWindow))]
   PayWithCard c -> pure [IdentityMessage ident $ PaidWithCard c]

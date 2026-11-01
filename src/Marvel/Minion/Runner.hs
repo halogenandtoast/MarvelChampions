@@ -156,8 +156,9 @@ runMinionMessage msg attrs = case msg of
         -- the scheme is its activation against the player it is engaged with
         let activation timing = checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (fromMaybe (minionEngagedIdentity attrs) $ minionActivationPlayer attrs)]
         activation W.When
+        suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
         when villainous do
-          dealBoost attrs
+          unless suppressBoost $ dealBoost attrs
           minionStep (minionId attrs) MinionFlipBoostCards
         minionSchemed (minionId attrs)
         when villainous clearBoosts
@@ -212,7 +213,8 @@ runMinionMessage msg attrs = case msg of
     attack' <- keepingGains (minionAttacking attrs) <$> newAttack ident
     villainous <- isVillainous
     checkWindows [attackWindow W.When ident]
-    when villainous $ dealBoost attrs
+    suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
+    when (villainous && not suppressBoost) $ dealBoost attrs
     declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
     when villainous $ minionStep (minionId attrs) MinionFlipBoostCards
     minionAttacked (minionId attrs)

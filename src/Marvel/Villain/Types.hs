@@ -712,10 +712,11 @@ getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ villainAttack attrs)) . s
 getModifiedScheme :: (HasGame m) => Attrs Villain -> m Natural
 getModifiedScheme attrs = do
   modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unSch $ villainScheme attrs) modifiers
+  pure $ fromInteger $ max 0 $ toInteger (unSch $ villainScheme attrs) + sum (map change modifiers)
  where
-  applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  change (SchemeModifier n) = toInteger n
+  change (SchemePenalty n) = negate (toInteger n)
+  change _ = 0
 
 -- | The Wrecking Crew's extreme variant (TWC insert p.7, "Adjustable Difficulty"): each
 -- villain starts as version A with version B under it, and when version A is defeated

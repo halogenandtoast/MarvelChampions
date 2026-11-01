@@ -1,5 +1,48 @@
 module Marvel.Minion.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource ()
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword
+
+import Marvel.EncounterSet qualified as NcSet
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost
+
+import Marvel.Aspect qualified as NcAspect ()
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect ()
+import Marvel.Boost qualified as MgBoost
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet
+import Marvel.Keyword qualified as MgKeyword
+import Marvel.Matchers qualified as MgMatch ()
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource ()
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 
 
 
@@ -133,7 +176,12 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ infiniteHunter, infiniteSoldier, ahab, hound, gauntlet, barrage, hardDrive, tusk, psynapse, pterosaur, velociraptor, giantApe, magistrate, armoredUnibike, genoshanMech, gladiator, oracle, manta, earthquake, warstar, ozymandias, scarab, clanAkkabaZealot, agentOfApocalypse, misterSinisterMinion, misterSinisterOverseer, theShadowKingMinion, theShadowKingOverseer, abyssMinion, abyssOverseer, sugarManMinion, sugarManOverseer, mikhailRasputinMinion, mikhailRasputinOverseer
+      [ nc48027, nc48034, nc48035, nc48036, nc48037
+  , Jubilee.jubilee47024, Jubilee.jubilee47030
+  , pyroIceman
+  , sauron
+  , exodusMagneto, fabianCortez, frenzy, sebastianShaw, selene, hellfirePawnMagneto
+  , infiniteHunter, infiniteSoldier, ahab, hound, gauntlet, barrage, hardDrive, tusk, psynapse, pterosaur, velociraptor, giantApe, magistrate, armoredUnibike, genoshanMech, gladiator, oracle, manta, earthquake, warstar, ozymandias, scarab, clanAkkabaZealot, agentOfApocalypse, misterSinisterMinion, misterSinisterOverseer, theShadowKingMinion, theShadowKingOverseer, abyssMinion, abyssOverseer, sugarManMinion, sugarManOverseer, mikhailRasputinMinion, mikhailRasputinOverseer
   , witchfire
   , sym
   , belasco
@@ -561,7 +609,7 @@ hydraSoldierCaptainAmerica =
 -- | The nemesis minions named so on their cards, in nemesis sets with more than one
 -- minion.
 designatedNemesisMinions :: [CardDef]
-designatedNemesisMinions = [trevorFitzroy, belasco, belladonna, baronZemo, thomasEdison, loki, taskmaster, theMagus]
+designatedNemesisMinions = [exodusMagneto, pyroIceman, Jubilee.jubilee47024, nc48027, trevorFitzroy, belasco, belladonna, baronZemo, thomasEdison, loki, taskmaster, theMagus]
 
 -- | Whether the card is its nemesis set's nemesis minion: the one the set names, or its
 -- only minion.
@@ -4462,6 +4510,384 @@ mikhailRasputinOverseer = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+exodusMagneto :: CardDef
+exodusMagneto = CardDef
+  { cdCardCode = "49028"
+  , cdName = "Exodus"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Acolyte, MgTrait.Elite, MgTrait.Psionic]
+  , cdKeywords = fromList [MgKeyword.Toughness, MgKeyword.Villainous, MgKeyword.Steady]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Boost, MgBoost.Boost, MgBoost.Boost]
+  , cdEncounterSet = Just MgSet.MagnetoNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+fabianCortez :: CardDef
+fabianCortez = CardDef
+  { cdCardCode = "49030"
+  , cdName = "Fabian Cortez"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Acolyte]
+  , cdKeywords = fromList [MgKeyword.Guard]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Star]
+  , cdEncounterSet = Just MgSet.MagnetoNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+frenzy :: CardDef
+frenzy = CardDef
+  { cdCardCode = "49031"
+  , cdName = "Frenzy"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Acolyte]
+  , cdKeywords = fromList [MgKeyword.Quickstrike]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Star]
+  , cdEncounterSet = Just MgSet.MagnetoNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+sebastianShaw :: CardDef
+sebastianShaw = CardDef
+  { cdCardCode = "49038"
+  , cdName = "Sebastian Shaw"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Hellfire]
+  , cdKeywords = fromList [MgKeyword.Toughness, MgKeyword.Villainous]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Boost, MgBoost.Boost, MgBoost.Boost]
+  , cdEncounterSet = Just MgSet.HellfireSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+selene :: CardDef
+selene = CardDef
+  { cdCardCode = "49039"
+  , cdName = "Selene"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Hellfire]
+  , cdKeywords = fromList [MgKeyword.Villainous, MgKeyword.Quickstrike]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Star]
+  , cdEncounterSet = Just MgSet.HellfireSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+hellfirePawnMagneto :: CardDef
+hellfirePawnMagneto = CardDef
+  { cdCardCode = "49040"
+  , cdName = "Hellfire Pawn"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Hellfire]
+  , cdKeywords = fromList [MgKeyword.Guard, MgKeyword.Patrol, MgKeyword.Surge]
+  , cdCardType = MgCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Star]
+  , cdEncounterSet = Just MgSet.HellfireSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+pyroIceman :: CardDef
+pyroIceman = IcemanPack.pyroIceman
+
+-- Iceman
+sauron :: CardDef
+sauron = IcemanPack.sauron
+
+-- Nightcrawler
+nc48027 :: CardDef
+nc48027 = CardDef
+  { cdCardCode = "48027"
+  , cdName = "Azazel"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Elite, NcTrait.Neyaphem]
+  , cdKeywords = fromList [NcKeyword.Quickstrike]
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Star]
+  , cdEncounterSet = Just NcSet.NightcrawlerNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48034 :: CardDef
+nc48034 = CardDef
+  { cdCardCode = "48034"
+  , cdName = "Queen of Hearts"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Criminal, NcTrait.Queen]
+  , cdKeywords = fromList []
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost, NcBoost.Boost, NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48035 :: CardDef
+nc48035 = CardDef
+  { cdCardCode = "48035"
+  , cdName = "Jester"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48036 :: CardDef
+nc48036 = CardDef
+  { cdCardCode = "48036"
+  , cdName = "Executioner"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost, NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48037 :: CardDef
+nc48037 = CardDef
+  { cdCardCode = "48037"
+  , cdName = "Tweedledope"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Brute, NcTrait.Criminal]
+  , cdKeywords = fromList []
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

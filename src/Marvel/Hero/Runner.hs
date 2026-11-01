@@ -134,6 +134,7 @@ instance RunMessage (Attrs Hero) where
           atk <- (+ bonus) <$> getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows
           choices <- for schemes \scheme -> do
+            thw <- (+ bonus) <$> getCharacterThwartAgainstScheme (IdentityCharacter ident) scheme
             withAttack <- elem ThwartWithAttack <$> getModifiers (schemeTarget scheme)
             assault <- schemeHasKeyword scheme Assault
             pure $ targeting (schemeTarget scheme) $

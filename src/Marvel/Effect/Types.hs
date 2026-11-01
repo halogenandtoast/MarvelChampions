@@ -149,6 +149,7 @@ effectValidFor e target = case (target, effectMatcher e) of
   (AllyRef ident, AllyEntity matcher) -> selectAny (AllyWithId ident <> matcher)
   (UpgradeRef ident, UpgradeEntity matcher) -> selectAny (UpgradeWithId ident <> matcher)
   (EventRef ident, EventEntity ident') -> pure $ ident == ident'
+  (EventRef eid, EventsMatching matcher) -> maybe False (cardMatch matcher) <$> getsGame (`abilityCardDef` EventRef eid)
   (MainSchemeRef ident, MainSchemeEntity ident') -> pure $ ident == ident'
   (AttachmentRef ident, AttachmentEntity matcher) -> selectAny (AttachmentWithId ident <> matcher)
   (SideSchemeRef ident, SideSchemeEntity matcher) -> elem ident <$> selectList matcher

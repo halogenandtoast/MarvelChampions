@@ -1,5 +1,7 @@
 module Marvel.Support.Supports (module X) where
 
+import Marvel.Support.Supports.Nc48003 as X
+
 import Marvel.Support.Supports.AgeOfApocalypseBasicCampaign as X
 
 import Marvel.Support.Supports.StepfordCuckoos as X
@@ -196,3 +198,12 @@ import Marvel.Support.Supports.Sisterhood as X
 import Marvel.Support.Supports.ChimichangaTruck as X
 import Marvel.Support.Supports.DeadpoolCorpsShip as X
 import Marvel.Support.Supports.PlotConvenience as X
+
+-- Magneto
+import Marvel.Support.Supports.AsteroidM as X
+import Marvel.Support.Supports.WontStayDown as X
+import Marvel.Support.Supports.ChildrenOfTheAtom as X
+
+-- Magneto
+
+import Marvel.Support.Supports.IceWall as X

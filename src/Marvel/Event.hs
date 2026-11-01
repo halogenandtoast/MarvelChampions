@@ -26,7 +26,15 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard basicSpell
+  [ SomeEventCard nc48007, SomeEventCard nc48008, SomeEventCard nc48009, SomeEventCard nc48010, SomeEventCard nc48011, SomeEventCard nc48016, SomeEventCard nc48018, SomeEventCard nc48031, SomeEventCard nc48032
+  , SomeEventCard jubilee47006, SomeEventCard jubilee47007a, SomeEventCard jubilee47007b, SomeEventCard jubilee47007c, SomeEventCard jubilee47008a, SomeEventCard jubilee47008b, SomeEventCard jubilee47008c, SomeEventCard jubilee47009, SomeEventCard jubilee47014, SomeEventCard jubilee47015, SomeEventCard jubilee47021, SomeEventCard jubilee47022, SomeEventCard jubilee47028, SomeEventCard jubilee47029
+  , SomeEventCard takeThat
+  , SomeEventCard surpriseMove
+  , SomeEventCard chillOut
+  , SomeEventCard iceBlast
+  , SomeEventCard arcticAttack
+  , SomeEventCard electromagneticBlast, SomeEventCard metalShards, SomeEventCard magneticMissile, SomeEventCard squaredOff, SomeEventCard nobleSacrifice, SomeEventCard youGotThis, SomeEventCard faceThePast
+  , SomeEventCard basicSpell
   , SomeEventCard fullBodyCharge
   , SomeEventCard magicBarrier
   , SomeEventCard soulStrike

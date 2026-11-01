@@ -1,5 +1,17 @@
 module Marvel.Minion.Minions (module X) where
 
+import Marvel.Minion.Minions.Nc48037 as X
+
+import Marvel.Minion.Minions.Nc48036 as X
+
+import Marvel.Minion.Minions.Nc48035 as X
+
+import Marvel.Minion.Minions.Nc48034 as X
+
+import Marvel.Minion.Minions.Nc48027 as X
+
+import Marvel.Minion.Minions.JubileePack as X
+
 import Marvel.Minion.Minions.AgeOfApocalypseUnus as X
 
 import Marvel.Minion.Minions.AgeOfApocalypseSavageLand as X
@@ -293,3 +305,15 @@ import Marvel.Minion.Minions.Dreadpool as X
 -- Bishop
 import Marvel.Minion.Minions.TrevorFitzroy as X
 import Marvel.Minion.Minions.Bantam as X
+
+-- Magneto
+import Marvel.Minion.Minions.ExodusMagneto as X
+import Marvel.Minion.Minions.FabianCortez as X
+import Marvel.Minion.Minions.Frenzy as X
+import Marvel.Minion.Minions.SebastianShaw as X
+import Marvel.Minion.Minions.Selene as X
+import Marvel.Minion.Minions.HellfirePawnMagneto as X
+
+import Marvel.Minion.Minions.PyroIceman as X
+
+import Marvel.Minion.Minions.Sauron as X

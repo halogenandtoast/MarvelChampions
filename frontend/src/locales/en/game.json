@@ -1,4 +1,6 @@
 {
+  "tuckedBoostIconsWithStar": "{count} boost icons + ★",
+  "tuckedBoostIcons": "{count} boost icons",
   "metagameBoard": "Metagame board",
   "occupiedResourceSpace": "Space {space}: {resource}, occupied",
   "emptyResourceSpace": "Space {space}: {resource}, empty",

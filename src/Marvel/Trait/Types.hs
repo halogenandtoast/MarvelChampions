@@ -42,6 +42,10 @@ data Trait
   | Marauder
   | Acolyte
   | Hellfire
+  | New
+  | Regressed
+  | Neyaphem
+  | Queen
   | Magnetic
   | Mission
   | Mutant

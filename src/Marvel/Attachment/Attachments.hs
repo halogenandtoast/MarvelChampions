@@ -1,5 +1,9 @@
 module Marvel.Attachment.Attachments (module X) where
 
+import Marvel.Attachment.Attachments.Nc48029 as X
+
+import Marvel.Attachment.Attachments.JubileePack as X
+
 import Marvel.Attachment.Attachments.AgeOfApocalypseUnus as X
 
 import Marvel.Attachment.Attachments.AgeOfApocalypseHounds as X
@@ -226,3 +230,7 @@ import Marvel.Attachment.Attachments.CriticalWound as X
 import Marvel.Attachment.Attachments.TabulaRasa16 as X
 import Marvel.Attachment.Attachments.AntiRegenerationRay as X
 import Marvel.Attachment.Attachments.PoolIzed as X
+
+import Marvel.Attachment.Attachments.PyrosFlamethrower as X
+
+import Marvel.Attachment.Attachments.LifeDrain as X

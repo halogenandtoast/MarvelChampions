@@ -14,6 +14,7 @@ import Marvel.Game.Source
     ( cannotTakeDamageFrom,
       characterHasCondition,
       getModifiers,
+      getCharacterThwartAgainstScheme,
       isBlanked,
       schemeHasKeyword,
       HasGame )
@@ -74,6 +75,9 @@ allyGivenStatus a status = do
 
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "ncDefenseComplete" (fromJSON -> Success (enemy :: EnemyId, before :: Natural)) -> do
+      when (allyDamage a <= before) $ checkWindows [W.Window W.After $ W.AllyDefendedWithoutTakingDamage (allyId a) enemy]
+      pure a
     CardSpecific (isTarget a -> True) "readyWithCostPaid" _ -> pure a {allyExhausted = False}
     CardSpecific (isTarget a -> True) "defeatedByConsequential" _ -> do
       present <- selectAny (AllyWithId $ allyId a)
@@ -236,10 +240,10 @@ instance RunMessage (Attrs Ally) where
             -- "ignore any crisis icons in play" as it thwarts (Fandral)
             ignoresCrisis <- elem BasicThwartIgnoresCrisis <$> getModifiers a
             schemes <- selectList (SchemeAnAllyCanThwart (allyId a) ignoresCrisis)
-            thw <- getModifiedThwart a
             atk <- getModifiedAttack a
             -- a scheme thwarted with ATK instead of THW, as The Red House allows
             choices <- for schemes \scheme -> do
+              thw <- getCharacterThwartAgainstScheme (AllyCharacter ident) scheme
               withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
               assault <- schemeHasKeyword scheme Assault
               let thwartWith usingAttack n = do
@@ -308,8 +312,9 @@ instance RunMessage (Attrs Ally) where
         when (retaliates > 0 && not (attackRanged attack' || ignoresRetaliate)) $
           allyStep ident (AllyRetaliates (attackEnemy attack') retaliates)
         -- "after <ally> defends against an attack": the attack has resolved
-        when (attackDefended attack') $
+        when (attackDefended attack') $ do
           checkWindows [W.Window W.After $ W.AllyDefendedAgainst ident (attackEnemy attack')]
+          cardSpecific a "ncDefenseComplete" (attackEnemy attack', allyDamage a)
         pure a
       AllyRetaliates enemy n -> do
         dealDamage enemy a (toDamage n FromRetaliate)

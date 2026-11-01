@@ -1,5 +1,9 @@
 module Marvel.Hero.Heroes (module X) where
 
+import Marvel.Hero.Heroes.Nc48001a as X
+
+import Marvel.Hero.Heroes.JubileeHero as X
+
 import Marvel.Hero.Heroes.MagikHero as X
 import Marvel.Hero.Heroes.DominoHero as X
 import Marvel.Hero.Heroes.BlackPanther as X
@@ -120,3 +124,10 @@ import Marvel.Hero.Heroes.Deadpool as X
 
 -- Bishop
 import Marvel.Hero.Heroes.BishopHero as X
+
+-- Magneto
+import Marvel.Hero.Heroes.MagnetoHero as X
+
+-- Magneto
+
+import Marvel.Hero.Heroes.IcemanHero as X

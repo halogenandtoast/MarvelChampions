@@ -1,5 +1,13 @@
 module Marvel.SideScheme.SideSchemes (module X) where
 
+import Marvel.SideScheme.SideSchemes.Nc48033 as X
+
+import Marvel.SideScheme.SideSchemes.Nc48028 as X
+
+import Marvel.SideScheme.SideSchemes.Nc48020 as X
+
+import Marvel.SideScheme.SideSchemes.JubileePack as X
+
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus as X
 
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand as X
@@ -300,3 +308,16 @@ import Marvel.SideScheme.SideSchemes.DreadfulDeeds as X
 
 -- Bishop
 import Marvel.SideScheme.SideSchemes.PortalThroughTime as X
+
+-- Magneto
+import Marvel.SideScheme.SideSchemes.NewRecruits as X
+import Marvel.SideScheme.SideSchemes.MartyrForMutants as X
+import Marvel.SideScheme.SideSchemes.TheInnerCircle as X
+
+-- Magneto
+
+import Marvel.SideScheme.SideSchemes.KeepUpThePressure as X
+
+import Marvel.SideScheme.SideSchemes.PlayingWithFire as X
+
+import Marvel.SideScheme.SideSchemes.SauronLives as X

@@ -1,5 +1,48 @@
 module Marvel.Ally.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource
+
+import Marvel.Name qualified as NcName
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword ()
+
+import Marvel.EncounterSet qualified as NcSet ()
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost ()
+
+import Marvel.Aspect qualified as NcAspect
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword
+import Marvel.Matchers qualified as MgMatch
+import Marvel.Name qualified as MgName
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 
 
 
@@ -121,7 +164,15 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ destiny, blink, morph, xMan
+  [ nc48002, nc48012, nc48013, nc48021
+  , Jubilee.jubilee47002, Jubilee.jubilee47011, Jubilee.jubilee47012, Jubilee.jubilee47018
+  , snowClone
+  , sharkGirl
+  , glob
+  , shadowcatIceman
+  , beak
+  , monetStCroix, kidOmegaMagneto, phoenixMagneto, cyclopsMagneto, whiteQueenMagneto, surgeMagneto, anoleMagneto, blingMagneto, indraMagneto
+  , destiny, blink, morph, xMan
   , triage
   , tempus
   , goldballs
@@ -2746,6 +2797,461 @@ xMan = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+monetStCroix :: CardDef
+monetStCroix = CardDef
+  { cdCardCode = "49012"
+  , cdName = MgName.Name "M" (Just "Monet St. Croix")
+  , cdCost = Just 4
+  , cdTraits = fromList [MgTrait.Psionic, MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+kidOmegaMagneto :: CardDef
+kidOmegaMagneto = CardDef
+  { cdCardCode = "49013"
+  , cdName = MgName.Name "Kid Omega" (Just "Quentin Quire")
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Psionic, MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+phoenixMagneto :: CardDef
+phoenixMagneto = CardDef
+  { cdCardCode = "49014"
+  , cdName = MgName.Name "Phoenix" (Just "Jean Grey")
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.Psionic, MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+cyclopsMagneto :: CardDef
+cyclopsMagneto = CardDef
+  { cdCardCode = "49015"
+  , cdName = MgName.Name "Cyclops" (Just "Scott Summers")
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+whiteQueenMagneto :: CardDef
+whiteQueenMagneto = CardDef
+  { cdCardCode = "49021"
+  , cdName = MgName.Name "White Queen" (Just "Emma Frost")
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.Psionic, MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.AnyCriteria [MgCriteria.SelfMatches (MgMatch.IdentityWithTrait MgTrait.XForce), MgCriteria.SelfMatches (MgMatch.IdentityWithTrait MgTrait.XMen)]
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+surgeMagneto :: CardDef
+surgeMagneto = CardDef
+  { cdCardCode = "49033"
+  , cdName = MgName.Name "Surge" (Just "Noriko Ashida")
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.New, MgTrait.XMen]
+  , cdKeywords = fromList [MgKeyword.Linked "49020"]
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+anoleMagneto :: CardDef
+anoleMagneto = CardDef
+  { cdCardCode = "49034"
+  , cdName = MgName.Name "Anole" (Just "Victor Borkowski")
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.New, MgTrait.XMen]
+  , cdKeywords = fromList [MgKeyword.Linked "49020"]
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+blingMagneto :: CardDef
+blingMagneto = CardDef
+  { cdCardCode = "49035"
+  , cdName = MgName.Name "Bling!" (Just "Roxanne Washington")
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.New, MgTrait.XMen]
+  , cdKeywords = fromList [MgKeyword.Linked "49020"]
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+indraMagneto :: CardDef
+indraMagneto = CardDef
+  { cdCardCode = "49036"
+  , cdName = MgName.Name "Indra" (Just "Paras Gavaskar")
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.New, MgTrait.XMen]
+  , cdKeywords = fromList [MgKeyword.Linked "49020"]
+  , cdCardType = MgCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+snowClone :: CardDef
+snowClone = IcemanPack.snowClone
+
+-- Iceman
+sharkGirl :: CardDef
+sharkGirl = IcemanPack.sharkGirl
+
+-- Iceman
+glob :: CardDef
+glob = IcemanPack.glob
+
+-- Iceman
+shadowcatIceman :: CardDef
+shadowcatIceman = IcemanPack.shadowcatIceman
+
+-- Iceman
+beak :: CardDef
+beak = IcemanPack.beak
+
+-- Nightcrawler
+nc48002 :: CardDef
+nc48002 = CardDef
+  { cdCardCode = "48002"
+  , cdName = NcName.Name "Daytripper" (Just "Amanda Sefton")
+  , cdCost = Just 2
+  , cdTraits = fromList [NcTrait.Mystic]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48012 :: CardDef
+nc48012 = CardDef
+  { cdCardCode = "48012"
+  , cdName = NcName.Name "Rogue" (Just "Anna Marie")
+  , cdCost = Just 4
+  , cdTraits = fromList [NcTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48013 :: CardDef
+nc48013 = CardDef
+  { cdCardCode = "48013"
+  , cdName = NcName.Name "Northstar" (Just "Jean-Paul Beaubier")
+  , cdCost = Just 3
+  , cdTraits = fromList [NcTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48021 :: CardDef
+nc48021 = CardDef
+  { cdCardCode = "48021"
+  , cdName = NcName.Name "Gambit" (Just "Remy LeBeau")
+  , cdCost = Just 3
+  , cdTraits = fromList [NcTrait.Thief, NcTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NcAspect.Neutral
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

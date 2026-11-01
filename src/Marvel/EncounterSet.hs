@@ -5,7 +5,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
+  = SauronSet
+  | Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
   | AoaCampaign
   | AoaBasicCampaign
   | AoaOverseer
@@ -29,6 +30,17 @@ data EncounterSet
   | AoaUnus
   | NextEvolutionCampaign
   | AngelNemesis
+  | IcemanNemesis
+  | IcemanObligation
+  | JubileeNemesis
+  | JubileeObligation
+  | NightcrawlerNemesis
+  | NightcrawlerObligation
+  | MagnetoNemesis
+  | MagnetoObligation
+  | HellfireSet
+  | ArcadeSet
+  | CrazyGangSet
   | MagikNemesis
   | BishopNemesis
   | BishopObligation
@@ -220,7 +232,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ AoaInfinites, AoaDystopianNightmare, AoaHounds, AoaPrelates, AoaDarkRiders, AoaBlueMoon, AoaGenosha, AoaSavageLand, AoaCelestialTech, AoaClanAkkaba
+  [ SauronSet, HellfireSet, ArcadeSet, CrazyGangSet
+  , AoaInfinites, AoaDystopianNightmare, AoaHounds, AoaPrelates, AoaDarkRiders, AoaBlueMoon, AoaGenosha, AoaSavageLand, AoaCelestialTech, AoaClanAkkaba
   , MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
   , Crime, Fantasy, Horror, SciFi, Sitcom, Western, LongshotSet
   , BombScare
@@ -298,6 +311,10 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "46001" -> IcemanNemesis
+  "47001" -> JubileeNemesis
+  "48001" -> NightcrawlerNemesis
+  "49001" -> MagnetoNemesis
   "45030" -> MagikNemesis
   "45001" -> BishopNemesis
   "44001" -> DeadpoolNemesis

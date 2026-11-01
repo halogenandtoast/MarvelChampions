@@ -1,5 +1,25 @@
 module Marvel.Event.Events (module X) where
 
+import Marvel.Event.Events.Nc48032 as X
+
+import Marvel.Event.Events.Nc48031 as X
+
+import Marvel.Event.Events.Nc48018 as X
+
+import Marvel.Event.Events.Nc48016 as X
+
+import Marvel.Event.Events.Nc48011 as X
+
+import Marvel.Event.Events.Nc48010 as X
+
+import Marvel.Event.Events.Nc48009 as X
+
+import Marvel.Event.Events.Nc48008 as X
+
+import Marvel.Event.Events.Nc48007 as X
+
+import Marvel.Event.Events.JubileePack as X
+
 import Marvel.Event.Events.BasicSpell as X
 import Marvel.Event.Events.FullBodyCharge as X
 import Marvel.Event.Events.MagicBarrier as X
@@ -559,3 +579,24 @@ import Marvel.Event.Events.CommandAuthority as X
 import Marvel.Event.Events.EnergyConversion as X
 import Marvel.Event.Events.SideBySide as X
 import Marvel.Event.Events.SuitUp as X
+
+-- Magneto
+import Marvel.Event.Events.ElectromagneticBlast as X
+import Marvel.Event.Events.MetalShards as X
+import Marvel.Event.Events.MagneticMissile as X
+import Marvel.Event.Events.SquaredOff as X
+import Marvel.Event.Events.NobleSacrifice as X
+import Marvel.Event.Events.YouGotThis as X
+import Marvel.Event.Events.FaceThePast as X
+
+-- Magneto
+
+import Marvel.Event.Events.ArcticAttack as X
+
+import Marvel.Event.Events.IceBlast as X
+
+import Marvel.Event.Events.ChillOut as X
+
+import Marvel.Event.Events.SurpriseMove as X
+
+import Marvel.Event.Events.TakeThat as X

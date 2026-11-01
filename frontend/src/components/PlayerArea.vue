@@ -132,6 +132,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             :id="ally.id"
             :code="ally.code"
             :name="ally.name"
+            :flag="ally.tuckedBoostIcons != null ? t(ally.tuckedBoostStar ? 'game.tuckedBoostIconsWithStar' : 'game.tuckedBoostIcons', { count: ally.tuckedBoostIcons }) : null"
+            :flag-icon="ally.tuckedBoostIcons != null ? 'boost' : null"
             :exhausted="ally.exhausted"
             :damage="ally.damage"
             :threat="ally.threat || null"

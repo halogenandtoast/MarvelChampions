@@ -13,7 +13,7 @@ import Marvel.Card.Def
       CardType(MinionType, SideSchemeType),
       HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
 import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
@@ -98,6 +98,10 @@ coversResources mr resources = null uncovered && length remaining >= length anyR
 -- hero to make a basic attack" (Mother's Orders).
 getAbilityCost :: (HasGame m) => Ability -> m Cost
 getAbilityCost a = case abilitySource a of
+  IdentityRef ident | Q.ChangeForm `elem` abilityChoices a -> do
+    alterEgo <- identityMatches AlterEgoIdentity ident
+    modifiers <- getModifiers ident
+    pure $ abilityCost a <> mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo]
   IdentityRef ident | abilityType a == Basic, Q.Attack `elem` abilityChoices a -> do
     modifiers <- getModifiers ident
     pure $ abilityCost a <> mconcat [c | BasicAttackAdditionalCost c <- modifiers]
@@ -196,6 +200,10 @@ canAffordCost identityId source cost = do
     ExhaustSupportCost matcher -> selectAny (SupportMatches [matcher, UnexhaustedSupport, SupportControlledBy (IdentityWithId identityId)])
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
+    DiscardEnemyUpgradeCost matcher hostMatcher -> do
+      upgrades <- selectList (UpgradeWithCard matcher <> UpgradeThatCanBeDiscarded)
+      attached <- filterM (\uid -> getUpgradeAttachedEnemy uid >>= maybe (pure False) (\enemy -> asYou identityId $ enemyMatches hostMatcher enemy)) upgrades
+      pure $ not (null attached)
     DiscardUpgradeCost matcher -> selectAny (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy identityId)
     DiscardAllyCost matcher -> selectAny (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId identityId))
     DiscardSupportCost matcher -> notNull <$> discardableSupports matcher
@@ -212,6 +220,7 @@ canAffordCost identityId source cost = do
     DiscardTopOfDeckForDamageCost -> do
       n <- pendingDamageAmount identityId
       projectP PlayerIdentityDeck ((>= n) . fromIntegral . length . unDeck) identityId
+    ReturnAnyAllyToHandCost matcher -> selectAny (matcher <> AllyThatCanLeavePlay)
     ReturnAllyToHandCost matcher -> selectAny (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId identityId))
     ExhaustAlliesWithTraitCost trait n _ ->
       (>= n) <$> selectListCount (AllyWithTrait trait <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
@@ -245,6 +254,7 @@ canAffordCost identityId source cost = do
     RevealEncounterTreacheryCost -> pure True
     ShuffleEncounterCardsIntoOwnDeckCost n -> (>= n) . fromIntegral . length <$> ((<>) <$> getEncounterDeck <*> getEncounterDiscard)
     SearchEncounterSideSchemeCost -> any (cardMatch $ CardWithType SideSchemeType) <$> getEncounterDeck
+    RevealNemesisMinionCost -> notNull <$> getNemesisMinionsOutOfPlay identityId
     SearchEncounterMinionCost -> any (cardMatch $ CardWithType MinionType) <$> ((<>) <$> getEncounterDeck <*> getEncounterDiscard)
     PlaceThreatOnMainSchemeCost _ -> selectAny MainScheme
     DealEncounterCardCost -> pure True
@@ -294,6 +304,7 @@ canAffordCost identityId source cost = do
         Just r -> r `elem` resources || Wild `elem` resources
     MultiResourceCost mr -> coversResources mr <$> availableResources
     PrintedResourceCost rs -> coversPrintedResources rs <$> (concatMapM printedResourcesFor . filter notPlaying =<< getAvailablePaymentSources identityId)
+    SameResourcesCost n -> coversSameType n <$> availableResources
     DifferentResourcesCost n -> coversDifferentTypes n <$> availableResources
     -- the Milano exhausted to pay, its own resource is not there to spend as well
     Costs xs | ExhaustMilanoCost `elem` xs -> do
@@ -320,8 +331,15 @@ canAffordCost identityId source cost = do
       slots <- concatMapM exhaustionSlots parts
       others <- allM go parts
       pure $ others && distinctExhaustions slots
+    Costs xs | any isReturnedAllyCost (flattenCost xs) -> do
+      let parts = flattenCost xs
+      slots <- for [matcher | ReturnAnyAllyToHandCost matcher <- parts] $ \matcher ->
+        map AllyRef <$> selectList (matcher <> AllyThatCanLeavePlay)
+      others <- allM go parts
+      pure $ others && distinctExhaustions slots
     Costs xs -> allM go xs
   flattenCost = concatMap (\case Costs cs -> flattenCost cs; c -> [c])
+  isReturnedAllyCost = \case ReturnAnyAllyToHandCost _ -> True; _ -> False
   isTraitCardExhaustion = \case ExhaustCardsWithTraitCost _ _ _ -> True; ExhaustCharacterCost _ -> True; ExhaustControlledCardsCost _ -> True; _ -> False
   exhaustionSlots = \case
     ExhaustCharacterCost matcher -> pure . pure . map characterRef =<< readyCharacterCandidates identityId matcher

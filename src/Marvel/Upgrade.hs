@@ -26,7 +26,16 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard desperateMeasures, SomeUpgradeCard bloodgem
+  [ SomeUpgradeCard nc48004, SomeUpgradeCard nc48005, SomeUpgradeCard nc48006, SomeUpgradeCard nc48014, SomeUpgradeCard nc48015
+  , SomeUpgradeCard jubilee47004, SomeUpgradeCard jubilee47005, SomeUpgradeCard jubilee47013, SomeUpgradeCard jubilee47019
+  , SomeUpgradeCard suppressingFire
+  , SomeUpgradeCard frozenSolid
+  , SomeUpgradeCard iceSlide
+  , SomeUpgradeCard cryokineticPerception
+  , SomeUpgradeCard powerBelt
+  , SomeUpgradeCard frostbite
+  , SomeUpgradeCard magnetosHelmet, SomeUpgradeCard magnetosArmor, SomeUpgradeCard magnetosCape, SomeUpgradeCard magneticBubble, SomeUpgradeCard wrappedInMetal
+  , SomeUpgradeCard desperateMeasures, SomeUpgradeCard bloodgem
   , SomeUpgradeCard testTheDefense
   , SomeUpgradeCard bloodRage
   , SomeUpgradeCard mysticalArmor

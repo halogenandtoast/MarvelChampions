@@ -1,5 +1,46 @@
 module Marvel.Support.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword ()
+
+import Marvel.EncounterSet qualified as NcSet ()
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost ()
+
+import Marvel.Aspect qualified as NcAspect ()
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 import Marvel.Card.Def ()
 
 import Marvel.Criteria ()
@@ -109,7 +150,10 @@ import Marvel.Matchers
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ missionTeamFront, missionTeamFinished
+  [ nc48003
+  , iceWall
+  , asteroidM, wontStayDown, childrenOfTheAtom
+  , missionTeamFront, missionTeamFinished
   , stepfordCuckoos
   , limbo
   , chimichangaTruck, deadpoolCorpsShip, plotConvenience
@@ -405,7 +449,7 @@ armyOfAnts :: CardDef
 armyOfAnts = identitySupport "12007" "Army of Ants" 1 [Ants, Tiny] [Physical]
 
 teamBuildingExercise :: CardDef
-teamBuildingExercise = reprintedAs ["30022"] $ basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]
+teamBuildingExercise = reprintedAs ["46021", "30022"] $ basicSupport "12024" "Team-Building Exercise" 2 [Condition] [Physical]
 
 -- Wasp
 
@@ -755,7 +799,7 @@ warRoom = (support "37030" "War Room" 1 [Location] [Mental] Aggression) { cdDeck
 -- Rogue
 
 moiraMacTaggert :: CardDef
-moiraMacTaggert = (basicSupport "38018" "Moira MacTaggert" 2 [Persona] [Mental]) { cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+moiraMacTaggert = reprintedAs ["48022"] $ (basicSupport "38018" "Moira MacTaggert" 2 [Persona] [Mental]) { cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
 
 medLab :: CardDef
 medLab = (support "38028" "Med Lab" 1 [Location] [Mental] Leadership) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3 }
@@ -1221,6 +1265,145 @@ missionTeamFinished = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+asteroidM :: CardDef
+asteroidM = CardDef
+  { cdCardCode = "49002"
+  , cdName = "Asteroid M"
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Location, MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+wontStayDown :: CardDef
+wontStayDown = CardDef
+  { cdCardCode = "49016"
+  , cdName = "Won't Stay Down"
+  , cdCost = Just 1
+  , cdTraits = fromList [MgTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.AnyCriteria [MgCriteria.SelfMatches (MgMatch.IdentityWithTrait MgTrait.XForce), MgCriteria.SelfMatches (MgMatch.IdentityWithTrait MgTrait.XMen)]
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MgCard.MaxPerPlayer 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+childrenOfTheAtom :: CardDef
+childrenOfTheAtom = CardDef
+  { cdCardCode = "49037"
+  , cdName = "Children of the Atom"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MgCard.MaxPerPlayerUnderAnyControl 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+iceWall :: CardDef
+iceWall = IcemanPack.iceWall
+
+-- Nightcrawler
+nc48003 :: CardDef
+nc48003 = CardDef
+  { cdCardCode = "48003"
+  , cdName = "Kurt's Chapel"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

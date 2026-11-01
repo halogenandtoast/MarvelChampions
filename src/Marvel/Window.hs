@@ -92,6 +92,16 @@ windowMatches matcher w source = case matcher of
   IdentityThwarts timing identityMatcher -> case windowType w of
     IdentityThwart ident _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
+  AttachesUpgradeToEnemy timing who cardMatcher enemyMatcher -> case windowType w of
+    UpgradeAttachedToEnemy you _ def enemy | windowTiming w == timing, cardMatch cardMatcher def -> (&&) <$> identityMatches who you <*> enemyMatches enemyMatcher enemy
+    _ -> pure False
+  MagneticPullSucceeded matcher -> case windowType w of
+    MagneticPullResolved who _ | windowTiming w == After -> identityMatches matcher who
+    _ -> pure False
+  EnemyWasAttacked timing matcher -> case windowType w of
+    EnemyAttackOnEnemy _ target | windowTiming w == timing -> enemyMatches matcher target
+    PlayerAttackResolved _ _ enemies | windowTiming w == timing -> anyM (enemyMatches matcher) enemies
+    _ -> pure False
   EnemyAttackedAnyTarget timing enemyMatcher -> case windowType w of
     EnemyAttack enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
     EnemyAttackAlly enemy _ _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
@@ -145,8 +155,15 @@ windowMatches matcher w source = case matcher of
     IdentityTakeDamageFrom ident damageSourceRef damage
       | windowTiming w == When, damageAmount damage > 0
       , damageSource damage `elem` [FromAttack, FromOverkill]
-      , Just enemy <- sourceEnemy damageSourceRef ->
-          (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemy
+      , Just enemy <- sourceEnemy damageSourceRef -> do
+          tough <- characterMatches (CharacterWithStatus ToughStatus) (IdentityCharacter ident)
+          immune <- cannotTakeDamageFrom (IdentityRef ident) damageSourceRef
+          if immune || (tough && preventedByTough damage)
+            then pure False
+            else (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemy
+    _ -> pure False
+  AllyDefendedWithoutDamage timing matcher -> case windowType w of
+    AllyDefendedWithoutTakingDamage aid _ | windowTiming w == timing -> allyMatches matcher aid
     _ -> pure False
   EntersPlayThis -> case windowType w of
     AllyEnteredPlay allyId -> pure $ source == AllyRef allyId
@@ -193,8 +210,9 @@ windowMatches matcher w source = case matcher of
   WouldTakeDamage identityMatcher damageSource' gameValueMatcher ->
     case windowType w of
       IdentityTakeDamage ident damage
-        | damageSource' `elem` [damageSource damage, FromAnyDamageSource] ->
-            liftA2
+        | damageSource' `elem` [damageSource damage, FromAnyDamageSource] -> do
+            tough <- characterMatches (CharacterWithStatus ToughStatus) (IdentityCharacter ident)
+            if tough && preventedByTough damage then pure False else liftA2
               (&&)
               (identityMatches identityMatcher ident)
               (gameValueMatches gameValueMatcher (damageAmount damage))
@@ -439,6 +457,13 @@ windowMatches matcher w source = case matcher of
       | windowTiming w == timing ->
           liftA2 (&&) (identityMatches identityMatcher identityId) (enemyMatches enemyMatcher enemyId)
     _ -> pure False
+  BamfDefense timing matcher -> case windowType w of
+    DefendedWithBamf who _ _ | windowTiming w == timing -> identityMatches matcher who
+    _ -> pure False
+  IdentityMakesBasicAttackOrThwart timing matcher -> case windowType w of
+    MadeBasicAttack who | windowTiming w == timing -> identityMatches matcher who
+    MadeBasicThwart who | windowTiming w == timing -> identityMatches matcher who
+    _ -> pure False
   MakesBasicAttack timing identityMatcher -> case windowType w of
     MadeBasicAttack identityId
       | windowTiming w == timing ->
@@ -603,6 +628,8 @@ windowMatches matcher w source = case matcher of
     UpgradePlayedOnAlly ident _ _ | windowTiming w == timing -> identityMatches identityMatcher ident
     _ -> pure False
   UsesAbility timing identityMatcher index -> case windowType w of
+    MagneticPullFailed who _ | timing == After && windowTiming w == After && index == 1 -> identityMatches identityMatcher who
+    MagneticPullResolved who _ | timing == After && windowTiming w == After && index == 1 -> identityMatches identityMatcher who
     UsedCardAbility ident source usedIndex | source == IdentityRef ident && windowTiming w == timing && index == usedIndex -> identityMatches identityMatcher ident
     _ -> pure False
   AllyEntersPlay timing allyMatcher -> case windowType w of

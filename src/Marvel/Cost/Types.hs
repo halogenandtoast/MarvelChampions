@@ -59,15 +59,18 @@ data Cost
   | NoCost
   | -- | as many resources, each of a different type
     DifferentResourcesCost Natural
+  | SameResourcesCost Natural
   | -- | exhaust an upgrade the payer controls, chosen among those matching
     ExhaustUpgradeCost UpgradeMatcher
   | ExhaustSupportCost SupportMatcher
   | -- | return an upgrade the payer controls, chosen among those matching, to hand
     ReturnUpgradeToHandCost UpgradeMatcher
   | ReturnAllyToHandCost AllyMatcher
+  | ReturnAnyAllyToHandCost AllyMatcher
   | ExhaustAlliesWithTraitCost Trait Natural (Maybe Natural)
   | -- | discard an upgrade the payer controls, chosen among those matching
     DiscardUpgradeCost UpgradeMatcher
+  | DiscardEnemyUpgradeCost CardMatcher EnemyMatcher
   | -- | discard a controlled ally, retaining its printed card in the payment
     DiscardAllyCost AllyMatcher
   | -- | discard a support the payer controls
@@ -114,6 +117,7 @@ data Cost
   | -- | shuffle this many top encounter cards into the payer's deck as a cost
     ShuffleEncounterCardsIntoOwnDeckCost Natural
   | SearchEncounterSideSchemeCost
+  | RevealNemesisMinionCost
   | SearchEncounterMinionCost
   | -- | "deal yourself 1 facedown encounter card"
     DealEncounterCardCost
@@ -178,8 +182,10 @@ costResources (ExhaustSupportCost _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (ReturnAllyToHandCost _) = []
+costResources (ReturnAnyAllyToHandCost _) = []
 costResources (ExhaustAlliesWithTraitCost _ _ _) = []
 costResources (DiscardUpgradeCost _) = []
+costResources (DiscardEnemyUpgradeCost _ _) = []
 costResources (DiscardAllyCost _) = []
 costResources (DiscardSupportCost _) = []
 costResources (DiscardAllyOrSupportCost _ _) = []
@@ -201,6 +207,7 @@ costResources DiscardEncounterCardsUntilMinionCost = []
 costResources RevealEncounterTreacheryCost = []
 costResources (ShuffleEncounterCardsIntoOwnDeckCost _) = []
 costResources SearchEncounterSideSchemeCost = []
+costResources RevealNemesisMinionCost = []
 costResources SearchEncounterMinionCost = []
 costResources DealEncounterCardCost = []
 costResources (DealEncounterCardToPlayerCost _) = []
@@ -236,6 +243,7 @@ costResources (ResourceCost r) = [r]
 costResources (MultiResourceCost rs) = rs
 costResources (PrintedResourceCost rs) = map Just rs
 costResources (Costs ps) = concatMap costResources ps
+costResources (SameResourcesCost n) = replicate (fromIntegral n) Nothing
 costResources (DifferentResourcesCost n) = replicate (fromIntegral n) Nothing
 
 -- | How many resources of different types the cost asks for.
@@ -258,3 +266,13 @@ printedResourceRequirements = \case
   Costs cs -> concatMap printedResourceRequirements cs
   ResourcesFromHandCost c -> printedResourceRequirements c
   _ -> []
+
+sameResourcesNeeded :: Cost -> Natural
+sameResourcesNeeded = \case
+  SameResourcesCost n -> n
+  Costs cs -> maximum (0 : map sameResourcesNeeded cs)
+  ResourcesFromHandCost c -> sameResourcesNeeded c
+  _ -> 0
+
+coversSameType :: Natural -> [Resource] -> Bool
+coversSameType n rs = any (\r -> fromIntegral (length $ filter (\x -> x == r || x == Wild) rs) >= n) [Physical, Mental, Energy, Wild]

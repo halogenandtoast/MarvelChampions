@@ -31,7 +31,10 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard missionTeamFront, SomeSupportCard missionTeamFinished
+  [ SomeSupportCard nc48003
+  , SomeSupportCard iceWall
+  , SomeSupportCard asteroidM, SomeSupportCard wontStayDown, SomeSupportCard childrenOfTheAtom
+  , SomeSupportCard missionTeamFront, SomeSupportCard missionTeamFinished
   , SomeSupportCard stepfordCuckoos
   , SomeSupportCard limbo
   , SomeSupportCard chimichangaTruck, SomeSupportCard deadpoolCorpsShip, SomeSupportCard plotConvenience

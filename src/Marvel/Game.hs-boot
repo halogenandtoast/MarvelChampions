@@ -456,3 +456,15 @@ findEncounterCards :: HasGame m => CardMatcher -> m [EncounterCard]
 canResolveSettingSpecial :: HasGame m => IdentityId -> m Bool
 
 getStartingHeroCodes :: HasGame m => m [CardCode]
+
+getCharacterBasePowers :: HasGame m => CharacterId -> m (Natural, Natural)
+getCharacterThwart :: HasGame m => CharacterId -> m Natural
+getUpgradeAttachedEnemy :: HasGame m => UpgradeId -> m (Maybe EnemyId)
+getMinionEngagedPlayer :: HasGame m => MinionId -> m (Maybe IdentityId)
+getAllyControllerId :: HasGame m => AllyId -> m (Maybe IdentityId)
+
+getAbilitiesForMatching :: HasGame m => IdentityId -> (Ability -> m Bool) -> m [Ability]
+
+getCharacterThwartAgainstScheme :: HasGame m => CharacterId -> SchemeId -> m Natural
+
+getAllyPrintedStats :: HasGame m => AllyId -> m (Natural, Natural, Natural)

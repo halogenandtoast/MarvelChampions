@@ -33,7 +33,11 @@ withHeroCardCode cCode f = case lookup cCode allHeroes of
 allHeroes :: HashMap CardCode SomeHeroCard
 allHeroes = fromList $ map
   (toFst someHeroCardCode)
-  [ SomeHeroCard magikHero
+  [ SomeHeroCard nc48001a
+  , SomeHeroCard jubileeHero
+  , SomeHeroCard icemanHero
+  , SomeHeroCard magnetoHero
+  , SomeHeroCard magikHero
   , SomeHeroCard bishopHero
   , SomeHeroCard deadpool
   , SomeHeroCard x23

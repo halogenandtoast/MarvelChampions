@@ -1,5 +1,48 @@
 module Marvel.Event.Cards where
 
+import Marvel.Window.Types qualified as NcWindow
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch
+
+import Marvel.Keyword qualified as NcKeyword
+
+import Marvel.EncounterSet qualified as NcSet ()
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard
+
+import Marvel.Boost qualified as NcBoost ()
+
+import Marvel.Aspect qualified as NcAspect
+
+import Marvel.Ability.Types qualified as NcAbility
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility
+import Marvel.Aspect qualified as MgAspect
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow
+
 import Marvel.Matchers qualified as AoaMM
 import Marvel.Window.Types qualified as AoaMW
 import Marvel.Ability.Types qualified as AoaMAbility
@@ -100,7 +143,15 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ basicSpell
+  [ nc48007, nc48008, nc48009, nc48010, nc48011, nc48016, nc48018, nc48031, nc48032
+  , Jubilee.jubilee47006, Jubilee.jubilee47007a, Jubilee.jubilee47007b, Jubilee.jubilee47007c, Jubilee.jubilee47008a, Jubilee.jubilee47008b, Jubilee.jubilee47008c, Jubilee.jubilee47009, Jubilee.jubilee47014, Jubilee.jubilee47015, Jubilee.jubilee47021, Jubilee.jubilee47022, Jubilee.jubilee47028, Jubilee.jubilee47029
+  , arcticAttack
+  , iceBlast
+  , chillOut
+  , surpriseMove
+  , takeThat
+  , electromagneticBlast, metalShards, magneticMissile, squaredOff, nobleSacrifice, youGotThis, faceThePast
+  , basicSpell
   , fullBodyCharge
   , magicBarrier
   , soulStrike
@@ -1426,9 +1477,9 @@ baitAndSwitch = reprintedAs ["32015", "27013"] $
 
 recuperation :: CardDef
 recuperation =
-  (basicEvent "15031" "Recuperation" 2 AlterEgoAction [] [Physical])
+  reprintedAs ["46022"] ((basicEvent "15031" "Recuperation" 2 AlterEgoAction [] [Physical])
     { cdCriteria = SelfMatches IdentityWithAnyDamage
-    }
+    })
 
 -- Star-Lord
 
@@ -1637,10 +1688,10 @@ schadenfreude = identityEvent "16032" "Schadenfreude" 2 HeroAction [] [Physical]
 -- you (Defender of the Nine Realms').
 lookingForTrouble :: CardDef
 lookingForTrouble =
-  (event "16043" "Looking for Trouble" 0 HeroAction [Thwart] [Physical] Aggression)
+  reprintedAs ["46017"] ((event "16043" "Looking for Trouble" 0 HeroAction [Thwart] [Physical] Aggression)
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
-    }
+    })
 
 -- The Galaxy's Most Wanted: The Market (unit costs in Marvel.Campaign.marketUnitCosts)
 
@@ -2550,7 +2601,7 @@ armorUp = (identityEvent "32010" "Armor Up" 0 AlterEgoInterrupt [Superpower] [Ph
 -- Mutant Genesis
 
 powerfulPunch :: CardDef
-powerfulPunch = (event "32014" "Powerful Punch" 2 HeroInterrupt [Attack, Defense] [Physical] Protection)
+powerfulPunch = reprintedAs ["48017"] $ (event "32014" "Powerful Punch" 2 HeroInterrupt [Attack, Defense] [Physical] Protection)
   { cdDeckLimit = Just 3
   , cdAbilitySubTypes = [Ability.Attack, Ability.Defense]
   , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
@@ -4429,4 +4480,563 @@ basicSpell = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
+  }
+
+-- Magneto
+
+electromagneticBlast :: CardDef
+electromagneticBlast = CardDef
+  { cdCardCode = "49008"
+  , cdName = "Electromagnetic Blast"
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Magnetic, MgTrait.Superpower, MgTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = [MgAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.SchemeExists MgMatch.ThwartableScheme
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+metalShards :: CardDef
+metalShards = CardDef
+  { cdCardCode = "49009"
+  , cdName = "Metal Shards"
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.Attack, MgTrait.Magnetic, MgTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = [MgAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = canAttack
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+magneticMissile :: CardDef
+magneticMissile = CardDef
+  { cdCardCode = "49010"
+  , cdName = "Magnetic Missile"
+  , cdCost = Just 1
+  , cdTraits = fromList [MgTrait.Magnetic, MgTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.UpgradeExists (MgMatch.UpgradeIs Upgrade.wrappedInMetal)
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+squaredOff :: CardDef
+squaredOff = CardDef
+  { cdCardCode = "49017"
+  , cdName = "Squared Off"
+  , cdCost = Just 0
+  , cdTraits = fromList [MgTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.ExtendedCardExists (MgMatch.InHandOf MgMatch.You (MgMatch.BasicCardMatches (MgCard.CardWithType MgCard.AllyType)))
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.DiscardEncounterCardsUntilMinionCost
+  }
+
+nobleSacrifice :: CardDef
+nobleSacrifice = CardDef
+  { cdCardCode = "49018"
+  , cdName = "Noble Sacrifice"
+  , cdCost = Just 1
+  , cdTraits = fromList [MgTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.DiscardAllyCost MgMatch.AnyAlly
+  }
+
+youGotThis :: CardDef
+youGotThis = CardDef
+  { cdCardCode = "49019"
+  , cdName = "\"You Got This!\""
+  , cdCost = Just 1
+  , cdTraits = fromList [MgTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroResponse
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (MgWindow.IdentityMakesBasicAttackOrThwart MgWindow.When MgMatch.You)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.DiscardAllyCost MgMatch.AnyAlly
+  }
+
+faceThePast :: CardDef
+faceThePast = CardDef
+  { cdCardCode = "49022"
+  , cdName = "Face the Past"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.EventType
+  , cdAbilityType = Just MgAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just MgAspect.Neutral
+  , cdCriteria = MgCriteria.NemesisMinionOutOfPlay
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.RevealNemesisMinionCost
+  }
+
+-- Iceman
+arcticAttack :: CardDef
+arcticAttack = IcemanPack.arcticAttack
+
+-- Iceman
+iceBlast :: CardDef
+iceBlast = IcemanPack.iceBlast
+
+-- Iceman
+chillOut :: CardDef
+chillOut = IcemanPack.chillOut
+
+-- Iceman
+surpriseMove :: CardDef
+surpriseMove = IcemanPack.surpriseMove
+
+-- Iceman
+takeThat :: CardDef
+takeThat = IcemanPack.takeThat
+
+-- Nightcrawler
+nc48007 :: CardDef
+nc48007 = CardDef
+  { cdCardCode = "48007"
+  , cdName = "'Port and Punch"
+  , cdCost = Just 2
+  , cdTraits = fromList [NcTrait.Attack, NcTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = [NcAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.canAttack
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48008 :: CardDef
+nc48008 = CardDef
+  { cdCardCode = "48008"
+  , cdName = "Teleport Drop"
+  , cdCost = Just 2
+  , cdTraits = fromList [NcTrait.Attack, NcTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = [NcAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.canAttack
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.DiscardEnemyUpgradeCost (NcCard.CardWithTitle "Bamf!") NcMatch.AttackableEnemy
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48009 :: CardDef
+nc48009 = CardDef
+  { cdCardCode = "48009"
+  , cdName = "Scout Ahead"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Superpower, NcTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = [NcAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.SelfMatches NcMatch.IdentityCanThwart
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48010 :: CardDef
+nc48010 = CardDef
+  { cdCardCode = "48010"
+  , cdName = "'Port Away"
+  , cdCost = Just 0
+  , cdTraits = fromList [NcTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.DiscardMatchingHandCardCost (NcCard.CardWithTitle "Bamf!")
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48011 :: CardDef
+nc48011 = CardDef
+  { cdCardCode = "48011"
+  , cdName = "Tally Ho!"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Defense, NcTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroResponse
+  , cdAbilitySubTypes = [NcAbility.Defense]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just $ NcWindow.BamfDefense NcWindow.After NcMatch.You
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48016 :: CardDef
+nc48016 = CardDef
+  { cdCardCode = "48016"
+  , cdName = "\"Come Get Me, Bub!\""
+  , cdCost = Just 0
+  , cdTraits = fromList [NcTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.DiscardEncounterCardsUntilMinionCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48018 :: CardDef
+nc48018 = CardDef
+  { cdCardCode = "48018"
+  , cdName = "Riposte"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Defense]
+  , cdKeywords = fromList []
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroInterrupt
+  , cdAbilitySubTypes = [NcAbility.Defense]
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just $ NcWindow.HeroDefended NcWindow.When NcMatch.You NcMatch.AnyEnemy
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48031 :: CardDef
+nc48031 = CardDef
+  { cdCardCode = "48031"
+  , cdName = "Combine Forces"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList [NcKeyword.Alliance]
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Aggression
+  , cdCriteria = NcCriteria.MinionExists (NcMatch.NotMinion $ NcMatch.MinionWithTrait NcTrait.Elite)
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.Costs [NcCost.ExhaustCharacterWithTraitCost NcTrait.XForce, NcCost.ExhaustCharacterWithTraitCost NcTrait.XMen]
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48032 :: CardDef
+nc48032 = CardDef
+  { cdCardCode = "48032"
+  , cdName = "Gunboat Diplomacy"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Attack, NcTrait.Thwart]
+  , cdKeywords = fromList [NcKeyword.Alliance]
+  , cdCardType = EventType
+  , cdAbilityType = Just NcAbility.HeroAction
+  , cdAbilitySubTypes = [NcAbility.Attack, NcAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Justice
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.Costs [NcCost.ExhaustCharacterWithTraitCost NcTrait.XForce, NcCost.ExhaustCharacterWithTraitCost NcTrait.XMen]
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

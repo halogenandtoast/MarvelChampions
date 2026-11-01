@@ -1,5 +1,15 @@
 module Marvel.Ally.Allies (module X) where
 
+import Marvel.Ally.Allies.Nc48021 as X
+
+import Marvel.Ally.Allies.Nc48013 as X
+
+import Marvel.Ally.Allies.Nc48012 as X
+
+import Marvel.Ally.Allies.Nc48002 as X
+
+import Marvel.Ally.Allies.JubileePack as X
+
 import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign as X
 
 import Marvel.Ally.Allies.Triage as X
@@ -337,3 +347,26 @@ import Marvel.Ally.Allies.CableBishop as X
 import Marvel.Ally.Allies.X23Bishop as X
 import Marvel.Ally.Allies.LegionBishop as X
 import Marvel.Ally.Allies.Marrow as X
+
+-- Magneto
+import Marvel.Ally.Allies.MonetStCroix as X
+import Marvel.Ally.Allies.KidOmegaMagneto as X
+import Marvel.Ally.Allies.PhoenixMagneto as X
+import Marvel.Ally.Allies.CyclopsMagneto as X
+import Marvel.Ally.Allies.WhiteQueenMagneto as X
+import Marvel.Ally.Allies.SurgeMagneto as X
+import Marvel.Ally.Allies.AnoleMagneto as X
+import Marvel.Ally.Allies.BlingMagneto as X
+import Marvel.Ally.Allies.IndraMagneto as X
+
+-- Magneto
+
+import Marvel.Ally.Allies.SnowClone as X
+
+import Marvel.Ally.Allies.SharkGirl as X
+
+import Marvel.Ally.Allies.Glob as X
+
+import Marvel.Ally.Allies.ShadowcatIceman as X
+
+import Marvel.Ally.Allies.Beak as X

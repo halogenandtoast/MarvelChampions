@@ -1,5 +1,48 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait ()
+
+import Marvel.Resource.Types qualified as NcResource ()
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword ()
+
+import Marvel.EncounterSet qualified as NcSet
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost
+
+import Marvel.Aspect qualified as NcAspect ()
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect ()
+import Marvel.Boost qualified as MgBoost
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch ()
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource ()
+import Marvel.Trait qualified as MgTrait ()
+import Marvel.Window.Types qualified as MgWindow ()
+
 
 
 
@@ -118,7 +161,12 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ infinitePrelate, cullingTheWeak, warWearyDystopianNightmare, darkDesigns, sinisterStrike, evilAlliance, nowhereIsSafe, horsemanOfWar, horsemanOfFamine, horsemanOfPestilence, horsemanOfDeath, roughRiders, wolfAmongSheep, evilGenius, landOutOfTime, biomorphicBlast, technologicalInterface, giantSizedDespot, celestialTech, tyrantWorship, worldwideCrisis
+  [ nc48030, nc48038
+  , burnIceman
+  , theEyeOfSauron
+  , Jubilee.jubilee47034
+  , angryAcolyte, powerAndDecadence
+  , infinitePrelate, cullingTheWeak, warWearyDystopianNightmare, darkDesigns, sinisterStrike, evilAlliance, nowhereIsSafe, horsemanOfWar, horsemanOfFamine, horsemanOfPestilence, horsemanOfDeath, roughRiders, wolfAmongSheep, evilGenius, landOutOfTime, biomorphicBlast, technologicalInterface, giantSizedDespot, celestialTech, tyrantWorship, worldwideCrisis
   , battleForLimbo
   , temporalTrickery
   , crisisOfInfiniteDeadpools, metacidalTendencies
@@ -3545,6 +3593,150 @@ worldwideCrisis = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+angryAcolyte :: CardDef
+angryAcolyte = CardDef
+  { cdCardCode = "49032"
+  , cdName = "Angry Acolyte"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Boost, MgBoost.Boost]
+  , cdEncounterSet = Just MgSet.MagnetoNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+powerAndDecadence :: CardDef
+powerAndDecadence = CardDef
+  { cdCardCode = "49042"
+  , cdName = "Power and Decadence"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Star]
+  , cdEncounterSet = Just MgSet.HellfireSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+burnIceman :: CardDef
+burnIceman = IcemanPack.burnIceman
+
+-- Iceman
+theEyeOfSauron :: CardDef
+theEyeOfSauron = IcemanPack.theEyeOfSauron
+
+-- Nightcrawler
+nc48030 :: CardDef
+nc48030 = CardDef
+  { cdCardCode = "48030"
+  , cdName = "Brimstone Strike"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.NightcrawlerNemesis
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48038 :: CardDef
+nc48038 = CardDef
+  { cdCardCode = "48038"
+  , cdName = "\"Off with His Head!\""
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

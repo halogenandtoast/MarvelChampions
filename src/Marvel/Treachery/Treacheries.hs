@@ -1,5 +1,11 @@
 module Marvel.Treachery.Treacheries (module X) where
 
+import Marvel.Treachery.Treacheries.Nc48038 as X
+
+import Marvel.Treachery.Treacheries.Nc48030 as X
+
+import Marvel.Treachery.Treacheries.ElaborateTrap as X
+
 import Marvel.Treachery.Treacheries.AgeOfApocalypseUnus as X
 
 import Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII as X
@@ -300,3 +306,11 @@ import Marvel.Treachery.Treacheries.MetacidalTendencies as X
 
 -- Bishop
 import Marvel.Treachery.Treacheries.TemporalTrickery as X
+
+-- Magneto
+import Marvel.Treachery.Treacheries.AngryAcolyte as X
+import Marvel.Treachery.Treacheries.PowerAndDecadence as X
+
+import Marvel.Treachery.Treacheries.BurnIceman as X
+
+import Marvel.Treachery.Treacheries.TheEyeOfSauron as X

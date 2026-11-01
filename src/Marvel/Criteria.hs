@@ -1,6 +1,7 @@
 module Marvel.Criteria where
 
 import Marvel.Prelude
+import Marvel.Phase (Phase)
 import Marvel.Card.Code (CardCode)
 import Marvel.Id (SupportId, UpgradeId)
 import Marvel.Keyword (Keyword)
@@ -16,12 +17,14 @@ data Criteria
   | CanFindTouched
   | -- | the acting player can resolve the current unblanked Setting Special as a cost
     CanResolveSettingSpecial
+  | NemesisMinionOutOfPlay
   | NoCriteria
   | InHeroForm
   | InAlterEgoForm
   | Unexhausted
   | Exhausted
   | OwnsThis
+  | DuringPhase Phase
   | NoCardsPlayedThisPhase
   | HeldWeaponSwapAvailable UpgradeId
   | EncounterIconExists

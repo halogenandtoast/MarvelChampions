@@ -20,6 +20,8 @@ import Marvel.Card.Builder
 import Marvel.Card.Code
 import Marvel.Treachery.Treacheries.SmModulars (callingInFavorsEffect, threatOrMenaceEffect)
 import Marvel.Effect.CardPlayReduction (CardPlayReduction)
+import Marvel.Effect.Lasting (Lasting)
+import Marvel.SideScheme.SideSchemes.KeepUpThePressure (keepUpThePressureEffect)
 import Marvel.Effect.Types
 import Marvel.Event.Events
 import Marvel.Hero.Heroes
@@ -35,7 +37,9 @@ import Marvel.Upgrade.Upgrades
 instance FromJSON Effect where
   parseJSON = withObject "Effect" $ \o -> do
     cCode <- o .: "effectCardCode"
-    if cCode == "engine-card-play-reduction"
+    if cCode == "engine-lasting"
+      then Effect <$> parseJSON @Lasting (Object o)
+      else if cCode == "engine-card-play-reduction"
       then Effect <$> parseJSON @CardPlayReduction (Object o)
       else case lookup cCode allEffects of
         Nothing -> error $ "Invalid effect: " <> show cCode
@@ -45,7 +49,10 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("45085", SomeCardEffect aoaHorsemenBlankEffect)
+    [ ("46018", SomeCardEffect keepUpThePressureEffect)
+    , ("46019", SomeCardEffect shadowcatIcemanEffect)
+    , ("47019", SomeCardEffect jubileeCellPhoneEffect)
+  , ("45085", SomeCardEffect aoaHorsemenBlankEffect)
     , ("44020", SomeCardEffect getRageYEffect)
     , ("43002", SomeCardEffect x23sClawsEffect)
     , ("43004", SomeCardEffect animalInstinctEffect)

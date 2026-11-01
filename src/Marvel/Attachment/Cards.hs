@@ -1,5 +1,34 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource ()
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword ()
+
+import Marvel.EncounterSet qualified as NcSet
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost
+
+import Marvel.Aspect qualified as NcAspect ()
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Jubilee.Cards qualified as Jubilee
+
 
 
 
@@ -118,7 +147,11 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ prelateSidearm, prelateArmor, geneticExperiments, goldenHorse, metalWings, ahabsEnergySpear, noLongerWorthy, cyberpathy, biomorphing, molecularControl, theFittest, highTechGoggles, geneticEnhancement, cruelExperiment, escapedMutant, imperialGuardsman, staggeringStrength, celestialArmor, celestialWeapon
+      [ nc48029
+  , pyrosFlamethrower
+  , lifeDrain
+  , Jubilee.jubilee47026, Jubilee.jubilee47027
+  , prelateSidearm, prelateArmor, geneticExperiments, goldenHorse, metalWings, ahabsEnergySpear, noLongerWorthy, cyberpathy, biomorphing, molecularControl, theFittest, highTechGoggles, geneticEnhancement, cruelExperiment, escapedMutant, imperialGuardsman, staggeringStrength, celestialArmor, celestialWeapon
   , tabulaRasa16, antiRegenerationRay, poolIzed
   , cybermods, criticalWound
   , harpoonsHarpoon
@@ -3190,6 +3223,48 @@ celestialWeapon = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Iceman
+pyrosFlamethrower :: CardDef
+pyrosFlamethrower = IcemanPack.pyrosFlamethrower
+
+-- Iceman
+lifeDrain :: CardDef
+lifeDrain = IcemanPack.lifeDrain
+
+-- Nightcrawler
+nc48029 :: CardDef
+nc48029 = CardDef
+  { cdCardCode = "48029"
+  , cdName = "Azazel's Sword"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.Weapon]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost, NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.NightcrawlerNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

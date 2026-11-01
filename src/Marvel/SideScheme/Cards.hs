@@ -1,5 +1,48 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait ()
+
+import Marvel.Resource.Types qualified as NcResource
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword
+
+import Marvel.EncounterSet qualified as NcSet
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost
+
+import Marvel.Aspect qualified as NcAspect
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect
+import Marvel.Boost qualified as MgBoost
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet
+import Marvel.Keyword qualified as MgKeyword
+import Marvel.Matchers qualified as MgMatch
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 
 
 
@@ -127,7 +170,13 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ endlessRanks, genePool, targetedForExtermination, theRavagesOfWar, aTimeOfFamine, plagueAndPestilence, theSpecterOfDeath, releaseTheHounds, heartOfTheEmpire, theToweringCitadel, theTyrantsThrone, theApocalypseSolution, theDarkRiders, timeTravelShenanigans, villageUnderAttack, policeState, trialByCombat, sourceOfPower, pluggedIn, giantGrowth, ancientRitual, liberateTheSeattleCoreFront, liberateTheSeattleCoreFinished, evacuateSurvivorsFront, evacuateSurvivorsFinished, sabotageTheSeaWallFront, sabotageTheSeaWallFinished, findLostMutantsFront, findLostMutantsFinished, protectTheProfessorFront, protectTheProfessorFinished, northAmericanSeaWall
+  [ nc48020, nc48028, nc48033
+  , Jubilee.jubilee47003, Jubilee.jubilee47016, Jubilee.jubilee47025, Jubilee.jubilee47031, Jubilee.jubilee47032, Jubilee.jubilee47033
+  , keepUpThePressure
+  , playingWithFire
+  , sauronLives
+  , newRecruits, martyrForMutants, theInnerCircle
+  , endlessRanks, genePool, targetedForExtermination, theRavagesOfWar, aTimeOfFamine, plagueAndPestilence, theSpecterOfDeath, releaseTheHounds, heartOfTheEmpire, theToweringCitadel, theTyrantsThrone, theApocalypseSolution, theDarkRiders, timeTravelShenanigans, villageUnderAttack, policeState, trialByCombat, sourceOfPower, pluggedIn, giantGrowth, ancientRitual, liberateTheSeattleCoreFront, liberateTheSeattleCoreFinished, evacuateSurvivorsFront, evacuateSurvivorsFinished, sabotageTheSeaWallFront, sabotageTheSeaWallFinished, findLostMutantsFront, findLostMutantsFinished, protectTheProfessorFront, protectTheProfessorFinished, northAmericanSeaWall
   , rulerOfLimbo
   , portalThroughTime
   , liveDangerously, involuntaryProcedures, dreadfulDeeds
@@ -4182,6 +4231,221 @@ northAmericanSeaWall = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+newRecruits :: CardDef
+newRecruits = CardDef
+  { cdCardCode = "49020"
+  , cdName = "New Recruits"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList [MgKeyword.Victory 0]
+  , cdCardType = MgCard.PlayerSideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just MgAspect.Leadership
+  , cdCriteria = MgCriteria.SelfMatches (MgMatch.IdentityWithTrait MgTrait.XMen)
+  , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+martyrForMutants :: CardDef
+martyrForMutants = CardDef
+  { cdCardCode = "49029"
+  , cdName = "Martyr for Mutants"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Boost, MgBoost.Boost, MgBoost.Boost]
+  , cdEncounterSet = Just MgSet.MagnetoNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+theInnerCircle :: CardDef
+theInnerCircle = CardDef
+  { cdCardCode = "49041"
+  , cdName = "The Inner Circle"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [MgBoost.Boost, MgBoost.Boost]
+  , cdEncounterSet = Just MgSet.HellfireSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+keepUpThePressure :: CardDef
+keepUpThePressure = IcemanPack.keepUpThePressure
+
+-- Iceman
+playingWithFire :: CardDef
+playingWithFire = IcemanPack.playingWithFire
+
+-- Iceman
+sauronLives :: CardDef
+sauronLives = IcemanPack.sauronLives
+
+-- Nightcrawler
+nc48020 :: CardDef
+nc48020 = CardDef
+  { cdCardCode = "48020"
+  , cdName = "Astonishing X-Men"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList [NcKeyword.Victory 0]
+  , cdCardType = PlayerSideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48028 :: CardDef
+nc48028 = CardDef
+  { cdCardCode = "48028"
+  , cdName = "Brimstone Dimension"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost, NcBoost.Boost, NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.NightcrawlerNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48033 :: CardDef
+nc48033 = CardDef
+  { cdCardCode = "48033"
+  , cdName = "The Crazy Gang"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NcBoost.Boost, NcBoost.Boost]
+  , cdEncounterSet = Just NcSet.CrazyGangSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

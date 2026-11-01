@@ -74,7 +74,12 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard infiniteHunter, SomeMinionCard infiniteSoldier, SomeMinionCard ahab, SomeMinionCard hound, SomeMinionCard gauntlet, SomeMinionCard barrage, SomeMinionCard hardDrive, SomeMinionCard tusk, SomeMinionCard psynapse, SomeMinionCard pterosaur, SomeMinionCard velociraptor, SomeMinionCard giantApe, SomeMinionCard magistrate, SomeMinionCard armoredUnibike, SomeMinionCard genoshanMech, SomeMinionCard gladiator, SomeMinionCard oracle, SomeMinionCard manta, SomeMinionCard earthquake, SomeMinionCard warstar, SomeMinionCard ozymandias, SomeMinionCard scarab, SomeMinionCard clanAkkabaZealot, SomeMinionCard agentOfApocalypse, SomeMinionCard misterSinisterMinion, SomeMinionCard misterSinisterOverseer, SomeMinionCard theShadowKingMinion, SomeMinionCard theShadowKingOverseer, SomeMinionCard abyssMinion, SomeMinionCard abyssOverseer, SomeMinionCard sugarManMinion, SomeMinionCard sugarManOverseer, SomeMinionCard mikhailRasputinMinion, SomeMinionCard mikhailRasputinOverseer
+      [ SomeMinionCard nc48027, SomeMinionCard nc48034, SomeMinionCard nc48035, SomeMinionCard nc48036, SomeMinionCard nc48037
+  , SomeMinionCard jubilee47024, SomeMinionCard jubilee47030
+  , SomeMinionCard sauron
+  , SomeMinionCard pyroIceman
+  , SomeMinionCard exodusMagneto, SomeMinionCard fabianCortez, SomeMinionCard frenzy, SomeMinionCard sebastianShaw, SomeMinionCard selene, SomeMinionCard hellfirePawnMagneto
+  , SomeMinionCard infiniteHunter, SomeMinionCard infiniteSoldier, SomeMinionCard ahab, SomeMinionCard hound, SomeMinionCard gauntlet, SomeMinionCard barrage, SomeMinionCard hardDrive, SomeMinionCard tusk, SomeMinionCard psynapse, SomeMinionCard pterosaur, SomeMinionCard velociraptor, SomeMinionCard giantApe, SomeMinionCard magistrate, SomeMinionCard armoredUnibike, SomeMinionCard genoshanMech, SomeMinionCard gladiator, SomeMinionCard oracle, SomeMinionCard manta, SomeMinionCard earthquake, SomeMinionCard warstar, SomeMinionCard ozymandias, SomeMinionCard scarab, SomeMinionCard clanAkkabaZealot, SomeMinionCard agentOfApocalypse, SomeMinionCard misterSinisterMinion, SomeMinionCard misterSinisterOverseer, SomeMinionCard theShadowKingMinion, SomeMinionCard theShadowKingOverseer, SomeMinionCard abyssMinion, SomeMinionCard abyssOverseer, SomeMinionCard sugarManMinion, SomeMinionCard sugarManOverseer, SomeMinionCard mikhailRasputinMinion, SomeMinionCard mikhailRasputinOverseer
   , SomeMinionCard witchfire
   , SomeMinionCard sym
   , SomeMinionCard belasco

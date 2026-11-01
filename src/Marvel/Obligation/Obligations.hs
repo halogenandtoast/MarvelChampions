@@ -1,5 +1,9 @@
 module Marvel.Obligation.Obligations (module X) where
 
+import Marvel.Obligation.Obligations.Nc48026 as X
+
+import Marvel.Obligation.Obligations.Grounded as X
+
 import Marvel.Obligation.Obligations.AgeOfApocalypseStandardIII as X
 
 import Marvel.Obligation.Obligations.AgeOfApocalypseDystopianNightmare as X
@@ -134,3 +138,10 @@ import Marvel.Obligation.Obligations.TheMercWithTheMouth as X
 
 -- Bishop
 import Marvel.Obligation.Obligations.FearTheFuture as X
+
+-- Magneto
+import Marvel.Obligation.Obligations.OldGrievances as X
+
+-- Magneto
+
+import Marvel.Obligation.Obligations.HotHeaded as X

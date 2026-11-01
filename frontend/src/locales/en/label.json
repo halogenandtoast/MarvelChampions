@@ -1,4 +1,5 @@
 {
+  "resolveRetaliate": "Resolve retaliate",
   "metagameSlot": "Fill space {count}",
   "breakTimeMinutes": "How many whole minutes was the group away? {count} selected.",
   "breakTimeOneMinute": "+1 minute",
@@ -540,5 +541,22 @@
   "aoaIncludeCampaignCard": "Include this card",
   "aoaExcludeCampaignCard": "Leave this card out",
   "aoaPlaceAncientRitualThreat": "Place {count} threat on Ancient Ritual",
-  "aoaThreeBoostIcons": "This boost card gains 3 boost icons"
+  "aoaThreeBoostIcons": "This boost card gains 3 boost icons",
+  "jubileeLikeTotally": "Like, totally!",
+  "jubileeMallRat": "Mall Rat",
+  "jubileeShoppingSpree": "Shopping Spree",
+  "freeze": "Freeze!",
+  "coolOff": "Cool Off",
+  "arcticAttackFreeze": "Deal 4 damage and attach Frostbite",
+  "arcticAttackDamage": "Deal 6 damage to a frostbitten enemy",
+  "kidOmegaDamage": "Spend an energy resource to deal 1 damage to each enemy",
+  "kidOmegaThreat": "Spend a mental resource to remove 1 threat from each scheme",
+  "stunned": "Stunned",
+  "confused": "Confused",
+  "tough": "Tough",
+  "magneticPull": "Magnetic Pull",
+  "rapidTeleportation": "Rapid Teleportation",
+  "nightcrawlerSearchBamf": "Search for Bamf!",
+  "crisisOfFaithExhaust": "Exhaust Kurt Wagner to remove Crisis of Faith",
+  "crisisOfFaithDiscard": "Discard each Attack and Defense event from your hand"
 }

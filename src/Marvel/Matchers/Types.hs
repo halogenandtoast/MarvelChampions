@@ -27,6 +27,7 @@ data EntityMatcher
   | AttachmentEntity AttachmentMatcher
   | -- | an event being played
     EventEntity EventId
+  | EventsMatching CardMatcher
   | MainSchemeEntity MainSchemeId
   | SideSchemeEntity SideSchemeMatcher
   deriving stock (Show, Eq, Generic)
@@ -336,6 +337,8 @@ data SideSchemeMatcher
 
 data MinionMatcher
   = AnyMinion
+  | MinionCanBeDefeated
+  | MinionWithFewerRemainingHitPointsThanAlly AllyId
   | MinionCanBeDiscarded
   | -- | as it was, among those that have just left play too: what an "after it is
     -- defeated" window matches

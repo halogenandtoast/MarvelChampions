@@ -1,5 +1,48 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword
+
+import Marvel.EncounterSet qualified as NcSet ()
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost ()
+
+import Marvel.Aspect qualified as NcAspect
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect ()
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch ()
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 import Marvel.Aspect qualified as NEAspect
 import Marvel.Resource.Types qualified as NEResource
 import Marvel.EncounterSet qualified as NESet
@@ -106,7 +149,16 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ desperateMeasures, bloodgem
+  [ nc48004, nc48005, nc48006, nc48014, nc48015
+  , Jubilee.jubilee47004, Jubilee.jubilee47005, Jubilee.jubilee47013, Jubilee.jubilee47019
+  , frostbite
+  , powerBelt
+  , cryokineticPerception
+  , iceSlide
+  , frozenSolid
+  , suppressingFire
+  , magnetosHelmet, magnetosArmor, magnetosCape, magneticBubble, wrappedInMetal
+  , desperateMeasures, bloodgem
   , testTheDefense
   , bloodRage
   , mysticalArmor
@@ -941,7 +993,7 @@ hardToIgnore :: CardDef
 hardToIgnore = upgrade "16017" "Hard to Ignore" 1 [Skill] [Physical] Protection
 
 deftFocus :: CardDef
-deftFocus = limited (MaxPerPlayer 1) $ basicUpgrade "16024" "Deft Focus" 1 [Skill] [Energy]
+deftFocus = reprintedAs ["49023"] $ limited (MaxPerPlayer 1) $ basicUpgrade "16024" "Deft Focus" 1 [Skill] [Energy]
 
 -- Rocket Raccoon
 
@@ -1895,7 +1947,7 @@ judokaSkill :: CardDef
 judokaSkill = (upgrade "38014" "Judoka Skill" 2 [Skill] [Physical] Protection) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3 }
 
 xGene :: CardDef
-xGene = (basicUpgrade "38019" "X-Gene" 1 [] [Wild]) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+xGene = reprintedAs ["47020"] $ (basicUpgrade "38019" "X-Gene" 1 [] [Wild]) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
 
 -- NeXt Evolution: Cable
 
@@ -3513,6 +3565,367 @@ desperateMeasures = CardDef
   , cdAlternateCardCodes = []
   , cdPlayableFromDiscard = False
   , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Magneto
+
+magnetosHelmet :: CardDef
+magnetosHelmet = CardDef
+  { cdCardCode = "49003"
+  , cdName = "Magneto's Helmet"
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.Armor, MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+magnetosArmor :: CardDef
+magnetosArmor = CardDef
+  { cdCardCode = "49004"
+  , cdName = "Magneto's Armor"
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Armor, MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+magnetosCape :: CardDef
+magnetosCape = CardDef
+  { cdCardCode = "49005"
+  , cdName = "Magneto's Cape"
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Armor, MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+magneticBubble :: CardDef
+magneticBubble = CardDef
+  { cdCardCode = "49006"
+  , cdName = "Magnetic Bubble"
+  , cdCost = Just 3
+  , cdTraits = fromList [MgTrait.Magnetic, MgTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+wrappedInMetal :: CardDef
+wrappedInMetal = CardDef
+  { cdCardCode = "49007"
+  , cdName = "Wrapped in Metal"
+  , cdCost = Just 2
+  , cdTraits = fromList [MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.InHeroForm
+  , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+frostbite :: CardDef
+frostbite = IcemanPack.frostbite
+
+-- Iceman
+powerBelt :: CardDef
+powerBelt = IcemanPack.powerBelt
+
+-- Iceman
+cryokineticPerception :: CardDef
+cryokineticPerception = IcemanPack.cryokineticPerception
+
+-- Iceman
+iceSlide :: CardDef
+iceSlide = IcemanPack.iceSlide
+
+-- Iceman
+frozenSolid :: CardDef
+frozenSolid = IcemanPack.frozenSolid
+
+-- Iceman
+suppressingFire :: CardDef
+suppressingFire = IcemanPack.suppressingFire
+
+-- Nightcrawler
+nc48004 :: CardDef
+nc48004 = CardDef
+  { cdCardCode = "48004"
+  , cdName = "Kurt's Cutlasses"
+  , cdCost = Just 2
+  , cdTraits = fromList [NcTrait.Weapon]
+  , cdKeywords = fromList [NcKeyword.Restricted]
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48005 :: CardDef
+nc48005 = CardDef
+  { cdCardCode = "48005"
+  , cdName = "Prehensile Tail"
+  , cdCost = Just 1
+  , cdTraits = fromList [NcTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48006 :: CardDef
+nc48006 = CardDef
+  { cdCardCode = "48006"
+  , cdName = "Bamf!"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just $ MaxPerEnemy 1
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48014 :: CardDef
+nc48014 = CardDef
+  { cdCardCode = "48014"
+  , cdName = "Change of Fortune"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just $ MaxPerPlayerUnderAnyControl 1
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Nightcrawler
+nc48015 :: CardDef
+nc48015 = CardDef
+  { cdCardCode = "48015"
+  , cdName = "Under Control"
+  , cdCost = Just 0
+  , cdTraits = fromList [NcTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NcAspect.Protection
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = [(PrintedResource, NcResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just $ MaxPerEnemy 1
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing

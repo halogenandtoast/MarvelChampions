@@ -42,7 +42,10 @@ data Payment
     SpentCardPayment PlayerCard
   | -- | the printed ally card sacrificed to pay, even after it leaves play
     DiscardedAllyPayment Card
+  | DiscardedAllyStatsPayment Natural Natural Natural
+  | ReturnedAllyPayment PlayerCard
   | DiscardedUpgradePayment Card
+  | DiscardedUpgradeFromEnemyPayment EnemyId Card
   | -- | the top card of the encounter deck, discarded to pay
     DiscardedEncounterCardPayment Card
   | PendingDamageCostPayment Natural Natural

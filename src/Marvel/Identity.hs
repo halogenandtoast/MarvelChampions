@@ -951,8 +951,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       let toHero = case HashMap.lookup side playerIdentitySides of Just (HeroSide _) -> True; _ -> False
           canChange = side /= playerIdentitySide && CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
       when canChange do
-        checkWindows [W.Window W.When $ W.IdentityChangesForm playerIdentityId]
-        cardSpecific pid "completeChangeForm" side
+        let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, toHero]
+        if additional == NoCost then do
+          checkWindows [W.Window W.When $ W.IdentityChangesForm playerIdentityId]
+          cardSpecific pid "completeChangeForm" side
+        else payCostThenWithPayment playerIdentityId pid additional pid "changeFormCostPaid" side
       pure pid
     PlayingCard card mWindow -> do
       targets <- playableTargets pid card
@@ -1495,6 +1498,25 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    -- The ordinary change-form action paid this before its use was marked. Effect
+    -- changes still enter through ChangedToForm and pay their additional cost there.
+    CardSpecific (IdentityRef who) "choosePaidHeroForm" _ | who == playerIdentityId attrs -> do
+      modifiers <- getModifiers pid
+      let forms = [(side, face) | (side, HeroSide face) <- HashMap.toList (playerIdentitySides attrs)]
+          permitted = CannotChangeForm `notElem` modifiers && CannotChangeToHeroForm `notElem` modifiers
+      when permitted $ chooseOrRunOne who
+        [ do
+            messages <- capture $ do
+              checkWindows [W.Window W.When $ W.IdentityChangesForm who]
+              cardSpecific pid "completeChangeForm" side
+            pure $ CardLabel (toCardCode face) (Run messages)
+        | (side, face) <- forms ]
+      pure pid
+    CardSpecific (IdentityRef who) "changeFormCostPaid" (fromJSON -> Success (side :: Side, _payment :: Payment))
+      | who == playerIdentityId attrs -> do
+          checkWindows [W.Window W.When $ W.IdentityChangesForm who]
+          cardSpecific pid "completeChangeForm" side
+          pure pid
     CardSpecific (IdentityRef who) "completeChangeForm" (fromJSON -> Success side)
       | who == playerIdentityId attrs -> completeIdentityFormChange pid side
     BeginPhase _ -> do

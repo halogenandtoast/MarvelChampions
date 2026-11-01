@@ -71,7 +71,11 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard prelateSidearm, SomeAttachmentCard prelateArmor, SomeAttachmentCard geneticExperiments, SomeAttachmentCard goldenHorse, SomeAttachmentCard metalWings, SomeAttachmentCard ahabsEnergySpear, SomeAttachmentCard noLongerWorthy, SomeAttachmentCard cyberpathy, SomeAttachmentCard biomorphing, SomeAttachmentCard molecularControl, SomeAttachmentCard theFittest, SomeAttachmentCard highTechGoggles, SomeAttachmentCard geneticEnhancement, SomeAttachmentCard cruelExperiment, SomeAttachmentCard escapedMutant, SomeAttachmentCard imperialGuardsman, SomeAttachmentCard staggeringStrength, SomeAttachmentCard celestialArmor, SomeAttachmentCard celestialWeapon
+      [ SomeAttachmentCard nc48029
+  , SomeAttachmentCard lifeDrain
+  , SomeAttachmentCard pyrosFlamethrower
+  , SomeAttachmentCard jubilee47026, SomeAttachmentCard jubilee47027
+  , SomeAttachmentCard prelateSidearm, SomeAttachmentCard prelateArmor, SomeAttachmentCard geneticExperiments, SomeAttachmentCard goldenHorse, SomeAttachmentCard metalWings, SomeAttachmentCard ahabsEnergySpear, SomeAttachmentCard noLongerWorthy, SomeAttachmentCard cyberpathy, SomeAttachmentCard biomorphing, SomeAttachmentCard molecularControl, SomeAttachmentCard theFittest, SomeAttachmentCard highTechGoggles, SomeAttachmentCard geneticEnhancement, SomeAttachmentCard cruelExperiment, SomeAttachmentCard escapedMutant, SomeAttachmentCard imperialGuardsman, SomeAttachmentCard staggeringStrength, SomeAttachmentCard celestialArmor, SomeAttachmentCard celestialWeapon
   , SomeAttachmentCard tabulaRasa16, SomeAttachmentCard antiRegenerationRay, SomeAttachmentCard poolIzed
   , SomeAttachmentCard cybermods, SomeAttachmentCard criticalWound
   , SomeAttachmentCard harpoonsHarpoon

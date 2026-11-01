@@ -363,10 +363,11 @@ toEnemyId = EnemyMinionId . minionId
 getModifiedScheme :: (HasGame m) => Attrs Minion -> m Natural
 getModifiedScheme attrs = do
   modifiers <- getModifiers attrs
-  pure $ foldr applyModifier (unSch $ minionScheme attrs) modifiers
+  pure $ fromInteger $ max 0 $ toInteger (unSch $ minionScheme attrs) + sum (map change modifiers)
  where
-  applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
-  applyModifier _ = id
+  change (SchemeModifier n) = toInteger n
+  change (SchemePenalty n) = negate (toInteger n)
+  change _ = 0
 
 getMinionDisplayCounters :: Minion -> Natural
 getMinionDisplayCounters (Minion a) = minionDisplayCounters a

@@ -1,5 +1,48 @@
 module Marvel.Hero.Cards where
 
+import Marvel.Window.Types qualified as NcWindow ()
+
+import Marvel.Trait.Types qualified as NcTrait
+
+import Marvel.Resource.Types qualified as NcResource ()
+
+import Marvel.Name qualified as NcName ()
+
+import Marvel.Matchers qualified as NcMatch ()
+
+import Marvel.Keyword qualified as NcKeyword ()
+
+import Marvel.EncounterSet qualified as NcSet ()
+
+import Marvel.Criteria qualified as NcCriteria
+
+import Marvel.Cost.Types qualified as NcCost
+
+import Marvel.Card.Def qualified as NcCard ()
+
+import Marvel.Boost qualified as NcBoost ()
+
+import Marvel.Aspect qualified as NcAspect ()
+
+import Marvel.Ability.Types qualified as NcAbility ()
+
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Iceman.Cards qualified as IcemanPack
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect ()
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch ()
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource ()
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 import Marvel.Trait qualified as AoaMT
 import Marvel.Card.Def qualified as BpCard
 import Marvel.Cost.Types qualified as BpCost
@@ -75,7 +118,11 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ magikHero
+  [ nc48001a
+  , Jubilee.jubilee47001a
+  , icemanHero
+  , magnetoHero
+  , magikHero
   , bishopHero
   , deadpool
   , x23
@@ -670,4 +717,77 @@ magikHero = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = NoCost
+  }
+
+-- Magneto
+
+magnetoHero :: CardDef
+magnetoHero = CardDef
+  { cdCardCode = "49001a"
+  , cdName = "Magneto"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.HeroType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Iceman
+icemanHero :: CardDef
+icemanHero = IcemanPack.icemanHero
+
+-- Nightcrawler
+nc48001a :: CardDef
+nc48001a = CardDef
+  { cdCardCode = "48001a"
+  , cdName = "Nightcrawler"
+  , cdCost = Nothing
+  , cdTraits = fromList [NcTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = HeroType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NcCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NcCost.NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
   }

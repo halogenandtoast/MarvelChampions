@@ -1,5 +1,17 @@
 module Marvel.Upgrade.Upgrades (module X) where
 
+import Marvel.Upgrade.Upgrades.Nc48015 as X
+
+import Marvel.Upgrade.Upgrades.Nc48014 as X
+
+import Marvel.Upgrade.Upgrades.Nc48006 as X
+
+import Marvel.Upgrade.Upgrades.Nc48005 as X
+
+import Marvel.Upgrade.Upgrades.Nc48004 as X
+
+import Marvel.Upgrade.Upgrades.JubileePack as X
+
 import Marvel.Upgrade.Upgrades.AgeOfApocalypseBasicCampaign as X
 import Marvel.Upgrade.Upgrades.Bloodgem as X
 import Marvel.Upgrade.Upgrades.TestTheDefense as X
@@ -428,3 +440,24 @@ import Marvel.Upgrade.Upgrades.BishopsUniform as X
 import Marvel.Upgrade.Upgrades.SuperCharged as X
 import Marvel.Upgrade.Upgrades.AdvancedSuit as X
 import Marvel.Upgrade.Upgrades.Sidekick as X
+
+-- Magneto
+import Marvel.Upgrade.Upgrades.MagnetosHelmet as X
+import Marvel.Upgrade.Upgrades.MagnetosArmor as X
+import Marvel.Upgrade.Upgrades.MagnetosCape as X
+import Marvel.Upgrade.Upgrades.MagneticBubble as X
+import Marvel.Upgrade.Upgrades.WrappedInMetal as X
+
+-- Magneto
+
+import Marvel.Upgrade.Upgrades.Frostbite as X
+
+import Marvel.Upgrade.Upgrades.PowerBelt as X
+
+import Marvel.Upgrade.Upgrades.CryokineticPerception as X
+
+import Marvel.Upgrade.Upgrades.IceSlide as X
+
+import Marvel.Upgrade.Upgrades.FrozenSolid as X
+
+import Marvel.Upgrade.Upgrades.SuppressingFire as X

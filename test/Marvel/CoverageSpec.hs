@@ -44,7 +44,7 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["aoa", "deadpool", "x23", "angel", "psylocke", "hood", "next_evol", "mojo", "rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
+packs = ["magneto", "ncrawler", "iceman", "jubilee", "aoa", "deadpool", "x23", "angel", "psylocke", "hood", "next_evol", "mojo", "rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
 
 -- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
 -- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular

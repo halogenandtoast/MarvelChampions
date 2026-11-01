@@ -49,6 +49,9 @@ export interface AttachmentView extends CardView {
 }
 
 export interface AllyView extends CardView {
+  /** Only the boost field of Gambit's tucked card is public. */
+  tuckedBoostIcons?: number | null
+  tuckedBoostStar?: boolean | null
   threat: number
   toughCards?: number
   hitPoints: number

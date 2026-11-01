@@ -71,11 +71,14 @@ data Modifier
   | AttackReductionWhileAttacking IdentityId Natural
   | AttackModifier Natural
   | SchemeModifier Natural
+  | SchemePenalty Natural
+  | SuppressSchemeIcons
   | AttackModifierAgainst EnemyId Natural
   | DefenseModifierAgainst EnemyId Natural
   | AttacksCannotBeDefended
   | ReplaceHeroAttackWithDiscardAndStun Target
   | CannotAttackEnemy EnemyId
+  | CannotAttackVillain
   | CannotThwartScheme SchemeId
   | CardsEnterPlayExhausted CardMatcher
   | CannotBeDiscarded
@@ -142,6 +145,7 @@ data Modifier
     InfiniteHitPoints
   | -- | to the target threat of a scheme
     TargetThreatModifier Natural
+  | BasicThwartModifierForTrait Trait Natural
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural
   | -- | on a player: the cards they play are played ignoring their resource cost, the
@@ -162,10 +166,12 @@ data Modifier
     ThreatCannotBeRemoved
   | -- | a scheme threat cannot be removed from by thwarting (Held Hostage)
     ThreatCannotBeRemovedByThwarting
+  | ThreatCannotBeRemovedByHeroOrAlly
   | -- | an identity that stays exhausted when it would ready
     CannotReady
   | -- | an identity that stays in the form it is in
     CannotChangeForm
+  | AdditionalChangeToHeroFormCost Cost
   | CannotChangeToHeroForm
   | -- | "your hero gets -1 THW": taken off, not below 0
     ThwartPenalty Natural

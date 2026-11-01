@@ -10,6 +10,7 @@ module Marvel.Game.Public (publicGame, publicGameFor, owedFor, describeChoice, G
 
 import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Prelude
+import Marvel.Boost (BoostIcon (Star), boostCount)
 import Control.Monad.Reader (runReaderT)
 import Data.Functor.Identity (runIdentity)
 
@@ -50,7 +51,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
-import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, CanLookAtTopOfEncounterDeck, PlayTopOfDeckAsHand))
+import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, SuppressSchemeIcons, CanLookAtTopOfEncounterDeck, PlayTopOfDeckAsHand))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Name
@@ -267,13 +268,15 @@ data AllyView = AllyView
   , counters :: Natural
   , upgrades :: [UpgradeView]
   , facedownCards :: Int
+  , tuckedBoostIcons :: Maybe Natural
+  , tuckedBoostStar :: Maybe Bool
   , attachments :: [AttachmentView]
   -- ^ encounter cards attached to it (Restrained)
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural, heldCards :: [CardView]}
+data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural, heldCards :: [CardView], damage :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -687,6 +690,8 @@ gameView seesHand g = do
         , tough = a.allyTough
         , counters = a.allyCounters
         , threat = sum [n | (AllyCharacter who,n) <- gameCharacterThreat g, who == a.allyId]
+        , tuckedBoostIcons = if toCardCode a.allyCardDef == "48021" then Just (sum $ map (boostCount . cdBoostIcons . getCardDef) a.allyHeldTreacheries) else Nothing
+        , tuckedBoostStar = if toCardCode a.allyCardDef == "48021" then Just (any (elem Star . cdBoostIcons . getCardDef) a.allyHeldTreacheries) else Nothing
         , facedownCards = length a.allyHeldCards + length a.allyHeldTreacheries
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
@@ -694,10 +699,10 @@ gameView seesHand g = do
   supportView (s :: Support) =
     let a = toAttrs s
         faceup = toCardCode a.supportCardDef == "38028"
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards]
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted (if toCardCode a == "46008" then 0 else a.supportUses) (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards] (if toCardCode a == "46008" then a.supportUses else 0)
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a == "34007" then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a == "34007" then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0)
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a `elem` ["34007", "49006"] then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a `elem` ["34007", "49006"] then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0)
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
@@ -778,7 +783,7 @@ gameView seesHand g = do
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s
-    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)

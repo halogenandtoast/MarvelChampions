@@ -238,12 +238,33 @@ payCostPartAs contributing activeCost cost = do
     ExhaustUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> UnexhaustedUpgrade <> upgradeControlledBy iid)
       oneOf upgrades \u -> exhaust u >> paid ExhaustPayment
+    ReturnAnyAllyToHandCost matcher -> do
+      let required = [m | ReturnAnyAllyToHandCost m <- flattenCosts (activeCostCost activeCost)]
+          paidCount = length [() | ReturnedAllyPayment _ <- payments (activeCostPayment activeCost)]
+          remaining = drop (paidCount + 1) required
+      candidates <- selectList (matcher <> AllyThatCanLeavePlay)
+      allies <- filterM (\aid -> do
+        slots <- for remaining $ \m -> map AllyRef . filter (/= aid) <$> selectList (m <> AllyThatCanLeavePlay)
+        pure $ distinctExhaustions slots) candidates
+      if null allies then abortPayment acid else oneOf allies $ \aid -> do
+        card <- getsGame (\g -> cardInPlay g (AllyRef aid))
+        returnToHand aid
+        for_ [c | Just (PlayerCard c) <- [card]] $ \c -> paid (ReturnedAllyPayment c)
     ReturnAllyToHandCost matcher -> do
       allies <- selectList (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId iid))
       oneOf allies returnToHand
     ReturnUpgradeToHandCost matcher -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
       oneOf upgrades returnToHand
+    DiscardEnemyUpgradeCost matcher hostMatcher -> do
+      upgrades <- selectList (UpgradeWithCard matcher <> UpgradeThatCanBeDiscarded)
+      attached <- filterM (\uid -> getUpgradeAttachedEnemy uid >>= maybe (pure False) (\enemy -> asYou iid $ enemyMatches hostMatcher enemy)) upgrades
+      if null attached then abortPayment acid else oneOf attached \u -> do
+        enemy <- getUpgradeAttachedEnemy u
+        card <- getsGame (\g -> cardInPlay g (UpgradeRef u))
+        for_ ((,) <$> enemy <*> card) $ \(host, physicalCard) -> paid (DiscardedUpgradeFromEnemyPayment host physicalCard)
+        discardUpgrade u
+        paid (DiscardPayment $ toTarget u)
     DiscardUpgradeCost matcher -> do
       upgrades <- selectList (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy iid)
       oneOf upgrades \u -> do
@@ -256,6 +277,8 @@ payCostPartAs contributing activeCost cost = do
       oneOf allies \aid -> do
         card <- getsGame $ \g -> cardInPlay g (AllyRef aid)
         for_ card (paid . DiscardedAllyPayment)
+        (hp, thw, atk) <- getAllyPrintedStats aid
+        paid $ DiscardedAllyStatsPayment hp thw atk
         removeFromPlay aid
     DiscardSupportCost matcher -> do
       supports <- filterM discardable =<< selectList (SupportMatches [matcher, SupportControlledBy (IdentityWithId iid)])
@@ -406,6 +429,13 @@ payCostPartAs contributing activeCost cost = do
       if null found then abortPayment acid else
         chooseOneSearchedIn iid "$label.searchEncounterDeck" [("$label.encounterDeck", map EncounterCard deck)]
           [targeting card (revealEncounterCard iid card >> shuffleEncounterDeck) | card <- found]
+    RevealNemesisMinionCost -> do
+      minions <- getNemesisMinionsOutOfPlay iid
+      if null minions then abortPayment acid else chooseOne iid
+        [targeting card $ do
+          searchEverywhereAndRevealEncounterCard iid (CardIs $ getCardDef card)
+          paid $ SearchedMinionPayment $ MinionId $ unCardId $ ecCardId card
+        | card <- minions]
     SearchEncounterMinionCost -> do
       deck <- getEncounterDeck
       discard <- getEncounterDiscard
@@ -463,6 +493,7 @@ payCostPartAs contributing activeCost cost = do
     ResourceCost _ -> resourcePayment iid contributing
     MultiResourceCost _ -> resourcePayment iid contributing
     PrintedResourceCost _ -> resourcePayment iid contributing
+    SameResourcesCost _ -> resourcePayment iid contributing
     DifferentResourcesCost _ -> resourcePayment iid contributing
     MayOverpay -> resourcePayment iid contributing
     PrintedXCost _ _ -> pure ()
@@ -622,6 +653,7 @@ isResourceCost (ResourceCost _) = True
 isResourceCost (MultiResourceCost _) = True
 isResourceCost (PrintedResourceCost _) = True
 isResourceCost (DynamicResourceCost _) = True
+isResourceCost (SameResourcesCost _) = True
 isResourceCost (DifferentResourcesCost _) = True
 isResourceCost MayOverpay = True
 isResourceCost (UpToResourcesCost _) = True
@@ -1061,6 +1093,7 @@ resourceCostPaid ActiveCost {..} = do
       l
         && length prs' >= length mrs
         && coversDifferentTypes (differentResourcesNeeded activeCostCost) prs
+        && coversSameType (sameResourcesNeeded activeCostCost) prs
   let requiredPrinted = printedResourceRequirements activeCostCost
       printedReceipts = [rs | PrintedResourcesPayment rs <- payments activeCostPayment]
       printedPaid = coversPrintedResources requiredPrinted (if null printedReceipts then concatMap (printedResources . getCardDef) activeCostSpentCards else concat printedReceipts)
@@ -1130,6 +1163,7 @@ actualResourceAllocations cost generated
     [replicate k r <> rest | k <- [0 .. min n (length $ filter (== r) generated)], rest <- choose (n - k) rs]
   satisfies resources = coversResources requirements resources
     && coversDifferentTypes (differentResourcesNeeded cost) resources
+    && coversSameType (sameResourcesNeeded cost) resources
 
 -- | Choosing between identical resource types from distinct payment sources.
 syncRatioAllocationLabel :: Natural -> Text

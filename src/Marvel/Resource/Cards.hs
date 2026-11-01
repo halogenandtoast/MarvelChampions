@@ -1,5 +1,21 @@
 module Marvel.Resource.Cards where
 
+import Marvel.Jubilee.Cards qualified as Jubilee
+
+import Marvel.Ability.Types qualified as MgAbility ()
+import Marvel.Aspect qualified as MgAspect ()
+import Marvel.Boost qualified as MgBoost ()
+import Marvel.Card.Def qualified as MgCard
+import Marvel.Cost.Types qualified as MgCost
+import Marvel.Criteria qualified as MgCriteria
+import Marvel.EncounterSet qualified as MgSet ()
+import Marvel.Keyword qualified as MgKeyword ()
+import Marvel.Matchers qualified as MgMatch ()
+import Marvel.Name qualified as MgName ()
+import Marvel.Resource.Types qualified as MgResource
+import Marvel.Trait qualified as MgTrait
+import Marvel.Window.Types qualified as MgWindow ()
+
 import Marvel.Card.Def qualified as BpCard
 import Marvel.Cost.Types qualified as BpCost
 import Marvel.Criteria qualified as BpCriteria
@@ -82,7 +98,9 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ concatMap
   toCardCodePairs
-  [ storedEnergy
+  [ Jubilee.jubilee47010a, Jubilee.jubilee47010b, Jubilee.jubilee47010c
+  , masterOfMagnetism
+  , storedEnergy
   , montage, selfConfidence, selfControl, selfPreservation
   , avianAnatomy, thePowerOfFlight
   , ne40196
@@ -198,7 +216,7 @@ thePowerOfAggression = deckLimited 2 $ reprintedAs ["45047", "06016", "10017", "
     <>~ [(ResourceForCardsMatching $ CardWithAspect Aggression, Wild)]
 
 thePowerOfJustice :: CardDef
-thePowerOfJustice = deckLimited 2 $ reprintedAs ["08014", "15016", "20014", "22017"] $
+thePowerOfJustice = deckLimited 2 $ reprintedAs ["47017", "08014", "15016", "20014", "22017"] $
   resource "01062" "The Power of Justice" [] [Wild] Justice
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
@@ -210,19 +228,19 @@ thePowerOfLeadership = reprintedAs ["45019", "03018", "04019", "17018", "29021"]
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]
 
 thePowerOfProtection :: CardDef
-thePowerOfProtection = reprintedAs ["05016", "09017", "16015"] $
+thePowerOfProtection = reprintedAs ["48019", "05016", "09017", "16015"] $
   resource "01079" "The Power of Protection" [] [Wild] Protection
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["48023", "49024", "45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["48024", "49025", "45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["48025", "49026", "45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -241,9 +259,9 @@ pymParticles = reprintedAs ["13007"] $ identityResource "12006" "Pym Particles" 
 
 thePowerInAllOfUs :: CardDef
 thePowerInAllOfUs =
-  basicResource "13024" "The Power in All of Us" [] [Wild]
+  reprintedAs ["46023"] (basicResource "13024" "The Power in All of Us" [] [Wild]
     & resourcesL
-    <>~ [(ResourceForCardsMatching $ CardWithAspect Neutral, Wild)]
+    <>~ [(ResourceForCardsMatching $ CardWithAspect Neutral, Wild)])
 
 -- Rocket Raccoon
 
@@ -642,4 +660,39 @@ storedEnergy = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = BpCost.NoCost
+  }
+
+-- Magneto
+
+masterOfMagnetism :: CardDef
+masterOfMagnetism = CardDef
+  { cdCardCode = "49011"
+  , cdName = "Master of Magnetism"
+  , cdCost = Nothing
+  , cdTraits = fromList [MgTrait.Magnetic]
+  , cdKeywords = fromList []
+  , cdCardType = MgCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = MgCriteria.NoCriteria
+  , cdResources = [(MgCard.PrintedResource, MgResource.Energy), (MgCard.PrintedResource, MgResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = MgCost.NoCost
   }

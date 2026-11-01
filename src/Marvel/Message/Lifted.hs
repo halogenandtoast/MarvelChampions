@@ -510,21 +510,24 @@ prepareDividedThreat you source upTo n matcher = do
 basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> Natural -> m ()
 basicThwartDivided you source thw atk = do
   schemes <- selectList (SchemeAHeroCanBasicThwart you)
+  normal <- getCharacterThwart (IdentityCharacter you)
   choices <- for schemes $ \scheme -> do
     assault <- schemeHasKeyword scheme Assault
     withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
-    -- The first allocation selects one shared stat pool. It is the same first
-    -- point the existing distributor asks for, rather than a separate target
-    -- designation that could receive none of the thwart.
-    let assign n = when (n > 0) $
-          push $ AssignDividedThreat you (toSource source) True False (n - 1) (SchemeAHeroCanBasicThwart you) [(scheme, 1)]
+    conditional <- getCharacterThwartAgainstScheme (IdentityCharacter you) scheme
+    let extra = subtractNatural normal conditional
+        assign usingAttack amount = do
+          let granted = if usingAttack then 0 else extra
+              pool = amount + granted
+          when (pool > 0) $ cardSpecific GameRef "assignBasicThwartWithStat"
+            (you, toSource source, usingAttack, normal, pool - 1, [(scheme, 1 :: Natural)], granted)
     pure $ targeting (schemeRef scheme) $
-      if assault then assign atk else if withAttack && atk /= thw
+      if assault then assign True atk else if withAttack && atk /= thw + extra
         then chooseOne you
-          [ labeled "$label.thwartWithThw" (assign thw)
-          , labeled "$label.thwartWithAtk" (assign atk)
+          [ labeled "$label.thwartWithThw" (assign False thw)
+          , labeled "$label.thwartWithAtk" (assign True atk)
           ]
-        else assign thw
+        else assign False thw
   case choices of
     [_] -> chooseOrRunOne you choices
     _ -> chooseOnePrompted you "$label.assignDividedThreat" choices
@@ -2262,7 +2265,7 @@ cancelEncounterCard card = do
 
 -- | The source of the damage the identity is about to take ("when you would take damage").
 pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
-pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
+pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- concatMap queuedMessageLeaves q, i == ident])
 
 pendingVillainDamageSource :: (HasQueue m) => VillainId -> m (Maybe Source)
 pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMessage who (VillainDamaged source _) <- concatMap queuedMessageLeaves q, who == vid])
@@ -2270,13 +2273,12 @@ pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMe
 -- | The damage the identity is about to take ("when you would take damage"), as other
 -- interrupts have left it.
 pendingDamage :: (HasQueue m) => IdentityId -> m (Maybe Damage)
-pendingDamage ident = withQueue \q -> (q, headMay [d | IdentityMessage i (IdentityDamaged _ d) <- q, i == ident])
+pendingDamage ident = withQueue \q -> (q, headMay [d | IdentityMessage i (IdentityDamaged _ d) <- concatMap queuedMessageLeaves q, i == ident])
 
 -- | The next attack damage pending against a character, after earlier prevention.
 pendingAttackDamage :: (HasQueue m, IsRef character) => character -> m Natural
-pendingAttackDamage host = withQueue $ \queue -> (queue, fromMaybe 0 $ headMay $ mapMaybe amount $ concatMap nested queue)
+pendingAttackDamage host = withQueue $ \queue -> (queue, fromMaybe 0 $ headMay $ mapMaybe amount $ concatMap queuedMessageLeaves queue)
  where
-  nested msg = msg : maybe [] (concatMap nested) (simultaneousMessages msg)
   amount msg = case (toTarget host, msg) of
     (IdentityRef ident, IdentityMessage who (IdentityDamaged _ damage)) | ident == who, fromAttack damage -> Just $ damageAmount damage
     (AllyRef aid, AllyMessage who (AllyDamaged _ damage)) | aid == who, fromAttack damage -> Just $ damageAmount damage
@@ -2374,6 +2376,23 @@ cancelBoostIcons (toEnemy -> enemy) = cancelMatchingMessage \case
     MinionRef mid -> enemy == EnemyMinionId mid
     _ -> False
 
+
+-- | Cancel the icons of one physical boost card, leaving every other boost card
+-- and this card's star ability intact (Northstar).
+cancelBoostIconsOnCard :: HasQueue m => EncounterCard -> m ()
+cancelBoostIconsOnCard card = replaceMatchingMessage change matchesMessage
+ where
+  matchesMessage = \case
+    CountActivationBoostIcons _ cards -> card `elem` cards
+    CountBoostIcons _ _ cards -> card `elem` cards
+    WithBoostIcons _ _ counts -> any ((== card) . fst) counts
+    _ -> False
+  change = \case
+    CountActivationBoostIcons target cards -> [CountActivationBoostIcons target $ filter (/= card) cards]
+    CountBoostIcons target value cards -> [CountBoostIcons target value $ filter (/= card) cards]
+    WithBoostIcons target value counts -> [WithBoostIcons target value [(c, if c == card then 0 else n) | (c,n) <- counts]]
+    other -> [other]
+
 -- | The count of the boost icons on the card, as its window answers it ("count ...
 -- instead", "increase or decrease ... for this count"), is changed.
 changeBoostIconCount :: (HasQueue m) => EncounterCard -> (Natural -> Natural) -> m ()
@@ -2410,6 +2429,33 @@ heroThwartedAllThreat source scheme before n = case source of
 getBoostIconCount :: (HasQueue m) => EncounterCard -> m (Maybe Natural)
 getBoostIconCount card = do
   withQueue \queue -> (queue, headMay [n | WithBoostIcons _ _ counts <- queue, (c, n) <- counts, c == card])
+
+
+-- | Delayed damage after a defended attack shares priority with retaliate. Bundle
+-- every such effect into one ordering question before defense response windows.
+registerPostAttackDamage :: (ReverseQueue m, IsRef source) => IdentityId -> EnemyId -> Natural -> source -> Natural -> m ()
+registerPostAttackDamage you enemy before source n = do
+  bundled <- isQueued bundleMatches
+  if bundled then replaceMatchingMessage appendEffect bundleMatches else do
+    retaliates <- isQueued retaliationMatches
+    let bundle = Msg.cardSpecific GameRef "ncAttackCompletion" (you, enemy, before, retaliates, [(toSource source, n)])
+    if retaliates
+      then replaceMatchingMessage (const [bundle]) retaliationMatches
+      else replaceMatchingMessage (\msg -> [bundle,msg]) defendedMatches
+ where
+  bundleMatches = \case
+    CardSpecific GameRef "ncAttackCompletion" (fromJSON -> Success (who :: IdentityId, attacker :: EnemyId, _ :: Natural, _ :: Bool, _ :: [(Source,Natural)])) -> who == you && attacker == enemy
+    _ -> False
+  appendEffect = \case
+    CardSpecific GameRef "ncAttackCompletion" (fromJSON -> Success (who :: IdentityId, attacker :: EnemyId, previous :: Natural, retaliation :: Bool, effects :: [(Source,Natural)])) ->
+      [Msg.cardSpecific GameRef "ncAttackCompletion" (who, attacker, previous, retaliation, effects <> [(toSource source,n)])]
+    msg -> [msg]
+  retaliationMatches = \case
+    IdentityMessage who (IdentityRetaliate attacker) -> who == you && attacker == enemy
+    _ -> False
+  defendedMatches = \case
+    IdentityMessage who (AttackDefended attacker _ _) -> who == you && attacker == enemy
+    _ -> False
 
 -- | The ally's attack about to land gets more ATK, as an interrupt to its attacking:
 -- "it gets +3 ATK for that attack".
@@ -3060,3 +3106,18 @@ searchCollectionWeapon you host = cardSpecific GameRef "searchCollectionWeapon" 
 
 swapHeldWeapon :: ReverseQueue m => IdentityId -> UpgradeId -> UpgradeId -> PlayerCard -> m ()
 swapHeldWeapon you host outgoing incoming = cardSpecific GameRef "swapHeldWeapon" (you, host, outgoing, incoming)
+
+-- | A card's lasting modifiers, independent of its source remaining in play.
+lastingModifiers :: (ReverseQueue m, IsRef source) => source -> EntityMatcher -> [Modifier] -> Bool -> m ()
+lastingModifiers source matcher modifiers roundEnd = cardSpecific GameRef "lastingModifiers" (toSource source, matcher, modifiers, roundEnd)
+
+addToIdentityBasicPower :: HasQueue m => IdentityId -> Natural -> m ()
+addToIdentityBasicPower = addToBasicPower
+
+-- | Give this physical encounter card to an enemy as a facedown boost card.
+giveCardAsBoost :: (ReverseQueue m, IsCard card, IsEnemy enemy) => card -> enemy -> m ()
+giveCardAsBoost card enemy = cardSpecific GameRef "giveCardAsBoost" (toCard card, toEnemy enemy)
+
+-- | One activation without a newly dealt boost card, including status replacements.
+enemyActivatesWithoutBoost :: (ReverseQueue m, IsRef source, IsEnemy enemy) => source -> enemy -> IdentityId -> m ()
+enemyActivatesWithoutBoost source enemy you = cardSpecific GameRef "enemyActivatesWithoutBoost" (toSource source, toEnemy enemy, you)

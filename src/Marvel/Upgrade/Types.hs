@@ -136,6 +136,7 @@ getUpgradeUses = upgradeUses . toAttrs
 
 instance HasModifiersFor Upgrade where
   getModifiersFor source target (Upgrade a) = getModifiersFor source target a
+  getBlankingModifiersFor source target (Upgrade a) = getBlankingModifiersFor source target a
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilities a, HasModifiersFor a) => IsUpgrade a where
   toUpgradeAttrs :: a -> Attrs Upgrade

@@ -74,7 +74,12 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard infinitePrelate, SomeTreacheryCard cullingTheWeak, SomeTreacheryCard warWearyDystopianNightmare, SomeTreacheryCard darkDesigns, SomeTreacheryCard sinisterStrike, SomeTreacheryCard evilAlliance, SomeTreacheryCard nowhereIsSafe, SomeTreacheryCard horsemanOfWar, SomeTreacheryCard horsemanOfFamine, SomeTreacheryCard horsemanOfPestilence, SomeTreacheryCard horsemanOfDeath, SomeTreacheryCard roughRiders, SomeTreacheryCard wolfAmongSheep, SomeTreacheryCard evilGenius, SomeTreacheryCard landOutOfTime, SomeTreacheryCard biomorphicBlast, SomeTreacheryCard technologicalInterface, SomeTreacheryCard giantSizedDespot, SomeTreacheryCard celestialTech, SomeTreacheryCard tyrantWorship, SomeTreacheryCard worldwideCrisis
+  [ SomeTreacheryCard nc48030, SomeTreacheryCard nc48038
+  , SomeTreacheryCard theEyeOfSauron
+  , SomeTreacheryCard burnIceman
+  , SomeTreacheryCard elaborateTrap
+  , SomeTreacheryCard angryAcolyte, SomeTreacheryCard powerAndDecadence
+  , SomeTreacheryCard infinitePrelate, SomeTreacheryCard cullingTheWeak, SomeTreacheryCard warWearyDystopianNightmare, SomeTreacheryCard darkDesigns, SomeTreacheryCard sinisterStrike, SomeTreacheryCard evilAlliance, SomeTreacheryCard nowhereIsSafe, SomeTreacheryCard horsemanOfWar, SomeTreacheryCard horsemanOfFamine, SomeTreacheryCard horsemanOfPestilence, SomeTreacheryCard horsemanOfDeath, SomeTreacheryCard roughRiders, SomeTreacheryCard wolfAmongSheep, SomeTreacheryCard evilGenius, SomeTreacheryCard landOutOfTime, SomeTreacheryCard biomorphicBlast, SomeTreacheryCard technologicalInterface, SomeTreacheryCard giantSizedDespot, SomeTreacheryCard celestialTech, SomeTreacheryCard tyrantWorship, SomeTreacheryCard worldwideCrisis
   , SomeTreacheryCard battleForLimbo
   , SomeTreacheryCard temporalTrickery
   , SomeTreacheryCard crisisOfInfiniteDeadpools, SomeTreacheryCard metacidalTendencies

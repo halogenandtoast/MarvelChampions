@@ -141,9 +141,11 @@ passesCriteria x a =
     )
  where
   go = \case
+    DuringPhase phase -> (== phase) <$> getPhase
     IsSelf -> pure $ toSource x == source
     SelfMatches identityMatcher ->
       member x <$> select (IdentityWithId x <> identityMatcher)
+    NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay x
     NoCriteria -> pure True
     Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
@@ -220,8 +222,10 @@ passesCardCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, Has
 passesCardCriteria ident card = go
  where
   go = \case
+    DuringPhase phase -> (== phase) <$> getPhase
     IsSelf -> error "Irrelevant"
     OwnsThis -> error "Irrelevant"
+    NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay ident
     NoCriteria -> pure True
     Never -> pure False
     SelfMatches identityMatcher ->

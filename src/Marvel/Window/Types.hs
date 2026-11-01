@@ -38,7 +38,9 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = CharacterTookIndirectDamage CharacterMatcher
+  = BamfDefense WindowTiming IdentityMatcher
+  | IdentityMakesBasicAttackOrThwart WindowTiming IdentityMatcher
+  | CharacterTookIndirectDamage CharacterMatcher
   | PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
   | MainSchemeWouldComplete SchemeMatcher
   | MakesRangedAttack WindowTiming IdentityMatcher
@@ -83,6 +85,9 @@ data WindowMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
   | EnemyAttackedAnyTarget WindowTiming EnemyMatcher
+  | MagneticPullSucceeded IdentityMatcher
+  | EnemyWasAttacked WindowTiming EnemyMatcher
+  | AttachesUpgradeToEnemy WindowTiming IdentityMatcher CardMatcher EnemyMatcher
   | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
   | IdentityTargetsEnemy WindowTiming IdentityMatcher EnemyMatcher
@@ -210,6 +215,7 @@ data WindowMatcher
   | -- | "after <ally> defends against an attack": the attack it defended has resolved
     AllyDefends AllyMatcher
   | AllyDefendsAgainst WindowTiming AllyMatcher EnemyMatcher
+  | AllyDefendedWithoutDamage WindowTiming AllyMatcher
   | IdentityWouldTakeAttackDamageFrom EnemyMatcher IdentityMatcher
   -- Infiltrate the Museum
   | -- | a card would be placed into a discard pile from play
@@ -338,6 +344,10 @@ data WindowType
   | TurnBegan IdentityId
   | -- | the player, the event and its card
     EventPlayed IdentityId EventId CardDef
+  | DefendedWithBamf IdentityId EnemyId PlayerCard
+  | MagneticPullResolved IdentityId [PlayerCard]
+  | MagneticPullFailed IdentityId [PlayerCard]
+  | UpgradeAttachedToEnemy IdentityId UpgradeId CardDef EnemyId
   | -- | the ally, and the enemy whose attack defeated it
     DefeatedAlly AllyId (Maybe EnemyId)
   | FlippedBoostCard EncounterCard EnemyId
@@ -373,6 +383,7 @@ data WindowType
     ExcessDamageDealt IdentityId EnemyId Natural
   | -- | the attack the ally defended against has resolved
     AllyDefendedAgainst AllyId EnemyId
+  | AllyDefendedWithoutTakingDamage AllyId EnemyId
   | TurnEnded IdentityId
   -- Infiltrate the Museum
   | -- | the card, a player's or an encounter card, is leaving play for its discard pile
