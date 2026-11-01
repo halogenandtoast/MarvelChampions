@@ -119,7 +119,11 @@ resolveChoice ident = \case
                     [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
   UseAbility a -> do
-    occurrence <- getCurrentWindows
+    -- The response loop carries the occurrence which actually offered this
+    -- choice. Simultaneous attacks can have a different window frame on top.
+    current <- getCurrentWindows
+    let occurrence = fromMaybe current $ headMay
+          [windows | Run [CheckWindowsFor _ windows] <- abilityChoices a]
     triggering <- case abilityWindow a of
       Nothing -> pure occurrence
       Just matcher -> filterM (\window -> windowMatches matcher window (abilitySource a)) occurrence
