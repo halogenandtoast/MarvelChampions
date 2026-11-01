@@ -1195,7 +1195,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       unless (attackRanged attack' || ignoresRetaliate) $
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when (playerIdentityDefended || attackDefended attack') $
-        identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
+        identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage playerIdentityDefended
       let final = attrs & damageReductionL .~ 0 & defendedL .~ False
       pure $ PlayerIdentity $ if stripped > 0 then final {playerIdentityTough = False, playerIdentityAdditionalTough = 0} else final
     IdentityDamaged source damage | damagePiercing damage && damageAmount damage > 0 -> do
@@ -1244,10 +1244,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         _ -> pure ()
       removeFromPlay playerIdentityId
       pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
-    AttackDefended enemy damageBefore -> do
+    AttackDefended enemy damageBefore basic -> do
       checkWindows $
           W.Window W.After (W.HeroDefends playerIdentityId enemy)
-            : [ W.Window W.After (W.DefendedWithoutDamage playerIdentityId enemy)
+            : [W.Window W.After (W.MadeBasicDefense playerIdentityId enemy) | basic]
+            <> [ W.Window W.After (W.DefendedWithoutDamage playerIdentityId enemy)
               | playerIdentityDamage <= damageBefore
               ]
       pure pid

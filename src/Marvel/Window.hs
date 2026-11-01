@@ -394,7 +394,9 @@ windowMatches matcher w source = case matcher of
           upgradeMatches upgradeMatcher upgradeId
     _ -> pure False
   IdentityAttackResolved matcher -> case windowType w of
-    PlayerAttackResolved _ ident _ | windowTiming w == After -> identityMatches matcher ident
+    PlayerAttackResolved source ident _ | windowTiming w == After -> case source of
+      AllyRef _ -> pure False
+      _ -> identityMatches matcher ident
     _ -> pure False
   VillainWouldActivate matcher -> case windowType w of
     VillainActivationWouldBegin _ ident | windowTiming w == Would -> identityMatches matcher ident
@@ -487,6 +489,9 @@ windowMatches matcher w source = case matcher of
   PlayerCardWouldBeDiscardedFromPlay -> case windowType w of
     WouldBeDiscardedFromPlay (Left _) -> pure $ windowTiming w == Would
     _ -> pure False
+  CardWithIdWouldBeDiscardedFromPlay cid -> case windowType w of
+    WouldBeDiscardedFromPlay card -> pure $ windowTiming w == Would && either toCardId toCardId card == cid
+    _ -> pure False
   CardWouldBeDiscardedFromPlay -> case windowType w of
     WouldBeDiscardedFromPlay _ -> pure $ windowTiming w == Would
     _ -> pure False
@@ -496,7 +501,7 @@ windowMatches matcher w source = case matcher of
           liftA2
             (&&)
             (identityMatches identityMatcher identityId)
-            (enemyMatches enemyMatcher enemyId)
+            (if enemyMatcher == AnyEnemy then pure True else enemyMatches enemyMatcher enemyId)
     _ -> pure False
   HeroDefended timing identityMatcher enemyMatcher -> case windowType w of
     HeroDefends identityId enemyId
@@ -629,7 +634,8 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   AllyTookDamageOf allyMatcher damageSource' -> case windowType w of
     AllyTookDamage aid _ damage
-      | windowTiming w == After && damageSource damage == damageSource' -> allyMatches allyMatcher aid
+      | windowTiming w == After && damageAmount damage > 0
+      , damageSource' == FromAnyDamageSource || damageSource damage == damageSource' -> allyMatches allyMatcher aid
     _ -> pure False
   MutantChangesToHero timing identityMatcher -> case windowType w of
     MutantChangedToHero ident | windowTiming w == timing -> identityMatches identityMatcher ident

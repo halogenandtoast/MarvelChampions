@@ -1,6 +1,7 @@
 module Marvel.Window.Types where
 
 import Marvel.Prelude
+import Marvel.Card.Id (CardId)
 import Marvel.Phase (Phase)
 import Marvel.Resource.Types (Resource)
 
@@ -210,6 +211,7 @@ data WindowMatcher
   -- Infiltrate the Museum
   | -- | a card would be placed into a discard pile from play
     CardWouldBeDiscardedFromPlay
+  | CardWithIdWouldBeDiscardedFromPlay CardId
   | PlayerCardWouldBeDiscardedFromPlay
   -- Adam Warlock
   | -- | "after your deck runs out of cards" (Soul World), "after a player resets their

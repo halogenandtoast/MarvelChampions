@@ -33,6 +33,7 @@ data Cost
   | -- | at least so many cards from hand, and at most so many (any number for Nothing)
     DiscardHandCardsCost Natural (Maybe Natural)
   | DiscardCost Target
+  | ShuffleDiscardCardIntoDeckCost CardMatcher
   | DiscardControlledCardCost CardMatcher
   | RemoveFromGameCost Target
   | PutSideSchemeFromVictoryCost
@@ -151,6 +152,7 @@ costResources NoCost = []
 costResources (PlaceThreatOnMainSchemeCost _) = []
 costResources ExhaustCost = []
 costResources (DiscardCost _) = []
+costResources (ShuffleDiscardCardIntoDeckCost _) = []
 costResources (DiscardControlledCardCost _) = []
 costResources (RemoveFromGameCost _) = []
 costResources PutSideSchemeFromVictoryCost = []

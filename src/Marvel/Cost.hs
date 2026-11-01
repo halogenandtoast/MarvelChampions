@@ -19,6 +19,7 @@ import Marvel.Cost.Types
 import Marvel.Game.Source
 import Marvel.Message (characterRef)
 import Marvel.GameValue
+import Marvel.Discard (unDiscard)
 import Marvel.Deck
 import Marvel.Hand
 import Marvel.Id
@@ -158,6 +159,7 @@ canAffordCost identityId source cost = do
       present <- getsGame (maybe False (notElem Permanent . cdKeywords . getCardDef) . (\g -> cardInPlay g target))
       canLeave <- (\mods -> not (any (`elem` mods) [CannotLeavePlay, CannotLeavePlayByCardAbilities])) <$> getModifiers target
       pure $ present && canLeave
+    ShuffleDiscardCardIntoDeckCost matcher -> any (cardMatch matcher) <$> projectMap PlayerIdentityDiscard unDiscard identityId
     DiscardControlledCardCost matcher -> notNull <$> discardableControlledCardsMatching identityId matcher
     DiscardCost target -> (\mods -> not (any (`elem` mods) [CannotBeDiscarded, CannotLeavePlayByCardAbilities])) <$> getModifiers target
     DiscardHandCardsWithTotalCost matcher n ->

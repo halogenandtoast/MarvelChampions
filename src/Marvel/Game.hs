@@ -226,6 +226,8 @@ data Game = Game
   -- ^ the cards each player has played this round, for "max 1 per round" and "the first
   -- ally played each round"
   , gamePlayedThisPhase :: [(IdentityId, CardDef)]
+  , gameAttacksThisTurn :: [(Source, EnemyId)]
+  -- ^ completed attacks, including attacks which dealt no damage
   , gameHeroAttackedThisPhase :: [IdentityId]
   , gameHeroThwartedThisPhase :: [IdentityId]
   , -- | the cards played since the current player's turn began
@@ -337,6 +339,7 @@ instance FromJSON Game where
       Object
         ( KeyMap.insertWith (\_ existing -> existing) "resolvingAbilitySubTypes" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "payingForAbility" Null
+            . KeyMap.insertWith (\_ existing -> existing) "attacksThisTurn" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "heroAttackedThisPhase" (toJSON ([] :: [IdentityId]))
             . KeyMap.insertWith (\_ existing -> existing) "heroThwartedThisPhase" (toJSON ([] :: [IdentityId]))
             . KeyMap.insertWith (\_ existing -> existing) "playedThisPhase" (toJSON ([] :: [Value]))
@@ -925,11 +928,15 @@ runPreGameMessage msg g = runQueueT $ case msg of
           W.FriendlyPlayerAttack ident _ -> [ident]
           W.FriendlyCharacterAttack (IdentityCharacter ident) _ -> [ident]
           _ -> []]
+        targets = [(attacker, enemy) | W.Window W.After (W.PlayerAttackResolved source you enemies) <- windows,
+          let attacker = case source of AllyRef aid -> AllyRef aid; _ -> IdentityRef you, enemy <- enemies]
+          <> [(case attacker of EnemyMinionId mid -> MinionRef mid; EnemyVillainId vid -> VillainRef vid, target) | W.Window W.After (W.EnemyAttackOnEnemy attacker target) <- windows]
         thwartsDone = [you | W.Window W.After event <- windows, you <- case event of
           W.HeroThwartComplete ident -> [ident]
           W.MadeBasicThwart ident -> [ident]
           _ -> []]
     pure $ captured {gamePendingAttackDefeats = filter ((`notElem` completedIds) . fst) attacks,
+      gameAttacksThisTurn = nub (gameAttacksThisTurn captured <> targets),
       gameHeroAttackedThisPhase = nub (gameHeroAttackedThisPhase captured <> attacksDone),
       gameHeroThwartedThisPhase = nub (gameHeroThwartedThisPhase captured <> thwartsDone)}
       & windowDepthL +~ 1 & windowsL %~ (windows :) & playedInWindowsL %~ ([] :)
@@ -1502,6 +1509,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   StartGame -> do
     when (null gamePlayerOrder) $ throwM NoPlayers
     for_ gamePlayerOrder (`identityStep` SetupIdentity)
+    cardSpecific GameRef "setupLinkedCards" ()
     -- the choices the last victory left are cards for the decks, so first
     when (isJust gameCampaign) $ campaignStep CampaignChoices
     for_ gamePlayerOrder (`identityStep` PutSetupCardsIntoPlay)
@@ -1524,6 +1532,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- what the Campaign Instructions do with the starting hands
     when (isJust gameCampaign) $ campaignStep (CampaignSetupThen "startingHands")
     pure $ g {gameState = InProgress}
+  CardSpecific GameRef "setupLinkedCards" _ -> do
+    -- A separate physical linked set belongs to each deck containing its parent.
+    -- Linked cards have no owner until a player takes control of them.
+    let linked = nub [def | def <- HashMap.elems MGPlayer.allPlayerCards, any (\case Linked _ -> True; _ -> False) (cdKeywords def)]
+    for_ (HashMap.elems $ gamePlayers g) \player -> do
+      let deck = unDeck $ playerIdentityDeck $ toAttrs player
+          parents = nub [canonicalCardCode $ getCardDef card | card <- deck]
+      for_ [def | def <- linked, any (\case Linked parent -> parent `elem` parents; _ -> False) (cdKeywords def)] \def -> do
+        cid <- getRandom
+        setAside [PlayerCard $ MkPlayerCard cid def Nothing Nothing]
+    pure g
   SetupPlayers -> do
     for_ gamePlayerOrder \p -> do
       setActivePlayer p
@@ -1539,6 +1558,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     | otherwise -> pure g
   BeginPhase phase -> do
     checkWindows [W.Window W.When $ W.PhaseBegan phase]
+    checkWindows [W.Window W.After $ W.PhaseBegan phase]
     pure $ g & phaseL .~ phase & playedThisPhaseL .~ [] & heroAttackedThisPhaseL .~ [] & heroThwartedThisPhaseL .~ [] & treacheriesRevealedThisPhaseL .~ [] & usedAbilitiesL . each %~ filter (not . perPhase . baseLimit . abilityLimit . fst)
   AtEndOfPhase msgs -> pure $ g & atEndOfPhaseL <>~ msgs
   -- what was to happen at the end of the phase happens first, as the phase ends
@@ -1615,7 +1635,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         cancelEnemyActivation mid
         let a = toAttrs minion
         for_ (minionUpgrades a) removeFromPlay
-        for_ (minionAttachments a) removeFromPlay
+        for_ (minionAttachments a) defeatedLeavesPlay
         for_ (Minion.minionHeldCards a) discardCard
         for_ (Minion.minionHeldTreacheries a) discardCard
         minionDisengages (minionEngagedIdentity a) mid
@@ -1684,7 +1704,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         isVictory = \case
           Victory _ -> True
           _ -> False
-    let departure = if victory then AddToVictoryDisplay target else RemoveFromPlay target
+    let departure = if victory then AddToVictoryDisplay target else case target of
+          MinionRef mid -> CardSpecific GameRef "removeDefeatedMinion" (toJSON mid)
+          _ -> RemoveFromPlay target
     -- The defeated minion already answered its would-leave window before cleanup.
     push $ case target of
       MinionRef mid -> ResolveMinionLeavingPlay mid departure
@@ -1812,9 +1834,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             push finish
             if collecting then placeInCollection card else discardCard card
         pure g
-  msg | Just (target, windowOpened) <- (case msg of
-          RemoveFromPlay target -> Just (target, False)
-          RemoveFromPlayAfterWindow target -> Just (target, True)
+  msg | Just (target, windowOpened, defeated) <- (case msg of
+          RemoveFromPlay target -> Just (target, False, False)
+          RemoveFromPlayAfterWindow target -> Just (target, True, False)
+          CardSpecific GameRef "removeDefeatedMinion" (fromJSON -> Success mid) -> Just (MinionRef mid, False, True)
           _ -> Nothing) ->
     let discardLeaving :: (ReverseQueue n, IsCard card) => card -> n ()
         discardLeaving c = unless windowOpened $ discardFromPlay g c
@@ -1932,12 +1955,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           transferMojoThreat (MinionCharacter mid)
           cancelEnemyActivation mid
           let a = toAttrs minion
+          -- Host discard replacements resolve while its attachments still exist.
+          discardLeaving minion
           for_ (minionUpgrades a) removeFromPlay
-          for_ (minionAttachments a) removeFromPlay
+          for_ (minionAttachments a) (if defeated then defeatedLeavesPlay else removeFromPlay)
           for_ (Minion.minionHeldCards a) discardCard
           for_ (Minion.minionHeldTreacheries a) discardCard
           minionDisengages (minionEngagedIdentity a) mid
-          discardLeaving minion
           pure $
             g
               & (entitiesL . minionsL %~ deleteMap mid)
@@ -2416,6 +2440,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       push $ EntersPlayUnlessUnique ident False (toTarget minion) rest
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+        & attacksThisTurnL %~ filter ((/= EnemyMinionId (toId minion)) . snd)
     -- put into play, not revealed: no surge
     EnvironmentType -> do
       let environment = createEnvironment card
@@ -2656,7 +2681,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         & playedThisRoundL <>~ [(ident, getCardDef card)]
         & playedThisPhaseL <>~ [(ident, getCardDef card)]
         & playedThisTurnL <>~ [(ident, getCardDef card)]
-  IdentityMessage _ BeginTurn -> pure $ g & playedThisTurnL .~ []
+  IdentityMessage _ BeginTurn -> pure $ g & playedThisTurnL .~ [] & attacksThisTurnL .~ []
   EndRound ->
     pure $
       g
@@ -3176,6 +3201,7 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
         when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
       push $ EntersPlayUnlessUnique ident True (toTarget minion) rest
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+        & attacksThisTurnL %~ filter ((/= EnemyMinionId (toId minion)) . snd)
     TreacheryType -> do
       let treachery = createTreachery card
           peril = Peril `member` cdKeywords (getCardDef card)
@@ -3621,6 +3647,7 @@ newGame player scenario =
     , gamePlayedInWindows = []
     , gamePlayedThisRound = []
     , gamePlayedThisPhase = []
+    , gameAttacksThisTurn = []
     , gameHeroAttackedThisPhase = []
     , gameHeroThwartedThisPhase = []
     , gamePlayedThisTurn = []
@@ -3916,6 +3943,14 @@ getIdentityAttackedAndThwartedThisPhase you = getsGame $ \g ->
 
 getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisTurn = getsGame gamePlayedThisTurn
+
+-- | Enemy targets attacked by this identity (including its events), or this ally,
+-- since the current player turn began. Damage need not have been dealt.
+getAttacksThisTurn :: (HasGame m) => m [(Source, EnemyId)]
+getAttacksThisTurn = getsGame gameAttacksThisTurn
+
+getAttackTargetsThisTurn :: (HasGame m) => Source -> m [EnemyId]
+getAttackTargetsThisTurn source = getsGame $ map snd . filter ((== source) . fst) . gameAttacksThisTurn
 
 treacheryHasResolvedPart :: (HasGame m) => TreacheryId -> m Bool
 treacheryHasResolvedPart tid = getsGame $ maybe False (Treachery.treacheryResolvedPart . toAttrs) . HashMap.lookup tid . gameTreacheries
@@ -4632,6 +4667,7 @@ gameSelectCharacter = \case
     allies <- selectMap AllyCharacter AnyAlly
     pure . HashSet.fromList $ villains <> minions <> identities <> allies
   IdentityCharacters identityMatcher -> HashSet.fromList <$> selectMap IdentityCharacter identityMatcher
+  AllyCharacters allyMatcher -> HashSet.fromList <$> selectMap AllyCharacter allyMatcher
   CharacterControlledBy identityMatcher -> do
     identities <- selectMap IdentityCharacter identityMatcher
     allies <- selectMap AllyCharacter (AllyControlledBy identityMatcher)

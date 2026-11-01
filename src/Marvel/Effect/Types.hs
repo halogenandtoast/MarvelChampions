@@ -74,9 +74,9 @@ instance HasModifiersFor Effect where
   getBlankingModifiersFor source target e
     | Blank `elem` effectModifiers (toAttrs e) = filter (== Blank) <$> getModifiersFor source target e
     | otherwise = pure []
-  getModifiersFor _ target e = do
+  getModifiersFor _ target e@(Effect inner) = do
     valid <- effectValidFor attrs target
-    pure $ if valid then effectModifiers attrs else []
+    if valid then getEffectModifiers inner else pure []
    where
     attrs = toAttrs e
 
@@ -84,6 +84,10 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect
   toEffectAttrs :: a -> Attrs Effect
   default toEffectAttrs :: (Coercible a (Attrs Effect)) => a -> Attrs Effect
   toEffectAttrs = coerce
+
+  -- | Lasting effects can depend on the current board, such as an ally remaining in play.
+  getEffectModifiers :: (HasGame m) => a -> m [Modifier]
+  getEffectModifiers = pure . effectModifiers . toEffectAttrs
 
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 

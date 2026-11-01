@@ -178,6 +178,10 @@ payCostPartAs contributing activeCost cost = do
     RemoveFromGameCost target -> do
       removeFromGame target
       paid (DiscardPayment target)
+    ShuffleDiscardCardIntoDeckCost matcher -> do
+      cards <- filter (cardMatch matcher) <$> projectMap PlayerIdentityDiscard unDiscard iid
+      if null cards then abortPayment acid else chooseOne iid
+        [targeting card (shuffleIntoDeck iid [card]) | card <- cards]
     DiscardControlledCardCost matcher -> do
       targets <- discardableControlledCardsMatching iid matcher
       if null targets then abortPayment acid else oneOf targets \target -> do

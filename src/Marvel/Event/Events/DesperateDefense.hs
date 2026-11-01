@@ -47,7 +47,7 @@ instance RunMessage DesperateDefense where
   runMessage msg (DesperateDefense (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ (Just (W.HeroDefends _ _))) | ident == eventId attrs ->
       pure . DesperateDefense $ attrs `With` Meta (Just identityId)
-    IdentityMessage ident (AttackDefended _ damageBefore) | defending meta == Just ident -> do
+    IdentityMessage ident (AttackDefended _ damageBefore _) | defending meta == Just ident -> do
       -- a hero defeated by the attack is gone
       alive <- elem ident <$> getAllPlayers
       when alive do

@@ -34,6 +34,7 @@
   "campaignOnlyCards": "The Mad Titan's Shadow's campaign cards are added by its Campaign Instructions, not put in a deck: {cards}",
   "cannotBuy": "That card of The Market cannot be bought: it is bought already, or costs more units than are unspent.",
   "expertCampaignDeck": "In an expert campaign of The Galaxy's Most Wanted, a deck's aspect and basic cards cannot change.",
+  "linkedCardInDeck": "Linked cards must be set aside during setup and cannot be included in a deck.",
   "deckCopyLimit": "This deck includes more copies of a card than its deck limit allows (including other printings).",
   "teamUpIdentity": "A Team-Up card can only be included if your hero or alter-ego is one of its named characters.",
   "cableAspects": "Cable may include player side schemes from any aspect. Other aspect cards must match his chosen aspect."

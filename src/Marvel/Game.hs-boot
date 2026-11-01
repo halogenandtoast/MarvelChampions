@@ -88,6 +88,7 @@ getUsedAbilities :: (HasGame m) => m (HashMap IdentityId [Ability])
 withinUseLimit :: (HasGame m) => IdentityId -> Ability -> m Bool
 getPlayedThisRound :: (HasGame m) => m [(IdentityId, CardDef)]
 getPlayedThisPhase :: (HasGame m) => m [(IdentityId, CardDef)]
+getAttackTargetsThisTurn :: (HasGame m) => Source -> m [EnemyId]
 getPlayedThisTurn :: (HasGame m) => m [(IdentityId, CardDef)]
 treacheryHasResolvedPart :: (HasGame m) => TreacheryId -> m Bool
 getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
@@ -404,3 +405,5 @@ getIdentityAttackedAndThwartedThisPhase :: HasGame m => IdentityId -> m Bool
 schemeHasKeyword :: HasGame m => SchemeId -> Keyword -> m Bool
 
 characterHasCondition :: HasGame m => StatusCard -> CharacterId -> m Bool
+
+getAttacksThisTurn :: (HasGame m) => m [(Source, EnemyId)]

@@ -1,6 +1,7 @@
 module Marvel.Keyword where
 
 import Marvel.Prelude
+import Marvel.Card.Code (CardCode)
 
 import Marvel.GameValue.Types (GameValue)
 import Marvel.Resource.Types (Resource)
@@ -46,5 +47,6 @@ data Keyword
     EnergyForm
   | -- | Vision's additional form, retained even if the upgrade is blank
     MassForm
+  | Linked CardCode
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

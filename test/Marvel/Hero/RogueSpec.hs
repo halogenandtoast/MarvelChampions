@@ -39,6 +39,13 @@ contact character = do
   choose "Touched host" (isTargetChoice $ characterRef $ toCharacter character)
   pass
 
+finishPlayerPhaseStart :: IdentityId -> GameAppT ()
+finishPlayerPhaseStart you = do
+  choose "Rogue's player-phase forced response" \case
+    UseAbility ab -> abilitySource ab == toSource you && abilityIndex ab == 2
+    _ -> False
+  pass
+
 hasKeyword :: IdentityId -> Keyword -> GameAppT Bool
 hasKeyword p k = elem k <$> (getIdentity p >>= getModifiedKeywords)
 
@@ -76,7 +83,8 @@ spec = describe "Rogue" do
       hasKeyword p (Retaliate 1) `shouldReturn` True
       offers (isNamedAbility "$label.skinContact") `shouldReturn` False
       runNow [IdentityEndedTurn p, EndRound]
-      pass
+      finishPlayerPhaseStart p
+      touchedHost p `shouldReturn` Nothing
       offers (isNamedAbility "$label.skinContact") `shouldReturn` True
 
   it "Skin Contact targets another hero, granting stalwart and clearing statuses" do
@@ -119,7 +127,7 @@ spec = describe "Rogue" do
       hasKeyword p (Retaliate 1) `shouldReturn` True
       (member Trait.Hydra <$> getCharacterTraits (IdentityCharacter p)) `shouldReturn` True
       runNow [EndRound]
-      pass
+      finishPlayerPhaseStart p
       (member Trait.Hydra <$> getCharacterTraits (IdentityCharacter p)) `shouldReturn` False
 
   it "Touched grants Aerial without taking control of another player's ally" do
@@ -140,7 +148,10 @@ spec = describe "Rogue" do
       v <- villainIdNow
       contact v
       runNow [IdentityEndedTurn p, EndRound]
-      pass
+      finishPlayerPhaseStart p
+      -- The player-phase response returned Touched; attach it anew so Withdrawn
+      -- must remove an attached card when Anna Marie appears.
+      contact v
       changeForm p
       choose "Withdrawn forced response" (isAbilityOf p)
       pass

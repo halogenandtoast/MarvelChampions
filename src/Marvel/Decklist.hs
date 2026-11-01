@@ -32,7 +32,7 @@ import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesis
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
-import Marvel.Keyword (Keyword (Permanent))
+import Marvel.Keyword (Keyword (Permanent, Linked))
 import Marvel.Name
 import Marvel.PlayerCard
 import Marvel.Trait qualified as Trait
@@ -86,6 +86,7 @@ MarvelCDB names no aspects for him; the cards say them.
 -}
 deckBuildingError :: DeckList -> Maybe Text
 deckBuildingError d
+  | any (any (\case Linked _ -> True; _ -> False) . cdKeywords) includedDefs = Just "error.linkedCardInDeck"
   | not (aspectsBalanced d) = Just "error.unbalancedAspects"
   | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
   | toBaseCardCode d.hero == CardCode "33001" && not cyclopsAspects = Just "error.cyclopsAspects"

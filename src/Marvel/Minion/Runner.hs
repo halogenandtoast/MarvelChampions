@@ -134,8 +134,7 @@ runMinionMessage msg attrs = case msg of
     resolveMinionLeavingPlay (minionId attrs)
     pure attrs
   MinionLeavesPlay -> do
-    for_ (minionUpgrades attrs) removeFromPlay
-    for_ (minionAttachments attrs) defeatedLeavesPlay
+    -- The departure handles attached cards after the host's discard interrupts.
     defeatedLeavesPlay attrs
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
     pure attrs

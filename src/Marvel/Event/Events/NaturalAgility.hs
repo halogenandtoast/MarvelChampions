@@ -37,7 +37,7 @@ instance RunMessage NaturalAgility where
     EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ enemy))) | eid == eventId attrs -> do
       n <- getCountersOn you
       pure $ NaturalAgility (attrs `With` Meta (Just (you, enemy, n)))
-    IdentityMessage you (AttackDefended enemy _) | applies you enemy ->
+    IdentityMessage you (AttackDefended enemy _ _) | applies you enemy ->
       pure $ NaturalAgility (attrs `With` Meta Nothing)
     CheckWindows windows | any ended windows -> pure $ NaturalAgility (attrs `With` Meta Nothing)
     _ -> NaturalAgility . (`With` meta) <$> runMessage msg attrs

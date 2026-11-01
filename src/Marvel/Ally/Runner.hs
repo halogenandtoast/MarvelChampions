@@ -236,17 +236,18 @@ instance RunMessage (Attrs Ally) where
             choices <- for schemes \scheme -> do
               withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
               assault <- schemeHasKeyword scheme Assault
-              let thwartWith n = do
+              let thwartWith usingAttack n = do
                     checkWindows [W.Window W.When $ W.AllyThwart (allyId a) scheme]
+                    cardSpecific a "basicThwartUsesAttack" usingAttack
                     basicThwartOf scheme a n
                     checkWindows [W.Window W.After $ W.AllyThwart (allyId a) scheme]
                     allyStep ident (if assault then AllyAttackConsequential else AllyThwartConsequentialOn scheme)
               pure $ targeting (schemeRef scheme) $
-                if assault then thwartWith atk else if withAttack && atk /= thw
+                if assault then thwartWith True atk else if withAttack && atk /= thw
                   then
                     chooseOne (allyController a)
-                      [labeled "$label.thwartWithThw" (thwartWith thw), labeled "$label.thwartWithAtk" (thwartWith atk)]
-                  else thwartWith thw
+                      [labeled "$label.thwartWithThw" (thwartWith False thw), labeled "$label.thwartWithAtk" (thwartWith True atk)]
+                  else thwartWith False thw
             chooseOne (allyController a) choices
             pure a
       AllyThwartConsequentialOn scheme -> do

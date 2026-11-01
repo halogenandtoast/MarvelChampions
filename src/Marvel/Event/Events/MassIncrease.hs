@@ -44,7 +44,7 @@ instance RunMessage MassIncrease where
     EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ enemy))) | eid == eventId attrs -> do
       preventAttackDamage enemy
       pure $ MassIncrease (attrs `With` Meta (Just (you, enemy)))
-    IdentityMessage you (AttackDefended enemy _) | defender meta == Just (you, enemy) -> do
+    IdentityMessage you (AttackDefended enemy _ _) | defender meta == Just (you, enemy) -> do
       stun enemy attrs
       pure $ MassIncrease (attrs `With` Meta Nothing)
     _ -> MassIncrease . (`With` meta) <$> runMessage msg attrs

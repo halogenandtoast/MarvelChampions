@@ -1461,6 +1461,11 @@ addToAllyBasicPower aid bonus = replaceMatchingMessage raise matches
     SideSchemeMessage sid (SideSchemeThwarted source amount) -> [SideSchemeMessage sid (SideSchemeThwarted source (amount + bonus))]
     other -> [other]
 
+-- | The basic power selected before an ally's current thwart interrupt window.
+allyThwartUsesAttack :: (HasQueue m) => AllyId -> m Bool
+allyThwartUsesAttack aid = withQueue $ \q ->
+  (q, fromMaybe False $ headMay [usingAttack | CardSpecific (AllyRef who) "basicThwartUsesAttack" (fromJSON -> Success usingAttack) <- concatMap queuedMessageLeaves q, who == aid])
+
 -- * Paying
 
 -- | The player pays the cost for an encounter card, as a treachery asks.

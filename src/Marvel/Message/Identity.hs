@@ -1,6 +1,8 @@
 module Marvel.Message.Identity where
 
 import Marvel.Prelude
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Vector qualified as Vector
 
 import Marvel.Attack
 import Marvel.Card.Code (CardCode)
@@ -99,15 +101,24 @@ data IdentityMessage
   | PlaceOnTopOfDeck PlayerCard
   | IdentityBecomeTough
   | -- | the attack the hero defended is done with them: their damage before it, to tell
-    -- whether they took any from it
-    AttackDefended EnemyId Natural
+    -- whether they took any from it; whether they made a basic defense
+    AttackDefended EnemyId Natural Bool
   | -- | so many counters placed on the identity card, to at most the second number
     PlaceCountersUpTo Natural Natural
   -- Infiltrate the Museum
   | -- | the top card of the deck, as it is then, goes faceup into The Collection
     TopOfDeckIntoCollection
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+  deriving anyclass ToJSON
+
+instance FromJSON IdentityMessage where
+  parseJSON value = genericParseJSON defaultOptions $ case value of
+    Object fields
+      | KeyMap.lookup "tag" fields == Just (String "AttackDefended")
+      , Just (Array args) <- KeyMap.lookup "contents" fields
+      , Vector.length args == 2 ->
+          Object $ KeyMap.insert "contents" (Array $ Vector.snoc args $ Bool False) fields
+    _ -> value
 
 data SideMessage
   = Recovered
