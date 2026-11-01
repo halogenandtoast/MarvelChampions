@@ -128,7 +128,8 @@ spec = describe "Mysterio modular sets" do
         mid <- addMinion p Minions.smEvilDoppelganger
         before <- getsGame (toAttrs . fromMaybe (error "missing doppelganger") . HashMap.lookup mid . gameMinions)
         Minion.getModifiedAttack before `shouldReturn` 2
-        resolve [IdentityMessage p (IdentityDamaged GameRef $ toDamage 9 FromAbility)]
+        runNow [IdentityMessage p (IdentityDamaged GameRef $ toDamage 9 FromAbility)]
+        pass
         getsGame gameState `shouldReturn` Finished Lost
         getsGame (HashMap.member p . gamePlayers) `shouldReturn` False
         after <- getsGame (toAttrs . fromMaybe (error "missing doppelganger") . HashMap.lookup mid . gameMinions)
@@ -146,7 +147,8 @@ spec = describe "Mysterio modular sets" do
         _ <- putInHand other "27002"
         _ <- putInHand other "27003"
         mid <- addMinion p Minions.smEvilDoppelganger
-        resolve [IdentityMessage p (IdentityDamaged GameRef $ toDamage 9 FromAbility)]
+        runNow [IdentityMessage p (IdentityDamaged GameRef $ toDamage 9 FromAbility)]
+        pass
         getsGame (HashMap.member p . gamePlayers) `shouldReturn` False
         after <- getsGame (toAttrs . fromMaybe (error "missing doppelganger") . HashMap.lookup mid . gameMinions)
         minionEngagedIdentity after `shouldBe` other

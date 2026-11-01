@@ -1,5 +1,6 @@
 module Marvel.Attachment.Cards where
 
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -32,6 +33,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -73,11 +79,15 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173, superpowerFeedback, cable40034
-      , cyberneticEnhancements
+      [ ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173
+  , superpowerFeedback
+  , cable40034
+  , mojo39005, mojo39006, mojo39018, mojo39027, mojo39028, mojo39048, mojo39067
+  , cyberneticEnhancements
+  , psionicShield
   , switchblade, possessed
-  , deathFactor, adamantiumUpgrades
   , geneTherapy
+  , deathFactor, adamantiumUpgrades
   , mgMagnetosPower
   , mgAdamantiumClaws, mgAnimalFerocity, mgHomoSuperior, mgGauntletBeam, mgLearningAI, mgAdaptiveArmor, mgEnergyBarrier, mgTargetedForElimination, mgUnitUpgrade, mgStunBeam, mgPhysicalStrain, mgMagnetosHelmet, mgMagnetosArmor, mgMagneticBubble, mgWrappedInMetal, mgNanoSentinelTech, smSandForm, smNowWeReAngry, smHumongousHallucination, smMasterfulMirage, smHeightenedMorale, smTauntingPresence, smTeamLeader, smTakeOneForTheTeam, smWeAreOne, smAdvancedGlider, smConcussiveBombs, smIncendiaryBombs, smSmokeBombs, smArmCannon, smIonicBoots, smKineticArmor, smNeocarbonScales, smSpikedGauntlet, smTrackingDisplay, smInducedPanic, smImprovisedWeapons, smViolentTendencies, smWebbedUp, smDelusionOfCollusion, smManipulatedMind, smOldGrudge, smSnitchesGetStitches
   , establishedDominance
@@ -1236,6 +1246,14 @@ mgNanoSentinelTech = (smAttachmentDef "32170" ("Nano-Sentinel Tech") MGSet.Futur
 mgMagnetosPower :: CardDef
 mgMagnetosPower = (attachment "32175b" "Magneto's Power" [MGTrait.Condition] [] MGSet.MutantGenesisCampaign 1) {cdKeywords = fromList [MGKeyword.Permanent]}
 
+-- Wolverine
+
+deathFactor :: CardDef
+deathFactor = attachment "35030" "Death Factor" [] [Boost, Boost] WolverineNemesis 2
+
+adamantiumUpgrades :: CardDef
+adamantiumUpgrades = attachment "35036" "Adamantium Upgrades" [Tech] [Boost, Boost] LadyDeathstrikeSet 2
+
 
 -- Cyclops
 
@@ -1251,14 +1269,6 @@ switchblade = attachment "36033" "Switchblade" [] [Boost, Boost] StormNemesis 1
 possessed :: CardDef
 possessed = attachment "36038" "Possessed" [Condition] [Boost, Boost] ShadowKingSet 2
 
--- Wolverine
-
-deathFactor :: CardDef
-deathFactor = attachment "35030" "Death Factor" [] [Boost, Boost] WolverineNemesis 2
-
-adamantiumUpgrades :: CardDef
-adamantiumUpgrades = attachment "35036" "Adamantium Upgrades" [Tech] [Boost, Boost] LadyDeathstrikeSet 2
-
 -- Gambit
 
 psionicShield :: CardDef
@@ -1270,6 +1280,97 @@ psionicShield = attachment "37034" "Psionic Shield" [Psionic] [Boost, Boost] Exo
 cyberneticEnhancements :: CardDef
 cyberneticEnhancements = attachment "38035" "Cybernetic Enhancements" [Tech] [Boost, Boost] ReaversSet 2
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39005 :: CardDef
+mojo39005 = (mojoCardDef "39005" "Jolt of Adrenaline" MojoSet.Magog 1)
+  { cdTraits = fromList [MojoTrait.Condition]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39006 :: CardDef
+mojo39006 = (mojoCardDef "39006" "Surge of Aggression" MojoSet.Magog 1)
+  { cdTraits = fromList [MojoTrait.Condition]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39018 :: CardDef
+mojo39018 = (mojoCardDef "39018" "Spiral's Swords" MojoSet.Spiral 2)
+  { cdTraits = fromList [MojoTrait.Weapon]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39027 :: CardDef
+mojo39027 = (mojoCardDef "39027" "Major Domo" MojoSet.Mojo 1)
+  { cdTraits = fromList [MojoTrait.Persona]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39028 :: CardDef
+mojo39028 = (mojoCardDef "39028" "Stinger Tail" MojoSet.Mojo 1)
+  { cdTraits = fromList [MojoTrait.Weapon]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39048 :: CardDef
+mojo39048 = (mojoCardDef "39048" "Bandolier of Stakes" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Item]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Surge]
+  , cdBoostIcons = []
+  }
+
+mojo39067 :: CardDef
+mojo39067 = (mojoCardDef "39067" "Dead or Alive" MojoSet.Western 1)
+  { cdTraits = fromList [MojoTrait.Bounty]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
 
 -- NeXt Evolution: Cable
 

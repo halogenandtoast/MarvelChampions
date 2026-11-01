@@ -11,6 +11,8 @@ import Marvel.MainScheme.MainSchemes.NextEvolutionMisterSinister
 
 import Marvel.MainScheme.MainSchemes.NextEvolutionNeJuggernaut
 
+import Marvel.MainScheme.MainSchemes.Mojo
+import Marvel.MainScheme.MainSchemes.MojoOpening
 import Marvel.MainScheme.MainSchemes.TheHood qualified as Hood
 import Marvel.Prelude
 
@@ -32,9 +34,10 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
   Just (SomeMainSchemeCard a) -> f a
 
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
-allMainSchemes = fromList $ map
+allMainSchemes = fromList $ [("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
   (toFst someMainSchemeCardCode)
   [ SomeMainSchemeCard ne40077, SomeMainSchemeCard ne40078, SomeMainSchemeCard ne40103, SomeMainSchemeCard ne40104, SomeMainSchemeCard ne40121, SomeMainSchemeCard ne40139, SomeMainSchemeCard ne40140, SomeMainSchemeCard ne40141, SomeMainSchemeCard ne40142, SomeMainSchemeCard ne40143, SomeMainSchemeCard ne40166, SomeMainSchemeCard ne40167
+  , SomeMainSchemeCard mojo39002b, SomeMainSchemeCard mojo39015b, SomeMainSchemeCard mojo39025b
   , SomeMainSchemeCard mgStalkedBySabretooth, SomeMainSchemeCard mgTheInjuredSenator, SomeMainSchemeCard mgNightOfTheSentinels, SomeMainSchemeCard mgTheSentinelFactory, SomeMainSchemeCard mgMasterMoldsAgenda, SomeMainSchemeCard mgTheBrotherhoodStrikes, SomeMainSchemeCard mgTheAtrium, SomeMainSchemeCard mgTheCafeteria, SomeMainSchemeCard mgTheBasketballCourt, SomeMainSchemeCard mgTheCourtyard, SomeMainSchemeCard mgAsteroidM, SomeMainSchemeCard mgFactoryOnline, SomeMainSchemeCard mgTheRuleOfMagnus, SomeMainSchemeCard smHaplessPedestrians, SomeMainSchemeCard smLeaveUsAlone, SomeMainSchemeCard smMazeOfMirrors, SomeMainSchemeCard smEdgeOfReality, SomeMainSchemeCard smSinisterSynchronization, SomeMainSchemeCard smSinisterBeatdown, SomeMainSchemeCard smSkiesOverNewYork, SomeMainSchemeCard smLowerManhattan, SomeMainSchemeCard smMidtownManhattan, SomeMainSchemeCard smUpperManhattan
   , SomeMainSchemeCard Hood.makingConnections
   , SomeMainSchemeCard Hood.promisedProsperity

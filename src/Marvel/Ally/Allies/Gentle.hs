@@ -31,7 +31,7 @@ instance RunMessage Gentle where
   runMessage msg (Gentle (attrs `With` villain)) = runQueueT $ case msg of
     CheckWindows ws | or [aid == allyId attrs | W.Window W.When (W.AllyAttack aid (EnemyVillainId _)) <- ws] ->
       Gentle . (`With` True) <$> runMessage msg attrs
-    AllyMessage aid action | aid == allyId attrs, action == AllyAttacked || action == AllyAttackConsequential -> do
+    AllyMessage aid action | aid == allyId attrs, (case action of AllyAttacked -> True; AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; _ -> False) -> do
       attrs' <- runMessage msg attrs
       pure $ Gentle (attrs' `With` False)
     _ -> Gentle . (`With` villain) <$> runMessage msg attrs

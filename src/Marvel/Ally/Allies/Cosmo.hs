@@ -91,6 +91,7 @@ instance RunMessage Cosmo where
       _ -> False
     done = \case
       AllyAttackConsequential -> True
+      AllyAttackConsequentialAgainst _ -> True
       AllyThwartConsequential -> True
       AllyThwartConsequentialOn _ -> True
       _ -> False

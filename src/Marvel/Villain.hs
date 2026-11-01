@@ -9,6 +9,8 @@ import Marvel.Villain.Villains.NextEvolutionNeMarauders
 
 import Marvel.Villain.Villains.NextEvolutionNeJuggernaut
 
+import Marvel.Villain.Villains.Mojo
+import Marvel.Villain.Villains.MojoOpening
 import Marvel.Villain.Villains.MutantGenesis
 import Marvel.Villain.Villains.SmVenomGoblin
 
@@ -106,6 +108,7 @@ allVillains :: HashMap CardCode SomeVillainCard
 allVillains = fromList $ map
   (toFst someVillainCardCode)
   [ SomeVillainCard ne40070a, SomeVillainCard ne40070b, SomeVillainCard ne40071a, SomeVillainCard ne40071b, SomeVillainCard ne40072a, SomeVillainCard ne40072b, SomeVillainCard ne40073a, SomeVillainCard ne40073b, SomeVillainCard ne40074a, SomeVillainCard ne40074b, SomeVillainCard ne40075a, SomeVillainCard ne40075b, SomeVillainCard ne40076a, SomeVillainCard ne40076b, SomeVillainCard ne40118, SomeVillainCard ne40119, SomeVillainCard ne40120, SomeVillainCard ne40136, SomeVillainCard ne40137, SomeVillainCard ne40138, SomeVillainCard ne40163, SomeVillainCard ne40164, SomeVillainCard ne40165
+  , SomeVillainCard mojo39001a, SomeVillainCard mojo39001b, SomeVillainCard mojo39012a, SomeVillainCard mojo39012b, SomeVillainCard mojo39013a, SomeVillainCard mojo39013b, SomeVillainCard mojo39014a, SomeVillainCard mojo39014b, SomeVillainCard mojo39022, SomeVillainCard mojo39023, SomeVillainCard mojo39024
   , SomeVillainCard mgSabretooth60, SomeVillainCard mgSabretooth61, SomeVillainCard mgSabretooth62, SomeVillainCard mgSentinel84, SomeVillainCard mgSentinel85, SomeVillainCard mgSentinel86, SomeVillainCard mgMasterMold09, SomeVillainCard mgMasterMold10, SomeVillainCard mgMasterMold11, SomeVillainCard mgAvalancheA, SomeVillainCard mgAvalancheB, SomeVillainCard mgBlobA, SomeVillainCard mgBlobB, SomeVillainCard mgPyroA, SomeVillainCard mgPyroB, SomeVillainCard mgToadA, SomeVillainCard mgToadB, SomeVillainCard mgMagneto38, SomeVillainCard mgMagneto39, SomeVillainCard mgMagneto40, SomeVillainCard smSandman1, SomeVillainCard smSandman2, SomeVillainCard smSandman3, SomeVillainCard smVenom1, SomeVillainCard smVenom2, SomeVillainCard smVenom3, SomeVillainCard smMysterio1, SomeVillainCard smMysterio2, SomeVillainCard smMysterio3, SomeVillainCard smDoctorOctopus1, SomeVillainCard smElectro1, SomeVillainCard smHobgoblin1, SomeVillainCard smKravenTheHunter1, SomeVillainCard smScorpion1, SomeVillainCard smVulture1, SomeVillainCard smVenomGoblin1, SomeVillainCard smVenomGoblin2, SomeVillainCard smVenomGoblin3
   , SomeVillainCard Hood.theHood1
   , SomeVillainCard Hood.theHood2

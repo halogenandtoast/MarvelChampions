@@ -908,6 +908,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           canChange = CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
       if canChange
         then do
+          when (side /= playerIdentitySide) $ transferMojoThreat (IdentityCharacter playerIdentityId)
           oldTraits <- getTraits pid
           let fromAlterEgo = case currentIdentity pid of AlterEgoSide _ -> True; _ -> False
           checkWindows $ W.Window W.After (W.IdentityChangesForm playerIdentityId)
@@ -977,7 +978,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           playerIdentityId
           "$label.discardAnAlly"
           -- one not counted against the limit (Odin) does not bring them within it
-          [targeting aid (removeFromPlay aid) | aid <- counted]
+          [targeting aid (removeFromPlay aid >> identityStep playerIdentityId CheckAllyLimit) | aid <- counted]
       pure pid
     UpgradeCreated upgradeId -> do
       identityStep playerIdentityId CheckRestrictedLimit
@@ -1582,6 +1583,7 @@ getModifiedAllyLimit pid@(PlayerIdentity attrs) = do
   pure $ foldr applyModifier (playerIdentityAllyLimit attrs) modifiers
  where
   applyModifier (AllyLimitModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (AllyLimitReduction n) = subtractNatural n
   applyModifier _ = id
 
 deriving anyclass instance FromJSON PlayerIdentitySide

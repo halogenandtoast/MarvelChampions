@@ -62,7 +62,7 @@ instance RunMessage (Attrs Ally) where
       present <- selectAny (AllyWithId $ allyId a)
       when present $ allyStep (allyId a) AllyDefeatedByDamage
       pure a {allyDefeatedByConsequential = present}
-    RemoveFromGame (CardIdRef cid) -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a)}
+    RemovePlayerCardFromHeldZones cid -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a)}
     ReserveAllyHeldCard ident card | ident == allyId a ->
       pure $ a & heldCardsL %~ filter (/= card)
     AttachPlayableEventToAlly ident card | ident == allyId a ->
@@ -124,7 +124,7 @@ instance RunMessage (Attrs Ally) where
           unless (damageRanged dmg) $ enemyRetaliates enemy (AllyCharacter $ allyId a)
           checkWindows [W.Window W.After $ W.AllyAttack (allyId a) enemy]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) [enemy]]
-          allyStep ident AllyAttackConsequential
+          allyStep ident (AllyAttackConsequentialAgainst [enemy])
         pure a
       AllyAssignEvenAttack dmg extra allocations candidates seen -> do
         if extra == 0
@@ -160,7 +160,7 @@ instance RunMessage (Attrs Ally) where
           unless (damageRanged dmg) $ for_ enemies $ \enemy -> enemyRetaliates enemy (AllyCharacter ident)
           checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident enemies]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) enemies]
-          allyStep ident AllyAttackConsequential
+          allyStep ident (AllyAttackConsequentialAgainst enemies)
         pure a
       AllyAttackMultiple enemies damage -> do
         modifiers <- getModifiers a
@@ -191,7 +191,15 @@ instance RunMessage (Attrs Ally) where
           checkWindows [W.Window W.After $ W.AllyAttackCompletedAgainst ident resolved]
           checkWindows [W.Window W.After $ W.PlayerAttackResolved (toSource a) (allyController a) resolved]
           -- This is one use, hence consequential damage is suffered only once.
-          allyStep ident AllyAttackConsequential
+          allyStep ident (AllyAttackConsequentialAgainst resolved)
+        pure a
+      AllyAttackConsequentialAgainst enemies -> do
+        present <- selectAny (AllyWithId ident)
+        when present $ do
+          modifiers <- getModifiers a
+          let reduction = maximum (0 : [n | AttackConsequentialDamageReductionAgainst enemy n <- modifiers, enemy `elem` enemies])
+          consequential <- subtractNatural reduction <$> getModifiedAttackConsequentialDamage a
+          when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyAttackConsequential -> do
         present <- selectAny (AllyWithId ident)

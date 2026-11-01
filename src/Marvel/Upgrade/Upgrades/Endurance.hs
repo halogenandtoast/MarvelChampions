@@ -4,6 +4,7 @@ module Marvel.Upgrade.Upgrades.Endurance (
 ) where
 
 import Marvel.Prelude
+import Marvel.Ability
 
 import Marvel.Ability
 import Marvel.Card.Code

@@ -3,12 +3,27 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Possessed
+  = BooingCrowd
+  | Possessed
   | Posse
   | NastyBoy
   | MutantLiberationFront
   | Desperate
   | Confident
+  | Bounty
+  | CheeringCrowd
+  | Clone
+  | Cornered
+  | Escaped
+  | Program
+  | Setting
+  | Show
+  | Spineless
+  | Spinning
+  | Stopped
+  | Thespian
+  | Troll
+  | Werewolf
   | Marauder
   | Acolyte
   | Hellfire

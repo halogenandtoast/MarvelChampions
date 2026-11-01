@@ -28,6 +28,7 @@ export interface UpgradeView extends CardView {
 }
 
 export interface SupportView extends CardView {
+  counters?: number
   damage?: number
   exhausted?: boolean
   uses?: number
@@ -45,6 +46,7 @@ export interface AttachmentView extends CardView {
 }
 
 export interface AllyView extends CardView {
+  threat: number
   toughCards?: number
   hitPoints: number
   damage: number
@@ -64,6 +66,7 @@ export interface AllyView extends CardView {
 }
 
 export interface PlayerView {
+  threat: number
   toughCards?: number
   stunCards?: number
   confuseCards?: number
@@ -114,6 +117,7 @@ export interface PlayerView {
 
 export interface VillainView extends CardView {
   counters: number
+  threat: number
   bombCounters?: number
   stunCards?: number
   confuseCards?: number
@@ -160,8 +164,9 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
-  counters: number
   attachedToMinion?: string | null
+  counters: number
+  threat: number
   exhausted?: boolean
   bombCounters?: number
   heldCards?: CardView[]

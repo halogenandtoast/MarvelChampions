@@ -72,7 +72,8 @@ spec = describe "set mechanics" do
     tg <- testGame ["spider-man"]
     inGame tg do
       before <- mainSchemeThreatNow
-      msgs <- Lifted.runQueueT $ Lifted.capture $ Lifted.incite Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
+      card <- encounterCard Cards.hydraMercenary {cdKeywords = singleton (Incite 2)}
+      msgs <- Lifted.runQueueT $ Lifted.capture $ Lifted.incite card
       resolve msgs
       after <- mainSchemeThreatNow
       liftIO $ after `shouldBe` before + 2

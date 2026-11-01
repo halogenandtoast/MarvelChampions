@@ -1,5 +1,6 @@
 module Marvel.Environment.Cards where
 
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -18,6 +19,11 @@ import Marvel.Trait qualified as NETrait
 
 import Marvel.Aspect qualified as NEAspect
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -54,6 +60,7 @@ import Marvel.Trait
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
   [ ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
+  , mojo39003a, mojo39003b, mojo39004a, mojo39004b, mojo39026a, mojo39026b, mojo39035, mojo39041, mojo39047, mojo39053, mojo39060, mojo39066
   , mgProtectTheSenator, mgSaveTheSchool, mgRescueCaptives
   , smCityStreets, smBellTowerA, smBellTowerB, smSkiesOverNewYorkB, smLowerManhattanB, smMidtownManhattanB, smUpperManhattanB, smPublicOutcryA, smPublicOutcryB
   , ultronDrones
@@ -513,6 +520,138 @@ mgSaveTheSchool = (smEnvironmentDef "32130" ("Save the School") MGSet.MansionAtt
   , cdKeywords = fromList []
   }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39003a :: CardDef
+mojo39003a = (mojoCardDef "39003a" "The Champion" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.BooingCrowd]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39003b :: CardDef
+mojo39003b = (mojoCardDef "39003b" "The Champion" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.CheeringCrowd]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39004a :: CardDef
+mojo39004a = (mojoCardDef "39004a" "The Challengers" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.BooingCrowd]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39004b :: CardDef
+mojo39004b = (mojoCardDef "39004b" "The Challengers" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.CheeringCrowd]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39026a :: CardDef
+mojo39026a = (mojoCardDef "39026a" "Wheel of Genres" MojoSet.Mojo 0)
+  { cdTraits = fromList [MojoTrait.Spinning]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39026b :: CardDef
+mojo39026b = (mojoCardDef "39026b" "Wheel of Genres" MojoSet.Mojo 0)
+  { cdTraits = fromList [MojoTrait.Stopped]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39035 :: CardDef
+mojo39035 = (mojoCardDef "39035" "Dial M for Mojo" MojoSet.Crime 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39041 :: CardDef
+mojo39041 = (mojoCardDef "39041" "A Game of Mojo's" MojoSet.Fantasy 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  , cdAmplify = 1
+  }
+
+mojo39047 :: CardDef
+mojo39047 = (mojoCardDef "39047" "The Mojo Files" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39053 :: CardDef
+mojo39053 = (mojoCardDef "39053" "Mojo Runner" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39060 :: CardDef
+mojo39060 = (mojoCardDef "39060" "Mojo in the Middle" MojoSet.Sitcom 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39066 :: CardDef
+mojo39066 = (mojoCardDef "39066" "Wild Wild Mojo" MojoSet.Western 1)
+  { cdTraits = fromList [MojoTrait.Setting, MojoTrait.Show]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
 
 -- NeXt Evolution campaign and scenarios
 

@@ -34,8 +34,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
 import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
 import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -78,6 +81,7 @@ allAllies = fromList $ concatMap
   , outlaw
   , diamondback
   , cable40014, cable40015, cable40016, cable40024, cable40025, cable40204
+  , mojo39071
   , gambitRogue, iceman, karma, armor
   , rogueGambit, bishop, dazzler
   , havok, mirage, gentle, pixie, forge
@@ -1354,6 +1358,48 @@ armor :: CardDef
 armor = (ally "38012" ("Armor" <:> "Hisako Ichiki") 2 [XMen] [Physical] Protection) { cdUnique = True, cdDeckLimit = Just 1, cdKeywords = fromList [Toughness], cdCriteria = SelfMatches (IdentityWithTrait XMen) }
 
 
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39071 :: CardDef
+mojo39071 = (mojoCardDef "39071" "Longshot" MojoSet.LongshotSet 1)
+  { cdTraits = fromList [MojoTrait.XMen]
+  , cdUnique = True
+  , cdKeywords = fromList [MojoKeyword.Surge]
+  , cdBoostIcons = []
+  }
 
 -- NeXt Evolution: Cable
 

@@ -33,6 +33,7 @@ data EncounterSet
   | ColossusNemesis
   | PhoenixNemesis
   | ShadowcatNemesis
+  | Magog | Spiral | Mojo | Crime | Fantasy | Horror | SciFi | Sitcom | Western | LongshotSet
   | Rhino
   | BombScare
   | Klaw
@@ -189,8 +190,7 @@ data EncounterSet
 modularSets :: [EncounterSet]
 modularSets =
   [ MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
-  , ExodusSet
-  , ShadowKingSet
+  , Crime, Fantasy, Horror, SciFi, Sitcom, Western, LongshotSet
   , BombScare
   , MastersOfEvil
   , UnderAttack
@@ -250,7 +250,9 @@ modularSets =
   , Inheritors
   , IronSpiderSinisterSix
   , LadyDeathstrikeSet
+  , ShadowKingSet
   , ReaversSet
+  , ExodusSet
   -- Mutant Genesis
   , Brotherhood
   , Mystique
@@ -264,7 +266,6 @@ getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
   "38001" -> RogueNemesisSet
   "37001" -> GambitNemesisSet
-  "36001" -> StormNemesis
   "33001" -> CyclopsNemesis
   "01001" -> SpiderManNemesis
   "01010" -> CaptainMarvelNemesis
@@ -307,6 +308,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "32001" -> ColossusNemesis
   "32030" -> ShadowcatNemesis
   "34001" -> PhoenixNemesis
+  "36001" -> StormNemesis
   "35001" -> WolverineNemesis
   "40001" -> CableNemesis
   "40037" -> DominoNemesis

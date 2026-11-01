@@ -27,7 +27,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Types (Attachment, Attrs (..))
-import Marvel.Obligation.Types (Attrs (..))
+import Marvel.Obligation.Types (Attrs (..), getObligationDisplayThreat, getObligationDisplayCounters)
 import Marvel.Attack qualified as Attack
 import Marvel.Campaign qualified as Campaign
 import Marvel.Campaign (Campaign (..), CampaignMode)
@@ -173,6 +173,7 @@ data CardView = CardView {id :: CardId, code :: CardCode, name :: Text}
 
 data PlayerView = PlayerView
   { id :: IdentityId
+  , threat :: Natural
   , name :: Text
   , form :: Text
   -- ^ @hero@ or @alterEgo@
@@ -232,6 +233,7 @@ data InvocationView = InvocationView {top :: Maybe CardView, deckSize :: Int, di
 
 data AllyView = AllyView
   { id :: AllyId
+  , threat :: Natural
   , code :: CardCode
   , name :: Text
   , hitPoints :: Natural
@@ -265,8 +267,9 @@ data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text,
   deriving anyclass (ToJSON)
 
 data VillainView = VillainView
-  { counters :: Natural
-  , bombCounters :: Natural
+  { bombCounters :: Natural
+  , counters :: Natural
+  , threat :: Natural
   , id :: VillainId
   , code :: CardCode
   , name :: Text
@@ -292,8 +295,9 @@ data VillainView = VillainView
   deriving anyclass (ToJSON)
 
 data MinionView = MinionView
-  { counters :: Natural
-  , bombCounters :: Natural
+  { bombCounters :: Natural
+  , counters :: Natural
+  , threat :: Natural
   , toughCards :: Natural
   , id :: MinionId
   , code :: CardCode
@@ -323,7 +327,7 @@ data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, n
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int}
+data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int, threat :: Natural, counters :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -595,6 +599,7 @@ gameView seesHand g = do
         , toughCards = (if a.playerIdentityTough then 1 else 0) + a.playerIdentityAdditionalTough
         , tough = a.playerIdentityTough
         , counters = a.playerIdentityCounters
+        , threat = sum [n | (IdentityCharacter who,n) <- gameCharacterThreat g, who == a.playerIdentityId]
         , thwart = thw
         , attack = atk
         , defense = def
@@ -614,8 +619,8 @@ gameView seesHand g = do
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , obligations =
-            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards)
-            | a <- map toAttrs (HashMap.elems (gameObligations g))
+            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards) (getObligationDisplayThreat o) (getObligationDisplayCounters o)
+            | o <- HashMap.elems (gameObligations g), let a = toAttrs o
             , a.obligationOwner == Just (toId p), isNothing a.obligationSideScheme
             ]
         , weatherDeckSize = length <$> a.playerIdentityWeatherDeck
@@ -648,6 +653,7 @@ gameView seesHand g = do
         , confused = a.allyConfused
         , tough = a.allyTough
         , counters = a.allyCounters
+        , threat = sum [n | (AllyCharacter who,n) <- gameCharacterThreat g, who == a.allyId]
         , facedownCards = length a.allyHeldCards + length a.allyHeldTreacheries
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
@@ -671,6 +677,7 @@ gameView seesHand g = do
     pure
       VillainView
         { counters = a.villainCounters
+        , threat = sum [n | (VillainCharacter who,n) <- gameCharacterThreat g, who == a.villainId]
         , bombCounters = sum [n | (EnemyVillainId vid,_,n) <- gameBombCounters g, vid == toId v]
         , id = a.villainId
         , code = toCardCode a.villainCardDef
@@ -693,18 +700,20 @@ gameView seesHand g = do
         }
   minionView (m :: Minion) = do
     let a = toAttrs m
+        hiddenHeldCards = toCardCode a `elem` ["39052", "39058"]
     hp <- Minion.getModifiedHitPoints a
     atk <- Minion.getModifiedAttack a
     sch <- Minion.getModifiedScheme a
     pure
       MinionView
         { counters = Minion.getMinionDisplayCounters m
+        , threat = sum [n | (MinionCharacter who,n) <- gameCharacterThreat g, who == a.minionId]
         , bombCounters = sum [n | (EnemyMinionId mid,_,n) <- gameBombCounters g, mid == a.minionId]
         , id = a.minionId
         , code = toCardCode a.minionCardDef
         , name = display (cdName a.minionCardDef)
-        , heldCards = map (cardView . PlayerCard) a.minionHeldCards
-        , facedownCards = length a.minionHeldTreacheries
+        , heldCards = [cardView (PlayerCard card) | not hiddenHeldCards, card <- a.minionHeldCards]
+        , facedownCards = length a.minionHeldTreacheries + if hiddenHeldCards then length a.minionHeldCards else 0
         , attachedToMinion = a.minionAttachedTo
         , engagedWith = fromMaybe a.minionEngagedIdentity $ do
             host <- a.minionAttachedTo

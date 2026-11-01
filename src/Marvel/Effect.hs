@@ -4,6 +4,7 @@ module Marvel.Effect where
 
 import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
 
+import Marvel.Attachment.Attachments.MojoGenres (mojoStakeEffect)
 import Marvel.Event.Events.Cable (cableMissionPlanningEffect)
 import Marvel.Minion.Minions.NextEvolutionMisterSinister (ne40145BoostEffect)
 import Marvel.Prelude
@@ -44,6 +45,7 @@ allEffects =
   fromList $
     [ ("40145", SomeCardEffect ne40145BoostEffect)
     , ("40017", SomeCardEffect cableMissionPlanningEffect)
+    , ("39048", SomeCardEffect mojoStakeEffect)
     , ("38001a", SomeCardEffect rogueHeroEffect)
     , ("38014", SomeCardEffect judokaSkillEffect)
     , ("37001a", SomeCardEffect gambitHeroEffect)

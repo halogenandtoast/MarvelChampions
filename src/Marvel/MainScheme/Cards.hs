@@ -18,6 +18,11 @@ import Marvel.Trait qualified as NETrait
 
 import Marvel.Aspect qualified as NEAspect
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
@@ -44,7 +49,8 @@ allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
     [ ne40077, ne40078, ne40103, ne40104, ne40121, ne40139, ne40140, ne40141, ne40142, ne40143, ne40166, ne40167
-    , mgStalkedBySabretooth, mgTheInjuredSenator, mgNightOfTheSentinels, mgTheSentinelFactory, mgMasterMoldsAgenda, mgTheBrotherhoodStrikes, mgTheAtrium, mgTheCafeteria, mgTheBasketballCourt, mgTheCourtyard, mgAsteroidM, mgFactoryOnline, mgTheRuleOfMagnus, smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
+  , mojo39002a, mojo39002b, mojo39015a, mojo39015b, mojo39025a, mojo39025b
+  , mgStalkedBySabretooth, mgTheInjuredSenator, mgNightOfTheSentinels, mgTheSentinelFactory, mgMasterMoldsAgenda, mgTheBrotherhoodStrikes, mgTheAtrium, mgTheCafeteria, mgTheBasketballCourt, mgTheCourtyard, mgAsteroidM, mgFactoryOnline, mgTheRuleOfMagnus, smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
   , makingConnections
     , promisedProsperity
     , crimeState
@@ -587,6 +593,89 @@ mgTheRuleOfMagnus = (smMainSchemeDef "32143" ("The Rule of Magnus") MGSet.Magnet
   , cdKeywords = fromList []
   }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = MainSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39002a :: CardDef
+mojo39002a = (mojoCardDef "39002a" "Melee in the Mojo-seum" MojoSet.Magog 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39002b :: CardDef
+mojo39002b = (mojoCardDef "39002b" "Melee in the Mojo-seum" MojoSet.Magog 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39015a :: CardDef
+mojo39015a = (mojoCardDef "39015a" "Across the Mojoverse" MojoSet.Spiral 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39015b :: CardDef
+mojo39015b = (mojoCardDef "39015b" "Across the Mojoverse" MojoSet.Spiral 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39025a :: CardDef
+mojo39025a = (mojoCardDef "39025a" "MojoMania" MojoSet.Mojo 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39025b :: CardDef
+mojo39025b = (mojoCardDef "39025b" "MojoMania" MojoSet.Mojo 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
 
 -- NeXt Evolution campaign and scenarios
 

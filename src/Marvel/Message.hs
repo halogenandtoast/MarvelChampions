@@ -331,6 +331,10 @@ data Message
   | PassFirstPlayer
   | -- | a villain phase step begins: does nothing, the log tells it
     VillainPhaseStep VillainPhaseStep
+  | RemovePlayerCardFromHeldZones CardId
+  | PlaceCharacterThreat CharacterId Natural
+  | RemoveCharacterThreat CharacterId Natural
+  | MoveCharacterThreatToMainScheme CharacterId
   | EndRound
   | BeginRound
   | AccelerateMainScheme

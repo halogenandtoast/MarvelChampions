@@ -1,5 +1,6 @@
 module Marvel.Scenario.Types where
 
+import Marvel.Trait qualified as MojoTrait
 import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
@@ -213,6 +214,7 @@ instance RunMessage (Attrs Scenario) where
         deck' <- shuffleM discard
         let penalty = if isEncounterDeck key then 1 else 0
         when (penalty > 0) addAccelerationToken
+        when (key == EncounterDeckKey) $ cardSpecific GameRef "mojoEncounterDeckReset" ()
         pure $
           a
             & (pileL key .~ Pile deck' [])
@@ -308,6 +310,10 @@ runScenarioMessage msg attrs = case msg of
     pure attrs {scenarioDecks = HashMap.delete key (scenarioDecks attrs), scenarioCardDecks = HashMap.filter (/= key) (scenarioCardDecks attrs)}
   -- to the discard pile of its own deck, wherever in the decks it was looked at; a card
   -- of a defeated villain's deck, his deck gone with him, leaves the game
+  DiscardedCard (EncounterCard ec)
+    | scenarioId attrs == "39012a", MojoTrait.Show `member` cdTraits (getCardDef ec) -> do
+        let key = NamedDeckKey "mojoShow"
+        pure $ leaves ec attrs & pileL key %~ \(Pile d x) -> Pile (d <> [ec]) x
   DiscardedCard (EncounterCard ec) -> do
     let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
     pure $

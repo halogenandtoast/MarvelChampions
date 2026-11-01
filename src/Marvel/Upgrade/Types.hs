@@ -266,7 +266,7 @@ instance IsCard (Attrs Upgrade) where
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = runQueueT $ case msg of
-    RemoveFromGame (CardIdRef cid) -> pure a {upgradeHeldCards = filter ((/= cid) . pcCardId) (upgradeHeldCards a)}
+    RemovePlayerCardFromHeldZones cid -> pure a {upgradeHeldCards = filter ((/= cid) . pcCardId) (upgradeHeldCards a)}
     CardSpecific (isTarget a -> True) "attachTouched" (fromJSON -> Success host) -> do
       let uid = upgradeId a
       case host of

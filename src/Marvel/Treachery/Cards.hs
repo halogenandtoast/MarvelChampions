@@ -1,5 +1,6 @@
 module Marvel.Treachery.Cards where
 
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -26,6 +27,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.Resource
@@ -61,12 +67,15 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ ne40154, ne40080, ne40088, ne40089, ne40102, ne40110, ne40111, ne40125, ne40126, ne40127, ne40128, ne40129, ne40135, ne40147, ne40148, ne40149, ne40150, ne40158, ne40162, ne40177, ne40178, ne40179, ne40203, cable40035, cable40036
+  [ ne40154
+  , ne40080, ne40088, ne40089, ne40102, ne40110, ne40111, ne40125, ne40126, ne40127, ne40128, ne40129, ne40135, ne40147, ne40148, ne40149, ne40150, ne40158, ne40162, ne40177, ne40178, ne40179, ne40203
+  , cable40035, cable40036
+  , mojo39009, mojo39010, mojo39011, mojo39017, mojo39019, mojo39020, mojo39021, mojo39032, mojo39033, mojo39034, mojo39040, mojo39046, mojo39070
   , misled
   , assassinationAttempt, acolyteFrenzy
   , knifeFight, astralAttack
-  , tentacleStrike, hackNSlash
   , concussiveForce
+  , tentacleStrike, hackNSlash
   , mgSabretoothStrikes, mgUnrelentingSavage, mgMutantTerrorists, mgInfiltration, mgShapeshifterSurprise, mgSelfRepair, mgMutantDetected, mgMasterMoldsChildren, mgShieldsUp, mgBrotherhoodBeatdown, mgGroundSwell, mgImmovable, mgPyromaniac, mgHoppingMad, mgMasterOfMagnetism, mgElectricShock, mgElectromagneticBlast, mgMetalShards, mgMagneticMissile, mgZealForTheCause, smSandslide, smSandStorm, smSandSmash, smBitingRetort, smForWhomTheBellTolls, smDejaVu, smFearmonger, smFrequentFlyers, smHighFashion, smRoboticEnhancements, smPartnershipOfPain, smSurprise, smSpreadingPanic, smCallingInFavors, smNowOrNever, smThreatOrMenace, smLooseEnds, smRemoteNavigation, smFromEveryDirection, smDeepestFears, smSwingingAssault, smUnstableSentience, smSmearCampaign
   , fieldRecruitment
   , upperHand
@@ -1451,6 +1460,14 @@ mgZealForTheCause = (smTreacheryDef "32164" ("Zeal for the Cause") MGSet.Acolyte
   , cdKeywords = fromList []
   }
 
+-- Wolverine
+
+tentacleStrike :: CardDef
+tentacleStrike = treachery "35031" "Tentacle Strike" [Star] WolverineNemesis 1
+
+hackNSlash :: CardDef
+hackNSlash = treachery "35037" "Hack 'n' Slash" [Star] LadyDeathstrikeSet 2
+
 
 -- Phoenix
 
@@ -1472,14 +1489,6 @@ knifeFight = treachery "36034" "Knife Fight" [Boost, Boost] StormNemesis 2
 astralAttack :: CardDef
 astralAttack = treachery "36039" "Astral Attack" [Star] ShadowKingSet 1
 
--- Wolverine
-
-tentacleStrike :: CardDef
-tentacleStrike = treachery "35031" "Tentacle Strike" [Star] WolverineNemesis 1
-
-hackNSlash :: CardDef
-hackNSlash = treachery "35037" "Hack 'n' Slash" [Star] LadyDeathstrikeSet 2
-
 -- Gambit
 
 assassinationAttempt :: CardDef
@@ -1492,8 +1501,147 @@ acolyteFrenzy = treachery "37035" "Acolyte Frenzy" [Star] ExodusSet 2
 -- Rogue
 
 misled :: CardDef
-misled = treachery "38027" "Misled" [Shapeshifter] [Boost] RogueNemesisSet 3
+misled = (treachery "38027" "Misled" [Boost] RogueNemesisSet 3) { cdTraits = fromList [MGTrait.Shapeshifter] }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39009 :: CardDef
+mojo39009 = (mojoCardDef "39009" "Break a Leg" MojoSet.Magog 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39010 :: CardDef
+mojo39010 = (mojoCardDef "39010" "Defend the Title" MojoSet.Magog 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39011 :: CardDef
+mojo39011 = (mojoCardDef "39011" "Stage Fright" MojoSet.Magog 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39017 :: CardDef
+mojo39017 = (mojoCardDef "39017" "Cornered!" MojoSet.Spiral 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39019 :: CardDef
+mojo39019 = (mojoCardDef "39019" "Erratic Teleportation" MojoSet.Spiral 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Surge]
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39020 :: CardDef
+mojo39020 = (mojoCardDef "39020" "The Show Must Go On" MojoSet.Spiral 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39021 :: CardDef
+mojo39021 = (mojoCardDef "39021" "Well-Armed" MojoSet.Spiral 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39032 :: CardDef
+mojo39032 = (mojoCardDef "39032" "Curtain Call" MojoSet.Mojo 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39033 :: CardDef
+mojo39033 = (mojoCardDef "39033" "Director's Directions" MojoSet.Mojo 2)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39034 :: CardDef
+mojo39034 = (mojoCardDef "39034" "Top Billing" MojoSet.Mojo 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39040 :: CardDef
+mojo39040 = (mojoCardDef "39040" "Elementary, My Dear Mojo" MojoSet.Crime 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39046 :: CardDef
+mojo39046 = (mojoCardDef "39046" "Mana Drain" MojoSet.Fantasy 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39070 :: CardDef
+mojo39070 = (mojoCardDef "39070" "A Game of Cards" MojoSet.Western 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
 
 -- NeXt Evolution: Cable
 

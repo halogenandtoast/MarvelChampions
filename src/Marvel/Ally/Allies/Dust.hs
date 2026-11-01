@@ -52,7 +52,7 @@ instance RunMessage Dust where
     AllyMessage aid AllyAttacked | aid == allyId attrs -> do
       attrs' <- runMessage msg attrs
       pure . Dust $ attrs' `With` Meta False
-    AllyMessage aid AllyAttackConsequential | aid == allyId attrs -> do
+    AllyMessage aid consequence | aid == allyId attrs, (case consequence of AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; _ -> False) -> do
       -- The game's current copy still has the modifier while the base handler
       -- calculates this use's single consequential-damage payment.
       attrs' <- runMessage msg attrs

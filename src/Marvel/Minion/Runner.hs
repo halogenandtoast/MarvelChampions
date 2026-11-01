@@ -270,7 +270,7 @@ instance RunMessage (Attrs Minion) where
     updated <- case msg of
       CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
         pure attrs {minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
-      RemoveFromGame (CardIdRef cid) -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs)}
+      RemovePlayerCardFromHeldZones cid -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs)}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
         let ident = minionEngagedIdentity attrs

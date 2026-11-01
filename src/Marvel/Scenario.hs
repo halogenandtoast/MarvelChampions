@@ -3,6 +3,8 @@ module Marvel.Scenario where
 
 import Marvel.Scenario.NextEvolution
 
+import Marvel.Scenario.Mojo
+import Marvel.Scenario.MojoOpening
 import Data.HashSet qualified as HashSet
 import Data.List (nub, sortOn)
 import Marvel.Query (selectOne, selectList)
@@ -66,6 +68,9 @@ allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
     [ SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
+    , SomeScenarioCard mojoScenario
+    , SomeScenarioCard mojoMagogScenario
+    , SomeScenarioCard mojoSpiralScenario
     , SomeScenarioCard mgSabretoothScenario
     , SomeScenarioCard mgProjectWideawakeScenario
     , SomeScenarioCard mgMasterMoldScenario

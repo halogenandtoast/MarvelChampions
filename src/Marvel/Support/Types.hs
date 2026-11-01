@@ -178,7 +178,7 @@ instance IsRef (Attrs Support) where
 
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
-    RemoveFromGame (CardIdRef cid) -> pure a {supportHeldCards = filter ((/= cid) . pcCardId) (supportHeldCards a)}
+    RemovePlayerCardFromHeldZones cid -> pure a {supportHeldCards = filter ((/= cid) . pcCardId) (supportHeldCards a)}
     PassFirstPlayer -> do
       follows <- elem ControlledByFirstPlayer <$> getModifiers a
       when follows $ cardSpecific a "followFirstPlayer" ()

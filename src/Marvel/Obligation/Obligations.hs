@@ -98,10 +98,11 @@ import Marvel.Obligation.Obligations.MutantGenesis as X
 import Marvel.Obligation.Obligations.MutantGenesisCampaign as X
 
 import Marvel.Obligation.Obligations.PastDemons as X
--- Cyclops
-import Marvel.Obligation.Obligations.LostVisor as X
 
 import Marvel.Obligation.Obligations.BurningHunger as X
+
+-- Cyclops
+import Marvel.Obligation.Obligations.LostVisor as X
 
 -- Storm
 import Marvel.Obligation.Obligations.Claustrophobia as X

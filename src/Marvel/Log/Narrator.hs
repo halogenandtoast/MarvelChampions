@@ -224,6 +224,11 @@ narrationFor = \case
   VillainMessage vid (VillainSchemeRemovesThreat _ _) -> Just $ simply "log.schemeRemovesThreat" (VillainRef vid)
   VillainMessage vid (VillainAttackDamageRedirected enemy) -> Just $ redirected (VillainRef vid) (enemyRef enemy)
   MinionMessage mid (MinionAttackDamageRedirected enemy) -> Just $ redirected (MinionRef mid) (enemyRef enemy)
+  PlaceCharacterThreat character n | n > 0 -> Just $ counted "log.characterThreatPlaced" (characterRef character) n
+  RemoveCharacterThreat character n | n > 0 -> Just $ counted "log.characterThreatRemoved" (characterRef character) n
+  MoveCharacterThreatToMainScheme character -> Just $ do
+    n <- getCharacterThreat character
+    if n == 0 then pure [] else counted "log.characterThreatMoved" (characterRef character) n
   PlaceCounters target n | n > 0 -> Just $ counted "log.countersPlaced" target n
   RemoveCounters target n | n > 0 -> Just $ counted "log.countersRemoved" target n
   EnvironmentMessage eid FlipEnvironment -> Just $ simply "log.flips" (EnvironmentRef eid)
@@ -546,6 +551,7 @@ attackChanged enemy n = whenRef enemy \e ->
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
   AllyAttackConsequential -> Nothing
+  AllyAttackConsequentialAgainst _ -> Nothing
   AllyAssignEvenAttack {} -> Nothing
   AllyEvenAttackLands {} -> Nothing
   AllyEvenAttackFinished {} -> Nothing

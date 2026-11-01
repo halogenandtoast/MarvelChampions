@@ -44,7 +44,7 @@ instance RunMessage Havok where
       let n = sum [boostCount (cdBoostIcons $ getCardDef card) | card <- cards]
       raiseAllyAttack (allyId attrs) n
       pure $ Havok (attrs `With` n)
-    AllyMessage aid action | aid == allyId attrs, action == AllyAttacked || action == AllyAttackConsequential -> do
+    AllyMessage aid action | aid == allyId attrs, (case action of AllyAttacked -> True; AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; _ -> False) -> do
       attrs' <- runMessage msg attrs
       pure $ Havok (attrs' `With` 0)
     _ -> Havok . (`With` bonus) <$> runMessage msg attrs

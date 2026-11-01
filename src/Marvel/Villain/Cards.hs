@@ -18,6 +18,11 @@ import Marvel.Trait qualified as NETrait
 
 import Marvel.Aspect qualified as NEAspect
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
@@ -48,6 +53,7 @@ import Marvel.Keyword
 allVillainCards :: [CardDef]
 allVillainCards =
   [ ne40070a, ne40070b, ne40071a, ne40071b, ne40072a, ne40072b, ne40073a, ne40073b, ne40074a, ne40074b, ne40075a, ne40075b, ne40076a, ne40076b, ne40118, ne40119, ne40120, ne40136, ne40137, ne40138, ne40163, ne40164, ne40165
+  , mojo39001a, mojo39001b, mojo39012a, mojo39012b, mojo39013a, mojo39013b, mojo39014a, mojo39014b, mojo39022, mojo39023, mojo39024
   , mgSabretooth60, mgSabretooth61, mgSabretooth62, mgSentinel84, mgSentinel85, mgSentinel86, mgMasterMold09, mgMasterMold10, mgMasterMold11, mgAvalancheA, mgAvalancheB, mgBlobA, mgBlobB, mgPyroA, mgPyroB, mgToadA, mgToadB, mgMagneto38, mgMagneto39, mgMagneto40, smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
   , theHood1
   , theHood2
@@ -932,6 +938,129 @@ mgMagneto40 = (smVillainDef "32140" ("Magneto") MGSet.Magneto 0)
   , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Steady]
   }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = VillainType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39001a :: CardDef
+mojo39001a = (mojoCardDef "39001a" "MaGog" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.Brute]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39001b :: CardDef
+mojo39001b = (mojoCardDef "39001b" "MaGog" MojoSet.Magog 0)
+  { cdTraits = fromList [MojoTrait.Brute]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39012a :: CardDef
+mojo39012a = (mojoCardDef "39012a" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Escaped, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39012b :: CardDef
+mojo39012b = (mojoCardDef "39012b" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Cornered, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39013a :: CardDef
+mojo39013a = (mojoCardDef "39013a" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Escaped, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39013b :: CardDef
+mojo39013b = (mojoCardDef "39013b" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Cornered, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39014a :: CardDef
+mojo39014a = (mojoCardDef "39014a" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Escaped, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39014b :: CardDef
+mojo39014b = (mojoCardDef "39014b" "Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList [MojoTrait.Cornered, MojoTrait.Mystic]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39022 :: CardDef
+mojo39022 = (mojoCardDef "39022" "Mojo" MojoSet.Mojo 0)
+  { cdTraits = fromList [MojoTrait.Spineless]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39023 :: CardDef
+mojo39023 = (mojoCardDef "39023" "Mojo" MojoSet.Mojo 0)
+  { cdTraits = fromList [MojoTrait.Spineless]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39024 :: CardDef
+mojo39024 = (mojoCardDef "39024" "Mojo" MojoSet.Mojo 0)
+  { cdTraits = fromList [MojoTrait.Spineless]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
 
 -- NeXt Evolution campaign and scenarios
 

@@ -19,8 +19,14 @@ data Modifier
   | DamageTakenFromPrintedResource Resource Int
   | AmplifyIconModifier Natural
   | TakesFirstPlayerPhaseTurn
+  | DamageMultiplierFromResource Resource Natural
+  | DamageBonusFromResource Resource Natural
   | OnlyAerialOrRangedAttacksCanDamage
   | AttacksIgnoreRetaliate
+  | CannotTakeDamageExceptFromResource Resource
+  | AttackDamageMultiplierWithKeyword Keyword Natural
+  | AttackConsequentialDamageReductionAgainst EnemyId Natural
+  | AllyLimitReduction Natural
   | AttackWithThwart
   | AttackConsequentialDamageReduction Natural
   | AttacksAgainstGainKeyword Keyword

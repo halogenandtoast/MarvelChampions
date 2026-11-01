@@ -60,10 +60,14 @@ instance RunMessage CoordinatedAttackEffect where
     AllyMessage aid (AllyAttackMultipleFinished []) -> do
       whenM (effectValidFor attrs $ AllyRef aid) $ disableEffect (effectId attrs)
       pure e
-    AllyMessage aid AllyAttackConsequential -> do
+    AllyMessage aid consequence | isConsequence consequence -> do
       active <- effectValidFor attrs (AllyRef aid)
       -- The ally's handler has queued its consequential damage before this step.
       when active $ cardSpecific attrs "finishConsequence" ()
       pure e
     CardSpecific (isTarget attrs -> True) "finishConsequence" _ -> e <$ disableEffect (effectId attrs)
     _ -> CoordinatedAttackEffect <$> runMessage msg attrs
+   where
+    isConsequence AllyAttackConsequential = True
+    isConsequence (AllyAttackConsequentialAgainst _) = True
+    isConsequence _ = False

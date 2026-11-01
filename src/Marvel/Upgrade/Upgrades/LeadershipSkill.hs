@@ -53,7 +53,7 @@ instance RunMessage LeadershipSkillEffect where
   runMessage msg e@(LeadershipSkillEffect attrs) = runQueueT $ case msg of
     CheckWindows ws | any done ws -> e <$ disableEffect (effectId attrs)
     AllyMessage aid action | effectMatcher attrs == AllyEntity (AllyWithId aid)
-      , (case action of AllyAttackConsequential -> True; AllyThwartConsequential -> True; AllyThwartConsequentialOn _ -> True; _ -> False) -> e <$ disableEffect (effectId attrs)
+      , (case action of AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; AllyThwartConsequential -> True; AllyThwartConsequentialOn _ -> True; _ -> False) -> e <$ disableEffect (effectId attrs)
     _ -> LeadershipSkillEffect <$> runMessage msg attrs
    where
     done (W.Window W.After (W.AllyAttack aid _)) = effectMatcher attrs == AllyEntity (AllyWithId aid)

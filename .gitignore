@@ -1,5 +1,6 @@
 .stack-work/
 .stack-work-codex/
+.stack-work-mojo/
 dist-newstyle/
 *~
 tags

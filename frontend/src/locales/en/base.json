@@ -127,6 +127,7 @@
       "9": "Wrecking Crew"
     },
     "modularRules": {
+      "mojo": "You can swap the recommended modular sets for other genre sets. Longshot is optional and does not count toward the genre set total.",
       "core": "Start with the modular set named on the main scheme. You may replace it with another set, chosen deliberately or at random. The core sets' difficulty ratings run from 1 to 5. Adding extra sets dilutes the encounter deck rather than necessarily making the scenario harder.",
       "gob": "Each Green Goblin scenario calls for one modular encounter set and recommends Goblin Gimmicks. You may replace it with another set, chosen deliberately or at random. This pack also includes A Mess of Things, Power Drain, and Running Interference for customizing scenarios.",
       "twc": "The Wrecking Crew uses its four villains' own encounter decks and does not use other encounter sets. Adjust its difficulty through the villain versions instead of adding modular sets.",

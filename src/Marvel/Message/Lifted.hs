@@ -45,7 +45,7 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Modifier.Types (Modifier (KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -1006,6 +1006,10 @@ healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinion minion = pushAll . Msg.engageMinion minion
+
+-- | Continue engagement only if the minion survived a preceding check.
+engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
+engageMinionIfInPlay minion you = cardSpecific GameRef "engageMinionIfInPlay" (minion, you)
 
 defeatMinion :: (ReverseQueue m) => MinionId -> m ()
 defeatMinion mid = do
@@ -2605,8 +2609,15 @@ deferEventResolutionUntilScheme eid vid = withQueue_ $ \queue ->
   isCompletion (CheckWindows [Window After (W.EventPlayed _ target _)]) = target == eid
   isCompletion _ = False
 
-engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
-engageMinionIfInPlay minion you = cardSpecific GameRef "engageMinionIfInPlay" (minion, you)
+-- | Place threat on a character, as Mojo's encounter cards do.
+placeCharacterThreat :: (ReverseQueue m, IsCharacter c) => c -> Natural -> m ()
+placeCharacterThreat c = push . PlaceCharacterThreat (toCharacter c)
+
+removeCharacterThreat :: (ReverseQueue m, IsCharacter c) => c -> Natural -> m ()
+removeCharacterThreat c = push . RemoveCharacterThreat (toCharacter c)
+
+moveCharacterThreatToMainScheme :: (ReverseQueue m, IsCharacter c) => c -> m ()
+moveCharacterThreatToMainScheme = push . MoveCharacterThreatToMainScheme . toCharacter
 
 -- | Med Lab starts an ordinary paid play of its held ally; the reservation in the
 -- payment records where it came from, so it enters play exhausted.
@@ -2618,6 +2629,14 @@ attachAllyToMedLab sid card = do
   removeFromGame card
   cardSpecific GameRef "medLabRemoveCapturedCard" (pcCardId card)
   cardSpecific (SupportRef sid) "holdAlly" card
+
+-- | A card retrieved from underneath another card leaves that holder first.
+-- Ordinary removeFromGame also serves captures from hand, deck and discard, whose
+-- holder can already have recorded the card when the queued removal resolves.
+removePlayerCardFromHeldZones :: (ReverseQueue m) => PlayerCard -> m ()
+removePlayerCardFromHeldZones = push . RemovePlayerCardFromHeldZones . pcCardId
+
+
 -- * NeXt Evolution
 
 -- | Cancel a played event's effect, retaining its payment and normal disposal.

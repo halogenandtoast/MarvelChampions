@@ -1,6 +1,7 @@
 module Marvel.Support.Supports.TheXjet where
 
 import Marvel.Prelude
+import Marvel.Ability
 import Marvel.Card.Side
 import Marvel.Payment
 import Marvel.Game.Source

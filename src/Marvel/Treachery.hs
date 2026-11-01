@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+
 import Marvel.Treachery.Treacheries.NextEvolutionTelepathySet
 
 import Marvel.Treachery.Treacheries.NextEvolutionSuperStrengthSet
@@ -21,6 +22,9 @@ import Marvel.Treachery.Treacheries.NextEvolutionNeJuggernaut
 
 import Marvel.Treachery.Treacheries.NextEvolutionBlackTomCassidy
 
+import Marvel.Treachery.Treacheries.Mojo
+import Marvel.Treachery.Treacheries.MojoGenres
+import Marvel.Treachery.Treacheries.MojoOpening
 import Marvel.Treachery.Treacheries.TheHood qualified as Hood
 import Marvel.Prelude
 
@@ -46,7 +50,10 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard ne40154, SomeTreacheryCard ne40080, SomeTreacheryCard ne40088, SomeTreacheryCard ne40089, SomeTreacheryCard ne40102, SomeTreacheryCard ne40110, SomeTreacheryCard ne40111, SomeTreacheryCard ne40125, SomeTreacheryCard ne40126, SomeTreacheryCard ne40127, SomeTreacheryCard ne40128, SomeTreacheryCard ne40129, SomeTreacheryCard ne40135, SomeTreacheryCard ne40147, SomeTreacheryCard ne40148, SomeTreacheryCard ne40149, SomeTreacheryCard ne40150, SomeTreacheryCard ne40158, SomeTreacheryCard ne40162, SomeTreacheryCard ne40177, SomeTreacheryCard ne40178, SomeTreacheryCard ne40179, SomeTreacheryCard ne40203, SomeTreacheryCard cable40035, SomeTreacheryCard cable40036
+  [ SomeTreacheryCard ne40154
+  , SomeTreacheryCard ne40080, SomeTreacheryCard ne40088, SomeTreacheryCard ne40089, SomeTreacheryCard ne40102, SomeTreacheryCard ne40110, SomeTreacheryCard ne40111, SomeTreacheryCard ne40125, SomeTreacheryCard ne40126, SomeTreacheryCard ne40127, SomeTreacheryCard ne40128, SomeTreacheryCard ne40129, SomeTreacheryCard ne40135, SomeTreacheryCard ne40147, SomeTreacheryCard ne40148, SomeTreacheryCard ne40149, SomeTreacheryCard ne40150, SomeTreacheryCard ne40158, SomeTreacheryCard ne40162, SomeTreacheryCard ne40177, SomeTreacheryCard ne40178, SomeTreacheryCard ne40179, SomeTreacheryCard ne40203
+  , SomeTreacheryCard cable40035, SomeTreacheryCard cable40036
+  , SomeTreacheryCard mojo39009, SomeTreacheryCard mojo39010, SomeTreacheryCard mojo39011, SomeTreacheryCard mojo39017, SomeTreacheryCard mojo39019, SomeTreacheryCard mojo39020, SomeTreacheryCard mojo39021, SomeTreacheryCard mojo39032, SomeTreacheryCard mojo39033, SomeTreacheryCard mojo39034, SomeTreacheryCard mojo39040, SomeTreacheryCard mojo39046, SomeTreacheryCard mojo39070
   , SomeTreacheryCard misled, SomeTreacheryCard assassinationAttempt, SomeTreacheryCard acolyteFrenzy
   , SomeTreacheryCard knifeFight
   , SomeTreacheryCard astralAttack

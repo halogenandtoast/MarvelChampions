@@ -3,6 +3,8 @@ module Marvel.Obligation where
 
 import Marvel.Obligation.Obligations.NextEvolutionTelepathySet
 
+import Marvel.Obligation.Obligations.Mojo
+import Marvel.Obligation.Obligations.MojoGenres
 import Marvel.Obligation.Obligations.MutantGenesisCampaign
 import Marvel.Prelude
 
@@ -26,7 +28,10 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard ne40160, SomeObligationCard ne40161, SomeObligationCard memoriesofArmageddon, SomeObligationCard cable40031
+  [ SomeObligationCard ne40160, SomeObligationCard ne40161
+  , SomeObligationCard memoriesofArmageddon
+  , SomeObligationCard cable40031
+  , SomeObligationCard mojo39030, SomeObligationCard mojo39036, SomeObligationCard mojo39061, SomeObligationCard mojo39062, SomeObligationCard mojo39063, SomeObligationCard mojo39064, SomeObligationCard mojo39065
   , SomeObligationCard deadlyTouch, SomeObligationCard guildBusiness
   , SomeObligationCard claustrophobia
   , SomeObligationCard lostVisor

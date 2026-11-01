@@ -32,6 +32,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -70,11 +75,15 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ ne40160, ne40161, memoriesofArmageddon, cable40031
-    , deadlyTouch
+    [ ne40160, ne40161
+  , memoriesofArmageddon
+  , cable40031
+  , mojo39030, mojo39036, mojo39061, mojo39062, mojo39063, mojo39064, mojo39065
+  , deadlyTouch
+  , guildBusiness
   , claustrophobia
-  , pastDemons
   , lostVisor
+  , pastDemons
   , mgReactiveDefense
   , mgWarnTheOthers, smFriendsAndFamily
   , affairsOfState
@@ -469,6 +478,11 @@ mgWarnTheOthers = (smObligationDef "32099" ("Warn the Others") MGSet.ProjectWide
 mgReactiveDefense :: CardDef
 mgReactiveDefense = (obligation "32174b" "Reactive Defense" [MGBoost.Boost, MGBoost.Boost]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
 
+-- Wolverine
+
+pastDemons :: CardDef
+pastDemons = obligation "35027" "Past Demons" [Boost, Boost]
+
 
 -- Phoenix
 
@@ -487,11 +501,6 @@ lostVisor = (obligation "33027" "Lost Visor" [Boost, Boost])
 claustrophobia :: CardDef
 claustrophobia = obligation "36030" "Claustrophobia" [Boost, Boost]
 
--- Wolverine
-
-pastDemons :: CardDef
-pastDemons = obligation "35027" "Past Demons" [Boost, Boost]
-
 -- Gambit
 
 guildBusiness :: CardDef
@@ -503,6 +512,99 @@ guildBusiness = (obligation "37025" "Guild Business" [Boost, Boost]) { cdHazards
 deadlyTouch :: CardDef
 deadlyTouch = obligation "38024" "Deadly Touch" [Boost, Boost]
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39030 :: CardDef
+mojo39030 = (mojoCardDef "39030" "Paparazzi" MojoSet.Mojo 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Hinder (MojoValue.Static 10)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39036 :: CardDef
+mojo39036 = (mojoCardDef "39036" "Build the Case" MojoSet.Crime 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  , cdAcceleration = 1
+  }
+
+mojo39061 :: CardDef
+mojo39061 = (mojoCardDef "39061" "Family Matters" MojoSet.Sitcom 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39062 :: CardDef
+mojo39062 = (mojoCardDef "39062" "Growing Pains" MojoSet.Sitcom 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = []
+  }
+
+mojo39063 :: CardDef
+mojo39063 = (mojoCardDef "39063" "The Odd Couple" MojoSet.Sitcom 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39064 :: CardDef
+mojo39064 = (mojoCardDef "39064" "The One with the Breakup" MojoSet.Sitcom 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  , cdHazards = 1
+  }
+
+mojo39065 :: CardDef
+mojo39065 = (mojoCardDef "39065" "Watch Me Play" MojoSet.Sitcom 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Peril, MojoKeyword.Incite (3)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
 
 -- NeXt Evolution: Cable
 

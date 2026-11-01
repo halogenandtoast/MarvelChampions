@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
+import Marvel.Ally.Cards qualified as Allies
 import Marvel.Attachment.Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -21,6 +22,7 @@ import Marvel.Treachery.Cards
 
 allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
+  fromList [(toCardCode def, def) | def <- HashMap.elems Allies.allAllies, isJust (cdEncounterSet def)] <>
   allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions <> allObligations <> Environments.allEnvironments <> allEncounterSupports
 
 gatherEncounterSets ::

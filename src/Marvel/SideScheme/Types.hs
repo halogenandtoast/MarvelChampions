@@ -205,7 +205,7 @@ instance RunMessage (Attrs SideScheme) where
       when (sideSchemeThreat attrs > 0 && remaining == 0) $ defeatSideScheme (sideSchemeId attrs)
       pure $ attrs & threatL .~ remaining
     CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
-    RemoveFromGame (CardIdRef cid) -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs)}
+    RemovePlayerCardFromHeldZones cid -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs)}
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
       thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n

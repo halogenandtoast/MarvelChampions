@@ -6,6 +6,8 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| MojoMania rules insert | 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc39_mojomania_rules_insert-compressed.pdf |
+| [scenario-mojo-mania.md](scenario-mojo-mania.md) | Standalone MaGog, Spiral and Mojo, genre sets, show deck, ratings and character threat |
 | Rogue Hero Pack rules insert (MC38) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc38_rogue_rules_insert.pdf |
 | Gambit Hero Pack rules insert (MC37) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/1b/04/1b0478ce-e9a8-42f5-a7cd-3d0cc82139e7/mc37_gambit_rules_insert.pdf |
 | Storm Hero Pack rules insert (MC36) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/93/59/9359dac0-92c6-4b91-b73e-1d53253601a0/mc36_storm_rules_insert.pdf |
@@ -49,8 +51,8 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
-| [hero-rogue.md](hero-rogue.md) | Rogue: Touched, copied traits, Karma, Med Lab, Reavers, current errata and rulings |
 | [hero-gambit.md](hero-gambit.md) | Gambit: charge counters, alter-ego thwarts, Psionic Shield errata and timing, starter deck |
+| [hero-rogue.md](hero-rogue.md) | Rogue: Touched, copied traits, Karma, Med Lab, Reavers, current errata and rulings |
 | [hero-storm.md](hero-storm.md) | Storm: Weather deck, Special abilities, Flash Freeze ruling, Possessed, starter deck and errata |
 | [hero-phoenix.md](hero-phoenix.md) | Phoenix: Phoenix Force, controlled allies, keyword rules and FAQ, printed nemesis text, starter deck and owner rulings |
 | [hero-wolverine.md](hero-wolverine.md) | Wolverine: damage-paid attacks, Claws timing, current errata, starter deck and owner rulings |

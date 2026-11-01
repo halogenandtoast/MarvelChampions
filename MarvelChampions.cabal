@@ -99,6 +99,7 @@ library
       Marvel.Ally.Allies.Lockheed
       Marvel.Ally.Allies.Lockjaw
       Marvel.Ally.Allies.Longshot
+      Marvel.Ally.Allies.LongshotEncounter
       Marvel.Ally.Allies.LukeCage
       Marvel.Ally.Allies.MachineManAaronStack
       Marvel.Ally.Allies.MadTitansShadowCampaign
@@ -323,6 +324,9 @@ library
       Marvel.Attachment.Attachments.MagicCrowbar
       Marvel.Attachment.Attachments.MasterStrategist
       Marvel.Attachment.Attachments.MediaCoverage
+      Marvel.Attachment.Attachments.Mojo
+      Marvel.Attachment.Attachments.MojoGenres
+      Marvel.Attachment.Attachments.MojoOpening
       Marvel.Attachment.Attachments.MutantGenesis
       Marvel.Attachment.Attachments.MutantGenesisCampaign
       Marvel.Attachment.Attachments.NeurologicalImplants
@@ -430,6 +434,9 @@ library
       Marvel.Environment.Environments.InfinityStones
       Marvel.Environment.Environments.KreeCommandShip
       Marvel.Environment.Environments.LibraryLabyrinth
+      Marvel.Environment.Environments.Mojo
+      Marvel.Environment.Environments.MojoGenres
+      Marvel.Environment.Environments.MojoOpening
       Marvel.Environment.Environments.MutantGenesis
       Marvel.Environment.Environments.MutantGenesisCampaign
       Marvel.Environment.Environments.NebulasShip
@@ -901,6 +908,8 @@ library
       Marvel.MainScheme.MainSchemes.KangsStageThree
       Marvel.MainScheme.MainSchemes.KangsWrath
       Marvel.MainScheme.MainSchemes.Loki
+      Marvel.MainScheme.MainSchemes.Mojo
+      Marvel.MainScheme.MainSchemes.MojoOpening
       Marvel.MainScheme.MainSchemes.MutagenCloud
       Marvel.MainScheme.MainSchemes.MutantGenesis
       Marvel.MainScheme.MainSchemes.NewWorldHydra
@@ -1038,6 +1047,9 @@ library
       Marvel.Minion.Minions.MisterKnife
       Marvel.Minion.Minions.MisterSinister
       Marvel.Minion.Minions.Modok
+      Marvel.Minion.Minions.Mojo
+      Marvel.Minion.Minions.MojoGenres
+      Marvel.Minion.Minions.MojoOpening
       Marvel.Minion.Minions.Monster
       Marvel.Minion.Minions.Morbius
       Marvel.Minion.Minions.Morlun
@@ -1107,6 +1119,7 @@ library
       Marvel.Minion.Types
       Marvel.Modifier
       Marvel.Modifier.Types
+      Marvel.MojoOpening
       Marvel.Name
       Marvel.NextEvolution.Helpers
       Marvel.NextEvolution.Juggernaut
@@ -1151,6 +1164,8 @@ library
       Marvel.Obligation.Obligations.ManOutOfTime
       Marvel.Obligation.Obligations.MemoriesOfAnotherLife
       Marvel.Obligation.Obligations.MemoriesofArmageddon
+      Marvel.Obligation.Obligations.Mojo
+      Marvel.Obligation.Obligations.MojoGenres
       Marvel.Obligation.Obligations.MutantGenesis
       Marvel.Obligation.Obligations.MutantGenesisCampaign
       Marvel.Obligation.Obligations.NeedForSpeed
@@ -1198,6 +1213,8 @@ library
       Marvel.Resource.Resources.Salvage
       Marvel.Resource.Types
       Marvel.Scenario
+      Marvel.Scenario.Mojo
+      Marvel.Scenario.MojoOpening
       Marvel.Scenario.MutantGenesis
       Marvel.Scenario.NextEvolution
       Marvel.Scenario.NextEvolutionMarauders
@@ -1266,6 +1283,9 @@ library
       Marvel.SideScheme.SideSchemes.MadTitansShadowCampaign
       Marvel.SideScheme.SideSchemes.MarkedForDeath
       Marvel.SideScheme.SideSchemes.MassChaos
+      Marvel.SideScheme.SideSchemes.Mojo
+      Marvel.SideScheme.SideSchemes.MojoGenres
+      Marvel.SideScheme.SideSchemes.MojoOpening
       Marvel.SideScheme.SideSchemes.MothersOrders
       Marvel.SideScheme.SideSchemes.MutantGenesis
       Marvel.SideScheme.SideSchemes.MutantGenesisCampaign
@@ -1539,6 +1559,9 @@ library
       Marvel.Treachery.Treacheries.Mimicry
       Marvel.Treachery.Treacheries.MindRay
       Marvel.Treachery.Treacheries.Misled
+      Marvel.Treachery.Treacheries.Mojo
+      Marvel.Treachery.Treacheries.MojoGenres
+      Marvel.Treachery.Treacheries.MojoOpening
       Marvel.Treachery.Treacheries.MutantGenesis
       Marvel.Treachery.Treacheries.MysticalLink
       Marvel.Treachery.Treacheries.Nebula
@@ -1890,6 +1913,8 @@ library
       Marvel.Villain.Villains.Kang
       Marvel.Villain.Villains.Klaw
       Marvel.Villain.Villains.Loki
+      Marvel.Villain.Villains.Mojo
+      Marvel.Villain.Villains.MojoOpening
       Marvel.Villain.Villains.MutantGenesis
       Marvel.Villain.Villains.Nebula
       Marvel.Villain.Villains.NextEvolutionMisterSinister
@@ -2157,10 +2182,14 @@ test-suite MarvelChampions-test
       Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
       Marvel.Encounter.LokiSpec
+      Marvel.Encounter.LongshotEncounterSpec
       Marvel.Encounter.MadTitansShadowCampaignSpec
       Marvel.Encounter.MilesMoralesNemesisSpec
       Marvel.Encounter.MisterSinisterSpec
       Marvel.Encounter.ModularsSpec
+      Marvel.Encounter.MojoGenresSpec
+      Marvel.Encounter.MojoOpeningSpec
+      Marvel.Encounter.MojoSpec
       Marvel.Encounter.MsMarvelNemesisSpec
       Marvel.Encounter.MutantGenesisCampaignSpec
       Marvel.Encounter.MutantGenesisNemesisSpec

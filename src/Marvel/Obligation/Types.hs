@@ -99,6 +99,10 @@ instance HasCardDef Obligation where
   getCardDef = getCardDef . toAttrs
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasAbilities a, HasModifiersFor a, RunMessage a) => IsObligation a where
+  obligationDisplayThreat :: a -> Natural
+  obligationDisplayThreat _ = 0
+  obligationDisplayCounters :: a -> Natural
+  obligationDisplayCounters _ = 0
   toObligationAttrs :: a -> Attrs Obligation
   default toObligationAttrs :: (Coercible a (Attrs Obligation)) => a -> Attrs Obligation
   toObligationAttrs = coerce
@@ -154,7 +158,7 @@ instance RunMessage (Attrs Obligation) where
     AddToVictoryDisplay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
     RemoveFromPlay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
     RemoveFromGame (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
-    RemoveFromGame (CardIdRef cid) -> pure attrs {obligationHeldCards = filter ((/= cid) . pcCardId) (obligationHeldCards attrs)}
+    RemovePlayerCardFromHeldZones cid -> pure attrs {obligationHeldCards = filter ((/= cid) . pcCardId) (obligationHeldCards attrs)}
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       ObligationOwnedBy identityId -> pure attrs {obligationOwner = Just identityId}
       RevealObligation identityId -> pure attrs {obligationOwner = Just identityId}
@@ -195,3 +199,9 @@ discardToDiscard a you matcher = do
 -- | "A [resource] resource": a card with the resource's icon, or a wild one.
 withResource :: Resource -> CardMatcher
 withResource r = CardMatchesAny [CardWithResource r, CardWithResource Wild]
+
+getObligationDisplayThreat :: Obligation -> Natural
+getObligationDisplayThreat (Obligation a) = obligationDisplayThreat a
+
+getObligationDisplayCounters :: Obligation -> Natural
+getObligationDisplayCounters (Obligation a) = obligationDisplayCounters a

@@ -1,6 +1,7 @@
 module Marvel.Support.Supports.Xmansion where
 
 import Marvel.Prelude
+import Marvel.Ability
 import Data.List (nub)
 import Marvel.Card.Side
 import Marvel.Payment

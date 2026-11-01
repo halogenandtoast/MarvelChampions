@@ -368,16 +368,25 @@ getModifiedScheme attrs = do
   applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
 
+getMinionDisplayCounters :: Minion -> Natural
+getMinionDisplayCounters (Minion a) = minionDisplayCounters a
+
 incomingMinionDamage :: HasGame m => Attrs Minion -> Source -> Damage -> m Damage
 incomingMinionDamage attrs source originalDamage = do
   modifiers <- getModifiers attrs
+  sourceDef <- getsGame (`abilityCardDef` refocus source)
   attackerTraits <- if any (\case AttackDamageReductionUnlessAttackerHasTrait _ _ -> True; _ -> False) modifiers
     then case damageSource originalDamage of
       FromPlayerAttack you -> getCharacterTraits (IdentityCharacter you)
       FromAllyAttack ally -> getCharacterTraits (AllyCharacter ally)
       _ -> pure mempty
     else pure mempty
-  let adjusted = damageAmount originalDamage
+  let resources = maybe [] printedResources sourceDef
+      multipliers = [n | DamageMultiplierFromResource resource n <- modifiers, resource `elem` resources]
+        <> [n | AttackDamageMultiplierWithKeyword Piercing n <- modifiers, damagePiercing originalDamage]
+      bonus = sum [n | DamageBonusFromResource resource n <- modifiers, resource `elem` resources]
+      barred = any (`notElem` resources) [resource | CannotTakeDamageExceptFromResource resource <- modifiers]
+      adjusted = if barred then 0 else damageAmount originalDamage * product multipliers + if damageAmount originalDamage > 0 then bonus else 0
       attacking = case damageSource originalDamage of
         FromPlayerAttack _ -> True
         FromAllyAttack _ -> True
@@ -393,6 +402,3 @@ incomingMinionDamage attrs source originalDamage = do
       room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
       damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
   pure damage
-
-getMinionDisplayCounters :: Minion -> Natural
-getMinionDisplayCounters (Minion a) = minionDisplayCounters a

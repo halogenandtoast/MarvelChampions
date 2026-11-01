@@ -10,6 +10,7 @@ import Marvel.Ally.Allies.Wolfsbane as X
 import Marvel.Ally.Allies.Feral as X
 import Marvel.Ally.Allies.Outlaw as X
 import Marvel.Ally.Allies.Diamondback as X
+import Marvel.Ally.Allies.LongshotEncounter as X
 import Marvel.Ally.Allies.BlackCatFeliciaHardy as X
 import Marvel.Ally.Allies.BlackWidowNatashaRomanoff as X
 import Marvel.Ally.Allies.DaredevilMattMurdock as X

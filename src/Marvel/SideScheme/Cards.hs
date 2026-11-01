@@ -1,5 +1,6 @@
 module Marvel.SideScheme.Cards where
 
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -32,6 +33,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -71,12 +77,17 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202, notMyLuckyDay, superpowerTraining, takeOuttheGuards, cable40006, cable40018, cable40019, cable40020, cable40027, cable40033
+  [ ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202
+  , notMyLuckyDay
+  , superpowerTraining
+  , takeOuttheGuards
+  , cable40006, cable40018, cable40019, cable40020, cable40027, cable40033
+  , mojo39008, mojo39016, mojo39031, mojo39037, mojo39038, mojo39039, mojo39045, mojo39059
   , mystiquesManipulations, theReavers
   , theAssassinsGuild, heraldOfAvalon
   , leaderOfTheMorlocks, rulerOfTheAstralPlane
-  , theCarbonadiumSynthesizer, seekingVengeance
   , geneticManipulation
+  , theCarbonadiumSynthesizer, seekingVengeance
   , mgFindTheSenator, mgMedicalEmergency, mgFeralRage, mgTheBrotherhood, mgMetamorphicMayhem, mgMutantsAtTheMall, mgAbductionProtocols, mgOperationZeroTolerance, mgRelentlessRobots, mgIntruderAlert, mgInsertVirusProgram, mgProtectTheStudents, mgUnderSiege, mgBoardingParty, mgSabotageMasterMold, mgOrbitalDecay, mgMagneticMayhem, mgMagneticallySealed, mgSeized, mgTheAcolytes, mgNimrodsPortal, mgBastionsMachinations, mgFrightenedPolice, mgEnemyOfMyEnemy, mgFindThePrisoners, mgSurpriseAttack, mgMagnetosFortress
   , smDirtTrap, smTidalSands, smGuardTheBellTower, smLashingOut, smToothAndNail, smLightAtTheEndA, smLightAtTheEndB, smBruteForceBarricade, smFesteringMass, smJoyRide, smPanicInTheStreets, smVolunteerWork, smLimitlessSupply, smCoordinatedEffort, smHiddenInShadow, smTeamworkMakesTheDreamWork, smFoolSParadise, smWeaknessFromWithin, smAnalysisParalysis, smBackAlleyBurglary, smCatInATree, smHenchmenHeist, smOffTheRails, smRubbleRescue
   , unbridledAmbition
@@ -1489,6 +1500,14 @@ mgBastionsMachinations = (smSideSchemeDef "32169" ("Bastion's Machinations") MGS
   , cdKeywords = fromList [MGKeyword.Victory 1]
   }
 
+-- Wolverine
+
+theCarbonadiumSynthesizer :: CardDef
+theCarbonadiumSynthesizer = (sideScheme "35029" "The Carbonadium Synthesizer" [Boost, Boost, Boost] WolverineNemesis 1) {cdAcceleration = 1}
+
+seekingVengeance :: CardDef
+seekingVengeance = (sideScheme "35035" "Seeking Vengeance" [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdAcceleration = 1}
+
 
 -- Phoenix
 
@@ -1510,14 +1529,6 @@ leaderOfTheMorlocks = (sideScheme "36032" "Leader of the Morlocks" [Boost, Boost
 rulerOfTheAstralPlane :: CardDef
 rulerOfTheAstralPlane = (sideScheme "36037" "Ruler of the Astral Plane" [Star] ShadowKingSet 1) { cdHazards = 1 }
 
--- Wolverine
-
-theCarbonadiumSynthesizer :: CardDef
-theCarbonadiumSynthesizer = (sideScheme "35029" "The Carbonadium Synthesizer" [Boost, Boost, Boost] WolverineNemesis 1) {cdAcceleration = 1}
-
-seekingVengeance :: CardDef
-seekingVengeance = (sideScheme "35035" "Seeking Vengeance" [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdAcceleration = 1}
-
 -- Gambit
 
 theAssassinsGuild :: CardDef
@@ -1535,6 +1546,106 @@ mystiquesManipulations = (sideScheme "38026" "Mystique's Manipulations" [Boost, 
 theReavers :: CardDef
 theReavers = (sideScheme "38034" "The Reavers" [Boost, Boost, Boost] ReaversSet 1) { cdHazards = 1 }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39008 :: CardDef
+mojo39008 = (mojoCardDef "39008" "Pump Up the Crowd" MojoSet.Magog 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  , cdAcceleration = 2
+  }
+
+mojo39016 :: CardDef
+mojo39016 = (mojoCardDef "39016" "The Search for Spiral" MojoSet.Spiral 0)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Permanent]
+  , cdBoostIcons = []
+  }
+
+mojo39031 :: CardDef
+mojo39031 = (mojoCardDef "39031" "Undercover Mojo" MojoSet.Mojo 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Hinder (MojoValue.PerPlayer 2)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39037 :: CardDef
+mojo39037 = (mojoCardDef "39037" "Crime Scene Investigation" MojoSet.Crime 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Hinder (MojoValue.PerPlayer 1)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39038 :: CardDef
+mojo39038 = (mojoCardDef "39038" "Law & Order" MojoSet.Crime 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Hinder (MojoValue.PerPlayer 1)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39039 :: CardDef
+mojo39039 = (mojoCardDef "39039" "Dragnet" MojoSet.Crime 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Hinder (MojoValue.PerPlayer 1)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39045 :: CardDef
+mojo39045 = (mojoCardDef "39045" "Fetch Quest" MojoSet.Fantasy 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Surge]
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39059 :: CardDef
+mojo39059 = (mojoCardDef "39059" "ICE-Teroid M" MojoSet.SciFi 1)
+  { cdTraits = fromList []
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
 
 -- NeXt Evolution: Cable
 

@@ -201,7 +201,7 @@ instance RunMessage (Attrs MainScheme) where
       pure $ attrs & threatL +~ n
     CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL %~ subtractNatural n
     CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
-    RemoveFromGame (CardIdRef cid) -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs)}
+    RemovePlayerCardFromHeldZones cid -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs)}
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
       locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
       case msg' of

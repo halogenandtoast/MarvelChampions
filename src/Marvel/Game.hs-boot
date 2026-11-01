@@ -18,7 +18,7 @@ import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
-import Marvel.Card.Types (Card)
+import Marvel.Card.Types (Card, IsCard)
 import Marvel.Count
 import Marvel.Cost.Types (Cost)
 import Marvel.Debug
@@ -324,6 +324,7 @@ replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, Mon
 
 obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool
 
+getEventPlayerCard :: HasGame m => EventId -> m (Maybe PlayerCard)
 getEventPaidResources :: (HasGame m) => EventId -> m [Resource]
 
 isIdentityDefending :: (HasGame m) => IdentityId -> m Bool
@@ -332,13 +333,11 @@ getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
 
 getEnemyKeywords :: HasGame m => EnemyId -> m [Keyword]
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
-
+getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
 getEnemyPrintedAttack :: (HasGame m) => EnemyId -> m Natural
 getAttachmentIdentity :: (HasGame m) => AttachmentId -> m (Maybe IdentityId)
 
 usesAttackForDefense :: HasGame m => IdentityId -> EnemyId -> m Bool
-
-getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
 
 canMoveSchemeThreatFrom :: (HasGame m, IsRef source) => source -> SchemeId -> m Bool
 
@@ -352,8 +351,17 @@ recalculateCardPaymentCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m
 canFindTouched :: HasGame m => IdentityId -> m Bool
 touchedHost :: (HasGame m) => IdentityId -> m (Maybe CharacterId)
 getCharacterTraits :: (HasGame m) => CharacterId -> m (HashSet Trait)
+
+getCharacterThreat :: (HasGame m) => CharacterId -> m Natural
+transferMojoThreat :: (HasGame m, HasQueue m, MonadRandom m, MonadThrow m) => CharacterId -> m ()
+
+canPlayCardIgnoringResourceCostFromAnyZone :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+
 canPlayHeldAlly :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
 heldAllyPlayable :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> SupportId -> m Bool
+
+getRevealingCardModifiers :: (HasGame m, IsRef a, IsCard a) => a -> m [Modifier]
+
 canCaptureDefeatedAlly :: HasGame m => PlayerCard -> m Bool
 
 discardResponseAvailable :: HasGame m => CardId -> m Bool

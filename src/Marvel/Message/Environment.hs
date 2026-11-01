@@ -2,10 +2,12 @@ module Marvel.Message.Environment where
 
 import Marvel.Prelude
 
+import Marvel.Window.Types (RevealSource)
 import Marvel.Id
 
 data EnvironmentMessage
-  = AttachedToEnvironment AttachmentId
+  = RevealEnvironment IdentityId RevealSource
+  | AttachedToEnvironment AttachmentId
   | -- | it turns to its other face, keeping its attachments and counters
     FlipEnvironment
   | -- | it has entered play: "enters play with 2 counters"

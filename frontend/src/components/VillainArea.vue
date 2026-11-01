@@ -90,6 +90,7 @@ const escalation = (scheme: SchemeView) => {
           :code="villain.code"
           :name="villain.name"
           :damage="villain.damage"
+          :threat="villain.threat || null"
           :counters="villain.counters || null"
           :stunned="villain.stunned"
           :stun-cards="villain.stunCards"
@@ -109,7 +110,7 @@ const escalation = (scheme: SchemeView) => {
       <BoardCard v-for="u in villain.upgrades ?? []" :id="u.id" :key="u.id" class="villain-attached" :code="u.code" :name="u.name" :exhausted="u.exhausted" :counters="u.uses ?? null" />
     </template>
 
-    <BoardCard v-for="ally in game.uncontrolledAllies ?? []" :key="ally.id" :id="ally.id" :code="ally.code" :name="ally.name" :damage="ally.damage" :attached="ally.attachments ?? []" :tough="ally.tough" />
+    <BoardCard v-for="ally in game.uncontrolledAllies ?? []" :key="ally.id" :id="ally.id" :code="ally.code" :name="ally.name" :damage="ally.damage" :threat="ally.threat || null" :attached="ally.attachments ?? []" :tough="ally.tough" />
 
     <!-- environments in the middle, between the villain and the schemes -->
     <div v-if="environments.length" class="environments">

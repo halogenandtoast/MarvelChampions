@@ -1,4 +1,7 @@
 {
+  "characterThreatPlaced": "Placed {count} threat on {target}",
+  "characterThreatRemoved": "Removed {count} threat from {target}",
+  "characterThreatMoved": "Moved {count} threat from {target} to the main scheme",
   "identityVersionSwapped": "{player} swaps to Ironheart Version {version}",
   "attachesFacedownEvent": "An event is attached facedown to {ally}.",
   "scenarioBegins": "{villain}",
@@ -161,12 +164,12 @@
   "accelerationPlaced": "{target} gains an acceleration token | {target} gains {count} acceleration tokens",
   "attachesPlayerCardToMinion": "A player card is attached to {minion}.",
   "attachesTreacheryToAlly": "A treachery is attached facedown to {ally}.",
-  "changesWeather": "{player} changes the weather to {card}.",
-  "resolvesWeatherSpecial": "{player} resolves the Special ability on {card}.",
   "controlledMinion": "{player} takes control of {card} as an ally",
   "restoredMinion": "{target} is a minion again",
   "schemeRemovesThreat": "{target}’s scheme removes threat instead of placing it",
   "attackDamageRedirected": "Damage from {enemy}’s attack is dealt to {target} instead",
+  "changesWeather": "{player} changes the weather to {card}.",
+  "resolvesWeatherSpecial": "{player} resolves the Special ability on {card}.",
   "exhausted": "{target} exhausts.",
   "readied": "{target} readies."
 }

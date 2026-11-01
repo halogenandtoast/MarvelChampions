@@ -221,11 +221,13 @@ import Marvel.Minion.Minions.HellfirePawn as X
 import Marvel.Minion.Minions.MutantGenesis as X
 
 import Marvel.Minion.Minions.OmegaRed as X
+
 import Marvel.Minion.Minions.LadyDeathstrike as X
--- Cyclops
-import Marvel.Minion.Minions.MisterSinister as X
 
 import Marvel.Minion.Minions.DarkPhoenix as X
+
+-- Cyclops
+import Marvel.Minion.Minions.MisterSinister as X
 
 -- Storm
 import Marvel.Minion.Minions.Callisto as X

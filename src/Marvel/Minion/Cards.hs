@@ -1,5 +1,6 @@
 module Marvel.Minion.Cards where
 
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -32,6 +33,11 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.Trait qualified as MojoTrait
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.Keyword qualified as MojoKeyword
+import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Boost qualified as MojoBoost
 
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.Resource
@@ -71,11 +77,16 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ ne40094, ne40095, ne40096, ne40097, ne40098, ne40099, ne40100, ne40112, ne40113, ne40114, ne40115, ne40116, ne40132, ne40133, ne40145, ne40174, ne40180, ne40181, ne40182, ne40183, ne40185, ne40186, ne40187, ne40188, ne40198, ne40199, ne40200, ne40201, prototype, topaz, cable40032
-      , rogueMystique, donaldPierce, skullbuster, bonebreaker, wadeCole, murrayReese
+      [ ne40094, ne40095, ne40096, ne40097, ne40098, ne40099, ne40100, ne40112, ne40113, ne40114, ne40115, ne40116, ne40132, ne40133, ne40145, ne40174, ne40180, ne40181, ne40182, ne40183, ne40185, ne40186, ne40187, ne40188, ne40198, ne40199, ne40200, ne40201
+  , prototype
+  , topaz
+  , cable40032
+  , mojo39007, mojo39029, mojo39042, mojo39043, mojo39044, mojo39049, mojo39050, mojo39051, mojo39052, mojo39054, mojo39055, mojo39056, mojo39057, mojo39058, mojo39068, mojo39069
+  , rogueMystique, donaldPierce, skullbuster, bonebreaker, wadeCole, murrayReese
+  , belladonna, guildAssassin, exodus
   , callisto, theShadowKing
-  , omegaRed, ladyDeathstrike
   , misterSinister
+  , omegaRed, ladyDeathstrike
   , mgAvalanche, mgBlob, mgPyro, mgToad, mgMystique, mgSentinelMarkIv, mgSentinelMarkIi, mgSentinelMarkIii, mgSentinelMarkV, mgSentinelMarkVi, mgSentinelMarkViii, mgMTypeSentinel, mgFabianCortez, mgAmeliaVoght, mgSenyaka, mgDelgado, mgUnuscione, mgNimrod, mgBastion, smSandClone, smShiftingApparition, smSymbioticBerserker, smSymbioticMonstrosity, smSymbioticThrall, smRhino, smCommonCriminal, smLifeSizeDecoy, smEvilDoppelganger, smDoctorOctopus, smElectro, smHobgoblin, smKravenTheHunter, smScorpion, smVulture, smEnragedSymbiote
   , madameMasque
       , hydraMercenary
@@ -484,7 +495,7 @@ hydraSoldierCaptainAmerica =
 -- | The nemesis minions named so on their cards, in nemesis sets with more than one
 -- minion.
 designatedNemesisMinions :: [CardDef]
-designatedNemesisMinions = [baronZemo, thomasEdison, loki, taskmaster, theMagus]
+designatedNemesisMinions = [belladonna, baronZemo, thomasEdison, loki, taskmaster, theMagus]
 
 -- | Whether the card is its nemesis set's nemesis minion: the one the set names, or its
 -- only minion.
@@ -1532,6 +1543,14 @@ mgBastion = (smMinionDef "32167" ("Bastion") MGSet.FuturePast 1)
   , cdKeywords = fromList [MGKeyword.Toughness, MGKeyword.Villainous, MGKeyword.Victory 1]
   }
 
+-- Wolverine
+
+omegaRed :: CardDef
+omegaRed = (minion "35028" "Omega Red" [Brute, Elite] [Boost, Boost, Boost] WolverineNemesis 1) {cdKeywords = fromList [Retaliate 1, Steady]}
+
+ladyDeathstrike :: CardDef
+ladyDeathstrike = (minion "35034" "Lady Deathstrike" [Elite, Trait.Reaver] [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdUnique = True, cdKeywords = fromList [Quickstrike]}
+
 
 -- Phoenix
 
@@ -1552,14 +1571,6 @@ callisto = (minion "36031" "Callisto" [Elite, Morlock] [Boost, Boost, Boost] Sto
 
 theShadowKing :: CardDef
 theShadowKing = (minion "36036" "The Shadow King" [Elite, Psionic] [Boost, Boost, Boost] ShadowKingSet 1) { cdUnique = True }
-
--- Wolverine
-
-omegaRed :: CardDef
-omegaRed = (minion "35028" "Omega Red" [Brute, Elite] [Boost, Boost, Boost] WolverineNemesis 1) {cdKeywords = fromList [Retaliate 1, Steady]}
-
-ladyDeathstrike :: CardDef
-ladyDeathstrike = (minion "35034" "Lady Deathstrike" [Elite, Trait.Reaver] [Boost, Boost, Boost] LadyDeathstrikeSet 1) {cdUnique = True, cdKeywords = fromList [Quickstrike]}
 
 -- Gambit
 
@@ -1593,6 +1604,169 @@ wadeCole = (minion "38032" "Wade Cole" [Trait.Reaver] [Boost] ReaversSet 1) { cd
 murrayReese :: CardDef
 murrayReese = (minion "38033" "Murray Reese" [Trait.Reaver] [Boost] ReaversSet 1) { cdUnique = True, cdKeywords = fromList [Teamwork Trait.Reaver] }
 
+
+-- Mojo Mania
+
+mojoCardDef :: CardCode -> Name -> MojoSet.EncounterSet -> Natural -> CardDef
+mojoCardDef code name set quantity = CardDef
+  { cdCardCode = code
+  , cdName = name
+  , cdCost = Nothing
+  , cdTraits = mempty
+  , cdKeywords = mempty
+  , cdCardType = MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdEncounterSet = Just set
+  , cdEncounterSetQuantity = Just quantity
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = NoCost
+  }
+
+mojo39007 :: CardDef
+mojo39007 = (mojoCardDef "39007" "Surprise Contender" MojoSet.Magog 1)
+  { cdTraits = fromList [MojoTrait.Clone, MojoTrait.Elite]
+  , cdUnique = True
+  , cdKeywords = fromList [MojoKeyword.Villainous]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39029 :: CardDef
+mojo39029 = (mojoCardDef "39029" "Supporting Actor" MojoSet.Mojo 2)
+  { cdTraits = fromList [MojoTrait.Robot, MojoTrait.Thespian]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Star]
+  }
+
+mojo39042 :: CardDef
+mojo39042 = (mojoCardDef "39042" "Dragon" MojoSet.Fantasy 1)
+  { cdTraits = fromList [MojoTrait.Dragon, MojoTrait.Elite]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Toughness, MojoKeyword.Retaliate (1)]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39043 :: CardDef
+mojo39043 = (mojoCardDef "39043" "Goblin" MojoSet.Fantasy 1)
+  { cdTraits = fromList [MojoTrait.Goblin]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Surge]
+  , cdBoostIcons = []
+  }
+
+mojo39044 :: CardDef
+mojo39044 = (mojoCardDef "39044" "Troll" MojoSet.Fantasy 1)
+  { cdTraits = fromList [MojoTrait.Brute, MojoTrait.Troll]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Toughness]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39049 :: CardDef
+mojo39049 = (mojoCardDef "39049" "Cultist" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Mystic]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
+
+mojo39050 :: CardDef
+mojo39050 = (mojoCardDef "39050" "The Kraken" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Creature, MojoTrait.Elite]
+  , cdUnique = True
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39051 :: CardDef
+mojo39051 = (mojoCardDef "39051" "Vampire" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Vampire]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39052 :: CardDef
+mojo39052 = (mojoCardDef "39052" "Werewolf Pack" MojoSet.Horror 1)
+  { cdTraits = fromList [MojoTrait.Werewolf]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39054 :: CardDef
+mojo39054 = (mojoCardDef "39054" "Avalanche 9.0" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Program]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Star]
+  }
+
+mojo39055 :: CardDef
+mojo39055 = (mojoCardDef "39055" "Blob 3.14" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Program]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Star]
+  }
+
+mojo39056 :: CardDef
+mojo39056 = (mojoCardDef "39056" "Magneto 2.6" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Elite, MojoTrait.Program]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Villainous]
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39057 :: CardDef
+mojo39057 = (mojoCardDef "39057" "Pyro 4.0" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Program]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Star]
+  }
+
+mojo39058 :: CardDef
+mojo39058 = (mojoCardDef "39058" "Toad 2.0" MojoSet.SciFi 1)
+  { cdTraits = fromList [MojoTrait.Program]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39068 :: CardDef
+mojo39068 = (mojoCardDef "39068" "Card Shark" MojoSet.Western 1)
+  { cdTraits = fromList [MojoTrait.Creature, MojoTrait.Elite]
+  , cdUnique = False
+  , cdKeywords = fromList []
+  , cdBoostIcons = [MojoBoost.Boost, MojoBoost.Boost, MojoBoost.Boost]
+  }
+
+mojo39069 :: CardDef
+mojo39069 = (mojoCardDef "39069" "Gunslinger" MojoSet.Western 2)
+  { cdTraits = fromList [MojoTrait.Outlaw]
+  , cdUnique = False
+  , cdKeywords = fromList [MojoKeyword.Quickstrike]
+  , cdBoostIcons = [MojoBoost.Boost]
+  }
 
 -- NeXt Evolution: Cable
 

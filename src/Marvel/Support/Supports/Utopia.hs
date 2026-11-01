@@ -2,6 +2,7 @@ module Marvel.Support.Supports.Utopia where
 
 import Marvel.Prelude
 import Marvel.Ability
+import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria

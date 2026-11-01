@@ -220,8 +220,9 @@ data EnemyMatcher
     -- are declared
     EnemyAttackingCharacter CharacterMatcher
   | -- | the enemies whose ATK is the highest of all enemies'
+    EnemyWithHighestAttack
+  | -- | current SCH strictly below the current THW of the specified ally (Mirage)
     EnemyWithSchemeLessThanAllyThwart AllyId
-  | EnemyWithHighestAttack
   | StunnedEnemy
   | EnemyWithTrait Trait
   | ConfusedEnemy
