@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Deadpool Hero Pack rules insert (MC44) | 2 rules pages and poster art | https://images-cdn.fantasyflightgames.com/filer_public/8a/98/8a987c42-a835-4fa7-b0b7-11f466e0faa4/mc44_deadpool_rules_insert-web.pdf |
 | X-23 Hero Pack rules insert (MC43) | 2 pages (p.2 artwork) | https://images-cdn.fantasyflightgames.com/filer_public/32/e8/32e82755-7b86-4ba0-9201-aa32b52faaa8/mc43_x-23_rules_insert-web.pdf |
 | Psylocke Hero Pack rules insert (MC41) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/b3/41/b341e3d0-01ef-471d-b0d3-657ae05757c6/mc41_psylocke_rules_insert-web.pdf |
 | MojoMania rules insert | 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc39_mojomania_rules_insert-compressed.pdf |
@@ -53,6 +54,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-deadpool.md](hero-deadpool.md) | Deadpool: fifth aspect, Dreadpool setup, printed icons and metagame boards, starter deck and pending digital inputs |
 | [hero-x23.md](hero-x23.md) | X-23: Linked Specializations, Assault, damage costs, current FAQ and starter deck |
 | [hero-psylocke.md](hero-psylocke.md) | Psylocke: double-sided weapons, distinct attack targets, printed stats, starter deck and official rulings |
 | [hero-gambit.md](hero-gambit.md) | Gambit: charge counters, alter-ego thwarts, Psionic Shield errata and timing, starter deck |
