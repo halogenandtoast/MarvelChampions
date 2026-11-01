@@ -5,23 +5,23 @@ module Marvel.Treachery.Treacheries.MysticalLink (
 
 import Marvel.Prelude
 
-import Control.Monad (replicateM_)
+import Control.Monad ()
 import Data.Maybe (maybeToList)
-import Data.Aeson (Result (..), fromJSON)
-import Marvel.Attack
+import Data.Aeson ()
+import Marvel.Attack ()
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
-import Data.List (nub)
+import Data.List ()
 import Marvel.Id
-import Marvel.Identity.Types (Field (PlayerIdentityDefeated))
-import Marvel.Projection (projectP)
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -37,7 +37,7 @@ newtype MysticalLink = MysticalLink (Attrs Treachery)
 -- side scheme: asked only of his attack, where the ATK counts.
 instance RunMessage MysticalLink where
   runMessage msg t@(MysticalLink attrs) = runQueueT $ case msg of
-    TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
+    TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       schemes <- selectList AnySideScheme
       for_ schemes \s -> placeThreat s 2
       pure t

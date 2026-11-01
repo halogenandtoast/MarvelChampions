@@ -4,14 +4,14 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Message.Lifted
+import Marvel.Message.Lifted ()
 import Marvel.Query
 import Marvel.Resource
 import Marvel.Window

@@ -8,7 +8,7 @@ import Marvel.Ally.Runner
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
 import Marvel.Resource
 import Marvel.Window qualified as W
@@ -39,7 +39,7 @@ instance HasAbilities Eros where
 instance RunMessage Eros where
   runMessage msg a@(Eros (attrs `With` meta)) = runQueueT $ case msg of
     AllyMessage aid (AllyPaidWith payment) | aid == allyId attrs -> do
-      n <- fromIntegral . count (== Mental) <$> paymentResources payment
+      n <- count (== Mental) <$> paymentResources payment
       attrs' <- runMessage msg attrs
       pure $ Eros (attrs' `With` ErosPayment n)
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> do

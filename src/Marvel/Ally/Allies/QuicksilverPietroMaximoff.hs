@@ -10,9 +10,9 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Entity ()
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 quicksilverPietroMaximoff :: AllyCard QuicksilverPietroMaximoff
 quicksilverPietroMaximoff = ally QuicksilverPietroMaximoff Cards.quicksilverPietroMaximoff (Thw 1, 1) (Atk 2, 1) (HP 4)

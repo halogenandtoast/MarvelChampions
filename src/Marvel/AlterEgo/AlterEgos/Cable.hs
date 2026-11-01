@@ -1,23 +1,23 @@
 module Marvel.AlterEgo.AlterEgos.Cable where
 
 import Marvel.Prelude
-import Data.List (delete, sortOn)
+import Data.List ( sortOn )
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Status
+import Marvel.Damage ()
+import Marvel.Status ()
 import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Matchers
-import Marvel.Payment
-import Marvel.Query
-import Marvel.Resource
+import Marvel.Id ()
+import Marvel.Matchers ()
+import Marvel.Payment ()
+import Marvel.Query ()
+import Marvel.Resource ()
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Window qualified as W ()
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ( runAbility )
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -29,7 +29,7 @@ import Marvel.AlterEgo.Types
 import Marvel.Stats
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.AlterEgo.Runner
+import Marvel.AlterEgo.Runner ()
 import Marvel.Obligation.Cards qualified as Obligations
 
 cable40001b :: AlterEgoCard Cable40001B
@@ -50,7 +50,7 @@ instance RunMessage Cable40001B where
     _ -> Cable40001B <$> runMessage msg attrs
 
 instance HasAbilities Cable40001B where
-  getAbilities a@(Cable40001B attrs) =
+  getAbilities a@(Cable40001B _) =
     [ability a 1 Setup NoCriteria NoCost (runAbility a 1)]
 
 instance HasModifiersFor Cable40001B where

@@ -19,7 +19,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as SideSchemes
 
 theInfinityStones :: MainSchemeCard TheInfinityStones

@@ -8,7 +8,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted

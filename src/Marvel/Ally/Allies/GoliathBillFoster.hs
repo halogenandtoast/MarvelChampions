@@ -10,9 +10,9 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Entity ()
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 goliathBillFoster :: AllyCard GoliathBillFoster
 goliathBillFoster = ally (GoliathBillFoster . (`With` Meta False)) Cards.goliathBillFoster (Thw 2, 1) (Atk 1, 2) (HP 4)

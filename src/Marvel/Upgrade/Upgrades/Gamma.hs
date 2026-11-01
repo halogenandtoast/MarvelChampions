@@ -11,7 +11,7 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

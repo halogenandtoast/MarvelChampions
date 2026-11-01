@@ -12,7 +12,7 @@ import Marvel.GameValue
 import Marvel.Id
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

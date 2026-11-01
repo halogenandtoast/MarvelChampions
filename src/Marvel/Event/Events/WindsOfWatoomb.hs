@@ -27,4 +27,5 @@ instance RunMessage WindsOfWatoomb where
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> e <$ drawCards identityId 3
       ResolvedEvent -> e <$ invocationResolved attrs
+      _ -> WindsOfWatoomb <$> runMessage msg attrs
     _ -> WindsOfWatoomb <$> runMessage msg attrs

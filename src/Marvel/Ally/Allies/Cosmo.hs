@@ -8,15 +8,15 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
-import Marvel.Card.Def
+import Marvel.Card ()
+import Marvel.Card.Def ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 cosmo :: AllyCard Cosmo

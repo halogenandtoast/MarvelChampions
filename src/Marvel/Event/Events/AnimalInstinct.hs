@@ -1,10 +1,10 @@
 module Marvel.Event.Events.AnimalInstinct where
 
 import Marvel.Prelude
-import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Query
-import Marvel.Question
+import Marvel.Game.Source ()
+import Marvel.Id ()
+import Marvel.Query ()
+import Marvel.Question ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

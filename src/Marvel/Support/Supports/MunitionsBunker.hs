@@ -26,7 +26,7 @@ instance HasAbilities MunitionsBunker where
       : [ability a 2 HeroAction OwnsThis ExhaustCost (runAbility a 2) | supportUses attrs > 0]
 
 instance RunMessage MunitionsBunker where
-  runMessage msg s@(MunitionsBunker attrs) = runQueueT $ case msg of
+  runMessage msg (MunitionsBunker attrs) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ _ -> pure $ MunitionsBunker (attrs & usesL +~ 2)
     RanAbility ident (isTarget attrs -> True) 2 _ _ -> do
       placeCounters ident (supportUses attrs)

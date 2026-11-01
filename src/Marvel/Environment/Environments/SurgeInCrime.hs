@@ -14,7 +14,7 @@ import Marvel.Environment.Types
 import Marvel.Criteria
 import Marvel.Question (runAbility)
 import Marvel.Keyword qualified as Keyword
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Trait
 
 surgeInCrime :: EnvironmentCard SurgeInCrime

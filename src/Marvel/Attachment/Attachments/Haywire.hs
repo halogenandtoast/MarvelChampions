@@ -8,7 +8,7 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Hand
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Matchers

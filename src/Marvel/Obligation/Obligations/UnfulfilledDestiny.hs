@@ -16,7 +16,7 @@ import Marvel.Modifier (HasModifiersFor)
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 
 unfulfilledDestiny :: ObligationCard UnfulfilledDestiny
 unfulfilledDestiny = obligation UnfulfilledDestiny Cards.unfulfilledDestiny

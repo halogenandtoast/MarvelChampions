@@ -2,39 +2,39 @@ module Marvel.Ally.Allies.NextEvolutionHopeSummersSet where
 
 import Marvel.Ally.Runner
 import Marvel.Prelude
-import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability
-import Marvel.Attack
-import Marvel.Cost
+import Marvel.Status ()
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ability ( HasAbilities )
+import Marvel.Attack ()
+import Marvel.Cost ()
 import Marvel.Count
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Difficulty
-import Marvel.Game.Source
-import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Difficulty ()
+import Marvel.Game.Source ()
+import Marvel.Identity.Types ()
+import Marvel.Keyword ()
 import Marvel.Matchers
-import Marvel.Message.Lifted
-import Marvel.Modifier
-import Marvel.NextEvolution.Juggernaut
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
+import Marvel.NextEvolution.Juggernaut ()
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Question ()
+import Marvel.Resource.Types ()
 import Marvel.Window qualified as W
-import Marvel.Card
-import Marvel.Entity
+import Marvel.Card ()
+import Marvel.Entity ()
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Ally.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Ally.Types ()
+
+
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+
 
 newtype HopeSummersSetAlly = HopeSummersSetAlly (Attrs Ally)
   deriving anyclass (IsAlly, HasAbilities)

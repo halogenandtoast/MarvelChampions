@@ -3,7 +3,7 @@ module Marvel.Minion.Minions.DarkPhoenix where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner

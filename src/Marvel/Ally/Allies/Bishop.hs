@@ -7,7 +7,7 @@ import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Window qualified as W
 
 bishop :: AllyCard Bishop

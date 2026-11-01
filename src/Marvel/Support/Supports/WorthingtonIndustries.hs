@@ -9,7 +9,7 @@ import Marvel.Matchers
 import Marvel.Query
 import Marvel.Question
 import Marvel.Trait qualified as Trait
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.Message.Lifted
 import Marvel.Modifier

@@ -1,10 +1,10 @@
 module Marvel.Event.Events.RegenerativeLongevity where
 
 import Marvel.Prelude
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

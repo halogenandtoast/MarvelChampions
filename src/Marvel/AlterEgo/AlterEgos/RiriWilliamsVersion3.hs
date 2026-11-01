@@ -4,10 +4,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Cost.Types
 import Marvel.Criteria
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Question (runAbility)
-import Marvel.Resource.Types
-import Marvel.Damage
+import Marvel.Resource.Types ()
+import Marvel.Damage ()
 import Marvel.AlterEgo.Cards qualified as Cards
 import Marvel.AlterEgo.Runner
 import Marvel.Card.Code

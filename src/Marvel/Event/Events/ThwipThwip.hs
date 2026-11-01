@@ -1,7 +1,7 @@
 module Marvel.Event.Events.ThwipThwip where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted
@@ -10,14 +10,14 @@ import Marvel.Ref
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Card
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Keyword
 import Marvel.Game.Source
 import Marvel.Id (EnemyId)
-import Marvel.Trait
+import Marvel.Trait ()
 
 thwipThwip :: EventCard ThwipThwip
 thwipThwip = event ThwipThwip Cards.thwipThwip

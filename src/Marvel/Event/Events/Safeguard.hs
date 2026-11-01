@@ -15,7 +15,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 safeguard :: EventCard Safeguard
 safeguard = event Safeguard Cards.safeguard

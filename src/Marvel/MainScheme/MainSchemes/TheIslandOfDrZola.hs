@@ -12,7 +12,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 
 theIslandOfDrZola :: MainSchemeCard TheIslandOfDrZola

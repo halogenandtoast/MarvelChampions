@@ -78,7 +78,7 @@ newtype LandingCraft = LandingCraft (Attrs SideScheme)
 -- | When Defeated: discard cards from the top of the encounter deck until a minion is
 -- discarded, and put it into play engaged with the player who defeated this scheme.
 instance RunMessage LandingCraft where
-  runMessage msg s@(LandingCraft attrs) = runQueueT $ case msg of
+  runMessage msg (LandingCraft attrs) = runQueueT $ case msg of
     SideSchemeMessage ident DefeatSideScheme | ident == sideSchemeId attrs -> do
       you <- getDefeatedBy attrs
       discardUntilIntoPlay you (CardWithType MinionType)

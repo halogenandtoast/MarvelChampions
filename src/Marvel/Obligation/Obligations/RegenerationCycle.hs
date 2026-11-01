@@ -14,7 +14,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Ref
+import Marvel.Ref ()
 
 regenerationCycle :: ObligationCard RegenerationCycle
 regenerationCycle = obligation RegenerationCycle Cards.regenerationCycle

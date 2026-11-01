@@ -6,12 +6,12 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Matchers
-import Marvel.Message.Lifted
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Matchers ()
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Window qualified as W
-import Marvel.Card
+import Marvel.Card ()
 
 pinpointQureshiGupta :: AllyCard PinpointQureshiGupta
 pinpointQureshiGupta = ally PinpointQureshiGupta Cards.pinpointQureshiGupta (Thw 1, 1) (Atk 2, 2) (HP 2)

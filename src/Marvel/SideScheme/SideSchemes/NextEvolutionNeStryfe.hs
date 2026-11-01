@@ -3,7 +3,7 @@ module Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe where
 import Marvel.Prelude
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.NextEvolution.Stryfe
 import Marvel.Query
@@ -17,8 +17,8 @@ import Marvel.Window qualified as W
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NeStryfeSideScheme = NeStryfeSideScheme (Attrs SideScheme)

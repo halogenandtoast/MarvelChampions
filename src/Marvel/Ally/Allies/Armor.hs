@@ -4,11 +4,11 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Entity
-import Marvel.Message.Lifted
-import Marvel.Modifier
-import Marvel.Ref
-import Marvel.Card.Code
+import Marvel.Entity ()
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
+import Marvel.Ref ()
+import Marvel.Card.Code ()
 
 armor :: AllyCard Armor
 armor = ally Armor Cards.armor (Thw 1, 1) (Atk 1, 1) (HP 2)

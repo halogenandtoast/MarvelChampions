@@ -12,8 +12,8 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Matchers
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 jackFlagJackHarrison :: AllyCard JackFlagJackHarrison

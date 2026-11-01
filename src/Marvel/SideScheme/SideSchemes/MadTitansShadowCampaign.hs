@@ -97,7 +97,7 @@ newtype SecurityBreach = SecurityBreach (Attrs SideScheme)
 -- random card from their hand facedown here. When Defeated: return each facedown card
 -- here to its owner's hand.
 instance RunMessage SecurityBreach where
-  runMessage msg s@(SecurityBreach attrs) = runQueueT $ case msg of
+  runMessage msg (SecurityBreach attrs) = runQueueT $ case msg of
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> case msg' of
       RevealSideScheme -> do
         players <- getPlayers

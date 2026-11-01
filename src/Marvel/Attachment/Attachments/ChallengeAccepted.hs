@@ -10,7 +10,7 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Damage
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Game.Source (getSourceController)
 import Marvel.Matchers
 import Marvel.Message.Lifted

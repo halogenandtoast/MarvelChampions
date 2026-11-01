@@ -5,7 +5,7 @@ module Marvel.SideScheme.SideSchemes.Vendetta (
 
 import Marvel.Prelude
 
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue

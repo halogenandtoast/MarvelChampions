@@ -5,7 +5,7 @@ module Marvel.SideScheme.SideSchemes.DroneFactory (
 
 import Marvel.Prelude
 
-import Marvel.Id (SchemeId (..))
+import Marvel.Id ()
 
 import Marvel.Card.Code
 import Marvel.Entity

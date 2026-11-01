@@ -10,7 +10,7 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Criteria
 import Marvel.Game.Source
 import Marvel.Id

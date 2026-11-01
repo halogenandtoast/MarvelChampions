@@ -4,25 +4,43 @@ import Data.Maybe (maybeToList)
 
 import Marvel.Prelude
 import Marvel.Id
-import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
+import Marvel.Status ()
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Ability
+    ( AbilityType(HeroResponse, HeroAction, ForcedResponse),
+      HasAbilities(..),
+      ability,
+      label,
+      windowAbility )
 import Marvel.Attack
 import Marvel.Cost
-import Marvel.Count
+import Marvel.Count ()
 import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Difficulty
+import Marvel.Damage ()
+import Marvel.Difficulty ()
 import Marvel.Game.Source
 import Marvel.Identity.Types
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
+    ( Message(AllyMessage, AttachmentMessage, CardSpecific, RanAbility,
+              IdentityMessage),
+      RunMessage(..),
+      AttachmentMessage(RevealAttachment),
+      IdentityMessage(IdentityWasAttacked),
+      AllyMessage(AllyWasAttacked),
+      runQueueT,
+      attachTo,
+      placeCounters,
+      removeCounters,
+      removeFromPlay )
 import Marvel.Modifier
+    ( HasModifiersFor(getModifiersFor),
+      Modifier(KeywordModifier, DamageTakenFromPrintedResource) )
 import Marvel.NextEvolution.Juggernaut
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Resource.Types
 import Marvel.Window qualified as W
@@ -30,13 +48,13 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+
 
 newtype NeJuggernautAttachment = NeJuggernautAttachment (Attrs Attachment `With` Natural)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
@@ -67,7 +85,7 @@ instance HasAbilities NeJuggernautAttachment where
     _ -> []
 
 instance HasModifiersFor NeJuggernautAttachment where
-  getModifiersFor _ target (NeJuggernautAttachment (attrs `With` dealt)) | Just target == (enemyRef <$> attachmentEnemy attrs) = case toCardCode attrs of
+  getModifiersFor _ target (NeJuggernautAttachment (attrs `With` _)) | Just target == (enemyRef <$> attachmentEnemy attrs) = case toCardCode attrs of
     "40122a" -> pure [KeywordModifier Stalwart, KeywordModifier Overkill]
     "40122b" -> pure [DamageTakenFromPrintedResource Mental 1]
     "40123" -> do

@@ -24,7 +24,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

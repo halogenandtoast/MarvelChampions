@@ -6,7 +6,7 @@ module Marvel.Minion.Minions.ChitauriSoldier (
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Cost
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards

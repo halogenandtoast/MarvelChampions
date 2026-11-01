@@ -3,15 +3,15 @@ module Marvel.Event.Events.WeatherGoddess where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Id
-import Marvel.Matchers
+import Marvel.Id ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 
 weatherGoddess :: EventCard WeatherGoddess

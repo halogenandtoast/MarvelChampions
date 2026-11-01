@@ -7,12 +7,12 @@ import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
 import Marvel.Ability (HasAbilities)
 import Marvel.Modifier
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MorlockSiegeEnvironment = MorlockSiegeEnvironment (Attrs Environment)
@@ -32,7 +32,7 @@ instance HasModifiersFor MorlockSiegeEnvironment where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage MorlockSiegeEnvironment where
-  runMessage msg e@(MorlockSiegeEnvironment a) = runQueueT $ case msg of
+  runMessage msg (MorlockSiegeEnvironment a) = runQueueT $ case msg of
     CardSpecific target "neHoldDefeatedVillain" (fromJSON -> Success card) | target == toRef a ->
       pure $ MorlockSiegeEnvironment a {environmentHeldCards = environmentHeldCards a
         <> [MkPlayerCard (ecCardId card) (ecCardDef card) Nothing Nothing]}

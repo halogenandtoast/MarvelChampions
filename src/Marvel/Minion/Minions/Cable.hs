@@ -1,23 +1,23 @@
 module Marvel.Minion.Minions.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Status
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Status ()
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
-import Marvel.Payment
-import Marvel.Query
-import Marvel.Resource
+import Marvel.Payment ()
+import Marvel.Query ()
+import Marvel.Resource ()
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ()
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -27,8 +27,8 @@ import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
 import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.GameValue ()
+import Marvel.Hand ()
 import Marvel.Minion.Runner
 
 cable40032 :: MinionCard Cable40032
@@ -47,5 +47,5 @@ instance RunMessage Cable40032 where
     _ -> Cable40032 <$> runMessage msg attrs
 
 instance HasAbilities Cable40032 where
-  getAbilities a@(Cable40032 attrs) =
+  getAbilities a@(Cable40032 _) =
     [limitedWindowAbility a 1 (W.PlaysEvent W.When AnyIdentity $ CardWithTrait Trait.Psionic) ForcedInterrupt NoCriteria NoCost (runAbility a 1)]

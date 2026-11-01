@@ -4,9 +4,9 @@ import Marvel.Prelude
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Question
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.Window qualified as W
 import Marvel.Ability
 import Marvel.Card.Code

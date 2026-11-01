@@ -1,12 +1,12 @@
 module Marvel.Event.Events.PhaseDisruption where
 
 import Marvel.Prelude
-import Marvel.Ability
-import Marvel.Ability qualified as Ability
+import Marvel.Ability ()
+import Marvel.Ability qualified as Ability ()
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Query
@@ -16,12 +16,12 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Payment (paymentTarget)
-import Marvel.Upgrade.Cards qualified as Upgrades
-import Marvel.Window qualified as W
+import Marvel.Payment ()
+import Marvel.Upgrade.Cards qualified as Upgrades ()
+import Marvel.Window qualified as W ()
 
 phaseDisruption :: EventCard PhaseDisruption
 phaseDisruption = event PhaseDisruption Cards.phaseDisruption

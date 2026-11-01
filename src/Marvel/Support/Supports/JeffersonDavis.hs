@@ -11,7 +11,7 @@ import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
 import Marvel.Count (selectCount)
 import Marvel.GameValue
-import Marvel.Matchers.Types (GameValueMatcher (GreaterThan))
+import Marvel.Matchers.Types ()
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Matchers

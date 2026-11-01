@@ -32,7 +32,7 @@ instance IsTreachery SliceAndDice where
   toTreacheryAttrs (SliceAndDice (attrs `With` _)) = attrs
 
 instance RunMessage SliceAndDice where
-  runMessage msg t@(SliceAndDice (attrs `With` meta)) = runQueueT $ case msg of
+  runMessage msg (SliceAndDice (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage tid (RevealTreachery you) | tid == treacheryId attrs -> do
       prowler <- selectOne (MinionIs Minions.prowler)
       case prowler of

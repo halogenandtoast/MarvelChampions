@@ -5,7 +5,7 @@ module Marvel.Minion.Minions.EscapedConvict (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Ability
 import Marvel.Game.Source
 import Marvel.Matchers

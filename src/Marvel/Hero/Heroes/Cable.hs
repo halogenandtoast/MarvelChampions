@@ -1,23 +1,23 @@
 module Marvel.Hero.Heroes.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Status
+import Marvel.Damage ()
+import Marvel.Status ()
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
-import Marvel.Payment
-import Marvel.Query
-import Marvel.Resource
+import Marvel.Payment ()
+import Marvel.Query ()
+import Marvel.Resource ()
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ( runAbility )
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -29,7 +29,7 @@ import Marvel.Hero.Types
 import Marvel.Stats
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Hero.Runner
+import Marvel.Hero.Runner ()
 
 cable40001a :: HeroCard Cable40001A
 cable40001a = hero Cable40001A Cards.cable40001a (HP $ Static 12) (HandSize 5) (Thw 2) (Atk 2) (Def 2)

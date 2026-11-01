@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

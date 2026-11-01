@@ -2,23 +2,23 @@ module Marvel.Attachment.Attachments.Cable where
 
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
-import Marvel.Resource
-import Marvel.Trait qualified as Trait
+import Marvel.Resource ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ( runAbility )
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -27,9 +27,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
-import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Stats ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 
 cable40034 :: AttachmentCard Cable40034
 cable40034 = attachment Cable40034 Cards.cable40034

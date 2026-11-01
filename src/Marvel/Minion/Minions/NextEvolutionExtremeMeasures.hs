@@ -2,38 +2,39 @@ module Marvel.Minion.Minions.NextEvolutionExtremeMeasures where
 
 import Marvel.Minion.Runner
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Ability
+    ( AbilityType(ForcedResponse), HasAbilities(..), windowAbility )
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers hiding (UnexhaustedIdentity, UnexhaustedAlly)
-import Marvel.Matchers qualified as Matchers
-import Marvel.Modifier
+import Marvel.Matchers qualified as Matchers ()
+import Marvel.Modifier ()
 import Marvel.NextEvolution.Modulars
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Projection
-import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
-import Marvel.Status
+import Marvel.Query ()
+import Marvel.Question ()
+import Marvel.Resource.Types ()
+import Marvel.Status ()
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Minion.Types ()
+
+
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype ExtremeMeasuresMinion = ExtremeMeasuresMinion (Attrs Minion)
   deriving anyclass (IsMinion)

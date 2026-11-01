@@ -39,6 +39,7 @@ instance RunMessage VaporsOfValtorr where
           [targeting (characterRef c) $ cardSpecific attrs "character" c | c <- replaceable]
         pure e
       ResolvedEvent -> e <$ invocationResolved attrs
+      _ -> VaporsOfValtorr <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "character" (fromJSON -> Success (c :: CharacterId)) -> do
       held <- filterM (\s -> member c <$> select (CharacterWithStatus s)) statusCards
       ask "$label.chooseStatusToReplace"

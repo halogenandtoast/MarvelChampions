@@ -13,7 +13,7 @@ import Marvel.Invocation
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 
 imagesOfIkonn :: EventCard ImagesOfIkonn
@@ -35,4 +35,5 @@ instance RunMessage ImagesOfIkonn where
           removeThreat identityId attrs 4 ThwartableScheme
         pure e
       ResolvedEvent -> e <$ invocationResolved attrs
+      _ -> ImagesOfIkonn <$> runMessage msg attrs
     _ -> ImagesOfIkonn <$> runMessage msg attrs

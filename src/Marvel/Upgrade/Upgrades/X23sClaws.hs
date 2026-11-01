@@ -28,7 +28,7 @@ instance HasAbilities X23sClaws where
 
 instance RunMessage X23sClaws where
   runMessage msg a@(X23sClaws attrs) = runQueueT $ case msg of
-    RanAbility you (isTarget attrs -> True) 1 _ _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       createEffect Cards.x23sClaws attrs (IdentityEntity $ IdentityIs Heroes.x23)
       pure a
     _ -> X23sClaws <$> runMessage msg attrs

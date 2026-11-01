@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Identity.Types (Field (PlayerIdentityCounters))
 import Marvel.Projection
 import Marvel.Matchers
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

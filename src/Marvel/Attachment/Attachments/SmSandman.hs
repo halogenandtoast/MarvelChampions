@@ -13,7 +13,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Window hiding (VillainDamaged)

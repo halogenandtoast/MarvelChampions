@@ -4,7 +4,7 @@ module Marvel.Event.Events.SneakAttack
 import Marvel.Prelude
 import Marvel.Card
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Game.Source

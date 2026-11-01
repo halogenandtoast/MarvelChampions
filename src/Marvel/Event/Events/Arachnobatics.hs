@@ -12,7 +12,7 @@ import Marvel.Event.Types
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Status
+import Marvel.Status ()
 
 arachnobatics :: EventCard Arachnobatics
 arachnobatics = event Arachnobatics Cards.arachnobatics

@@ -12,7 +12,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -24,7 +24,7 @@ newtype ToughItOut = ToughItOut (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage ToughItOut where
-  runMessage msg t@(ToughItOut attrs) = runQueueT $ case msg of
+  runMessage msg (ToughItOut attrs) = runQueueT $ case msg of
     TreacheryMessage tid (RevealTreachery _) | tid == treacheryId attrs -> do
       armadillo <- selectOne (MinionIs Minions.armadillo)
       villain <- selectOne ActiveVillain

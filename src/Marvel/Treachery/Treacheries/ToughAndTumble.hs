@@ -3,13 +3,13 @@ module Marvel.Treachery.Treacheries.ToughAndTumble where
 import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Window qualified as W

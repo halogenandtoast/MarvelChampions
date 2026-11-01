@@ -7,7 +7,7 @@ module Marvel.MainScheme.MainSchemes.Hela (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Data.List (partition)
 import Marvel.Ally.Cards qualified as Allies
 import Marvel.Card
@@ -20,7 +20,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as SideSchemes
 
 odinsTorment :: MainSchemeCard OdinsTorment

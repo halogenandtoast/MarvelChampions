@@ -4,9 +4,9 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost.Types
-import Marvel.Count
-import Marvel.Criteria
+import Marvel.Cost.Types ()
+import Marvel.Count ()
+import Marvel.Criteria ()
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
@@ -17,7 +17,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -70,4 +70,3 @@ instance RunMessage WeaponsMaster where
           | e <- eligible]
         pure u
     _ -> WeaponsMaster <$> runMessage msg attrs
-   where ident = upgradeController attrs

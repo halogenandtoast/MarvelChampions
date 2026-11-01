@@ -4,17 +4,25 @@ import Marvel.Attack (attackCharacter)
 import Marvel.Prelude
 import Marvel.Question (runAbility)
 import Marvel.Ability
+    ( AbilityType(ForcedResponse, HeroAction),
+      HasAbilities(..),
+      ability,
+      limitedWindowAbility )
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword qualified as Keyword
 import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
+    ( HasModifiersFor(getPrintedModifiersFor, getModifiersFor),
+      Modifier(KeywordModifier, SchemeModifier, AttackModifier,
+               AttacksIgnoreRetaliate, OnlyAerialOrRangedAttacksCanDamage,
+               AttackDamageReduction, TraitModifier) )
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
 import Marvel.Resource
 import Marvel.Status
 import Marvel.Trait qualified as Trait
@@ -25,12 +33,12 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types hiding (attachToTheVillain)
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype SuperStrengthSetAttachment = SuperStrengthSetAttachment (Attrs Attachment)
@@ -70,7 +78,7 @@ instance HasModifiersFor SuperStrengthSetAttachment where
       "40157" -> [AttackModifier 3]
       "40159" -> [SchemeModifier 1]
       _ -> []
-  getModifiersFor source target card@(SuperStrengthSetAttachment a) = do
+  getModifiersFor _ target (SuperStrengthSetAttachment a) = do
     text <- if Just target /= (enemyRef <$> attachmentEnemy a) then pure [] else case toCardCode a of
       "40151" -> pure [TraitModifier Trait.Aerial, KeywordModifier Keyword.Overkill]
       "40152" -> do

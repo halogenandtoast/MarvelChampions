@@ -2,9 +2,9 @@ module Marvel.Event.Events.SisterlyBond where
 
 import Marvel.Prelude
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
@@ -28,7 +28,7 @@ newtype SisterlyBond = SisterlyBond (Attrs Event)
 
 instance RunMessage SisterlyBond where
   runMessage msg e@(SisterlyBond attrs) = runQueueT $ case msg of
-    EventMessage eid (PlayedEvent you _ window) | eid == eventId attrs -> do
+    EventMessage eid (PlayedEvent _ _ window) | eid == eventId attrs -> do
       x23 <- selectList (IdentityWithTitle "X-23")
       for_ x23 $ \laura -> do
         side <- project PlayerIdentitySide laura

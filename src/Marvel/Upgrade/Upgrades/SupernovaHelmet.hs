@@ -10,7 +10,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question (Choice (Pay))
 import Marvel.Ref
 import Marvel.Resource

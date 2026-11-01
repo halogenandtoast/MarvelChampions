@@ -8,8 +8,8 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Matchers
-import Marvel.Query
+import Marvel.Matchers ()
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types

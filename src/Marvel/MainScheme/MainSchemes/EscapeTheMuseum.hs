@@ -15,7 +15,7 @@ import Marvel.Entity
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Card.Id (CardId (..))
+import Marvel.Card.Id ()
 import Marvel.Id (SupportId (..))
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types

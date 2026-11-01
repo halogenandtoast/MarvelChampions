@@ -1,7 +1,7 @@
 module Marvel.Event.Events.Repurpose where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted
@@ -44,7 +44,7 @@ repurposeEffect :: CardEffect RepurposeEffect
 repurposeEffect = effectWith RepurposeEffect Cards.repurpose (endsL ?~ DisableAtEndOfRound)
 
 instance RunMessage RepurposeEffect where
-  runMessage msg e@(RepurposeEffect attrs) = runQueueT $ case msg of
+  runMessage msg (RepurposeEffect attrs) = runQueueT $ case msg of
     CardSpecific target "repurposePower" (fromJSON -> Success modifier) | toSource target == effectSource attrs, null (effectModifiers attrs) ->
       pure $ RepurposeEffect $ attrs {effectModifiers = [modifier]}
     _ -> RepurposeEffect <$> runMessage msg attrs

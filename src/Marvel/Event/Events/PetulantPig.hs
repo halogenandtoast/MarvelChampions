@@ -1,8 +1,8 @@
 module Marvel.Event.Events.PetulantPig where
 
 import Marvel.Prelude
-import Marvel.Query
-import Marvel.Ability
+import Marvel.Query ()
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

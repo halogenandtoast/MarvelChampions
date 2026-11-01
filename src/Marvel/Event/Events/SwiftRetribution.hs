@@ -14,7 +14,7 @@ import Marvel.Event.Types
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 
 swiftRetribution :: EventCard SwiftRetribution

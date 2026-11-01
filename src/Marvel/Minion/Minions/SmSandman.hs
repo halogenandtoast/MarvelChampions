@@ -15,7 +15,7 @@ smSandClone = minion SmSandmanMinion Cards.smSandClone (Sch 1) (Atk 0) (HP 3)
 
 instance HasModifiersFor SmSandmanMinion where
   getModifiersFor _ target (SmSandmanMinion a)
-    | target == toRef a = pure . pure . AttackModifier . fromIntegral =<< sandCounters
+    | target == toRef a = pure . pure . AttackModifier =<< sandCounters
     | otherwise = pure []
 
 instance RunMessage SmSandmanMinion where

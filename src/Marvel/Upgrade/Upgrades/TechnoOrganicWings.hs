@@ -14,7 +14,7 @@ import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Trait qualified as Trait

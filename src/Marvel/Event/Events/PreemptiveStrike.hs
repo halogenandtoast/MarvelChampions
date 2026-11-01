@@ -5,7 +5,7 @@ module Marvel.Event.Events.PreemptiveStrike (
 
 import Marvel.Prelude
 
-import Marvel.Boost
+import Marvel.Boost ()
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity

@@ -16,7 +16,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Trait
+import Marvel.Trait ()
 
 cyborgTech :: AttachmentCard CyborgTech
 cyborgTech = attachment CyborgTech Cards.cyborgTech

@@ -1,7 +1,7 @@
 module Marvel.MainScheme.MainSchemes.SmSinisterSix where
 
 import Marvel.Prelude
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Card.Code
 import Marvel.Difficulty
 import Marvel.Entity

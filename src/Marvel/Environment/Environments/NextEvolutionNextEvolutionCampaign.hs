@@ -22,9 +22,9 @@ import Marvel.Query
 import Marvel.Support.Cards qualified as Supports
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NextEvolutionCampaignEnvironment = NextEvolutionCampaignEnvironment (Attrs Environment)

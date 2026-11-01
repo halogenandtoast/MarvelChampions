@@ -3,7 +3,7 @@ module Marvel.Treachery.Treacheries.HoodPack where
 import Marvel.Prelude
 import Marvel.Card
 import Marvel.Damage
-import Marvel.Discard
+import Marvel.Discard ()
 import Marvel.EncounterSet qualified as Set
 import Marvel.Entity
 import Marvel.Game.Source
@@ -17,7 +17,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.SideScheme.Types (SideScheme, Attrs (sideSchemeCardDef))
+import Marvel.SideScheme.Types ()
 import Marvel.Trait qualified as Trait
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Treacheries.ShadowOfThePast (ShadowOfThePast (..))

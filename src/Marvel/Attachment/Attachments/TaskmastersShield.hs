@@ -44,7 +44,7 @@ instance HasAbilities TaskmastersShield where
     ]
 
 instance RunMessage TaskmastersShield where
-  runMessage msg a@(TaskmastersShield attrs) = runQueueT $ case msg of
+  runMessage msg (TaskmastersShield attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
       -- with no villain in play to attach to, it is discarded
       selectOne ActiveVillain >>= \case

@@ -5,14 +5,14 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
+import Marvel.Ability ()
 import Marvel.Game.Source
 import Marvel.NextEvolution.Helpers
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MorlockSiegeSideScheme = MorlockSiegeSideScheme (Attrs SideScheme)

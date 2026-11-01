@@ -33,7 +33,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Queue (isQueued)
+import Marvel.Queue ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource

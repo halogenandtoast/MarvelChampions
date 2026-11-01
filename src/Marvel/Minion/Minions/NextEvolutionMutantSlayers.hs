@@ -2,25 +2,25 @@ module Marvel.Minion.Minions.NextEvolutionMutantSlayers where
 
 import Marvel.Minion.Runner
 import Marvel.Prelude
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Card
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Types ()
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Name (display)
 import Marvel.NextEvolution.Marauders
 import Marvel.Window qualified as W
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Modifier ()
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype MutantSlayersMinion = MutantSlayersMinion (Attrs Minion)
   deriving anyclass (IsMinion, HasModifiersFor)

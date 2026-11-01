@@ -14,9 +14,9 @@ import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Projection
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NextEvolutionCampaignTreachery = NextEvolutionCampaignTreachery (Attrs Treachery)

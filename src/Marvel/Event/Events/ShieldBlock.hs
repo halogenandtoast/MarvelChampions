@@ -11,7 +11,7 @@ import Marvel.Event.Types
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Cards qualified as Cards ()
 
 shieldBlock :: EventCard ShieldBlock
 shieldBlock = event ShieldBlock Cards.shieldBlock

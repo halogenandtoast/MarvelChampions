@@ -1,14 +1,14 @@
 module Marvel.Treachery.Treacheries.NextEvolutionNeJuggernaut where
 
-import Marvel.Ally.Types (Field (AllyController))
+import Marvel.Ally.Types ()
 import Marvel.Prelude
 import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability
-import Marvel.Attack
-import Marvel.Cost
-import Marvel.Count
-import Marvel.Criteria
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ability ( HasAbilities )
+import Marvel.Attack ()
+import Marvel.Cost ()
+import Marvel.Count ()
+import Marvel.Criteria ()
 import Marvel.Damage
 import Marvel.Difficulty
 import Marvel.Game.Source
@@ -16,25 +16,44 @@ import Marvel.Identity.Types
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
+    ( Message(RevealedAsBoost, TreacheryMessage, CardSpecific, Boost),
+      RunMessage(..),
+      TreacheryMessage(RevealTreachery),
+      runQueueT,
+      cardSpecific,
+      chooseOne,
+      chooseOrRunOne,
+      damageCharacter,
+      damageIdentity,
+      dealIndirectDamage,
+      dealIndirectDamageAmongPlayers,
+      enemyAttacksAlly,
+      giveStatus,
+      labeled,
+      placeCounters,
+      placeThreatOnEach,
+      removeFromPlay,
+      targeting )
 import Marvel.Modifier
+    ( HasModifiersFor(getModifiersFor), Modifier(KeywordModifier) )
 import Marvel.NextEvolution.Juggernaut
-import Marvel.Payment
-import Marvel.Projection
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
-import Marvel.Window qualified as W
+import Marvel.Question ()
+import Marvel.Resource.Types ()
+import Marvel.Window qualified as W ()
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+
 
 newtype NeJuggernautTreachery = NeJuggernautTreachery (Attrs Treachery)
   deriving anyclass (HasAbilities)

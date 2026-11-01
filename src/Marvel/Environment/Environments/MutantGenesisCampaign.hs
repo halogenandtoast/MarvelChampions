@@ -6,7 +6,7 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Card.Id (CardId)
+import Marvel.Card.Id ()
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
 import Marvel.Matchers

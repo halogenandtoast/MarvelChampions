@@ -11,7 +11,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Trait qualified as Trait
 

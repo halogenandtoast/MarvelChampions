@@ -4,20 +4,20 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost.Types
-import Marvel.Count
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Cost.Types ()
+import Marvel.Count ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hero.Heroes.NebulaHero (techniqueResolved)
 import Marvel.Id
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -70,4 +70,3 @@ instance RunMessage EvasiveManeuvering where
         | not (null canConfuse)]
       pure u
     _ -> EvasiveManeuvering <$> runMessage msg attrs
-   where ident = upgradeController attrs

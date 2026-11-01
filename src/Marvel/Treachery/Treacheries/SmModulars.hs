@@ -5,7 +5,7 @@ import Control.Monad (replicateM_)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Keyword (Keyword (Overkill))
-import Marvel.Minion.Types qualified as Minion
+import Marvel.Minion.Types qualified as Minion ()
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Cost
 import Marvel.Difficulty
@@ -13,22 +13,24 @@ import Marvel.Effect.Types
 import Marvel.Id
 import Marvel.Query
 import Marvel.Window qualified as W
-import Marvel.Ability.Types
+import Marvel.Ability.Types ()
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Hand
-import Marvel.Identity.Types (PlayerIdentitySide (..), Field (PlayerIdentityHand, PlayerIdentitySide, PlayerIdentitySides))
+import Marvel.Identity.Types
+    ( Field(PlayerIdentityHand, PlayerIdentitySides),
+      PlayerIdentitySide(AlterEgoSide) )
 import Marvel.Matchers
 import Marvel.Projection
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types

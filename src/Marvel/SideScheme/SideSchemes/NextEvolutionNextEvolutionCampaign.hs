@@ -2,7 +2,7 @@ module Marvel.SideScheme.SideSchemes.NextEvolutionNextEvolutionCampaign where
 
 import Marvel.Prelude
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Query
 import Marvel.Matchers
@@ -10,12 +10,12 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
+import Marvel.Ability ()
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NextEvolutionCampaignSideScheme = NextEvolutionCampaignSideScheme (Attrs SideScheme)

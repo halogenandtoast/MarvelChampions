@@ -3,20 +3,20 @@ module Marvel.Minion.Minions.Exodus where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Matchers
+import Marvel.Id ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Question
+import Marvel.Query ()
+import Marvel.Question ()
 import Marvel.Ref
-import Marvel.Resource
-import Marvel.Window qualified as W
-import Marvel.Trait qualified as Trait
+import Marvel.Resource ()
+import Marvel.Window qualified as W ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
@@ -30,7 +30,7 @@ newtype Exodus = Exodus (Attrs Minion)
 
 instance HasAbilities Exodus
 instance RunMessage Exodus where
-  runMessage msg m@(Exodus attrs) = runQueueT $ case msg of
+  runMessage msg (Exodus attrs) = runQueueT $ case msg of
     MinionMessage mid (RevealMinion you) | mid == minionId attrs -> do
       key <- getDeckKeyFor you
       pile <- getPile key

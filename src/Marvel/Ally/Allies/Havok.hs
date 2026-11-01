@@ -5,13 +5,13 @@ import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Boost
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 havok :: AllyCard Havok

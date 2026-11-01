@@ -4,10 +4,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

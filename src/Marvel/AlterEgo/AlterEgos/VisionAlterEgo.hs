@@ -7,8 +7,8 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Query
-import Marvel.Matchers
+import Marvel.Query ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -18,7 +18,7 @@ import Marvel.Upgrade.Cards qualified as Upgrades
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Stats
-import Marvel.AlterEgo.Runner
+import Marvel.AlterEgo.Runner ()
 import Marvel.Obligation.Cards qualified as Obligations
 visionAlterEgo :: AlterEgoCard VisionAlterEgo
 visionAlterEgo = alterEgo VisionAlterEgo Cards.visionAlterEgo (HP $ Static 11) (HandSize 5) (Rec 3) [Obligations.corruptedProgramming]

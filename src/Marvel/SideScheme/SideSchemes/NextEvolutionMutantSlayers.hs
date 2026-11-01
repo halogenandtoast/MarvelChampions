@@ -5,19 +5,19 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
+import Marvel.Ability ()
 import Data.List (nub)
 import Marvel.Modifier
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Trait (Trait (Marauder, Mutant, XFactor, XForce, XMen))
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MutantSlayersSideScheme = MutantSlayersSideScheme (Attrs SideScheme)

@@ -25,7 +25,7 @@ instance IsTreachery Zzzap where
   toTreacheryAttrs (Zzzap (attrs `With` _)) = attrs
 
 instance RunMessage Zzzap where
-  runMessage msg t@(Zzzap (attrs `With` meta)) = runQueueT $ case msg of
+  runMessage msg (Zzzap (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage tid (RevealTreachery you) | tid == treacheryId attrs -> do
       n <- handEnergy you
       when (n > 0) $ dealIndirectDamage you attrs n

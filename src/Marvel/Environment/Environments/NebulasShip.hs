@@ -20,7 +20,7 @@ import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 
 nebulasShip :: EnvironmentCard NebulasShip
 nebulasShip = environment NebulasShip Cards.nebulasShip

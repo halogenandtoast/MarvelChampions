@@ -11,7 +11,7 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Trait
 import Marvel.Upgrade.Cards qualified as Cards

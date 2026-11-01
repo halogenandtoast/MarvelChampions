@@ -1,11 +1,13 @@
 module Marvel.Treachery.Treacheries.EnergyDrain where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Matchers
+    ( IdentityMatcher(UnexhaustedIdentity, HeroIdentity),
+      identityMatches )
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -13,7 +15,7 @@ import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Damage
 import Marvel.Resource
-import Marvel.Matchers hiding (ExhaustedIdentity)
+
 
 energyDrain :: TreacheryCard EnergyDrain
 energyDrain = treachery EnergyDrain Cards.energyDrain

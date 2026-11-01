@@ -7,7 +7,7 @@ import Marvel.Prelude
 import Data.Maybe (maybeToList)
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Treachery.Types
@@ -19,17 +19,17 @@ import Marvel.Projection
 import Marvel.Damage
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Hand
-import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck)
+import Marvel.Card.PlayerCard.Types ()
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Sides
-import Marvel.Attachment.Cards qualified as Attachments
+import Marvel.Attachment.Cards qualified as Attachments ()
 import Marvel.Ally.Cards qualified as Allies
-import Marvel.MainScheme.Types (Field (MainSchemeCounters))
-import Marvel.Cost
-import Marvel.Keyword
-import Marvel.Status
+import Marvel.MainScheme.Types ()
+import Marvel.Cost ()
+import Marvel.Keyword ()
+import Marvel.Status ()
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 import Marvel.Treachery.Cards qualified as Cards
 
 newtype MutantGenesisTreachery = MutantGenesisTreachery (Attrs Treachery `With` Maybe (IdentityId, MinionId, Bool))

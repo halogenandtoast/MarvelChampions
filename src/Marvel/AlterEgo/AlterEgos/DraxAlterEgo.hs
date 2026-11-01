@@ -13,7 +13,7 @@ import Marvel.Criteria
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Identity.Types (Field (PlayerIdentityCounters))
 import Marvel.Matchers
 import Marvel.Message.Lifted

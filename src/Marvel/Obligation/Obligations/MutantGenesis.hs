@@ -1,10 +1,10 @@
 module Marvel.Obligation.Obligations.MutantGenesis where
 
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Obligation.Types
@@ -12,7 +12,7 @@ import Marvel.Modifier
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Query
 import Marvel.Matchers
 import Marvel.Question

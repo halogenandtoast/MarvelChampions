@@ -5,12 +5,12 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Query
@@ -18,8 +18,8 @@ import Marvel.Trait (Trait (Marauder))
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype OnTheRunMainScheme = OnTheRunMainScheme (Attrs MainScheme)

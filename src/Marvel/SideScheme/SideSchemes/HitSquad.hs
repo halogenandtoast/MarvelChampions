@@ -5,7 +5,7 @@ module Marvel.SideScheme.SideSchemes.HitSquad (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity

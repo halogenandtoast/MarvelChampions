@@ -4,12 +4,12 @@ import Marvel.Prelude
 import Marvel.Ally.Runner
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ability
-import Marvel.Card
-import Marvel.Entity
+import Marvel.Card ()
+import Marvel.Entity ()
 import Marvel.Id
 import Marvel.Keyword
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 newtype LongshotEncounter = LongshotEncounter (Attrs Ally)
   deriving anyclass (IsAlly, HasAbilities)

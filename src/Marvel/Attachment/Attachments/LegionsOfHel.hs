@@ -6,7 +6,7 @@ module Marvel.Attachment.Attachments.LegionsOfHel (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Ability
 import Marvel.Attachment.Attachments.AllyAsMinion
 import Marvel.Attachment.Cards qualified as Cards

@@ -12,7 +12,7 @@ import Marvel.GameValue
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Phase (Phase (VillainPhase))
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

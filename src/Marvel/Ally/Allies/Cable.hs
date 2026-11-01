@@ -1,11 +1,11 @@
 module Marvel.Ally.Allies.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -14,12 +14,12 @@ import Marvel.Query
 import Marvel.Resource
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Identity.Types
 import Marvel.Projection
 import Marvel.Discard
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ()
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -28,9 +28,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Types
-import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Stats ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 import Marvel.Ally.Runner
 
 cable40014 :: AllyCard Cable40014
@@ -134,23 +134,23 @@ instance RunMessage Cable40204 where
     _ -> Cable40204 <$> runMessage msg attrs
 
 instance HasAbilities Cable40014 where
-  getAbilities a@(Cable40014 attrs) =
+  getAbilities a@(Cable40014 _) =
     [limitedWindowAbility a 1 (W.EntersPlayThis) Response OwnsThis NoCost (runAbility a 1)]
 
 instance HasAbilities Cable40015 where
-  getAbilities a@(Cable40015 attrs) =
+  getAbilities a@(Cable40015 _) =
     [limitedWindowAbility a 1 (W.EntersPlayThis) Response OwnsThis NoCost (runAbility a 1)]
 
 instance HasAbilities Cable40016 where
-  getAbilities a@(Cable40016 attrs) =
+  getAbilities a@(Cable40016 _) =
     [limitedWindowAbility a 1 (W.PlayThis W.After) Response OwnsThis NoCost (runAbility a 1)]
 
 instance HasAbilities Cable40025 where
-  getAbilities a@(Cable40025 attrs) =
+  getAbilities a@(Cable40025 _) =
     [limitedWindowAbility a 1 (W.EntersPlayThis) HeroResponse OwnsThis NoCost (runAbility a 1)]
 
 instance HasAbilities Cable40204 where
-  getAbilities a@(Cable40204 attrs) =
+  getAbilities a@(Cable40204 _) =
     [limitedWindowAbility a 1 (W.PlayThis W.After) Response OwnsThis NoCost (runAbility a 1)]
 
 instance HasModifiersFor Cable40204 where

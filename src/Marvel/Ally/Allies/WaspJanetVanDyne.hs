@@ -6,13 +6,13 @@ module Marvel.Ally.Allies.WaspJanetVanDyne (
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Card.Def (cardMatch)
+import Marvel.Card.Def ()
 import Marvel.Game.Source (getModifiers)
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Payment ()
+import Marvel.Ref ()
 import Marvel.Resource
 
 waspJanetVanDyne :: AllyCard WaspJanetVanDyne

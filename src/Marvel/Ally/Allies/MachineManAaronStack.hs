@@ -2,28 +2,28 @@ module Marvel.Ally.Allies.MachineManAaronStack where
 
 import Marvel.Prelude
 import Marvel.Ability
-import Marvel.Ability qualified as Ability
-import Marvel.Card
+import Marvel.Ability qualified as Ability ()
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.Query
+import Marvel.Game.Source ()
+import Marvel.Query ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Upgrade.Cards qualified as Upgrades
+import Marvel.Upgrade.Cards qualified as Upgrades ()
 import Marvel.Window qualified as W
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Payment
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Payment ()
 machineManAaronStack :: AllyCard MachineManAaronStack
 machineManAaronStack = ally (MachineManAaronStack . (`With` Meta 0)) Cards.machineManAaronStack (Thw 1, 1) (Atk 1, 1) (HP 3)
 
@@ -51,7 +51,7 @@ instance HasAbilities MachineManAaronStack where
     ]
 
 instance RunMessage MachineManAaronStack where
-  runMessage msg m@(MachineManAaronStack (attrs `With` meta)) = runQueueT $ case msg of
+  runMessage msg (MachineManAaronStack (attrs `With` meta)) = runQueueT $ case msg of
     RanAbility _ (isTarget attrs -> True) 1 _ payment -> do
       let bonus = sum [n | XPayment n <- payments payment]
       addToAllyBasicPower (allyId attrs) bonus

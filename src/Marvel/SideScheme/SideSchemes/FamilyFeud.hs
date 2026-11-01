@@ -8,11 +8,11 @@ import Marvel.Prelude
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Game.Source
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 import Marvel.Trait

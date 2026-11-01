@@ -5,7 +5,7 @@ import Marvel.Id
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

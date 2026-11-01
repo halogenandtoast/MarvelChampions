@@ -11,7 +11,7 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Message.Lifted
 import Marvel.Queue (push)
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 

@@ -12,12 +12,12 @@ module Marvel.Minion.Minions.KreeMilitants (
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Id (EnemyId (..))
+import Marvel.Id ()
 import Marvel.Keyword (Keyword (Overkill, Piercing))
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Query (selectAny)
+import Marvel.Query ()
 import Marvel.Game.Source (HasGame)
 
 -- | Whether the enemy the boost card was turned up for is attacking.

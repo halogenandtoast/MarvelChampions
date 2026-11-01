@@ -3,25 +3,25 @@ module Marvel.Minion.Minions.NextEvolutionNextEvolutionCampaign where
 import Marvel.Minion.Runner
 import Marvel.Prelude
 import Marvel.Card
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
+import Marvel.Minion.Types ()
 import Marvel.Ability (HasAbilities)
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Hand
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Matchers
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Trait (Trait (Psionic))
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Modifier ()
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype NextEvolutionCampaignMinion = NextEvolutionCampaignMinion (Attrs Minion)
   deriving anyclass (IsMinion, HasAbilities, HasModifiersFor)

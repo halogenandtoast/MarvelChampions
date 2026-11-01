@@ -18,9 +18,9 @@ import Marvel.Status
 import Marvel.Trait (Trait (Morlock))
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MorlockSiegeTreachery = MorlockSiegeTreachery (Attrs Treachery)

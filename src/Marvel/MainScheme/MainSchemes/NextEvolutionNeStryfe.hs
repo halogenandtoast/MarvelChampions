@@ -16,12 +16,12 @@ import Marvel.Query
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
-import Marvel.Ability (HasAbilities)
+import Marvel.Ability ()
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NeStryfeMainScheme = NeStryfeMainScheme (Attrs MainScheme)

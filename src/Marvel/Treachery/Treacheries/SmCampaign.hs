@@ -7,7 +7,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards

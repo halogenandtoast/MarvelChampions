@@ -2,37 +2,45 @@ module Marvel.Attachment.Attachments.NextEvolutionMilitaryGrade where
 
 import Marvel.Prelude
 import Data.Maybe (maybeToList)
-import Data.HashMap.Strict qualified as HashMap
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Ability
+    ( AbilityType(Action, HeroResponse, HeroAction),
+      HasAbilities(..),
+      ability,
+      label,
+      windowAbility )
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Game.Source
-import Marvel.Hand
+import Marvel.Game.Source ()
+import Marvel.Hand ()
 import Marvel.Identity.Types
 import Marvel.Keyword
 import Marvel.Matchers hiding (UnexhaustedIdentity, UnexhaustedAlly)
-import Marvel.Matchers qualified as Matchers
+import Marvel.Matchers qualified as Matchers ()
 import Marvel.Modifier
+    ( HasModifiersFor(..),
+      Modifier(AttackDamageCap, Blank, AttackModifier, AttackPenalty,
+               KeywordModifier) )
 import Marvel.NextEvolution.Modulars
-import Marvel.Payment
-import Marvel.Projection
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
 import Marvel.Question
 import Marvel.Resource.Types
 import Marvel.Status
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 import Marvel.Entity
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MilitaryGradeAttachment = MilitaryGradeAttachment (Attrs Attachment `With` Natural)
@@ -54,7 +62,7 @@ instance IsRef MilitaryGradeAttachment where
   toRef = toRef . toAttachmentAttrs
 
 instance HasAbilities MilitaryGradeAttachment where
-  getAbilities a@(MilitaryGradeAttachment (attrs `With` taken)) = case toCardCode attrs of
+  getAbilities a@(MilitaryGradeAttachment (attrs `With` _)) = case toCardCode attrs of
     "40090" -> [label ("$label.neArmament" <> tshow resource) $ windowAbility a idx
       (W.IdentityAttacked W.After AnyIdentity (EnemyWithId enemy)) HeroResponse
       (MultiResourceCost $ replicate 2 $ Just resource) (runAbility a idx)
@@ -69,10 +77,10 @@ instance HasAbilities MilitaryGradeAttachment where
     _ -> []
 
 instance HasModifiersFor MilitaryGradeAttachment where
-  getBlankingModifiersFor _ (IdentityRef you) (MilitaryGradeAttachment (attrs `With` taken))
+  getBlankingModifiersFor _ (IdentityRef you) (MilitaryGradeAttachment (attrs `With` _))
     | toCardCode attrs == "40092", attachmentIdentity attrs == Just you = pure [Blank]
   getBlankingModifiersFor _ _ _ = pure []
-  getPrintedModifiersFor _ target (MilitaryGradeAttachment (attrs `With` taken)) = pure $
+  getPrintedModifiersFor _ target (MilitaryGradeAttachment (attrs `With` _)) = pure $
     [AttackModifier 2 | toCardCode attrs == "40090", Just target == (enemyRef <$> attachmentEnemy attrs)]
     <> [AttackPenalty 1 | toCardCode attrs == "40092", target == maybe GameRef IdentityRef (attachmentIdentity attrs)
       || Just target == (enemyRef <$> attachmentEnemy attrs)]

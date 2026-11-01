@@ -10,8 +10,8 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Matchers
-import Marvel.Query
+import Marvel.Matchers ()
+import Marvel.Query ()
 import Marvel.Window
 
 spiderWomanJessicaDrew :: AllyCard SpiderWomanJessicaDrew

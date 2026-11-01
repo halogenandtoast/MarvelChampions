@@ -4,12 +4,12 @@ import Marvel.Prelude
 import Marvel.Id
 import Marvel.Card
 import Marvel.Effect.Types
-import Marvel.Entity
-import Marvel.Event.Types qualified as Event
+import Marvel.Entity ()
+import Marvel.Event.Types qualified as Event ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Resource.Cards qualified as Cards
 import Marvel.Trait qualified as Trait

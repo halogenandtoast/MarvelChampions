@@ -7,8 +7,8 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Query
-import Marvel.Matchers
+import Marvel.Query ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref

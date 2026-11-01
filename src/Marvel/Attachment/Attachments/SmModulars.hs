@@ -2,7 +2,7 @@ module Marvel.Attachment.Attachments.SmModulars where
 
 import Marvel.Prelude
 import Marvel.Ability
-import Marvel.Ally.Types qualified as Ally
+import Marvel.Ally.Types qualified as Ally ()
 import Marvel.Attachment.Attachments.AllyAsMinion
 import Marvel.Card
 import Marvel.Cost
@@ -23,14 +23,14 @@ import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Hand
 import Marvel.Projection
 import Marvel.Keyword (Keyword (Overkill, Piercing, Retaliate))
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 
@@ -110,23 +110,23 @@ instance HasModifiersFor SmModularsAttachment where
         "27151" -> [AttackModifier 1]
         "27152" -> [AttacksCannotBeDefended]
         _ -> []
-  getModifiersFor _ (IdentityRef you) (SmModularsAttachment (attrs `With` meta))
+  getModifiersFor _ (IdentityRef you) (SmModularsAttachment (attrs `With` _))
     | attachmentIdentity attrs == Just you, toCardCode attrs == "27166" = pure [ReplaceHeroAttackWithDiscardAndStun $ toRef attrs]
     | attachmentIdentity attrs == Just you, toCardCode attrs == "27153" = pure [CannotTriggerPrintedHeroAbilities]
-  getModifiersFor _ (AllyRef aid) (SmModularsAttachment (attrs `With` meta))
+  getModifiersFor _ (AllyRef aid) (SmModularsAttachment (attrs `With` _))
     | Just you <- attachmentIdentity attrs, toCardCode attrs == "27170" = do
         own <- selectAny (AllyWithId aid <> AllyControlledBy (IdentityWithId you))
         pure [CannotReady | own]
-  getModifiersFor _ (SupportRef sid) (SmModularsAttachment (attrs `With` meta))
+  getModifiersFor _ (SupportRef sid) (SmModularsAttachment (attrs `With` _))
     | Just you <- attachmentIdentity attrs, toCardCode attrs == "27170" = do
         own <- member sid <$> select (SupportMatches [SupportControlledBy (IdentityWithId you), SupportWithTrait Persona])
         pure [CannotReady | own]
-  getModifiersFor _ (MinionRef mid) (SmModularsAttachment (attrs `With` meta))
+  getModifiersFor _ (MinionRef mid) (SmModularsAttachment (attrs `With` _))
     | toCardCode attrs == "27172", attachmentEnemy attrs == Just (EnemyMinionId mid) = pure [HitPointModifier 1]
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities SmModularsAttachment where
-  getAbilities a@(SmModularsAttachment (attrs `With` meta)) = case attachmentEnemy attrs of
+  getAbilities a@(SmModularsAttachment (attrs `With` _)) = case attachmentEnemy attrs of
     Just enemy -> case toCardCode attrs of
       "27136" ->
         [ limited (EachPlayer $ PerRound 1) $ windowAbility a 1 (W.EnemyActivates W.After (EnemyWithId enemy) You) ForcedResponse NoCost (runAbility a 1)

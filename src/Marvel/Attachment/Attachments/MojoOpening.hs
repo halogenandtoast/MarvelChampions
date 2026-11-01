@@ -15,7 +15,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.MojoOpening
 import Marvel.Prelude
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question (runAbility)
 import Marvel.Ref
 import Marvel.Resource
@@ -35,7 +35,7 @@ instance HasModifiersFor MojoOpeningAttachment where
     | Just enemy <- attachmentEnemy a, target == enemyRef enemy = pure $ case toCardCode a of
         "39005" -> [KeywordModifier $ Retaliate 1, KeywordModifier Stalwart]
         "39006" -> [AttackModifier 1, SchemeModifier 1]
-        "39018" -> [AttackModifier $ fromIntegral $ attachmentCounters a]
+        "39018" -> [AttackModifier $ attachmentCounters a]
         _ -> []
     | otherwise = pure []
 

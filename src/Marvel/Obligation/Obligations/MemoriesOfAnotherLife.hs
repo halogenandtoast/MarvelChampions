@@ -13,7 +13,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Query
+import Marvel.Query ()
 
 memoriesOfAnotherLife :: ObligationCard MemoriesOfAnotherLife
 memoriesOfAnotherLife = obligation MemoriesOfAnotherLife Cards.memoriesOfAnotherLife

@@ -23,7 +23,7 @@ import Marvel.Discard
 import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
 import Marvel.Matchers
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question (runAbility)
 import Marvel.Window qualified as W
 

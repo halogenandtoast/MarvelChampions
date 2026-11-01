@@ -2,34 +2,38 @@ module Marvel.Attachment.Attachments.NextEvolutionTelepathySet where
 
 import Marvel.Attack (attackCharacter)
 import Marvel.Prelude
-import Marvel.Ability
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Ability ( HasAbilities(..) )
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword qualified as Keyword
 import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Resource
+    ( HasModifiersFor(getPrintedModifiersFor, getModifiersFor),
+      Modifier(KeywordModifier, SchemeModifier, AttackModifier,
+               AttacksIgnoreRetaliate, OnlyAerialOrRangedAttacksCanDamage,
+               AttackDamageReduction, TraitModifier) )
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Resource ()
 import Marvel.Status
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 import Marvel.NextEvolution.Sinister
 
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types hiding (attachToTheVillain)
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype TelepathySetAttachment = TelepathySetAttachment (Attrs Attachment)
@@ -49,7 +53,7 @@ instance RunMessage TelepathySetAttachment where
     _ -> TelepathySetAttachment <$> runMessage msg a
 
 instance HasAbilities TelepathySetAttachment where
-  getAbilities card@(TelepathySetAttachment a) = case toCardCode a of
+  getAbilities (TelepathySetAttachment a) = case toCardCode a of
     _ -> []
 
 instance HasModifiersFor TelepathySetAttachment where
@@ -60,7 +64,7 @@ instance HasModifiersFor TelepathySetAttachment where
       "40157" -> [AttackModifier 3]
       "40159" -> [SchemeModifier 1]
       _ -> []
-  getModifiersFor source target card@(TelepathySetAttachment a) = do
+  getModifiersFor _ target (TelepathySetAttachment a) = do
     text <- if Just target /= (enemyRef <$> attachmentEnemy a) then pure [] else case toCardCode a of
       "40151" -> pure [TraitModifier Trait.Aerial, KeywordModifier Keyword.Overkill]
       "40152" -> do

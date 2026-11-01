@@ -10,9 +10,9 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
 import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Criteria ()
+import Marvel.Entity ()
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -22,7 +22,7 @@ import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Window
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 distractingTaunts :: AttachmentCard DistractingTaunts
 distractingTaunts = attachment DistractingTaunts Cards.distractingTaunts

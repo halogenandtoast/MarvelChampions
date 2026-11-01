@@ -1,39 +1,45 @@
 module Marvel.SideScheme.SideSchemes.NextEvolutionHopeSummersSet where
 
 import Marvel.Prelude
-import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability
-import Marvel.Attack
-import Marvel.Cost
-import Marvel.Count
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Difficulty
-import Marvel.Game.Source
+import Marvel.Status ()
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ability ()
+import Marvel.Attack ()
+import Marvel.Cost ()
+import Marvel.Count ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Difficulty ()
+import Marvel.Game.Source ()
 import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
+    ( Message(SideSchemeMessage),
+      RunMessage(..),
+      SideSchemeMessage(RevealSideScheme),
+      runQueueT,
+      exhaust )
 import Marvel.Modifier
-import Marvel.NextEvolution.Juggernaut
-import Marvel.Payment
-import Marvel.Projection
+    ( HasModifiersFor(getModifiersFor), Modifier(CannotReady) )
+import Marvel.NextEvolution.Juggernaut ()
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
-import Marvel.Window qualified as W
+import Marvel.Question ()
+import Marvel.Resource.Types ()
+import Marvel.Window qualified as W ()
 import Marvel.Card
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Stats ()
+import Marvel.Hp ()
+
 
 newtype HopeSummersSetSideScheme = HopeSummersSetSideScheme (Attrs SideScheme)
   deriving anyclass (IsSideScheme)

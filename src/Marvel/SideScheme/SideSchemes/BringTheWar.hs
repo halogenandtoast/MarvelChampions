@@ -10,8 +10,8 @@ import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 import Marvel.GameValue
-import Marvel.Hand
-import Marvel.Stats
+import Marvel.Hand ()
+import Marvel.Stats ()
 
 bringTheWar :: SideSchemeCard BringTheWar
 bringTheWar = sideScheme BringTheWar Cards.bringTheWar (Static 2)

@@ -8,10 +8,10 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
-import Marvel.Entity
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Card ()
+import Marvel.Entity ()
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 scarletWitchWandaMaximoff :: AllyCard ScarletWitchWandaMaximoff
 scarletWitchWandaMaximoff =

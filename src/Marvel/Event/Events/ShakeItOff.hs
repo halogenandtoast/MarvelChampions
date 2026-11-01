@@ -12,7 +12,7 @@ import Marvel.Event.Types
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Window qualified as W
 
 shakeItOff :: EventCard ShakeItOff

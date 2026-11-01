@@ -5,18 +5,18 @@ import Data.List (find)
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Code
-import Marvel.Card.Def
-import Marvel.Card.Id
+import Marvel.Card.Code ()
+import Marvel.Card.Def ()
+import Marvel.Card.Id ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Discard
 import Marvel.Id (EventId (..))
 import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
 import Marvel.Matchers
-import Marvel.Message.Lifted
+import Marvel.Message.Lifted ()
 import Marvel.Projection
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Window qualified as W
 
 msMarvelKamalaKhanNova :: AllyCard MsMarvelKamalaKhanNova

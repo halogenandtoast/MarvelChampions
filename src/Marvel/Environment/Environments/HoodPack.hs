@@ -8,7 +8,7 @@ import Marvel.Entity
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -49,7 +49,7 @@ instance HasModifiersFor HoodEnvironment where
     character ref = friendly ref || enemy ref
 
 instance RunMessage HoodEnvironment where
-  runMessage msg e@(HoodEnvironment attrs) = runQueueT $ case msg of
+  runMessage msg (HoodEnvironment attrs) = runQueueT $ case msg of
     EnvironmentMessage eid EnvironmentEntered | eid == environmentId attrs, toCardCode attrs `elem` ["24049", "24049a", "24049b"] -> do
       difficulty <- getDifficulty
       pure $ HoodEnvironment attrs {environmentCardDef = if difficulty == Expert then Cards.hood24049b else Cards.hood24049a}

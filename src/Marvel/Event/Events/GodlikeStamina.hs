@@ -10,7 +10,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 godlikeStamina :: EventCard GodlikeStamina
 godlikeStamina = event GodlikeStamina Cards.godlikeStamina

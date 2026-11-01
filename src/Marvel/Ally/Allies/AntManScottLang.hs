@@ -9,8 +9,8 @@ import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Matchers
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Trait
 
 antManScottLang :: AllyCard AntManScottLang

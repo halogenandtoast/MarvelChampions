@@ -1,7 +1,7 @@
 module Marvel.SideScheme.SideSchemes.SmModulars where
 
 import Marvel.Prelude
-import Marvel.Attachment.Types qualified as Attachment
+import Marvel.Attachment.Types qualified as Attachment ()
 import Marvel.Keyword qualified as Keyword
 import Marvel.Ability
 import Marvel.AlterEgo.Runner qualified as AlterEgo
@@ -9,7 +9,7 @@ import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Difficulty
 import Marvel.Effect.Types
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Question (runAbility)
 import Marvel.Window qualified as W
 import Marvel.Trait (Trait (Civilian, Location, Persona, Tech))
@@ -22,15 +22,15 @@ import Marvel.Identity.Types (PlayerIdentitySide (..), Field (PlayerIdentityHand
 import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Hp
+import Marvel.Hp ()
 import Marvel.Id
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types hiding (SideSchemeId)
 
@@ -105,7 +105,7 @@ instance RunMessage SmModularsSideScheme where
           when civilian $ drawCards you 1
         _ -> pure ()
       pure s
-    Boost (RevealedAsBoost target enemy) | isTarget attrs target, toCardCode attrs == "27143" -> do
+    Boost (RevealedAsBoost target _) | isTarget attrs target, toCardCode attrs == "27143" -> do
       difficulty <- getDifficulty
       schemes <- selectList AnyScheme
       mains <- selectList EncounterMainScheme

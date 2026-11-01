@@ -10,7 +10,7 @@ import Marvel.Projection
 import Marvel.Question
 import Marvel.Window qualified as W
 import Marvel.Ability
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.Message.Lifted
 import Marvel.Modifier

@@ -6,18 +6,18 @@ module Marvel.SideScheme.SideSchemes.ClearTheRoad (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Status
+import Marvel.Status ()
 
 clearTheRoad :: SideSchemeCard ClearTheRoad
 clearTheRoad = sideScheme ClearTheRoad Cards.clearTheRoad (Static 4)

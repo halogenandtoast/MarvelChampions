@@ -12,7 +12,7 @@ module Marvel.Treachery.Treacheries.TowerDefense (
 
 import Marvel.Prelude
 
-import Marvel.Attack
+import Marvel.Attack ()
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Environment.Environments.AvengersTower (damageAvengersTower)

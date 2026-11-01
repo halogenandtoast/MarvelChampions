@@ -7,8 +7,8 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Query
-import Marvel.Matchers
+import Marvel.Query ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -16,7 +16,7 @@ import Marvel.Trait qualified as Trait
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Resource (Resource (Wild))
-import Marvel.Payment (Payment (ResourcePayment))
+import Marvel.Payment ()
 solarGem :: UpgradeCard SolarGem
 solarGem = upgrade SolarGem Cards.solarGem
 

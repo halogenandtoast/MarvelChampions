@@ -14,7 +14,7 @@ import Marvel.Ref
 import Marvel.Window qualified as W
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Game.Source (countControlledCardsWithTrait)
+import Marvel.Game.Source ()
 import Marvel.Trait
 
 ladySpider :: AllyCard LadySpider

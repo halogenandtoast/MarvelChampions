@@ -9,7 +9,7 @@ import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Deck
@@ -19,7 +19,7 @@ import Marvel.Identity.Types (Field (PlayerIdentityDeck, PlayerIdentityDiscard, 
 import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Support.Cards qualified as Supports
 import Marvel.Window qualified as W
 

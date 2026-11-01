@@ -3,7 +3,7 @@ module Marvel.Environment.Environments.MojoGenres where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost ()
 import Marvel.Entity
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types

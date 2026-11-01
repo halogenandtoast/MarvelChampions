@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers

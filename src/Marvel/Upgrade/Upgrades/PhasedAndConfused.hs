@@ -4,12 +4,12 @@ module Marvel.Upgrade.Upgrades.PhasedAndConfused (
 ) where
 
 import Marvel.Prelude
-import Marvel.Card.Side
-import Marvel.Payment
-import Marvel.Game.Source
-import Marvel.Hand
-import Marvel.Stats
-import Marvel.Status
+import Marvel.Card.Side ()
+import Marvel.Payment ()
+import Marvel.Game.Source ()
+import Marvel.Hand ()
+import Marvel.Stats ()
+import Marvel.Status ()
 
 import Marvel.Ability
 import Marvel.Card.Code

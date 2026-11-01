@@ -44,7 +44,7 @@ instance HasAbilities TaskmastersSword where
     ]
 
 instance RunMessage TaskmastersSword where
-  runMessage msg a@(TaskmastersSword attrs) = runQueueT $ case msg of
+  runMessage msg (TaskmastersSword attrs) = runQueueT $ case msg of
     AttachmentMessage ident (RevealAttachment _) | ident == attachmentId attrs -> do
       -- with no villain in play to attach to, it is discarded
       selectOne ActiveVillain >>= \case

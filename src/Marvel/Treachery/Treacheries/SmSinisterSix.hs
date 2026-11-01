@@ -12,7 +12,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Villain.Villains.SmSinisterSix
@@ -108,11 +108,10 @@ instance RunMessage SmSinisterSixTreachery where
     partnership you = do
       present <- sixVillains
       hero <- identityMatches HeroIdentity you
-      if null present
-        then e <$ ambushThen attrs "partnershipEntered" you
-        else do
-          let chosen = if hero then last present else head present
-              vid = fst chosen
+      case if hero then lastMay present else headMay present of
+        Nothing -> e <$ ambushThen attrs "partnershipEntered" you
+        Just chosen -> do
+          let vid = fst chosen
               others = filter ((/= vid) . fst) present
           if hero
             then do

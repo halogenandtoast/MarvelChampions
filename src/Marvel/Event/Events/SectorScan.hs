@@ -1,7 +1,7 @@
 module Marvel.Event.Events.SectorScan where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Id (CardId (..))
 import Marvel.Id (EventId (..))
 import Marvel.Card.Code

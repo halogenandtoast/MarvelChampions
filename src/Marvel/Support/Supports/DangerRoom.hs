@@ -15,7 +15,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Question
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types

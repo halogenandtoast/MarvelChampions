@@ -23,7 +23,7 @@ newtype MisterKnife = MisterKnife (Attrs Minion)
 -- is revealed, with Knife in play then, and only if no other treachery that player
 -- revealed this phase came before it (one before Knife was in play included).
 instance RunMessage MisterKnife where
-  runMessage msg e@(MisterKnife attrs) = runQueueT $ case msg of
+  runMessage msg (MisterKnife attrs) = runQueueT $ case msg of
     CheckWindows ws | tid : _ <- [t | W.Window W.When (W.RevealTreachery t _) <- ws] -> do
       phase <- getPhase
       revealed <- getTreacheriesRevealedThisPhase

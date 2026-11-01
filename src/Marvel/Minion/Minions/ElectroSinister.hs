@@ -36,7 +36,7 @@ instance HasAbilities ElectroSinister where
 
 instance HasModifiersFor ElectroSinister where
   getModifiersFor _ (MinionRef mid) (ElectroSinister attrs) | mid == minionId attrs =
-    pure [HitPointModifier $ fromIntegral $ count (== Energy) $ concatMap (printedResources . getCardDef) $ minionHeldCards attrs]
+    pure [HitPointModifier $ count (== Energy) $ concatMap (printedResources . getCardDef) $ minionHeldCards attrs]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage ElectroSinister where

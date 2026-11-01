@@ -6,7 +6,7 @@ import Marvel.Entity
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Stats
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner

@@ -17,7 +17,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Upgrade.Cards qualified as Cards
+import Marvel.Upgrade.Cards qualified as Cards ()
 
 shieldToss :: EventCard ShieldToss
 shieldToss = event ShieldToss Cards.shieldToss

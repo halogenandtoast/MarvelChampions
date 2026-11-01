@@ -2,38 +2,41 @@ module Marvel.Minion.Minions.NextEvolutionMutantInsurrection where
 
 import Marvel.Minion.Runner
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Ability
-import Marvel.Card
+    ( AbilityType(ForcedResponse, ForcedInterrupt),
+      HasAbilities(..),
+      windowAbility )
+import Marvel.Card ()
 import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Damage
 import Marvel.Game.Source
-import Marvel.Hand
-import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Hand ()
+import Marvel.Identity.Types ()
+import Marvel.Keyword ()
 import Marvel.Matchers hiding (UnexhaustedIdentity, UnexhaustedAlly)
-import Marvel.Matchers qualified as Matchers
-import Marvel.Modifier
+import Marvel.Matchers qualified as Matchers ()
+import Marvel.Modifier ()
 import Marvel.NextEvolution.Modulars
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Question
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Question ()
 import Marvel.Resource.Types
-import Marvel.Status
-import Marvel.Trait qualified as Trait
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Minion.Types ()
+
+
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype MutantInsurrectionMinion = MutantInsurrectionMinion (Attrs Minion `With` (Natural,Natural))
   deriving newtype (Show, Eq, ToJSON, FromJSON)
@@ -59,7 +62,7 @@ instance IsRef MutantInsurrectionMinion where
   toRef = toRef . toMinionAttrs
 
 instance HasAbilities MutantInsurrectionMinion where
-  getAbilities a@(MutantInsurrectionMinion (attrs `With` (bonus,counters))) =
+  getAbilities a@(MutantInsurrectionMinion (attrs `With` (_,_))) =
     [windowAbility a 1 window kind NoCost (runAbility a 1)]
     where
       self = EnemyWithId $ EnemyMinionId $ minionId attrs
@@ -69,7 +72,7 @@ instance HasAbilities MutantInsurrectionMinion where
         _ -> (W.EnemyAttacked W.After self AnyIdentity, ForcedResponse)
 
 instance HasModifiersFor MutantInsurrectionMinion where
-  getModifiersFor _ target (MutantInsurrectionMinion (attrs `With` (bonus,counters)))
+  getModifiersFor _ target (MutantInsurrectionMinion (attrs `With` (bonus,_)))
     | target == MinionRef (minionId attrs), toCardCode attrs == "40185" = pure [AttackModifier bonus, SchemeModifier bonus]
   getModifiersFor _ _ _ = pure []
 

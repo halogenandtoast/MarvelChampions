@@ -6,11 +6,11 @@ module Marvel.Event.Events.Inconspicuous (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -27,7 +27,7 @@ newtype Inconspicuous = Inconspicuous (Attrs Event)
 -- | Remove a total of 3 threat from among schemes in play: 1 at a time, from any scheme.
 instance RunMessage Inconspicuous where
   runMessage msg e@(Inconspicuous attrs) = runQueueT $ case msg of
-    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
+    EventMessage ident (PlayedEvent _ _ _) | ident == eventId attrs -> do
       cardSpecific attrs "remove" (3 :: Natural)
       pure e
     CardSpecific (isTarget attrs -> True) "remove" (fromJSON -> Success (n :: Natural)) | n > 0 -> do

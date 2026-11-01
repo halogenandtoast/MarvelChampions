@@ -9,7 +9,7 @@ import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Id
+import Marvel.Card.Id ()
 import Marvel.Id (AllyId (..))
 import Marvel.Matchers
 import Marvel.Query

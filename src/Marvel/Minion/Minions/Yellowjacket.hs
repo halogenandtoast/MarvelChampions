@@ -10,8 +10,8 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Trait
 
 yellowjacket :: MinionCard Yellowjacket

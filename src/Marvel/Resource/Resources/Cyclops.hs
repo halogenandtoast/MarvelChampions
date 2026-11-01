@@ -3,7 +3,7 @@ module Marvel.Resource.Resources.Cyclops where
 import Marvel.Prelude
 import Marvel.Card
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted

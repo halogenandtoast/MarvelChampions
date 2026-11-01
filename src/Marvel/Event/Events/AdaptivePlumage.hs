@@ -3,19 +3,19 @@ module Marvel.Event.Events.AdaptivePlumage where
 import Marvel.Prelude
 import Marvel.Ability qualified as Ability
 import Marvel.Card
-import Marvel.Card.Side
+import Marvel.Card.Side ()
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 adaptivePlumage :: EventCard AdaptivePlumage
 adaptivePlumage = event AdaptivePlumage Cards.adaptivePlumage

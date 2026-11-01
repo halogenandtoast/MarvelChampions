@@ -5,11 +5,11 @@ import Marvel.Ability (HasAbilities)
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card
-import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Entity ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 
 mgMagnetosPower :: AttachmentCard MutantGenesisCampaignAttachment

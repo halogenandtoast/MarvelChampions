@@ -4,10 +4,10 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost.Types
+import Marvel.Cost.Types ()
 import Marvel.Count
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hero.Heroes.NebulaHero (techniqueResolved)
@@ -17,7 +17,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
@@ -67,4 +67,3 @@ instance RunMessage CutthroatAmbition where
           | s <- eligible]
         pure u
     _ -> CutthroatAmbition <$> runMessage msg attrs
-   where ident = upgradeController attrs

@@ -8,7 +8,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Window qualified as W
 
 theGreenGobbler :: MinionCard TheGreenGobbler

@@ -3,18 +3,18 @@ module Marvel.SideScheme.SideSchemes.TheReavers where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Matchers
+import Marvel.Id ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Question
+import Marvel.Query ()
+import Marvel.Question ()
 import Marvel.Ref
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 import Marvel.Trait qualified as Trait
 import Marvel.GameValue
 import Marvel.SideScheme.Cards qualified as Cards

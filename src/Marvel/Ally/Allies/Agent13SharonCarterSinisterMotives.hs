@@ -13,7 +13,7 @@ import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Trait (Trait (Shield))
 import Marvel.Window qualified as W
 

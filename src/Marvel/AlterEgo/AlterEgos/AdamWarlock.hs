@@ -21,7 +21,7 @@ import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Stats
-import Marvel.Status
+import Marvel.Status ()
 
 adamWarlockAlterEgo :: AlterEgoCard AdamWarlockAlterEgo
 adamWarlockAlterEgo =

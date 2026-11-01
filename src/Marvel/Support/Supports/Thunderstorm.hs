@@ -3,11 +3,11 @@ module Marvel.Support.Supports.Thunderstorm where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Game.Source (asYou, weatherSpecialCanResolve)
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Damage
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

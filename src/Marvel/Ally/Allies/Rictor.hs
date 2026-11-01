@@ -7,7 +7,7 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted

@@ -6,7 +6,7 @@ module Marvel.Treachery.Treacheries.ShockTherapy (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers

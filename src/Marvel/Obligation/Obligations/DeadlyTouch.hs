@@ -3,8 +3,8 @@ module Marvel.Obligation.Obligations.DeadlyTouch where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
@@ -14,8 +14,8 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Window qualified as W
-import Marvel.Trait qualified as Trait
+import Marvel.Window qualified as W ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Damage
 import Marvel.Hero.Cards qualified as Heroes
 import Marvel.Obligation.Cards qualified as Cards

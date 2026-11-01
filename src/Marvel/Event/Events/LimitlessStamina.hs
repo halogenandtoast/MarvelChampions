@@ -1,7 +1,7 @@
 module Marvel.Event.Events.LimitlessStamina where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

@@ -4,28 +4,28 @@ import Marvel.Id
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Ally.Runner
-import Marvel.Ally.Types
+import Marvel.Ally.Types ()
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Matchers
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Keyword
 import Marvel.Resource
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
 import Marvel.Campaign (CampaignRecord (RecordMutantCaptives))
 import Marvel.Ally.Cards qualified as Cards
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 
 newtype MutantGenesisAlly = MutantGenesisAlly (Attrs Ally `With` Bool)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)

@@ -6,7 +6,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Message.Lifted
+import Marvel.Message.Lifted ()
 import Marvel.Trait (Trait (Tech))
 import Marvel.Window
 

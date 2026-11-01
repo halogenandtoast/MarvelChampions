@@ -9,7 +9,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Code
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Keyword

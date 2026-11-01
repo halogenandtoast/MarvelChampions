@@ -1,11 +1,11 @@
 module Marvel.SideScheme.SideSchemes.GiantMonsterAttack where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -27,5 +27,5 @@ instance HasModifiersFor GiantMonsterAttack where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage GiantMonsterAttack where
-  runMessage msg e@(GiantMonsterAttack attrs) = runQueueT $ case msg of
+  runMessage msg (GiantMonsterAttack attrs) = runQueueT $ case msg of
     _ -> GiantMonsterAttack <$> runMessage msg attrs

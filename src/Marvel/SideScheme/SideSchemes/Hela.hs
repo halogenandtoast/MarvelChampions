@@ -21,7 +21,7 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Minions

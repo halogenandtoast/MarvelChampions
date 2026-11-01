@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 
 warMachine :: AllyCard WarMachine
 warMachine = ally WarMachine Cards.warMachine (Thw 2, 1) (Atk 2, 1) (HP 3)

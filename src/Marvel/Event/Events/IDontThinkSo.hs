@@ -2,7 +2,7 @@ module Marvel.Event.Events.IDontThinkSo where
 
 import Marvel.Prelude
 import Marvel.Window qualified as W
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted

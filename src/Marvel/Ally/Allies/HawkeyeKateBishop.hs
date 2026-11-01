@@ -10,10 +10,10 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Damage
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 
 hawkeyeKateBishop :: AllyCard HawkeyeKateBishop
 hawkeyeKateBishop = ally HawkeyeKateBishop Cards.hawkeyeKateBishop (Thw 1, 1) (Atk 2, 1) (HP 2)

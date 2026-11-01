@@ -7,7 +7,7 @@ import Marvel.Game.Source (getModifiers)
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Identity.Types (Field (..))
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection

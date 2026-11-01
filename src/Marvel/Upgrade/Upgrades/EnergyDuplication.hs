@@ -16,7 +16,7 @@ import Marvel.Message
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 

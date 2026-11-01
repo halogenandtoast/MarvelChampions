@@ -7,7 +7,7 @@ import Marvel.Entity
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Ability
-import Data.HashMap.Strict qualified as HashMap
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
@@ -15,16 +15,16 @@ import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
-import Marvel.Minion.Types qualified as Minion
+import Marvel.Minion.Types qualified as Minion ()
 import Marvel.Name (display)
 import Marvel.Query
 import Marvel.Trait (Trait (Marauder))
 import Marvel.Window qualified as W
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype OnTheRunAttachment = OnTheRunAttachment (Attrs Attachment)
@@ -69,7 +69,7 @@ instance HasAbilities OnTheRunAttachment where
 
 instance RunMessage OnTheRunAttachment where
   runMessage msg e@(OnTheRunAttachment a) = runQueueT $ case msg of
-    AttachmentMessage aid (RevealAttachment you) | aid == attachmentId a -> do
+    AttachmentMessage aid (RevealAttachment _) | aid == attachmentId a -> do
       case toCardCode a of
         "40105a" -> attachToTheVillain a
         "40105b" -> do

@@ -6,8 +6,8 @@ module Marvel.Event.Events.Brainstorm (
 import Marvel.Prelude
 
 import Marvel.Card
-import Marvel.Card.Code
-import Marvel.Card.Def
+import Marvel.Card.Code ()
+import Marvel.Card.Def ()
 import Marvel.Deck
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

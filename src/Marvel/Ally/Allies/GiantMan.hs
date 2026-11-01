@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 giantMan :: AllyCard GiantMan
 giantMan = ally GiantMan Cards.giantMan (Thw 2, 1) (Atk 2, 1) (HP 4)

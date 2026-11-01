@@ -15,7 +15,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Queue (isQueued)
+import Marvel.Queue ()
 import Marvel.Question
 import Marvel.Entity
 import Marvel.Ref

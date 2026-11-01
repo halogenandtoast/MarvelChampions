@@ -5,23 +5,23 @@ module Marvel.Treachery.Treacheries.TacticalProwess (
 
 import Marvel.Prelude
 
-import Control.Monad (replicateM_)
-import Data.Maybe (maybeToList)
-import Data.Aeson (Result (..), fromJSON)
-import Marvel.Attack
+import Control.Monad ()
+import Data.Maybe ()
+import Data.Aeson ()
+import Marvel.Attack ()
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Data.List (nub)
+import Marvel.Game.Source ()
+import Data.List ()
 import Marvel.Id
-import Marvel.Identity.Types (Field (PlayerIdentityDefeated))
-import Marvel.Projection (projectP)
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 
@@ -43,7 +43,7 @@ instance IsTreachery TacticalProwess where
 -- way, this card gains surge.
 instance RunMessage TacticalProwess where
   runMessage msg t@(TacticalProwess (attrs `With` meta)) = runQueueT $ case msg of
-    TreacheryMessage ident (RevealTreachery you) | ident == treacheryId attrs -> do
+    TreacheryMessage ident (RevealTreachery _) | ident == treacheryId attrs -> do
       withSideSchemeByThreat LeastThreat AnySideScheme \from ->
         withSideSchemeByThreat MostThreat (NotSideScheme $ SideSchemeWithId from) \to ->
           cardSpecific attrs "move" (from, to)

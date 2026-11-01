@@ -3,9 +3,9 @@ module Marvel.Minion.Minions.IronSpider where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost ()
 import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -26,5 +26,5 @@ instance HasModifiersFor IronSpider where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage IronSpider where
-  runMessage msg e@(IronSpider attrs) = runQueueT $ case msg of
+  runMessage msg (IronSpider attrs) = runQueueT $ case msg of
     _ -> IronSpider <$> runMessage msg attrs

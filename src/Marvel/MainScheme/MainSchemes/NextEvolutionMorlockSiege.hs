@@ -13,7 +13,7 @@ import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Phase
 import Marvel.Query
@@ -21,8 +21,8 @@ import Marvel.Trait (Trait (Morlock))
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MorlockSiegeMainScheme = MorlockSiegeMainScheme (Attrs MainScheme)

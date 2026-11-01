@@ -14,7 +14,7 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.GameValue
 import Marvel.Matchers
 import Marvel.Message.Lifted

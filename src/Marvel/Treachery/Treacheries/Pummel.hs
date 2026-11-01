@@ -5,23 +5,23 @@ module Marvel.Treachery.Treacheries.Pummel (
 
 import Marvel.Prelude
 
-import Control.Monad (replicateM_)
-import Data.Maybe (maybeToList)
-import Data.Aeson (Result (..), fromJSON)
-import Marvel.Attack
+import Control.Monad ()
+import Data.Maybe ()
+import Data.Aeson ()
+import Marvel.Attack ()
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Data.List (nub)
+import Marvel.Game.Source ()
+import Data.List ()
 import Marvel.Id
-import Marvel.Identity.Types (Field (PlayerIdentityDefeated))
-import Marvel.Projection (projectP)
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Ref
-import Marvel.Status
+import Marvel.Ref ()
+import Marvel.Status ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 

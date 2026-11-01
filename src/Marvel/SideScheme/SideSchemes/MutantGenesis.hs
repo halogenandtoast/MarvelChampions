@@ -4,7 +4,7 @@ import Marvel.Id
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
-import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck)
+import Marvel.Card.PlayerCard.Types ()
 import Marvel.GameValue
 import Marvel.Message.Lifted
 import Marvel.Ref
@@ -13,18 +13,18 @@ import Marvel.EncounterCard (genEncounterCard)
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Projection
+import Marvel.Projection ()
 import Marvel.Modifier
 import Marvel.Keyword
 import Marvel.Damage
 import Marvel.Trait qualified as Trait
 import Marvel.Ally.Cards qualified as Allies
-import Marvel.Minion.Cards qualified as Minions
+import Marvel.Minion.Cards qualified as Minions ()
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Window qualified as W
-import Marvel.Ability
-import Marvel.Cost
+import Marvel.Window qualified as W ()
+import Marvel.Ability ()
+import Marvel.Cost ()
 import Marvel.Question
 import System.Random.Shuffle (shuffleM)
 import Marvel.SideScheme.Cards qualified as Cards

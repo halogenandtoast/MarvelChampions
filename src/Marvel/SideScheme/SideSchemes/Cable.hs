@@ -2,21 +2,21 @@ module Marvel.SideScheme.SideSchemes.Cable where
 
 import Marvel.Hero.Cards qualified as HeroCards
 import Marvel.Prelude
-import Data.List (delete)
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
+import Data.List ()
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Status
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Window qualified as W ()
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
 import Marvel.Ability
 import Marvel.Modifier
@@ -26,9 +26,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Hand ()
 import Marvel.Deck
 import Marvel.Discard
 import Marvel.Identity.Types

@@ -3,34 +3,34 @@ module Marvel.Minion.Minions.NextEvolutionMisterSinister where
 import Marvel.Minion.Runner
 import Marvel.Effect.Types
 import Marvel.Prelude
-import Marvel.Ability
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Keyword qualified as Keyword
-import Marvel.Matchers
-import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Status
-import Marvel.Trait qualified as Trait
+import Marvel.Ability ( HasAbilities )
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Game.Source ()
+import Marvel.Id ()
+import Marvel.Keyword qualified as Keyword ()
+import Marvel.Matchers ()
+import Marvel.Modifier ()
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 import Marvel.NextEvolution.Sinister
 
-import Marvel.Card
-import Marvel.Entity
+import Marvel.Card ()
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Minion.Types ()
+
+
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype MisterSinisterMinion = MisterSinisterMinion (Attrs Minion)
   deriving anyclass (IsMinion, HasAbilities)

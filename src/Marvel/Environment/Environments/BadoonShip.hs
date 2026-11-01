@@ -15,7 +15,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 
 -- | Put into play by Terrestrial Invasion's setup (Brotherhood of Badoon).
 badoonShip :: EnvironmentCard BadoonShip

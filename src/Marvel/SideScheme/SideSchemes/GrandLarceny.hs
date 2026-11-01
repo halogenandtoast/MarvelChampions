@@ -1,9 +1,9 @@
 module Marvel.SideScheme.SideSchemes.GrandLarceny where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost ()
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -29,5 +29,5 @@ instance HasModifiersFor GrandLarceny where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage GrandLarceny where
-  runMessage msg e@(GrandLarceny attrs) = runQueueT $ case msg of
+  runMessage msg (GrandLarceny attrs) = runQueueT $ case msg of
     _ -> GrandLarceny <$> runMessage msg attrs

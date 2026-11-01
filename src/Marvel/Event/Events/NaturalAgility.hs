@@ -33,7 +33,7 @@ instance HasModifiersFor NaturalAgility where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage NaturalAgility where
-  runMessage msg e@(NaturalAgility (attrs `With` meta)) = runQueueT $ case msg of
+  runMessage msg (NaturalAgility (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ enemy))) | eid == eventId attrs -> do
       n <- getCountersOn you
       pure $ NaturalAgility (attrs `With` Meta (Just (you, enemy, n)))

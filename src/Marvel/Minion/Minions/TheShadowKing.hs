@@ -3,23 +3,23 @@ module Marvel.Minion.Minions.TheShadowKing where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
-import Marvel.Status
-import Marvel.Window qualified as W
+import Marvel.Status ()
+import Marvel.Window qualified as W ()
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Trait qualified as Trait
 import Marvel.Attachment.Cards qualified as Attachments
 
@@ -37,7 +37,7 @@ instance HasModifiersFor TheShadowKing where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage TheShadowKing where
-  runMessage msg m@(TheShadowKing attrs) = runQueueT $ case msg of
+  runMessage msg (TheShadowKing attrs) = runQueueT $ case msg of
     MinionMessage mid (RevealMinion you) | mid == minionId attrs -> do
       searchAndRevealEncounterCard you (CardIs Attachments.possessed)
       TheShadowKing <$> runMessage msg attrs

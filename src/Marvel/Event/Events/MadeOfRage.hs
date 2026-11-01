@@ -12,9 +12,9 @@ import Marvel.Event.Types
 import Marvel.Keyword
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Ref
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.Window qualified as W
 
 madeOfRage :: EventCard MadeOfRage
@@ -42,7 +42,7 @@ instance RunMessage MadeOfRage where
   runMessage msg (MadeOfRage (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       -- "you get +10 ATK for that attack"
-      PlayedEvent identityId payment _ -> do
+      PlayedEvent identityId _ _ -> do
         addToBasicPower identityId 6
         let physical = True
         pure $ MadeOfRage (attrs `With` Meta physical)

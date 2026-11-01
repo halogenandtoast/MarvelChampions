@@ -34,7 +34,7 @@ instance IsTreachery InColdBlood where
   treacheryModifiersFor _ _ _ = pure []
 
 instance RunMessage InColdBlood where
-  runMessage msg t@(InColdBlood (attrs `With` meta)) = runQueueT $ case msg of
+  runMessage msg (InColdBlood (attrs `With` meta)) = runQueueT $ case msg of
     TreacheryMessage tid (RevealTreachery you) | tid == treacheryId attrs -> do
       minions <- selectList (MinionIs Minions.theLizard)
       case minions of

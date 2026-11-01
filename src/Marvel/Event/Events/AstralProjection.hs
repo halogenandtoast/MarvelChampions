@@ -5,7 +5,7 @@ module Marvel.Event.Events.AstralProjection (
 
 import Marvel.Prelude
 
-import Marvel.Boost
+import Marvel.Boost ()
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards

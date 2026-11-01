@@ -4,17 +4,17 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Question
-import Marvel.Payment
-import Marvel.Resource
-import Marvel.Trait qualified as Trait
+import Marvel.Payment ()
+import Marvel.Resource ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Card
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand

@@ -9,7 +9,7 @@ import Marvel.Difficulty
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Status
 import Marvel.Resource
 import Marvel.Window qualified as W
@@ -18,9 +18,9 @@ import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Projection
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Hp
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -132,7 +132,7 @@ instance RunMessage SmModularsMinion where
           [labeled "$label.smCriminalDraw" (drawCards you 1)]
             <> [labeled "$label.smCriminalRemoveThreat" (chooseOne you [targeting (schemeRef sid) (thwartScheme sid attrs 3) | sid <- schemes]) | not (null schemes)]
       pure $ SmModularsMinion (attrs `With` SmModularsMinionMeta Nothing False)
-    RanAbility you (isTarget attrs -> True) _ _ _ | toCardCode attrs == "27158" -> do
+    RanAbility _ (isTarget attrs -> True) _ _ _ | toCardCode attrs == "27158" -> do
       placeThreatOnEach attrs 1 AnyScheme
       pure m
     RanAbility you (isTarget attrs -> True) _ _ _ | toCardCode attrs == "27159" -> do
@@ -141,7 +141,7 @@ instance RunMessage SmModularsMinion where
     RanAbility you (isTarget attrs -> True) _ _ _ | toCardCode attrs == "27160" -> do
       dealIndirectDamage you attrs 2
       pure m
-    RanAbility you (isTarget attrs -> True) 1 [W.EnemyAttacksAndDamages _ character _] _ | toCardCode attrs == "27161" -> do
+    RanAbility you (isTarget attrs -> True) 1 [W.EnemyAttacksAndDamages _ _ _] _ | toCardCode attrs == "27161" -> do
       us <- selectList (UpgradeControlledBy $ IdentityWithId you)
       ss <- selectList (SupportControlledBy $ IdentityWithId you)
       unless (null us && null ss) $ chooseAndDiscardControlled you (map UpgradeRef us <> map SupportRef ss)

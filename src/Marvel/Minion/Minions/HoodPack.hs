@@ -20,7 +20,7 @@ import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Resource
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 
 newtype HoodMinion = HoodMinion (Attrs Minion)
@@ -161,7 +161,7 @@ instance RunMessage HoodMinion where
       extra <- case minionAttacking attrs of
         Just a | not (attackDefended a) -> pure 2
         _ -> pure 0
-      let updated = attrs {minionAttacking = fmap (\a -> a {attackChange = attackChange a + fromIntegral extra}) (minionAttacking attrs)}
+      let updated = attrs {minionAttacking = fmap (\a -> a {attackChange = attackChange a + extra}) (minionAttacking attrs)}
       HoodMinion <$> runMessage msg updated
     RanAbility _ (isTarget attrs -> True) 7 windows _ -> do
       let damaged = [IdentityCharacter you | W.IdentityTakeDamageFrom you _ _ <- windows]

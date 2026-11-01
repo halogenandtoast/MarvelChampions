@@ -19,7 +19,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Stats

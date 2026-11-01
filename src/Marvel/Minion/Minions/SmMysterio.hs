@@ -5,11 +5,11 @@ import Marvel.Ability
 import Marvel.Cost.Types
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Window qualified as W
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Hp
 import Marvel.Message.Lifted
 import Marvel.Modifier

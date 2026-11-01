@@ -8,19 +8,19 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.GameValue ()
+import Marvel.Hand ()
 import Marvel.Id
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Resource
-import Marvel.Stats
+import Marvel.Resource ()
+import Marvel.Stats ()
 import Marvel.Window qualified as W
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types

@@ -16,7 +16,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Status (StatusCard (StunnedStatus))
+import Marvel.Status ()
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Window

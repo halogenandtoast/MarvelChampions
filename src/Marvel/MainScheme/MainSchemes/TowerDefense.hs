@@ -23,7 +23,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 
 -- | "Forced Interrupt: When this stage would be completed, remove all the threat from
 -- this stage instead. Then, …": once, for a second completion queued finds it cleared.

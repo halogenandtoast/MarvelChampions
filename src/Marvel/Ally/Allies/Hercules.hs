@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Id
+import Marvel.Card.Id ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query

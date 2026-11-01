@@ -30,6 +30,7 @@ instance RunMessage SevenRingsOfRaggadorr where
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent {} -> e <$ cardSpecific attrs "tough" (3 :: Natural)
       ResolvedEvent -> e <$ invocationResolved attrs
+      _ -> SevenRingsOfRaggadorr <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "tough" (fromJSON -> Success (n :: Natural)) | n > 0 -> do
       tough <- select (CharacterWithStatus ToughStatus)
       characters <- filter (not . (`member` tough)) <$> selectList AnyCharacter

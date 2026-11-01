@@ -53,7 +53,7 @@ instance HasModifiersFor Chimera where
     [modifier bonus | target == toRef attrs, modifier <- [AttackModifier, SchemeModifier]]
 
 instance RunMessage Chimera where
-  runMessage msg a@(Chimera (attrs `With` bonus)) = runQueueT $ case msg of
+  runMessage msg (Chimera (attrs `With` bonus)) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       n <- printedResourcesControlled you Mental
       pure $ Chimera (attrs `With` n)

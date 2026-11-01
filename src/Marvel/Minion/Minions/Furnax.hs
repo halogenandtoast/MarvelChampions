@@ -12,8 +12,8 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
-import Marvel.Question
-import Marvel.Ref
+import Marvel.Question ()
+import Marvel.Ref ()
 import Marvel.Window
 
 furnax :: MinionCard Furnax

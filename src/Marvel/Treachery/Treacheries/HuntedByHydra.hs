@@ -11,7 +11,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 

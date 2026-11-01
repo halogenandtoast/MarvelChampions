@@ -9,17 +9,17 @@ import Marvel.Attachment.Types
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.NextEvolution.Helpers
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MorlockSiegeAttachment = MorlockSiegeAttachment (Attrs Attachment `With` Natural)

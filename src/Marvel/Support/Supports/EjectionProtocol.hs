@@ -14,7 +14,7 @@ import Marvel.Criteria
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Trait
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Question (runAbility)
 
 ejectionProtocol :: SupportCard EjectionProtocol

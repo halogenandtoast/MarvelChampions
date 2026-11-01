@@ -1,36 +1,38 @@
 module Marvel.Obligation.Obligations.NextEvolutionTelepathySet where
 
-import Marvel.Support.Types (Field (SupportController))
+import Marvel.Support.Types ()
 import Marvel.Prelude
 import Marvel.Question (runAbility)
 import Marvel.Ability
+    ( AbilityType(AlterEgoAction), HasAbilities(..), ability )
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Keyword qualified as Keyword
+import Marvel.Damage ()
+import Marvel.Game.Source ()
+import Marvel.Id ()
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Projection
+    ( HasModifiersFor(getModifiersFor), Modifier(CannotReady) )
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
 import Marvel.Resource
-import Marvel.Status
-import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.NextEvolution.Sinister
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
+import Marvel.Window qualified as W ()
+import Marvel.NextEvolution.Sinister ()
 
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype TelepathySetObligation = TelepathySetObligation (Attrs Obligation)

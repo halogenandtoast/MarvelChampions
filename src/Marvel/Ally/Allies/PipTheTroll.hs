@@ -9,16 +9,16 @@ import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Data.List (find)
-import Marvel.Card.Id
-import Marvel.Card.PlayerCard.Types (PlayerCard (..))
+import Marvel.Card.Id ()
+import Marvel.Card.PlayerCard.Types ()
 import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Hand
 import Marvel.Id
 import Marvel.Identity.Types (Field (..))
 import Marvel.Matchers
 import Marvel.Projection
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Resource
 import Marvel.Window
 

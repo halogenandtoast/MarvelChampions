@@ -14,7 +14,7 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 
 -- | He enters play with 2 chi counters on him.
 powerManVictorAlvarez :: AllyCard PowerManVictorAlvarez
@@ -28,7 +28,7 @@ newtype PowerManVictorAlvarez = PowerManVictorAlvarez (Attrs Ally)
 -- | Action: Discard any number of chi counters from Power Man → he gets +2 ATK for each
 -- chi counter discarded this way until the end of the phase.
 instance HasAbilities PowerManVictorAlvarez where
-  getAbilities a@(PowerManVictorAlvarez attrs) =
+  getAbilities a@(PowerManVictorAlvarez _) =
     [ ability a 1 Action OwnsThis (CountersFromThisCost 1) $ runAbility a 1
     ]
 

@@ -12,7 +12,7 @@ import Marvel.Ref
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
 import Marvel.Minion.Runner
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Window qualified as W
 
 sandmanSinister :: MinionCard SandmanSinister

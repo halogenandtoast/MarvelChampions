@@ -4,7 +4,7 @@ import Marvel.Id
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Attachment.Types
@@ -15,15 +15,15 @@ import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Projection
+import Marvel.Projection ()
 import Marvel.Modifier
 import Marvel.Question
 import Marvel.Resource
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Keyword
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Minion.Types qualified as M
+import Marvel.Minion.Types qualified as M ()
 import Marvel.Attachment.Cards qualified as Cards
 
 newtype MutantGenesisAttachment = MutantGenesisAttachment (Attrs Attachment)

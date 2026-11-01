@@ -7,13 +7,13 @@ import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers
-import Marvel.Message.Lifted
-import Marvel.Modifier
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
 import Marvel.Query
-import Marvel.Ref
-import Marvel.Stats
+import Marvel.Ref ()
+import Marvel.Stats ()
 import Marvel.Window qualified as W
 
 gambitRogue :: AllyCard GambitRogue

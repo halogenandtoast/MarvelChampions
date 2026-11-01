@@ -15,7 +15,7 @@ import Marvel.Identity.Types (Field (PlayerIdentityDamage))
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -49,7 +49,7 @@ instance RunMessage NotToday where
   runMessage msg (NotToday (attrs `With` meta)) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent identityId _ (Just (W.HeroDefends _ _))) | ident == eventId attrs ->
       pure . NotToday $ attrs `With` Meta (Just identityId)
-    IdentityMessage ident (AttackDefended enemy damageBefore _) | defending meta == Just ident -> do
+    IdentityMessage ident (AttackDefended _ damageBefore _) | defending meta == Just ident -> do
       -- a hero defeated by the attack is gone
       alive <- elem ident <$> getAllPlayers
       -- nor is an enemy retaliate defeated

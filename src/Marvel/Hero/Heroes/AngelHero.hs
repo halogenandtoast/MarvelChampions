@@ -5,7 +5,7 @@ import Marvel.Ability
 import Marvel.Card.Def
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Matchers
 import Marvel.Question
 import Marvel.Trait qualified as Trait

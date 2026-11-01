@@ -1,10 +1,10 @@
 module Marvel.Event.Events.EvenTheOdds where
 
 import Marvel.Prelude
-import Marvel.Ability
-import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Ability ()
+import Marvel.Card ()
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -15,7 +15,7 @@ import Marvel.Window qualified as W
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Damage
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Game.Source (getStartingPlayerCount)
 
 -- Count schemes actually defeated by this thwart, after interrupts and replacement effects.

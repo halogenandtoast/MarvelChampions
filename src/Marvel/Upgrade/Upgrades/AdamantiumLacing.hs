@@ -3,7 +3,7 @@ module Marvel.Upgrade.Upgrades.AdamantiumLacing where
 import Marvel.Prelude
 import Marvel.Matchers
 import Marvel.Keyword
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ability
 import Marvel.Card.Code
 import Marvel.Entity

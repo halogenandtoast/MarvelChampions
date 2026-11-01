@@ -1,21 +1,21 @@
 module Marvel.Support.Supports.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Status
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Status ()
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Payment
 import Marvel.Query
 import Marvel.Resource
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
 import Marvel.Question (runAbility, Choice (Pay))
 import Marvel.Ability
@@ -26,9 +26,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Hand ()
 
 cable40007 :: SupportCard Cable40007
 cable40007 = support Cable40007 Cards.cable40007
@@ -102,17 +102,17 @@ instance RunMessage Cable40022 where
   runMessage msg (Cable40022 attrs) = runQueueT $ Cable40022 <$> runMessage msg attrs
 
 instance HasAbilities Cable40007 where
-  getAbilities a@(Cable40007 attrs) =
+  getAbilities a@(Cable40007 _) =
     [ limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response (OwnsThis <> Exhausted) NoCost (runAbility a 1)
     , ability a 2 Resource OwnsThis ExhaustCost (Pay $ ResourcePayment Energy)
     ]
 
 instance HasAbilities Cable40008 where
-  getAbilities a@(Cable40008 attrs) =
+  getAbilities a@(Cable40008 _) =
     [ability a 1 AlterEgoAction OwnsThis ExhaustCost (runAbility a 1)]
 
 instance HasAbilities Cable40021 where
-  getAbilities a@(Cable40021 (attrs `With` _)) =
+  getAbilities a@(Cable40021 (_ `With` _)) =
     [ability a 1 Action OwnsThis ExhaustCost (runAbility a 1)]
 
 instance HasModifiersFor Cable40022 where

@@ -32,7 +32,7 @@ instance RunMessage TheWarsBeenBrought where
       supports <- selectList (SupportControlledBy $ IdentityWithId you)
       upgrades <- selectList (UpgradeControlledBy $ IdentityWithId you)
       controlled <- fmap catMaybes $ for (IdentityRef you : map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades) $ \target -> getsGame (`abilityCardDef` target)
-      let n = fromIntegral $ count (== Wild) $ concatMap printedResources (map getCardDef (hand <> discard) <> controlled)
+      let n = count (== Wild) $ concatMap printedResources (map getCardDef (hand <> discard) <> controlled)
       discardTopOfEncounterDeck n
       pure t
     _ -> TheWarsBeenBrought <$> runMessage msg attrs

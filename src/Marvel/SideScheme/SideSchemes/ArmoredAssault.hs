@@ -12,7 +12,7 @@ import Marvel.Modifier
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Status
+import Marvel.Status ()
 
 armoredAssault :: SideSchemeCard ArmoredAssault
 armoredAssault = sideScheme ArmoredAssault Cards.armoredAssault (PerPlayer 3)

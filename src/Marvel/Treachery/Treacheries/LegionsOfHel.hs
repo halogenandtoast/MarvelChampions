@@ -10,7 +10,7 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Matchers
 import Marvel.Message.Lifted

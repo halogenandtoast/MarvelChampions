@@ -13,7 +13,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Treachery.Cards qualified as Cards

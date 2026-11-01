@@ -19,7 +19,7 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity (isTarget)
 import Marvel.Game.Source
 import Marvel.Id

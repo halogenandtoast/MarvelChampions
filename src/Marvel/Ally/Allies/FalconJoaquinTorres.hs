@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Id

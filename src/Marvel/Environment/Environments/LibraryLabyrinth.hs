@@ -21,7 +21,7 @@ import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Query
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 
 -- | Escape the Museum's environment: Library Labyrinth, flipped to Museum Ship by The
 -- Great Escape (3A).

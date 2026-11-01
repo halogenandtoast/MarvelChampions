@@ -18,7 +18,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 
 rogueVessel :: EnvironmentCard RogueVessel
 rogueVessel = environment RogueVessel Cards.rogueVessel

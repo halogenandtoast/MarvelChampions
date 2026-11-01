@@ -1,6 +1,6 @@
 module Marvel.MainScheme.MainSchemes.MutantGenesis where
 
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
@@ -24,11 +24,11 @@ import Marvel.Environment.Cards qualified as Environments
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 import Marvel.Phase
-import Marvel.Ability
-import Marvel.Cost
-import Marvel.Question
+import Marvel.Ability ()
+import Marvel.Cost ()
+import Marvel.Question ()
 import Marvel.MainScheme.Cards qualified as Cards
 
 newtype MutantGenesisMainScheme = MutantGenesisMainScheme (Attrs MainScheme)

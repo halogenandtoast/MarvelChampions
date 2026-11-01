@@ -16,7 +16,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Game.Source (getVillainStage)
-import Marvel.Status
+import Marvel.Status ()
 
 musterCourage :: EventCard MusterCourage
 musterCourage = event MusterCourage Cards.musterCourage

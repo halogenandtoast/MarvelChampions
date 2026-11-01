@@ -12,7 +12,7 @@ import Marvel.Hero.Types
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Stats
-import Marvel.Hero.Runner
+import Marvel.Hero.Runner ()
 
 spdrSuitHero :: HeroCard SpdrSuitHero
 spdrSuitHero = hero SpdrSuitHero Cards.spdrSuitHero (HP $ Static 14) (HandSize 3) (Thw 2) (Atk 2) (Def 2)

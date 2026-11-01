@@ -3,8 +3,8 @@ module Marvel.Minion.Minions.Karn where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Card.Code ()
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Keyword
@@ -12,7 +12,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Trait (Trait (Inheritor, WebWarrior))
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
@@ -31,7 +31,7 @@ instance HasModifiersFor Karn where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage Karn where
-  runMessage msg m@(Karn attrs) = runQueueT $ case msg of
+  runMessage msg (Karn attrs) = runQueueT $ case msg of
     MinionMessage mid (RevealMinion you) | mid == minionId attrs -> do
       webWarrior <- selectAny (CharacterWithTrait WebWarrior)
       when webWarrior do

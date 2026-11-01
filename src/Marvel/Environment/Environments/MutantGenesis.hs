@@ -1,24 +1,24 @@
 module Marvel.Environment.Environments.MutantGenesis where
 
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Prelude
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Environment.Types
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Villain.Cards qualified as Villains
 import Marvel.Ally.Cards qualified as Allies
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 import Marvel.Environment.Cards qualified as Cards
 

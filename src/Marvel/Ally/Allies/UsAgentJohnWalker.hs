@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 
 usAgentJohnWalker :: AllyCard UsAgentJohnWalker
 usAgentJohnWalker = ally UsAgentJohnWalker Cards.usAgentJohnWalker (Thw 1, 1) (Atk 1, 1) (HP 5)

@@ -11,8 +11,8 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Payment
-import Marvel.Question (runAbility)
+import Marvel.Payment ()
+import Marvel.Question ()
 import Marvel.Window qualified as W
 
 venmAddyBrock :: AllyCard VenmAddyBrock

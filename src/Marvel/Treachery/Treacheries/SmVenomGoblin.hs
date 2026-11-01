@@ -1,18 +1,18 @@
 module Marvel.Treachery.Treacheries.SmVenomGoblin where
 
 import Marvel.Prelude
-import Marvel.Ability.Types
+import Marvel.Ability.Types ()
 import Marvel.Game.Source
 import Marvel.MainScheme.MainSchemes.SmVenomGoblin qualified as Goblin
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 

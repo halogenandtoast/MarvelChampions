@@ -13,7 +13,7 @@ import Marvel.Criteria
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Trait (Trait (Guardian))
 import Marvel.Window qualified as W
 

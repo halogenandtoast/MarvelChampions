@@ -8,15 +8,15 @@ module Marvel.Event.Events.SelfPropelledGlide (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Effect.Types
 import Marvel.Trait (Trait (Aerial))

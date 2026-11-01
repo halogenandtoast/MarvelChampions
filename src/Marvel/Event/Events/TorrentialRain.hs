@@ -3,7 +3,7 @@ module Marvel.Event.Events.TorrentialRain where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types

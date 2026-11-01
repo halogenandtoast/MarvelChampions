@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Hand
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Keyword

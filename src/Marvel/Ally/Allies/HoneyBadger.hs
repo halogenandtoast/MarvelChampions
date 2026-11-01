@@ -6,7 +6,7 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Question (runAbility)
+import Marvel.Question ()
 import Marvel.Window qualified as W
 import Marvel.Ability
 import Marvel.Card.Code

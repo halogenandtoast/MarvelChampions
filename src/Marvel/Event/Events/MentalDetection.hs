@@ -1,12 +1,12 @@
 module Marvel.Event.Events.MentalDetection where
 
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Game.Source ()
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

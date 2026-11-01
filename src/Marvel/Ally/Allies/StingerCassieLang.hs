@@ -8,8 +8,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 
 stingerCassieLang :: AllyCard StingerCassieLang
 stingerCassieLang = ally StingerCassieLang Cards.stingerCassieLang (Thw 1, 1) (Atk 1, 1) (HP 2)

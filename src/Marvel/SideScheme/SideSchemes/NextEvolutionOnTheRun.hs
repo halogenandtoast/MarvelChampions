@@ -5,18 +5,18 @@ import Marvel.Card
 import Marvel.Entity
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
+import Marvel.Ability ()
 import Marvel.Modifier
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Name (display)
 import Marvel.Query
 import Marvel.Trait (Trait (Marauder))
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype OnTheRunSideScheme = OnTheRunSideScheme (Attrs SideScheme)
@@ -37,7 +37,7 @@ instance HasModifiersFor OnTheRunSideScheme where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage OnTheRunSideScheme where
-  runMessage msg e@(OnTheRunSideScheme a) = runQueueT $ case msg of
+  runMessage msg (OnTheRunSideScheme a) = runQueueT $ case msg of
     SideSchemeMessage sid DefeatSideScheme | sid == sideSchemeId a, toCardCode a == "40108" -> do
       first <- selectJust FirstPlayer
       let you = fromMaybe first (sideSchemeDefeatedBy a)

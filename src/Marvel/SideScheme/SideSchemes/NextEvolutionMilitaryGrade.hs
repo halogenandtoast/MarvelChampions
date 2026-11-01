@@ -1,37 +1,37 @@
 module Marvel.SideScheme.SideSchemes.NextEvolutionMilitaryGrade where
 
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ability ()
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Game.Source
-import Marvel.Hand
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Game.Source ()
+import Marvel.Hand ()
 import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers hiding (UnexhaustedIdentity, UnexhaustedAlly)
-import Marvel.Matchers qualified as Matchers
-import Marvel.Modifier
-import Marvel.NextEvolution.Modulars
-import Marvel.Payment
-import Marvel.Projection
+import Marvel.Matchers qualified as Matchers ()
+import Marvel.Modifier ( HasModifiersFor )
+import Marvel.NextEvolution.Modulars ()
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
-import Marvel.Status
-import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
+import Marvel.Question ()
+import Marvel.Resource.Types ()
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
+import Marvel.Window qualified as W ()
 import Marvel.Entity
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
 import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype MilitaryGradeSideScheme = MilitaryGradeSideScheme (Attrs SideScheme)

@@ -3,20 +3,20 @@ module Marvel.Ally.Allies.Vivian where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
-import Marvel.Query
-import Marvel.Matchers
+import Marvel.Query ()
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Upgrade.Cards qualified as Upgrades
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.Stats ()
+import Marvel.Hp ()
 vivian :: AllyCard Vivian
 vivian = ally Vivian Cards.vivian (Thw 1, 1) (Atk 1, 1) (HP 2)
 

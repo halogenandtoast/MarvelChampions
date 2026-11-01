@@ -9,7 +9,7 @@ import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
+import Marvel.Matchers ()
 import Marvel.Matchers qualified as M
 import Marvel.Message.Lifted
 import Marvel.Modifier

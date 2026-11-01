@@ -5,7 +5,7 @@ module Marvel.SideScheme.SideSchemes.UnderAttack (
 
 import Marvel.Prelude
 
-import Marvel.Id (SchemeId (..))
+import Marvel.Id ()
 
 import Marvel.Card.Code
 import Marvel.Damage
@@ -16,7 +16,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

@@ -5,7 +5,7 @@ import Marvel.Ability
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Card.Code
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as Minions

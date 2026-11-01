@@ -7,11 +7,11 @@ import Marvel.Attachment.Types
 import Marvel.Boost (boostCount)
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Hood.Helpers
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Deck

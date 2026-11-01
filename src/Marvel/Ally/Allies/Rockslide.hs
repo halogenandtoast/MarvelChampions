@@ -4,8 +4,8 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.GameValue ()
+import Marvel.Hand ()
 import Marvel.Stats
 import Marvel.Message.Lifted
 import Marvel.Modifier

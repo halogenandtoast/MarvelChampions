@@ -8,7 +8,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Modifier
+import Marvel.Modifier ()
 
 ironManTonyStark :: AllyCard IronManTonyStark
 ironManTonyStark = ally IronManTonyStark Cards.ironManTonyStark (Thw 2, 1) (Atk 2, 1) (HP 3)

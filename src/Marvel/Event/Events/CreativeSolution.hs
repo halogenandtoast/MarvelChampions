@@ -18,7 +18,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 creativeSolution :: EventCard CreativeSolution
 creativeSolution = event CreativeSolution Cards.creativeSolution

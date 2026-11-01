@@ -1,6 +1,6 @@
 module Marvel.Support.Supports.MoiraMacTaggert where
 
-import Marvel.Question (runAbility)
+import Marvel.Question ( runAbility )
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
@@ -10,7 +10,7 @@ import Marvel.Entity
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question (runAbility)
+
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types

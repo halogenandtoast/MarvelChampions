@@ -3,16 +3,16 @@ module Marvel.Obligation.Obligations.SmModulars where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Matchers
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
 

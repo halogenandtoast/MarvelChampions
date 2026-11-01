@@ -13,7 +13,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 athleticConditioning :: EventCard AthleticConditioning
 athleticConditioning = event AthleticConditioning Cards.athleticConditioning

@@ -8,11 +8,11 @@ import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Message.Lifted
-import Marvel.Modifier
-import Marvel.Query
-import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
+import Marvel.Query ()
+import Marvel.Question ()
+import Marvel.Ref ()
 import Marvel.Trait (Trait (Shield))
 import Marvel.Window qualified as W
 

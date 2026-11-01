@@ -4,17 +4,17 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers
-import Marvel.Message.Lifted
-import Marvel.Modifier
+import Marvel.Message.Lifted ()
+import Marvel.Modifier ()
 import Marvel.Query
-import Marvel.Question
-import Marvel.Ref
+import Marvel.Question ()
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 jubilee :: AllyCard Jubilee
@@ -48,7 +48,7 @@ jubileeEffect :: CardEffect JubileeEffect
 jubileeEffect = effectWith JubileeEffect Cards.jubilee (endsL ?~ DisableAtEndOfPhase)
 
 instance RunMessage JubileeEffect where
-  runMessage msg e@(JubileeEffect attrs) = runQueueT $ case msg of
+  runMessage msg (JubileeEffect attrs) = runQueueT $ case msg of
     CardSpecific target "jubileeTarget" (fromJSON -> Success enemy) | target == refocus (effectSource attrs), null (effectModifiers attrs) ->
       pure $ JubileeEffect attrs {effectModifiers = [AttackModifierAgainst enemy 2]}
     _ -> JubileeEffect <$> runMessage msg attrs

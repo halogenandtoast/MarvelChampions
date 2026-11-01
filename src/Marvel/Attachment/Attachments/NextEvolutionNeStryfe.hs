@@ -8,7 +8,7 @@ import Marvel.Question (runAbility)
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query
@@ -19,9 +19,9 @@ import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype NeStryfeAttachment = NeStryfeAttachment (Attrs Attachment)

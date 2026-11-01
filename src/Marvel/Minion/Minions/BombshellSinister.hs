@@ -3,9 +3,9 @@ module Marvel.Minion.Minions.BombshellSinister where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost ()
 import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref

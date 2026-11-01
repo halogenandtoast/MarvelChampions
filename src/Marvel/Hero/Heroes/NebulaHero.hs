@@ -13,7 +13,7 @@ import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Hero.Runner
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

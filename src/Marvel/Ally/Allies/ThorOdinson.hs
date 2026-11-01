@@ -6,7 +6,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Query

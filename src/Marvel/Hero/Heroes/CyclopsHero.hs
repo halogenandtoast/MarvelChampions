@@ -2,16 +2,16 @@ module Marvel.Hero.Heroes.CyclopsHero where
 
 import Marvel.Prelude
 import Marvel.Ability
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Id
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -19,7 +19,7 @@ import Marvel.Payment
 import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Resource
+import Marvel.Resource ()
 import Marvel.Stats
 import Marvel.Window qualified as W
 import Marvel.Hero.Cards qualified as Cards
@@ -56,7 +56,7 @@ instance HasAbilities CyclopsHero where
     ]
 
 instance RunMessage CyclopsHero where
-  runMessage msg h@(CyclopsHero (attrs `With` blast)) = runQueueT $ case msg of
+  runMessage msg (CyclopsHero (attrs `With` blast)) = runQueueT $ case msg of
     CardSpecific (isTarget attrs -> True) "cyclopsVisor" (fromJSON -> Success scope) ->
       pure . CyclopsHero $ attrs `With` blast {visorPayment = scope, visorUsed = True}
     CardSpecific (isTarget attrs -> True) "cyclopsFullBlast" _ ->

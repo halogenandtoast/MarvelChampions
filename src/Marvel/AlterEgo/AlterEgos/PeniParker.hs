@@ -16,7 +16,7 @@ import Marvel.AlterEgo.Types
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Stats
-import Marvel.AlterEgo.Runner
+import Marvel.AlterEgo.Runner ()
 import Marvel.Obligation.Cards qualified as Obligations
 
 peniParker :: AlterEgoCard PeniParker

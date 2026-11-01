@@ -8,7 +8,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted

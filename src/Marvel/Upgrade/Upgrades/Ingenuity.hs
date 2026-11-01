@@ -10,13 +10,13 @@ import Marvel.Ability
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Card.Code
-import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Entity ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 
 ingenuity :: UpgradeCard Ingenuity
 ingenuity = upgrade Ingenuity Cards.ingenuity

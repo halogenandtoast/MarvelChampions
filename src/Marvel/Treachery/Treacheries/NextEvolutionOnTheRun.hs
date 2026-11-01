@@ -7,7 +7,7 @@ import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Ability (HasAbilities)
 import Data.List (find)
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -18,9 +18,9 @@ import Marvel.Status
 import Marvel.Trait (Trait (Marauder))
 import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 
 newtype OnTheRunTreachery = OnTheRunTreachery (Attrs Treachery)

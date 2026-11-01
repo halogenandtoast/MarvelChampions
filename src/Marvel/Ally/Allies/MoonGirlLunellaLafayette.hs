@@ -4,11 +4,11 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Resource
 import Marvel.Window qualified as W
 
@@ -36,7 +36,7 @@ instance HasAbilities MoonGirlLunellaLafayette where
 instance RunMessage MoonGirlLunellaLafayette where
   runMessage msg a@(MoonGirlLunellaLafayette (attrs `With` meta)) = runQueueT $ case msg of
     AllyMessage aid (AllyPaidWith payment) | aid == allyId attrs -> do
-      n <- fromIntegral . count (== Mental) <$> paymentResources payment
+      n <- count (== Mental) <$> paymentResources payment
       attrs' <- runMessage msg attrs
       pure $ MoonGirlLunellaLafayette (attrs' `With` MoonGirlPayment n)
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do

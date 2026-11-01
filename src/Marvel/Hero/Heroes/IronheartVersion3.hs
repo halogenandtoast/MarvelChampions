@@ -6,7 +6,7 @@ import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Matchers
 import Marvel.Question (runAbility)
-import Marvel.Resource.Types
+import Marvel.Resource.Types ()
 import Marvel.Damage
 import Marvel.Hero.Cards qualified as Cards
 import Marvel.Hero.Runner

@@ -52,7 +52,7 @@ honedTechniqueEffect :: CardEffect HonedTechniqueEffect
 honedTechniqueEffect = effect HonedTechniqueEffect Cards.honedTechnique
 
 instance RunMessage HonedTechniqueEffect where
-  runMessage msg e@(HonedTechniqueEffect attrs) = runQueueT $ case msg of
+  runMessage msg (HonedTechniqueEffect attrs) = runQueueT $ case msg of
     EffectMessage ident (UsedEffect _) | ident == effectId attrs, EventEntity eid <- effectMatcher attrs -> do
       def <- getsGame (\g -> abilityCardDef g (EventRef eid))
       pure $ HonedTechniqueEffect $ attrs & modifiersL .~ [DamageDealtModifier $ fromIntegral $ max 0 $ fromMaybe 0 $ def >>= cdCost]

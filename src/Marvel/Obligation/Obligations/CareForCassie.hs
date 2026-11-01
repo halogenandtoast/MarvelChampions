@@ -10,7 +10,7 @@ import Marvel.Prelude
 import Marvel.Ability.Types (HasAbilities)
 import Marvel.Card.Code
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Modifier

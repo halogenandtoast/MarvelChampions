@@ -13,7 +13,7 @@ import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Trait qualified as Trait
+import Marvel.Trait qualified as Trait ()
 
 mutantEducation :: EventCard MutantEducation
 mutantEducation = event MutantEducation Cards.mutantEducation

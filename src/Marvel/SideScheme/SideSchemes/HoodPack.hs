@@ -18,7 +18,7 @@ import Marvel.Modifier
 import Marvel.Question (runAbility)
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Scenario.Types (Scenario (..), Attrs (scenarioEncounterDeck))
+import Marvel.Scenario.Types ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 import Marvel.Trait qualified as Trait

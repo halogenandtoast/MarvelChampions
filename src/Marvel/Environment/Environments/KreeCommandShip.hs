@@ -15,7 +15,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 kreeCommandShip :: EnvironmentCard KreeCommandShip

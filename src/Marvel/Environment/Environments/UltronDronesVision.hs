@@ -3,13 +3,13 @@ module Marvel.Environment.Environments.UltronDronesVision (ultronDronesVision, U
 import Marvel.Prelude
 
 import Marvel.Ability (HasAbilities)
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.Environment.Cards qualified as Cards
 import Marvel.Environment.Types
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Ref ()
 
 ultronDronesVision :: EnvironmentCard UltronDronesVision
 ultronDronesVision = environment UltronDronesVision Cards.ultronDronesVision

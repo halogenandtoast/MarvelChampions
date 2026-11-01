@@ -1,21 +1,21 @@
 module Marvel.Treachery.Treacheries.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
-import Marvel.Cost
-import Marvel.Criteria
+import Data.List ()
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Damage
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
-import Marvel.Payment
-import Marvel.Query
-import Marvel.Resource
-import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import Marvel.Payment ()
+import Marvel.Query ()
+import Marvel.Resource ()
+import Marvel.Trait qualified as Trait ()
+import Marvel.Window qualified as W ()
+import Marvel.Keyword qualified as Keyword ()
+import {-# SOURCE #-} Marvel.Game ()
 
 import Marvel.Ability
 import Marvel.Modifier
@@ -25,9 +25,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
-import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Stats ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 
 cable40035 :: TreacheryCard Cable40035
 cable40035 = treachery Cable40035 Cards.cable40035
@@ -38,7 +38,7 @@ newtype Cable40035 = Cable40035 (Attrs Treachery)
 
 instance RunMessage Cable40035 where
   runMessage msg a@(Cable40035 attrs) = runQueueT $ case msg of
-    TreacheryMessage tid (RevealTreachery you) | tid == treacheryId attrs -> do
+    TreacheryMessage tid (RevealTreachery _) | tid == treacheryId attrs -> do
       n <- sideSchemesInVictoryDisplay
       placeThreatOnEach attrs (2 + n) MainScheme
       pure a

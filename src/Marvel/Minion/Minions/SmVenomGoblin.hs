@@ -2,7 +2,7 @@ module Marvel.Minion.Minions.SmVenomGoblin where
 
 import Marvel.Prelude
 import Marvel.Ability.Types
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Game.Source
 import Marvel.MainScheme.MainSchemes.SmVenomGoblin qualified as Goblin
 import Marvel.Id
@@ -11,7 +11,7 @@ import Marvel.Query
 import Marvel.Keyword
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Hp
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -19,7 +19,7 @@ import Marvel.Ref
 import Marvel.Stats
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Types
-import Marvel.Minion.Runner
+import Marvel.Minion.Runner ()
 
 newtype SmVenomGoblinMinion = SmVenomGoblinMinion (Attrs Minion)
   deriving anyclass (IsMinion, HasAbilities)

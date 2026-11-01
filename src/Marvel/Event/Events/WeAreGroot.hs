@@ -17,7 +17,7 @@ import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 weAreGroot :: EventCard WeAreGroot
 weAreGroot = event WeAreGroot Cards.weAreGroot

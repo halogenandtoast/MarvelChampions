@@ -8,19 +8,19 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Prelude
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Villain.Villains.TheHood
 import Marvel.Window
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 newtype HoodAttachment = HoodAttachment (Attrs Attachment)
   deriving anyclass (IsAttachment)

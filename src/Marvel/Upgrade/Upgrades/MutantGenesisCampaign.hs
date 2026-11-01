@@ -11,7 +11,7 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Effect.Types qualified as E
 import Marvel.Entity
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted

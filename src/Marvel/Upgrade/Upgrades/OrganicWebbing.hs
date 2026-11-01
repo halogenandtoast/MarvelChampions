@@ -6,7 +6,7 @@ import Marvel.Criteria
 import Marvel.Effect.Types
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Matchers qualified as Matchers
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Trait
 import Marvel.Ability

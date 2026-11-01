@@ -2,16 +2,16 @@ module Marvel.SideScheme.SideSchemes.SmVenomGoblin where
 
 import Marvel.Prelude
 import Marvel.Game.Source
-import Marvel.Ability.Types
+import Marvel.Ability.Types ()
 import Marvel.MainScheme.MainSchemes.SmVenomGoblin qualified as Goblin
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.GameValue
-import Marvel.Hp
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

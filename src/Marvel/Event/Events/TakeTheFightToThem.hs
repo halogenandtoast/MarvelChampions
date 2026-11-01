@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Data.List (delete)
 import Marvel.Card
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types

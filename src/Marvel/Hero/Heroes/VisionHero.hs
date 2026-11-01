@@ -18,7 +18,7 @@ import Marvel.Keyword (Keyword (MassForm))
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Stats
-import Marvel.Hero.Runner
+import Marvel.Hero.Runner ()
 visionHero :: HeroCard VisionHero
 visionHero = hero VisionHero Cards.visionHero (HP $ Static 11) (HandSize 5) (Thw 2) (Atk 0) (Def 0)
 

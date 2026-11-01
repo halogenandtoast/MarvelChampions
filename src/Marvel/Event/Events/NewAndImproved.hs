@@ -2,7 +2,7 @@ module Marvel.Event.Events.NewAndImproved where
 
 import Marvel.Id (CharacterId (IdentityCharacter))
 import Marvel.Prelude
-import Marvel.Ability
+import Marvel.Ability ()
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Message.Lifted
@@ -16,7 +16,7 @@ import Marvel.Identity (ironheartVersion)
 import Marvel.Identity.Types (Field (PlayerIdentityDeck))
 import Marvel.Matchers
 import Marvel.Projection
-import Marvel.Status
+import Marvel.Status ()
 
 newAndImproved :: EventCard NewAndImproved
 newAndImproved = event NewAndImproved Cards.newAndImproved

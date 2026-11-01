@@ -4,17 +4,17 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Query
-import Marvel.Ref
-import Marvel.Trait qualified as Trait
+import Marvel.Ref ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 
 mirage :: AllyCard Mirage

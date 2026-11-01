@@ -17,7 +17,7 @@ import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Support.Types (Field (SupportCardDef))
+import Marvel.Support.Types ()
 
 keepingSecrets :: ObligationCard KeepingSecrets
 keepingSecrets = obligation KeepingSecrets Cards.keepingSecrets

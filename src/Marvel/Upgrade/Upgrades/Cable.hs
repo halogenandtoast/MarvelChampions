@@ -1,23 +1,23 @@
 module Marvel.Upgrade.Upgrades.Cable where
 
 import Marvel.Prelude
-import Data.List (delete)
+import Data.List ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Payment
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Resource
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W
 import Marvel.Keyword qualified as Keyword
-import {-# SOURCE #-} Marvel.Game (getPlayerVictoryDisplay, getVictoryDisplay, sideSchemesInVictoryDisplay)
+import {-# SOURCE #-} Marvel.Game ()
 
-import Marvel.Question (runAbility, Choice (Pay))
+import Marvel.Question ( runAbility )
 import Marvel.Ability
 import Marvel.Modifier
 import Marvel.Entity
@@ -26,9 +26,9 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
-import Marvel.Stats
-import Marvel.GameValue
-import Marvel.Hand
+import Marvel.Stats ()
+import Marvel.GameValue ()
+import Marvel.Hand ()
 
 cable40009 :: UpgradeCard Cable40009
 cable40009 = upgrade Cable40009 Cards.cable40009
@@ -139,17 +139,17 @@ instance RunMessage Cable40029 where
     _ -> Cable40029 <$> runMessage msg attrs
 
 instance HasAbilities Cable40009 where
-  getAbilities a@(Cable40009 attrs) =
+  getAbilities a@(Cable40009 _) =
     [limitedWindowAbility a 1 (W.HeroDefended W.After You AnyEnemy) HeroResponse OwnsThis
       (ExhaustCost <> ResourceCost (Just Energy)) (runAbility a 1)]
 
 instance HasAbilities Cable40010 where
-  getAbilities a@(Cable40010 attrs) =
+  getAbilities a@(Cable40010 _) =
     [limitedWindowAbility a 1 (W.SideSchemeDefeated W.After $ NotSideScheme $ SideSchemeWithKeyword Keyword.Permanent)
       HeroResponse OwnsThis NoCost (runAbility a 1)]
 
 instance HasAbilities Cable40011 where
-  getAbilities a@(Cable40011 attrs) =
+  getAbilities a@(Cable40011 _) =
     [ability a 1 HeroAction (OwnsThis <> VictoryDisplayHasSideScheme <> EnemyExists AttackableEnemy)
       (ExhaustCost <> ResourceCost (Just Energy)) (runAbility a 1)]
 
@@ -166,9 +166,9 @@ instance HasAbilities Cable40013 where
       ((RemoveFromGameCost $ toRef attrs) <> PutSideSchemeFromVictoryCost) (runAbility a 1)]
 
 instance HasAbilities Cable40023 where
-  getAbilities a@(Cable40023 attrs) =
+  getAbilities a@(Cable40023 _) =
     [limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
 
 instance HasAbilities Cable40029 where
-  getAbilities a@(Cable40029 attrs) =
+  getAbilities a@(Cable40029 _) =
     [limitedWindowAbility a 1 (W.PlaysCard W.After You $ CardWithTrait Trait.Psionic <> NotCardMatching (CardIs Cards.cable40029)) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]

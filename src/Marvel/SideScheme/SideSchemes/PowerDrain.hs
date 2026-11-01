@@ -5,7 +5,7 @@ module Marvel.SideScheme.SideSchemes.PowerDrain (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..))
+import Data.Aeson ()
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Game.Source
@@ -16,7 +16,7 @@ import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Projection
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

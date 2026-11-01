@@ -12,7 +12,7 @@ import Marvel.Support.Types
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Payment
 import Marvel.Card
 import Marvel.Question (runAbility)

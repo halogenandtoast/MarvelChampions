@@ -3,7 +3,7 @@ module Marvel.Minion.Minions.Zzzax where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Card.PlayerCard (printedResourcesFor)
+import Marvel.Card.PlayerCard ()
 import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand))
@@ -28,12 +28,12 @@ controlledEnergy you = do
   upgrades <- selectList (UpgradeControlledBy $ IdentityWithId you)
   let targets = map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades
   defs <- getsGame $ \g -> mapMaybe (abilityCardDef g) targets
-  pure $ fromIntegral $ count (== Energy) $ concatMap printedResources defs
+  pure $ count (== Energy) $ concatMap printedResources defs
 
 handEnergy :: (HasGame m, Projection m PlayerIdentity) => IdentityId -> m Natural
 handEnergy you = do
   hand <- unHand <$> project PlayerIdentityHand you
-  fromIntegral . count (== Energy) . concat <$> traverse printedResourcesFor hand
+  count (== Energy) . concat <$> traverse printedResourcesFor hand
 
 instance HasModifiersFor Zzzax where
   getModifiersFor _ target (Zzzax attrs) | isTarget attrs target = do

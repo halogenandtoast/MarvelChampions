@@ -3,25 +3,25 @@ module Marvel.Obligation.Obligations.Cable where
 import Marvel.Hero.Cards qualified as HeroCards
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Prelude
-import Data.List (delete)
-import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Status
+import Data.List ()
+import Marvel.Cost ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Status ()
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
-import Marvel.Payment
+import Marvel.Payment ()
 import Marvel.Query
-import Marvel.Resource
-import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
-import Marvel.Keyword qualified as Keyword
+import Marvel.Resource ()
+import Marvel.Trait qualified as Trait ()
+import Marvel.Window qualified as W ()
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Identity.Types
 import Marvel.Projection
 import Marvel.Deck
 import Marvel.Discard
-import Marvel.SideScheme.Types
+import Marvel.SideScheme.Types ()
 
 import Marvel.Ability
 import Marvel.Modifier
@@ -31,8 +31,8 @@ import Marvel.Ref
 import Marvel.Message.Lifted
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
-import Marvel.Stats
-import Marvel.GameValue
+import Marvel.Stats ()
+import Marvel.GameValue ()
 import Marvel.Hand
 
 cable40031 :: ObligationCard Cable40031

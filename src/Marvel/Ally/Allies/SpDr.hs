@@ -2,14 +2,14 @@ module Marvel.Ally.Allies.SpDr where
 
 import Marvel.Prelude
 import Marvel.Ability
-import Marvel.Card
-import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Card ()
+import Marvel.Cost ()
+import Marvel.Criteria ()
 import Marvel.Entity
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Window qualified as W
 import Marvel.Ally.Cards qualified as Cards
@@ -34,7 +34,7 @@ instance HasModifiersFor SpDr
 instance HasAbilities SpDr
 
 instance RunMessage SpDr where
-  runMessage msg a@(SpDr (attrs `With` excess)) = runQueueT $ case msg of
+  runMessage msg (SpDr (attrs `With` excess)) = runQueueT $ case msg of
     AllyMessage aid (AllyDamaged source damage) | aid == allyId attrs -> do
       immune <- cannotTakeDamageFrom (AllyRef aid) source
       hp <- getModifiedHitPoints attrs

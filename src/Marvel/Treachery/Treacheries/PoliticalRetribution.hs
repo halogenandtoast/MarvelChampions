@@ -20,7 +20,7 @@ newtype PoliticalRetribution = PoliticalRetribution (Attrs Treachery)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance RunMessage PoliticalRetribution where
-  runMessage msg t@(PoliticalRetribution attrs) = runQueueT $ case msg of
+  runMessage msg (PoliticalRetribution attrs) = runQueueT $ case msg of
     TreacheryMessage tid (RevealTreachery _) | tid == treacheryId attrs -> do
       lucia <- selectList (MinionIs Minions.luciaVonBardas)
       schemes <- selectList (SideSchemeIs Schemes.ruleByForce)

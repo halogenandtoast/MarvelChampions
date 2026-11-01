@@ -1,20 +1,20 @@
 module Marvel.Support.Supports.MedLab where
 
-import Marvel.Question (runAbility)
+import Marvel.Question ( runAbility )
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Discard
+import Marvel.Discard ()
 import Marvel.Entity
 import Marvel.Game.Source (canPlayHeldAlly, canCaptureDefeatedAlly)
-import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
+import Marvel.Identity.Types ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Question (runAbility)
-import Marvel.Projection
+
+import Marvel.Projection ()
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types

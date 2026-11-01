@@ -2,7 +2,7 @@ module Marvel.SideScheme.SideSchemes.NefariousTrap where
 
 import Marvel.Prelude
 import Marvel.Card
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue

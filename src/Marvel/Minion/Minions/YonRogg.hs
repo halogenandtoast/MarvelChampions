@@ -38,7 +38,7 @@ instance HasAbilities YonRogg where
 
 instance RunMessage YonRogg where
   runMessage msg e@(YonRogg attrs) = runQueueT $ case msg of
-    RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> do
       mThePsycheMagnitron <-
         selectOne $
           SideSchemeIs SideSchemes.thePsycheMagnitron

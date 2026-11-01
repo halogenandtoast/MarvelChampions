@@ -13,10 +13,11 @@ import Marvel.Entity
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Modifier
+    ( HasModifiersFor, Modifier(AdditionalResourceCost) )
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
 import Marvel.Ability.Types (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
 import Marvel.Ref
 import Marvel.Window qualified as W
 

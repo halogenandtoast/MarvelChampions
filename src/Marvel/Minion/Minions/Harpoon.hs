@@ -5,7 +5,7 @@ import Marvel.Ability
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

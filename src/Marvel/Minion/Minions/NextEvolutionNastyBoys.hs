@@ -2,38 +2,39 @@ module Marvel.Minion.Minions.NextEvolutionNastyBoys where
 
 import Marvel.Minion.Runner
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
+import Data.HashMap.Strict qualified as HashMap ()
 import Marvel.Ability
+    ( AbilityType(ForcedInterrupt), HasAbilities(..), windowAbility )
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Criteria ()
+import Marvel.Damage ()
 import Marvel.Game.Source
-import Marvel.Hand
-import Marvel.Identity.Types
+import Marvel.Hand ()
+import Marvel.Identity.Types ()
 import Marvel.Keyword
 import Marvel.Matchers hiding (UnexhaustedIdentity, UnexhaustedAlly)
-import Marvel.Matchers qualified as Matchers
-import Marvel.Modifier
+import Marvel.Matchers qualified as Matchers ()
+import Marvel.Modifier ()
 import Marvel.NextEvolution.Modulars
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
-import Marvel.Status
-import Marvel.Trait qualified as Trait
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Question ()
+import Marvel.Resource.Types ()
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
-import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.Minion.Types ()
+
+
+import Marvel.Ref ()
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+import Marvel.Message.Lifted ()
 
 newtype NastyBoysMinion = NastyBoysMinion (Attrs Minion `With` Natural)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
@@ -62,14 +63,14 @@ instance IsRef NastyBoysMinion where
   toRef = toRef . toMinionAttrs
 
 instance HasAbilities NastyBoysMinion where
-  getAbilities a@(NastyBoysMinion (attrs `With` counters)) = case toCardCode attrs of
+  getAbilities a@(NastyBoysMinion (attrs `With` _)) = case toCardCode attrs of
     "40112" -> [windowAbility a 1 (W.EnemyAttacked W.When self AnyIdentity) ForcedInterrupt NoCost (runAbility a 1)]
     "40116" -> [windowAbility a 1 (W.EnemyAttackedAnyTarget W.When self) ForcedInterrupt NoCost (runAbility a 1)]
     _ -> []
     where self = EnemyWithId $ EnemyMinionId $ minionId attrs
 
 instance HasModifiersFor NastyBoysMinion where
-  getModifiersFor _ (MinionRef mid) (NastyBoysMinion (attrs `With` counters)) | mid == minionId attrs, toCardCode attrs == "40114" = pure [KeywordModifier Piercing]
+  getModifiersFor _ (MinionRef mid) (NastyBoysMinion (attrs `With` _)) | mid == minionId attrs, toCardCode attrs == "40114" = pure [KeywordModifier Piercing]
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage NastyBoysMinion where

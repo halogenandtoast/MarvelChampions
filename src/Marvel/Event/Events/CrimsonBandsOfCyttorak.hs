@@ -31,6 +31,7 @@ instance RunMessage CrimsonBandsOfCyttorak where
         chooseEnemy identityId AnyEnemy attrs
         pure e
       ResolvedEvent -> e <$ invocationResolved attrs
+      _ -> CrimsonBandsOfCyttorak <$> runMessage msg attrs
     ChoseEnemy enemy (isTarget attrs -> True) -> do
       stun enemy attrs
       dealDamage enemy attrs (toDamage 7 FromAbility)

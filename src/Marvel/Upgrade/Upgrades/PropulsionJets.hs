@@ -11,7 +11,7 @@ import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Identity (ironheartVersion)
 import Marvel.Matchers
 import Marvel.Question (runAbility)

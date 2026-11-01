@@ -3,15 +3,15 @@ module Marvel.Minion.Minions.Brix where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Trait (Trait (Inheritor, WebWarrior))
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
@@ -30,8 +30,8 @@ instance HasModifiersFor Brix where
   getModifiersFor _ _ _ = pure []
 
 instance RunMessage Brix where
-  runMessage msg m@(Brix attrs) = runQueueT $ case msg of
-    MinionMessage mid (RevealMinion you) | mid == minionId attrs -> do
+  runMessage msg (Brix attrs) = runQueueT $ case msg of
+    MinionMessage mid (RevealMinion _) | mid == minionId attrs -> do
       webWarrior <- selectAny (CharacterWithTrait WebWarrior)
       when webWarrior do
         schemes <- selectList EncounterMainScheme

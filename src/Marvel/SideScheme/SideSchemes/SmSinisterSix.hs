@@ -1,21 +1,21 @@
 module Marvel.SideScheme.SideSchemes.SmSinisterSix where
 
 import Marvel.Prelude
-import Marvel.Ability.Types
-import Data.Aeson (Result (..), fromJSON)
+import Marvel.Ability.Types ()
+import Data.Aeson ()
 import Marvel.Villain.Villains.SmSinisterSix qualified as Six
 import Marvel.Card.Code
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Matchers
-import Marvel.Query
+import Marvel.Matchers ()
+import Marvel.Query ()
 import Marvel.GameValue
-import Marvel.Hp
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types
 

@@ -13,7 +13,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 rollinRollin :: AttachmentCard RollinRollin
 rollinRollin = attachment RollinRollin Cards.rollinRollin

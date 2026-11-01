@@ -16,8 +16,8 @@ import Marvel.Game.Source (canPlayCardWithReduction)
 import Marvel.Hand
 import Marvel.Identity.Types (Field (PlayerIdentityHand))
 import Marvel.Projection
-import Marvel.Matchers
-import Marvel.Query
+import Marvel.Matchers ()
+import Marvel.Query ()
 import Marvel.Question (runAbility)
 import Marvel.Trait (Trait (Shield))
 

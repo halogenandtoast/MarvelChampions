@@ -8,7 +8,7 @@ import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Matchers qualified as Matchers
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Window qualified as W
 import Marvel.Card.Code
 import Marvel.Entity

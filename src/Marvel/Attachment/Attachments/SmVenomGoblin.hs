@@ -11,12 +11,12 @@ import Marvel.Question (runAbility)
 import Marvel.Query
 import Marvel.Card.Code
 import Marvel.Entity
-import Marvel.GameValue
-import Marvel.Hp
+import Marvel.GameValue ()
+import Marvel.Hp ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Attachment.Types
 

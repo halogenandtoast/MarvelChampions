@@ -3,9 +3,14 @@ module Marvel.Obligation.Obligations.InheritedBurden where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
-import Marvel.Cost
+import Marvel.Cost ()
 import Marvel.Entity
 import Marvel.Matchers
+    ( IdentityMatcher(UnexhaustedIdentity, HeroIdentity,
+                      AlterEgoIdentity),
+      UpgradeMatcher(UpgradeThatCanBeDiscarded, UpgradeWithTrait),
+      upgradeControlledBy,
+      identityMatches )
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
@@ -13,7 +18,7 @@ import Marvel.Obligation.Cards qualified as Cards
 import Marvel.Obligation.Types
 import Marvel.Query
 import Marvel.Trait
-import Marvel.Matchers hiding (ExhaustedIdentity)
+
 
 inheritedBurden :: ObligationCard InheritedBurden
 inheritedBurden = obligation InheritedBurden Cards.inheritedBurden

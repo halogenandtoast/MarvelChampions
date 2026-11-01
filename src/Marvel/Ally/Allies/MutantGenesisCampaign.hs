@@ -4,14 +4,14 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Entity
+import Marvel.Damage ()
+import Marvel.Entity ()
 import Marvel.Matchers
-import Marvel.Modifier
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Ref ()
 import Marvel.Trait (Trait (Sentinel))
 import Marvel.Window qualified as W
 

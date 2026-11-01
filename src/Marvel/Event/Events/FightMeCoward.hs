@@ -12,8 +12,8 @@ import Marvel.Event.Types
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.Matchers
-import Marvel.Query
+import Marvel.Matchers ()
+import Marvel.Query ()
 
 fightMeCoward :: EventCard FightMeCoward
 fightMeCoward = event FightMeCoward Cards.fightMeCoward

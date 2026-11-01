@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Data.Maybe (maybeToList)
 import Marvel.Entity
 import Marvel.Card
-import Marvel.GameValue
+import Marvel.GameValue ()
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Minion.Types
@@ -18,21 +18,21 @@ import Marvel.Cost
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Matchers
-import Marvel.Query
-import Marvel.Projection
-import Marvel.Question
-import Marvel.Modifier
-import Marvel.Status
+import Marvel.Query ()
+import Marvel.Projection ()
+import Marvel.Question ()
+import Marvel.Modifier ()
+import Marvel.Status ()
 import Marvel.Trait qualified as Trait
 import Marvel.Keyword
 import Marvel.Window qualified as W
-import Marvel.Identity.Types (Field (PlayerIdentityDeck))
-import Marvel.Deck
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Attachment.Types qualified as A
+import Marvel.Identity.Types ()
+import Marvel.Deck ()
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Attachment.Types qualified as A ()
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.SideScheme.Cards qualified as Sides
-import Marvel.Villain.Types qualified as V
+import Marvel.Villain.Types qualified as V ()
 
 
 newtype MutantGenesisMinion = MutantGenesisMinion (Attrs Minion `With` (Maybe IdentityId, Maybe (IdentityId, Natural, Natural)))
@@ -209,7 +209,7 @@ instance RunMessage MutantGenesisMinion where
         else do
           cardSpecific attrs "pyroStart" you
       pure e
-    RanAbility you (isTarget attrs -> True) 2 [W.EnemyAttacksAndDamages _ character _] _ -> do
+    RanAbility _ (isTarget attrs -> True) 2 [W.EnemyAttacksAndDamages _ character _] _ -> do
       if toCardCode attrs == "32074" then giveStatus character StunnedStatus else do
         controller <- getSourceController (toSource $ characterRef character)
         for_ controller (\p -> discardFrom p RandomFromHand 1)

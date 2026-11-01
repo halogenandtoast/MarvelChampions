@@ -8,9 +8,9 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
-import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Ref
+import Marvel.Modifier ()
+import Marvel.Payment ()
+import Marvel.Ref ()
 
 antManHankPym :: AllyCard AntManHankPym
 antManHankPym = ally AntManHankPym Cards.antManHankPym (Thw 2, 1) (Atk 2, 1) (HP 0)

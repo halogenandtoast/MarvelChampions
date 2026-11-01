@@ -12,7 +12,7 @@ import Marvel.Card.Code
 import Marvel.Card.Def (CardMatcher (AnyCard))
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Question

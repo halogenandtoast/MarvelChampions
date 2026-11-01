@@ -15,8 +15,8 @@ import Marvel.Query
 import Marvel.Ref
 import Marvel.Aspect
 import Marvel.Payment
-import Marvel.Identity.Types (PlayerIdentity)
-import Marvel.Projection (Projection)
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
 import Marvel.Queue (HasQueue)
 
 superpowerAdaptation :: EventCard SuperpowerAdaptation
@@ -26,7 +26,7 @@ newtype SuperpowerAdaptation = SuperpowerAdaptation (Attrs Event)
   deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
-adaptableEvents :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
+adaptableEvents :: (HasGame m, HasQueue m, MonadThrow m) => IdentityId -> m [PlayerCard]
 adaptableEvents you = do
   host <- touchedHost you
   case host of

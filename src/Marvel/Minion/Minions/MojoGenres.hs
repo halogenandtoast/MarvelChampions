@@ -5,7 +5,7 @@ import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Criteria
+import Marvel.Criteria ()
 import Marvel.Damage
 import Marvel.Discard
 import Marvel.Entity

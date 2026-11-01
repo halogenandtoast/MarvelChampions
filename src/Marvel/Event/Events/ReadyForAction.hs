@@ -6,7 +6,7 @@ module Marvel.Event.Events.ReadyForAction (
 import Marvel.Prelude
 
 import Marvel.Card.Code
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
@@ -16,7 +16,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 
 readyForAction :: EventCard ReadyForAction
 readyForAction = event ReadyForAction Cards.readyForAction

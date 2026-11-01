@@ -3,14 +3,14 @@ module Marvel.Resource.Resources.AvianAnatomy where
 import Marvel.Prelude
 import Marvel.Card
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Ref
 import Marvel.Resource.Cards qualified as Cards
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 -- The response is offered when spent; the return waits for the exact event to finish.
 avianAnatomySpent :: ReverseQueue m => IdentityId -> PlayerCard -> PlayerCard -> m ()

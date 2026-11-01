@@ -15,7 +15,7 @@ import Marvel.Window qualified as W
 import Marvel.Criteria
 import Marvel.Matchers
 import Marvel.Query
-import Marvel.Projection
+import Marvel.Projection ()
 import Marvel.Trait
 
 spiderManOttoOctavius :: AllyCard SpiderManOttoOctavius

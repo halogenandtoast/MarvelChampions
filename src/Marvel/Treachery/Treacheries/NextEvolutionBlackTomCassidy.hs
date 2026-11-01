@@ -1,42 +1,49 @@
 module Marvel.Treachery.Treacheries.NextEvolutionBlackTomCassidy where
 
 import Marvel.Minion.Cards qualified as CardsWillow
-import Marvel.Minion.Types (Field (MinionEngagedIdentity))
+import Marvel.Minion.Types ()
 import Marvel.Prelude
 import Marvel.Id
-import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability
-import Marvel.Attack
-import Marvel.Cost
-import Marvel.Count
-import Marvel.Criteria
-import Marvel.Damage
-import Marvel.Difficulty
+import Marvel.Status ()
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ability ( HasAbilities )
+import Marvel.Attack ()
+import Marvel.Cost ()
+import Marvel.Count ()
+import Marvel.Criteria ()
+import Marvel.Damage ()
+import Marvel.Difficulty ()
 import Marvel.Game.Source
 import Marvel.Identity.Types
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Modifier
-import Marvel.NextEvolution.Juggernaut
-import Marvel.Payment
-import Marvel.Projection
+    ( Message(CardSpecific, TreacheryMessage, CheckWindows),
+      RunMessage(..),
+      TreacheryMessage(RevealTreachery),
+      runQueueT,
+      cardSpecific,
+      enemyAttacks,
+      searchAndRevealEncounterCard )
+import Marvel.Modifier ( HasModifiersFor )
+import Marvel.NextEvolution.Juggernaut ()
+import Marvel.Payment ()
+import Marvel.Projection ()
 import Marvel.Query
-import Marvel.Question
-import Marvel.Resource.Types
+import Marvel.Question ()
+import Marvel.Resource.Types ()
 import Marvel.Window qualified as W
 import Marvel.Card
 import Marvel.Entity
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
+
+
 import Marvel.Ref
-import Marvel.GameValue
-import Marvel.Stats
-import Marvel.Hp
-import Marvel.Message.Lifted
+import Marvel.GameValue ()
+import Marvel.Stats ()
+import Marvel.Hp ()
+
 
 newtype BlackTomCassidyTreachery = BlackTomCassidyTreachery (Attrs Treachery `With` [IdentityId])
   deriving newtype (Show, Eq, ToJSON, FromJSON)

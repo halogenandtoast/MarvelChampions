@@ -7,7 +7,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Prelude
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
 import Marvel.Villain.Villains.TheHood

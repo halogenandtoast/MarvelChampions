@@ -9,7 +9,7 @@ import Marvel.Discard
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hand
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Identity.Types (Field (PlayerIdentityHand, PlayerIdentityDiscard))
 import Marvel.Keyword
 import Marvel.Matchers

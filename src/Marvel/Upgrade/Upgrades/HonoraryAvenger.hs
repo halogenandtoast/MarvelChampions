@@ -13,7 +13,7 @@ import Marvel.Matchers
 import Marvel.Message
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Question
+import Marvel.Question ()
 import Marvel.Ref
 import Marvel.Trait
 import Marvel.Upgrade.Cards qualified as Cards

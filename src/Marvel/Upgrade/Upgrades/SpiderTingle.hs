@@ -11,8 +11,8 @@ import Marvel.Question (runAbility)
 import Marvel.Upgrade.Cards qualified as Cards
 import Marvel.Upgrade.Types
 import Marvel.Card
-import Marvel.Card.Id
-import Marvel.Id (TreacheryId (..))
+import Marvel.Card.Id ()
+import Marvel.Id ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Matchers
