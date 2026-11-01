@@ -17,7 +17,7 @@ import Data.HashSet qualified as HashSet
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
-import Marvel.Payment (Payment (..), paymentResources, payments)
+import Marvel.Payment ()
 import Data.List qualified as L
 import Marvel.Cost.Types (Cost (..), costResources, printedResourceRequirements)
 import Marvel.Resource.Types (Resource (..))
@@ -25,7 +25,7 @@ import Marvel.Ally.Types (Ally)
 import Marvel.Area
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
-import Marvel.AlterEgo.Types qualified as AlterEgo
+import Marvel.AlterEgo.Types qualified as AlterEgo ()
 import Marvel.Attachment.Types (Attachment, Attrs (..))
 import Marvel.Obligation.Types (Attrs (..), getObligationDisplayThreat, getObligationDisplayCounters)
 import Marvel.Attack qualified as Attack
@@ -40,7 +40,7 @@ import Marvel.Entity
 import Marvel.Game
 import Marvel.Hero.Heroes.DoctorStrange (InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Hero.Types qualified as HeroTypes
+import Marvel.Hero.Types qualified as HeroTypes ()
 import Marvel.Environment.Types qualified as Environment
 import Marvel.Hp
 import Marvel.Id
@@ -58,7 +58,7 @@ import Marvel.Question
 import Marvel.Ref
 import Marvel.Scenario.Types (Attrs (..))
 import Marvel.SideScheme.Types (Attrs (..), SideScheme)
-import Marvel.Stats
+import Marvel.Stats ()
 import Marvel.Support.Types (Attrs (..), Support)
 import Marvel.Upgrade.Types (Attrs (..), Upgrade)
 import Marvel.Villain.Types (Villain)
@@ -260,7 +260,7 @@ data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text,
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural}
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural, resourceSlots :: [Resource], occupiedSlots :: [Int], heldCardsFacedown :: Int}
   -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver); facedown,
   -- a Spectrum energy form she is not in (its owner's, not secret)
   deriving stock (Show, Generic)
@@ -664,7 +664,7 @@ gameView seesHand g = do
      in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted a.supportUses (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards]
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a == "34007" then 0 else a.upgradeUses) a.upgradeController (map (cardView . PlayerCard) a.upgradeHeldCards) a.upgradeFaceDown (if toCardCode a == "34007" then a.upgradeUses else 0)
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a == "34007" then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a == "34007" then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0)
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
@@ -800,10 +800,10 @@ questionView asked = \case
 describeChoice :: IdentityId -> Choice -> ChoiceView
 describeChoice asked = \case
   -- a card chosen for what choosing it does: the card itself is all there is to show
-  CardLabel code (Run _) -> (plain "card" Nothing) {code = Just code}
-  CardLabel code c -> (describeChoice asked c) {code = Just code}
+  CardLabel code (Run _) -> withCode (Just code) (plain "card" Nothing)
+  CardLabel code c -> withCode (Just code) (describeChoice asked c)
   Label l _ -> plain "label" (Just l)
-  TargetLabel t body -> (on "target" t) {kind = fromMaybe "target" (doneTo t body)}
+  TargetLabel t body -> withKind (fromMaybe "target" (doneTo t body)) (on "target" t)
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
     (on "ability" (refocus a.abilitySource))
@@ -813,11 +813,11 @@ describeChoice asked = \case
   RunAbility t _ -> on "ability" t
   ChangeForm -> plain "changeForm" (Just "$label.changeForm")
   ChangeToForm side -> plain "changeForm" (Just $ "$label.changeTo" <> tshow side)
-  PlayCard c _ -> (onCard "play" (toCardId c)) {code = Just (toCardCode c)}
-  PayWithCard c -> (onCard "pay" (toCardId c)) {code = Just (toCardCode c)}
+  PlayCard c _ -> withCode (Just $ toCardCode c) (onCard "play" $ toCardId c)
+  PayWithCard c -> withCode (Just $ toCardCode c) (onCard "pay" $ toCardId c)
   FinishPayment -> plain "finishPayment" (Just "$label.finishPayment")
   -- the nth wild paid: the client puts it on that wild
-  DeclareWild n r -> (plain "declareWild" (Just $ tshow r)) {target = Just (tshow n)}
+  DeclareWild n r -> withTarget (Just $ tshow n) (plain "declareWild" (Just $ tshow r))
   ReadyIdentity -> plain "label" (Just "$label.readyIdentity")
   Recover -> plain "recover" (Just "$label.recover")
   Attack -> plain "attack" (Just "$label.attack")
@@ -838,6 +838,9 @@ describeChoice asked = \case
   ReturnTargetToHand t -> on "returnToHand" t
   other -> plain "other" (Just (tshow other))
  where
+  withCode value (ChoiceView i k l t _ a) = ChoiceView i k l t value a
+  withKind value (ChoiceView i _ l t c a) = ChoiceView i value l t c a
+  withTarget value (ChoiceView i k l _ c a) = ChoiceView i k l value c a
   -- the powers every identity and ally has are named by what they do
   basicLabel = \case
     (ChangeForm : _) -> Just "$label.changeForm"

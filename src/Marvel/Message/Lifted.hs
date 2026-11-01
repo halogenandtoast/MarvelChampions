@@ -11,7 +11,7 @@ module Marvel.Message.Lifted (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 
-import Marvel.Card.Code (HasCardCode (toCardCode))
+import Marvel.Card.Code (CardCode, HasCardCode (toCardCode))
 
 import Marvel.Discard (unDiscard)
 
@@ -30,7 +30,6 @@ import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..), sourceEnemy)
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
-import Marvel.Card.Code (CardCode)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType))
 import Marvel.Card.Id (CardId (..), HasCardId (..))
 import Marvel.Card.EncounterCard (EncounterCard (..))
@@ -46,7 +45,12 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (OnlyIdentityCanDefend, AttacksCannotBeDefended, AttacksAgainstGainKeyword, AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Modifier.Types
+    ( Modifier(CannotLeavePlay, AttacksAgainstGainKeyword,
+               ThwartWithAttack, KeywordModifier, AdditionalReadyCost,
+               CannotChangeEnergyForm, CannotChangeMassForm,
+               AttacksCannotBeDefended, OnlyIdentityCanDefend,
+               PlayersChooseTheVillain, CannotBeDefeated, CannotBeDiscarded) )
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -544,7 +548,7 @@ placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 
 -- | Incite X, as the card is revealed: X threat on the main scheme, each of them where
 -- there are two (Tower Defense, MTS rulebook p.10).
-incite :: (ReverseQueue m, HasCardDef card, IsRef card, IsCard card) => card -> m ()
+incite :: (ReverseQueue m, HasCardDef card, IsRef card) => card -> m ()
 incite card = do
   modifiers <- getModifiers card
   let keywords = toList (cdKeywords $ getCardDef card) <> [k | KeywordModifier k <- modifiers]
@@ -824,6 +828,14 @@ enemyDefendedBy enemy character = do
     EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
     EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
 
+-- | Resolve this particular attack, then report its final attack snapshot (or
+-- Nothing if no attack occurred) to the source's "attackCompleted" step.
+enemyAttacksWithCompletion :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> IdentityId -> source -> m ()
+enemyAttacksWithCompletion enemy ident source = cardSpecific GameRef "enemyAttacksWithCompletion" (toEnemy enemy, ident, toSource source)
+
+eventOwnedBy :: ReverseQueue m => EventId -> IdentityId -> m ()
+eventOwnedBy eid = cardSpecific (EventRef eid) "eventOwner"
+
 enemyAttacks :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
 enemyAttacks enemy ident = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttacks ident)
@@ -856,7 +868,7 @@ wasAttacked :: (ReverseQueue m) => Attack -> m ()
 wasAttacked a = push case attackCharacter a of
   IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
   AllyCharacter ally -> AllyMessage ally (AllyWasAttacked a)
-  character -> Msg.cardSpecific GameRef "enemyCharacterWasAttacked" a
+  _ -> Msg.cardSpecific GameRef "enemyCharacterWasAttacked" a
 
 declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
 declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
@@ -2468,6 +2480,13 @@ payCostThen you source cost continuation = do
   acid <- getRandom
   setActiveCost $ ActiveCost acid you (ForContinuation (toSource source) continuation) cost NoPayment Nothing mempty Nothing
 
+-- | A paid continuation that needs the receipt, without initiating another
+-- ability or keeping its payment open while its effects resolve.
+payCostThenWithPayment :: (ReverseQueue m, IsRef source, IsRef target, ToJSON value) => IdentityId -> source -> Cost -> target -> Text -> value -> m ()
+payCostThenWithPayment you source cost target key value = do
+  acid <- getRandom
+  setActiveCost $ ActiveCost acid you (ForPaymentContinuation (toSource source) (toTarget target) key (toJSON value)) cost NoPayment Nothing mempty Nothing
+
 -- | A permanent upgrade returns to its controller's play area when its host leaves.
 detachUpgrade :: (ReverseQueue m) => UpgradeId -> m ()
 detachUpgrade uid = upgradeStep uid UpgradeDetached
@@ -2913,3 +2932,45 @@ redirectCurrentPlayerAttack you enemy friend = do
     W.PlayerAttackResolved from attacker targets | from == source && attacker == you ->
       Just window {windowType = W.PlayerAttackResolved from attacker (filter (/= enemy) targets)}
     _ -> Just window
+
+-- | Saved resource-labelled positions for the metagame card's public board.
+configureResourceSlots :: ReverseQueue m => UpgradeId -> [Resource] -> m ()
+configureResourceSlots uid = cardSpecific uid "configureResourceSlots"
+
+-- | Move one threat from a scheme to the chosen empty position. The game checks
+-- removal restrictions and the position again before moving either component.
+moveThreatToUpgradeSlot :: ReverseQueue m => UpgradeId -> SchemeId -> Int -> m ()
+moveThreatToUpgradeSlot uid scheme slot = cardSpecific GameRef "moveThreatToUpgradeSlot" (uid, scheme, slot)
+
+-- | Moving damage heals the source character (RR Move).
+moveDamageToUpgradeSlot :: ReverseQueue m => UpgradeId -> CharacterId -> Int -> m ()
+moveDamageToUpgradeSlot uid character slot = cardSpecific GameRef "moveDamageToUpgradeSlot" (uid, character, slot)
+
+-- | Store a physical card facedown, with no permission to play it from there.
+holdFacedownCard :: (ReverseQueue m, IsRef host) => host -> PlayerCard -> m ()
+holdFacedownCard host card = removeFromGame card >> cardSpecific host "holdFacedownCard" card
+
+releaseHeldCard :: (ReverseQueue m, IsRef host) => host -> IdentityId -> PlayerCard -> m ()
+releaseHeldCard host you card = cardSpecific host "releaseHeldCard" card >> addToHand you card
+
+-- | The actual pending placement, after earlier interrupts may have replaced it.
+pendingThreatPlacement :: ReverseQueue m => SchemeId -> m (Maybe Natural)
+pendingThreatPlacement scheme = withQueue \queue -> (queue, headMay $ mapMaybe amount queue)
+ where
+  amount = \case
+    MainSchemeMessage sid (MainSchemePlaceThreat n) | scheme == SchemeMainSchemeId sid -> Just n
+    SideSchemeMessage sid (SideSchemePlaceThreat n) | scheme == SchemeSideSchemeId sid -> Just n
+    _ -> Nothing
+
+-- | Replace the first still-pending placement with damage to the chosen character.
+replaceThreatWithDamage :: (ReverseQueue m, IsRef source) => source -> SchemeId -> CharacterId -> m ()
+replaceThreatWithDamage source scheme character = do
+  pending <- pendingThreatPlacement scheme
+  for_ pending $ \n -> when (n > 0) $
+    insteadOf (Msg.isThreatPlacement scheme) $ damageCharacter character source (toDamage n FromAbility)
+
+searchCollectionWeapon :: ReverseQueue m => IdentityId -> UpgradeId -> m ()
+searchCollectionWeapon you host = cardSpecific GameRef "searchCollectionWeapon" (you, host)
+
+swapHeldWeapon :: ReverseQueue m => IdentityId -> UpgradeId -> UpgradeId -> PlayerCard -> m ()
+swapHeldWeapon you host outgoing incoming = cardSpecific GameRef "swapHeldWeapon" (you, host, outgoing, incoming)

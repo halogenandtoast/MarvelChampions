@@ -86,7 +86,7 @@ export interface CardIndex {
   cards: Card[]
 }
 
-export const ASPECTS = ['aggression', 'justice', 'leadership', 'protection'] as const
+export const ASPECTS = ['aggression', 'justice', 'leadership', 'protection', 'pool'] as const
 export const FACTIONS = ['aggression', 'justice', 'leadership', 'protection', 'basic', 'hero', 'encounter', 'campaign', 'pool'] as const
 
 /** Types a player builds with, in the order a deck list is written. */

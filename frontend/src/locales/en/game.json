@@ -1,4 +1,7 @@
 {
+  "metagameBoard": "Metagame board",
+  "occupiedResourceSpace": "Space {space}: {resource}, occupied",
+  "emptyResourceSpace": "Space {space}: {resource}, empty",
   "round": "Round {round}",
   "turnOf": "{name}'s turn",
   "phaseTracker": "Round and phase",

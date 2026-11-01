@@ -17,6 +17,9 @@ export interface CardView {
 }
 
 export interface UpgradeView extends CardView {
+  resourceSlots?: ("Energy" | "Mental" | "Physical" | "Wild")[]
+  occupiedSlots?: number[]
+  heldCardsFacedown?: number
   damage?: number
   exhausted?: boolean
   uses?: number

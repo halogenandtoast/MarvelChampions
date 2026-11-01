@@ -37,6 +37,7 @@ data IdentityMatcher
   | AlterEgoIdentity
   | UnexhaustedIdentity
   | ExhaustedIdentity
+  | IdentityCanReady
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityCanBeHealed
@@ -197,6 +198,7 @@ instance Semigroup UpgradeMatcher where
 -- | Predicates for selecting enemies, also used when choosing an ability's cost.
 data EnemyMatcher
   = AnyEnemy
+  | EnemyInPlay
   | EnemyWithId EnemyId
   | VillainEnemy
   | MinionEnemy
@@ -334,6 +336,7 @@ data SideSchemeMatcher
 
 data MinionMatcher
   = AnyMinion
+  | MinionCanBeDiscarded
   | -- | as it was, among those that have just left play too: what an "after it is
     -- defeated" window matches
     LeftPlayMinion MinionMatcher

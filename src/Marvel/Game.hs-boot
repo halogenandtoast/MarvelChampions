@@ -1,6 +1,7 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+import Marvel.Aspect (Aspect)
 import Marvel.Status (StatusCard)
 import Marvel.Card.Id (CardId)
 
@@ -16,7 +17,6 @@ import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
-import Marvel.Card.Code (CardCode)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Card.Types (Card, IsCard)
 import Marvel.Count
@@ -73,6 +73,10 @@ asPayingForAbility :: HasGame m => Ability -> ReaderT Game m a -> m a
 inAnyArea :: (HasGame m) => ReaderT Game m a -> m a
 getPlayerCount :: (HasGame m) => m Int
 getStartingPlayerCount :: (HasGame m) => m Int
+resolvePlayerCardDef :: HasGame m => CardDef -> m CardDef
+resolvePlayerCardCosts :: HasGame m => PlayerCard -> m PlayerCard
+lookupPlayerCardInGame :: HasGame m => CardCode -> m CardDef
+getPlayerCardCatalogue :: HasGame m => m (HashMap CardCode CardDef)
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getCampaign :: (HasGame m) => m (Maybe Campaign)
 offerable :: Game -> Choice -> Bool
@@ -148,8 +152,7 @@ getPaymentResourceAbilities ::
   (MonadThrow m, MonadRandom m, HasQueue m, HasGame m) =>
   IdentityId -> IdentityId -> Maybe PlayerCard -> m [Ability]
 getAvailableResourcesFor ::
-  ( HasCallStack
-  , HasQueue m
+  ( HasQueue m
   , MonadRandom m
   , MonadThrow m
   , HasGame m
@@ -195,6 +198,8 @@ villainPreventsAttackDamage :: (HasGame m) => VillainId -> Source -> Damage -> m
 getVillainHitPoints :: (HasGame m) => VillainId -> m Natural
 getEnemyPrintedHitPoints :: (HasGame m) => EnemyId -> m Natural
 getHazardCount :: (HasGame m) => m Natural
+getEncounterIconCounts :: (HasGame m) => m (Natural, Natural, Natural, Natural)
+getEncounterIconCount :: (HasGame m) => m Natural
 getHazardCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCount :: (HasGame m) => m Natural
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
@@ -274,13 +279,13 @@ effectivePlayerCardDef :: (HasGame m) => IdentityId -> PlayerCard -> m CardDef
 getIdentityAttackAgainst :: (HasGame m) => IdentityId -> EnemyId -> m Natural
 attachmentHasFriendlyHost :: (HasGame m) => AttachmentId -> m Bool
 
-playableClawsEvents :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Source -> m [PlayerCard]
+playableClawsEvents :: (HasGame m, HasQueue m) => IdentityId -> Source -> m [PlayerCard]
 
-canPlayCardIgnoringResourceCost :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+canPlayCardIgnoringResourceCost :: (HasGame m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
 
-canPlayCardWithReduction :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
-playableCardsWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> Target -> CardMatcher -> Natural -> m [PlayerCard]
-hasCardToPlayWithReductionAfterExhausting :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
+canPlayCardWithReduction :: (HasGame m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
+playableCardsWithReductionAfterExhausting :: (HasGame m, HasQueue m) => IdentityId -> Target -> CardMatcher -> Natural -> m [PlayerCard]
+hasCardToPlayWithReductionAfterExhausting :: (HasGame m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
 
 getActiveCostCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
 
@@ -317,6 +322,9 @@ getGliderSchemes :: (HasGame m) => m [MainSchemeId]
 isRestrictedMainScheme :: (HasGame m) => MainSchemeId -> m Bool
 
 getMainSchemeAccelerationTokensIn :: (HasGame m) => AreaId -> m Natural
+getMainSchemeTokenCountIn :: (HasGame m) => AreaId -> m Natural
+getMainSchemeTokenCount :: (HasGame m) => m Natural
+getAccelerationTokensOnMainScheme :: (HasGame m) => MainSchemeId -> m Natural
 
 getRemovedFromGameEncounterCards :: (HasGame m) => m [EncounterCard]
 
@@ -348,7 +356,7 @@ weatherSpecialCanResolve :: (HasGame m) => IdentityId -> SupportId -> m Bool
 sourceHasBegunLabeledThwart :: HasGame m => Source -> m Bool
 
 withAdditionalIdentityCounters :: HasGame m => [(IdentityId, Natural)] -> ReaderT Game m a -> m a
-recalculateCardPaymentCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> PlayerCard -> Payment -> m Cost
+recalculateCardPaymentCost :: (HasGame m, MonadThrow m, Projection m PlayerIdentity) => IdentityId -> PlayerCard -> Payment -> m Cost
 
 canFindTouched :: HasGame m => IdentityId -> m Bool
 touchedHost :: (HasGame m) => IdentityId -> m (Maybe CharacterId)
@@ -357,10 +365,10 @@ getCharacterTraits :: (HasGame m) => CharacterId -> m (HashSet Trait)
 getCharacterThreat :: (HasGame m) => CharacterId -> m Natural
 transferMojoThreat :: (HasGame m, HasQueue m, MonadRandom m, MonadThrow m) => CharacterId -> m ()
 
-canPlayCardIgnoringResourceCostFromAnyZone :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+canPlayCardIgnoringResourceCostFromAnyZone :: (HasGame m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
 
-canPlayHeldAlly :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
-heldAllyPlayable :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> SupportId -> m Bool
+canPlayHeldAlly :: (HasGame m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
+heldAllyPlayable :: (HasGame m, HasQueue m) => IdentityId -> SupportId -> m Bool
 
 getRevealingCardModifiers :: (HasGame m, IsRef a, IsCard a) => a -> m [Modifier]
 
@@ -407,3 +415,17 @@ schemeHasKeyword :: HasGame m => SchemeId -> Keyword -> m Bool
 characterHasCondition :: HasGame m => StatusCard -> CharacterId -> m Bool
 
 getAttacksThisTurn :: (HasGame m) => m [(Source, EnemyId)]
+
+getPreviousGameWon :: HasGame m => IdentityId -> m (Maybe Bool)
+poolIconEffectsCanResolve :: HasGame m => IdentityId -> Source -> m Bool
+getLegalHeldWeaponSwaps ::
+  (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) =>
+  IdentityId -> UpgradeId -> m [(UpgradeId, PlayerCard)]
+upgradeSlotIsEmpty :: HasGame m => UpgradeId -> Int -> m Bool
+
+canResolvePlayerCardAbilities :: HasGame m => IdentityId -> m Bool
+
+prepareEnemyAttack :: HasGame m => EnemyId -> Attack -> m Attack
+
+controlsAspectCard :: HasGame m => IdentityId -> Aspect -> m Bool
+characterHasAttachment :: HasGame m => CharacterId -> CardDef -> m Bool

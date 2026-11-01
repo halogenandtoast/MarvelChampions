@@ -95,6 +95,12 @@ data ResourceRestriction
   | ResourceForCardsMatching CardMatcher
   | -- | one for each ally its owner controls, to this maximum (Band Together): not printed
     ForEachAllyControlled Natural
+  | -- | extra resources for physical acceleration tokens on the owner's main scheme,
+    -- capped at this many (Montage); these are not printed icons.
+    ForEachMainSchemeAccelerationToken Natural
+  | -- | one additional resource if the owner's sustained damage is below this value
+    -- (Self Confidence, Self Control and Self Preservation); not a printed icon.
+    ResourceIfIdentityDamageLessThan Natural
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -176,6 +182,15 @@ doubleWildResources def = concatMap (\r -> replicate (if r == Wild && maybe Fals
 
 deckLimited :: Natural -> CardDef -> CardDef
 deckLimited n def = def {cdDeckLimit = Just n}
+
+-- | Resolve the printed per-player value, before play-cost increases/reductions.
+-- Keep the printed coefficient rather than multiplying a previously resolved cost:
+-- physical cards can move, be rebuilt as entities, or be reloaded repeatedly.
+resolvePlayerCountCost :: Int -> CardDef -> CardDef
+resolvePlayerCountCost players def = case
+  [coefficient | PerPlayerResourceCost coefficient <- toList (cdKeywords def)] of
+  coefficient : _ -> def {cdCost = Just $ fromIntegral coefficient * max 0 players}
+  [] -> def
 
 teamUpNames :: Text -> Text -> CardDef -> CardDef
 teamUpNames a b def = def {cdTeamUp = Just (a, b)}

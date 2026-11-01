@@ -6,6 +6,7 @@ import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
+import { parseInput } from '../i18n'
 import CardFace from './CardFace.vue'
 import FoldingIdentity from './FoldingIdentity.vue'
 import GameIcon from '../browser/components/GameIcon.vue'
@@ -33,6 +34,9 @@ const props = withDefaults(
     threat?: number | null
     /** uses or counters on it */
     counters?: number | null
+    /** Printed metagame spaces, in reading order; occupied indices are saved by the engine. */
+    resourceSlots?: string[]
+    occupiedSlots?: number[]
     /** the cards facedown beneath it, as a Captive ally under Captured by Hydra */
     held?: number | null
     stunCards?: number
@@ -72,10 +76,21 @@ const active = computed(() => options.value.length > 0)
 const source = computed(() => !!props.id && sourceId.value === props.id)
 const menuOpen = ref(false)
 watch(options, () => (menuOpen.value = false))
+const slotChoices = computed(() => {
+  const found = new Map<number, (typeof options.value)[number]>()
+  if (!props.resourceSlots?.length) return found
+  for (const option of options.value) {
+    if (!option.label?.startsWith('$label.metagameSlot ')) continue
+    const { params } = parseInput(option.label)
+    const slot = Number(params.count) - 1
+    if (Number.isInteger(slot) && slot >= 0 && slot < props.resourceSlots.length) found.set(slot, option)
+  }
+  return found
+})
 // the chips: each distinct thing it can do, named; several of the same are told apart
 const chips = computed(() => {
   const seen = new Map<string, number>()
-  return options.value.map((option) => {
+  return options.value.filter((option) => ![...slotChoices.value.values()].some((slot) => slot.index === option.index)).map((option) => {
     const text = label(option, title.value)
     const n = (seen.get(text) ?? 0) + 1
     seen.set(text, n)
@@ -138,6 +153,13 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
+      <div v-if="resourceSlots?.length" class="metagame-board" :class="{ 'three-columns': resourceSlots.length === 9 }" :aria-label="$t('game.metagameBoard')">
+        <button v-for="(resource, index) in resourceSlots" :key="index" type="button" class="metagame-space" :class="{ occupied: occupiedSlots?.includes(index) }" :disabled="!slotChoices.has(index)" :aria-label="$t(occupiedSlots?.includes(index) ? 'game.occupiedResourceSpace' : 'game.emptyResourceSpace', { resource, space: index + 1 })" @click.stop="slotChoices.get(index) && choose(slotChoices.get(index)!.index)">
+          <span class="space-number" aria-hidden="true">{{ index + 1 }}</span>
+          <GameIcon :name="resource.toLowerCase()" />
+          <span v-if="occupiedSlots?.includes(index)" class="space-token" aria-hidden="true">●</span>
+        </button>
+      </div>
       <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :aria-label="$t('game.threatOn', { count: threat })" />
       <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :aria-label="$t('game.damageOn', { count: displayedDamage })" />
       <TokenStack v-if="bombCounters" class="token bombs" kind="generic" :count="bombCounters" :aria-label="$t('game.bombsOn', { count: bombCounters })" />
@@ -242,6 +264,14 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   box-shadow: 0 2px 6px var(--shadow);
 }
 .statuses { position: absolute; top: 4%; left: 4%; }
+.metagame-board { position: absolute; top: 9%; left: 12%; right: 12%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 4px; border-radius: 5px; background: var(--ink-2); border: 1px solid var(--line-strong); }
+.metagame-board.three-columns { grid-template-columns: repeat(3, 1fr); }
+.metagame-space { position: relative; display: grid; place-items: center; min-height: 26px; padding: 2px; background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 3px; font-size: max(12px, 12cqi); }
+.metagame-space:not(:disabled) { border-color: var(--interactive); cursor: pointer; }
+.metagame-space:not(:disabled):hover, .metagame-space:focus-visible { outline: 2px solid var(--interactive); outline-offset: 1px; background: var(--ink-4); }
+.metagame-space.occupied { background: var(--ink-4); }
+.space-number { position: absolute; top: 1px; left: 2px; color: var(--text-muted); font: 9px/1 sans-serif; }
+.space-token { position: absolute; inset: 0; display: grid; place-items: center; color: var(--amber); text-shadow: 0 1px 2px var(--ink-1); font-size: 1.35em; }
 
 /* tokens: the printed ones, lifted off the art */
 .token { position: absolute; --token-size: max(22px, 26cqi); }

@@ -2,7 +2,7 @@ module Marvel.Criteria where
 
 import Marvel.Prelude
 import Marvel.Card.Code (CardCode)
-import Marvel.Id (SupportId)
+import Marvel.Id (SupportId, UpgradeId)
 import Marvel.Keyword (Keyword)
 
 import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
@@ -20,6 +20,12 @@ data Criteria
   | Unexhausted
   | Exhausted
   | OwnsThis
+  | NoCardsPlayedThisPhase
+  | HeldWeaponSwapAvailable UpgradeId
+  | EncounterIconExists
+  | PoolIconEffectsCanResolve
+  | PoolAllyInHandCanEnterPlay
+  | MovableThreatExists
   | PlayedEventInDiscard
   | MinionExists MinionMatcher
   | EnemyExists EnemyMatcher
@@ -140,4 +146,3 @@ abilitySubTypeCriteria = \case
   Thwart -> SelfMatches IdentityCanThwart
   Attack -> SelfMatches IdentityCanAttack
   Defense -> SelfMatches IdentityCanDefend
-  _ -> NoCriteria

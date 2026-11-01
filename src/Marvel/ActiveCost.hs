@@ -25,7 +25,7 @@ import Marvel.Hand
 import Marvel.Game.Source
 import Marvel.GameValue.Types (GameValue (Static))
 import Marvel.I18n (ikeyWith, intVar)
-import Marvel.Id (CharacterId (..), IdentityId, MinionId (..), SideSchemeId (..))
+import Marvel.Id (CharacterId (..), IdentityId, MinionId (..), SchemeId (..), SideSchemeId (..))
 import Marvel.Identity.Types
 import Marvel.Message.Lifted
 import Marvel.Payment
@@ -44,7 +44,11 @@ import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
 import Marvel.Resource.Resources.Cyclops (cyclopsResourceSpent)
 import Marvel.Window (windowMatches)
-import Marvel.Window.Types (Window (..), WindowTiming (After), WindowType (IdentityTookDamage, PlayedCardFromHand, ResolvedAbility, GeneratedResources))
+import Marvel.Window.Types
+    ( Window(windowType, Window),
+      WindowTiming(After),
+      WindowType(PlayedCardFromHand, IdentityTookDamage,
+                 GeneratedResources) )
 
 
 -- | The card receiving resources includes the source of a paid card ability.
@@ -138,13 +142,34 @@ payCostPartAs contributing activeCost cost = do
       candidates <- selectList matcher
       valid <- filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
       chooseOne iid [targeting (characterRef c) (damageCharacter c (activeCostSource activeCost) (toDamage n FromAbility) >> paid (ChosenCharacterPayment c <> DamagePayment n)) | c <- valid]
+    ExhaustAnyIdentityCost -> do
+      identities <- selectList UnexhaustedIdentity
+      chooseOne iid [targeting who (exhaust who >> paid (ExhaustedIdentityPayment who)) | who <- identities]
+    MainSchemeAccelerationTokenCost -> do
+      schemes <- selectList EncounterMainScheme
+      chooseOrRunOne iid [targeting scheme (placeAccelerationToken scheme >> paid MainSchemeAccelerationTokenPayment) | SchemeMainSchemeId scheme <- schemes]
     DamageCost n -> do
       paid (PendingDamageCostPayment n 0)
       damageIdentity iid (activeCostSource activeCost) (toDamage n FromAbility)
       cardSpecific (ActiveCostRef acid) "verifyDamageCost" n
+    UpToRemainingHitPointsDamageCost -> do
+      (remaining, _, _) <- getRemainingHitPoints iid
+      affordable <- canAffordCost iid (activeCostSource activeCost) UpToRemainingHitPointsDamageCost
+      if not affordable then abortPayment acid
+      else chooseOne iid
+        [ labeled (countLabel "takeDamage" n) (payCost acid $ DamageCost n)
+        | n <- [1 .. remaining]
+        ]
     HealCost n -> do
       heal iid n
       paid $ HealPayment n
+    DealDamageThisCost n -> case activeCostTarget activeCost of
+      ForAbility a -> case abilitySource a of
+        AllyRef ally -> do
+          damageCharacter ally (abilitySource a) (toDamage n FromAbility)
+          paid $ DamageThisPayment n
+        _ -> error "DealDamageThisCost requires an ally source"
+      _ -> error "DealDamageThisCost requires an ability"
     DamageThisCost n -> case activeCostTarget activeCost of
       ForAbility a -> case abilitySource a of
         AllyRef ally -> do
@@ -542,10 +567,8 @@ canAffordContributionPlan cost payers proposed = do
 -- | A wild resource paid is one its payer may declare as a type, as they generate it
 -- (RR Wild Resource): a card's printed resources are read as it is paid with.
 declarable ::
-  ( Projection m PlayerIdentity
-  , HasGame m
+  ( HasGame m
   , HasQueue m
-  , MonadRandom m
   , MonadThrow m
   ) =>
   Payment ->
@@ -567,6 +590,7 @@ activeCostSource activeCost = case activeCostTarget activeCost of
   ForAbility a -> abilitySource a
   ForTreachery -> GameRef
   ForContinuation source _ -> source
+  ForPaymentContinuation source _ _ _ -> source
 
 condenseResourceCosts :: [Cost] -> [Cost]
 condenseResourceCosts xs = go xs False
@@ -606,10 +630,8 @@ flattenCosts = \case
 -- resources: what was spent of that type beyond the rest. Its payer divides the
 -- resources between the costs, so whatever else could pay the rest does.
 spentX ::
-  ( Projection m PlayerIdentity
-  , HasGame m
+  ( HasGame m
   , HasQueue m
-  , MonadRandom m
   , MonadThrow m
   ) =>
   ActiveCost ->
@@ -652,7 +674,7 @@ instance RunMessage ActiveCost where
       _ -> False
 
 runActiveCost ::
-  (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
+  (MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
   Message ->
   ActiveCost ->
   m ActiveCost
@@ -670,7 +692,7 @@ runActiveCost msg activeCost = do
 
 -- Ordinary cards lock in their cost before resource payment. A continuous
 -- cost-setting ability explicitly opts in to reevaluation while paying.
-refreshContinuousCardCost :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => ActiveCost -> m ActiveCost
+refreshContinuousCardCost :: (HasGame m, MonadThrow m, Projection m PlayerIdentity) => ActiveCost -> m ActiveCost
 refreshContinuousCardCost activeCost = case activeCostTarget activeCost of
   ForCard card -> do
     continuous <- elem ContinuouslyRecalculateResourceCost <$> getModifiers card
@@ -680,7 +702,7 @@ refreshContinuousCardCost activeCost = case activeCostTarget activeCost of
   _ -> pure activeCost
 
 runActiveCostWithCurrentCost ::
-  (HasCallStack, MonadThrow m, MonadRandom m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
+  (MonadThrow m, MonadRandom m, HasGame m, HasQueue m) =>
   Message -> ActiveCost -> m ActiveCost
 runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
     CheckWindows windows -> do
@@ -986,14 +1008,13 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           cardSpecific GameRef "resolveLabeledAbility" (payer, ab, windows, payment)
         ForTreachery -> pure ()
         ForContinuation _ continuation -> enqueueContinuation continuation
+        ForPaymentContinuation _ target key value -> cardSpecific target key (value, payment)
       pure $ activeCost {activeCostPayment = payment}
     _ -> pure activeCost
 
 resourceCostPaid ::
-  ( Projection m PlayerIdentity
-  , HasGame m
+  ( HasGame m
   , HasQueue m
-  , MonadRandom m
   , MonadThrow m
   ) =>
   ActiveCost ->

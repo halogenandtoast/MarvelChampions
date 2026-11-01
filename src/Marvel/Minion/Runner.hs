@@ -6,7 +6,7 @@ module Marvel.Minion.Runner (
 ) where
 
 import Marvel.Prelude
-import Marvel.Message (recordPlayerAttackDamage)
+import Marvel.Message ()
 
 import Marvel.Card.Code as X
 import Marvel.Entity as X
@@ -22,7 +22,7 @@ import Marvel.Stats as X
 
 import Data.HashSet qualified as HashSet
 import Marvel.Attack
-import Marvel.Boost
+import Marvel.Boost ()
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Game.Source
@@ -224,8 +224,12 @@ runMinionMessage msg attrs = case msg of
     paired <- maybe (pure Nothing) getPairedMainScheme =<< selectOne ActiveVillain
     mainScheme <- maybe (selectOne EncounterMainScheme) (pure . Just . SchemeMainSchemeId) paired
     threat <- getModifiedScheme attrs
-    for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
-      placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
+    modifiers <- getModifiers attrs
+    destinations <- filterM (selectAny . SideSchemeWithId) [sid | MinionSchemesOn sid <- modifiers]
+    case headMay destinations of
+      Just sid -> placeThreatFrom W.ThreatFromMinion sid (threat + minionBoost attrs)
+      Nothing -> for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
+        placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
     pure $ attrs & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
@@ -271,7 +275,7 @@ runMinionMessage msg attrs = case msg of
   newAttack ident = do
     base <- getModifiedAttackSigned attrs
     keywords <- getModifiedKeywords attrs
-    pure $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
+    prepareEnemyAttack (toEnemyId attrs) $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
 
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do

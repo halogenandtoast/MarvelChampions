@@ -46,6 +46,8 @@ data Payment
   | DamagePayment Natural
   | HealPayment Natural
   | DamageThisPayment Natural
+  | ExhaustedIdentityPayment IdentityId
+  | MainSchemeAccelerationTokenPayment
   | ExhaustPayment
   | DiscardPayment Target
   | -- | the particular minion selected to enter play as a search cost

@@ -48,5 +48,9 @@ data Keyword
   | -- | Vision's additional form, retained even if the upgrade is blank
     MassForm
   | Linked CardCode
+  | -- | Engine metadata for a printed per-player resource cost. The coefficient
+    -- stays on the definition so resolving it for a table is idempotent; this is
+    -- not a text-box keyword and is unaffected by blanking.
+    PerPlayerResourceCost Natural
   deriving stock (Eq, Show, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)

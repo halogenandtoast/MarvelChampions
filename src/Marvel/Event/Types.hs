@@ -45,12 +45,16 @@ someEventCardCode = liftEventCard toCardCode
 instance HasModifiersFor Event where
   getModifiersFor source target (Event a) = getModifiersFor source target a
 
+instance Ability.HasAbilities Event where
+  getAbilities (Event a) = eventHandAbilities a
+
 instance Entity Event where
   type Id Event = EventId
   data Attrs Event = EventAttrs
     { eventId :: EventId
     , eventCardDef :: CardDef
     , eventController :: IdentityId
+    , eventOwner :: IdentityId
     , eventPaidWith :: Payment
     , eventThwarted :: Bool
     , eventAttackStarted :: Bool
@@ -74,6 +78,7 @@ instance Entity Event where
 
 instance FromJSON (Attrs Event) where
   parseJSON = withObject "EventAttrs" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ existing -> existing) "eventOwner" (fromMaybe Null $ KeyMap.lookup "eventController" o) $
     KeyMap.insertWith (\_ existing -> existing) "eventAttackStarted" (Bool False) $
     KeyMap.insertWith (\_ existing -> existing) "eventThwarted" (Bool False) $
     KeyMap.insertWith (\_ existing -> existing) "eventPaidWith" (toJSON NoPayment) o
@@ -85,6 +90,11 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   toEventAttrs :: a -> Attrs Event
   default toEventAttrs :: (Coercible a (Attrs Event)) => a -> Attrs Event
   toEventAttrs = coerce
+
+  -- | Additional abilities the physical event has while in hand. Their source
+  -- is its CardIdRef so each copy is independent and stays in hand to resolve.
+  eventHandAbilities :: a -> [Ability.Ability]
+  eventHandAbilities _ = []
 
   -- | The labels of the action being used. Most cards have one printed ability;
   -- Solar Beam selects a different labeled ability according to its mass form.
@@ -116,6 +126,7 @@ event f cardDef =
             { eventId = aid
             , eventCardDef = cardDef
             , eventController = ident
+            , eventOwner = ident
             , eventPaidWith = NoPayment
             , eventThwarted = False
             , eventAttackStarted = False
@@ -132,12 +143,13 @@ instance IsCard (Attrs Event) where
       MkPlayerCard
         { pcCardId = CardId . unEventId $ eventId a
         , pcCardDef = eventCardDef a
-        , pcOwner = Just $ eventController a
+        , pcOwner = Just $ eventOwner a
         , pcController = Just $ eventController a
         }
 
 instance RunMessage (Attrs Event) where
   runMessage msg e = runQueueT $ case msg of
+    CardSpecific (isTarget e -> True) "eventOwner" (fromJSON -> Success owner) -> pure e {eventOwner = owner}
     CardSpecific (EventRef ident) "playerAttackStarted" _ | ident == eventId e -> pure e {eventAttackStarted = True}
     EventMessage ident msg' | ident == eventId e -> case msg' of
       EventPaidWith p -> pure e {eventPaidWith = p}
@@ -154,7 +166,7 @@ instance RunMessage (Attrs Event) where
         pure e {eventAttacked = [], eventThwarted = False, eventAttackStarted = False}
       -- each attack of an event not labeled one, as Dance of Death's, is answered as made
       EventAttacked attacker enemy ranged -> do
-        let card = MkPlayerCard (CardId $ unEventId $ eventId e) (eventCardDef e) (Just $ eventController e) (Just $ eventController e)
+        let card = MkPlayerCard (CardId $ unEventId $ eventId e) (eventCardDef e) (Just $ eventOwner e) (Just $ eventController e)
         labels <- cdAbilitySubTypes <$> effectivePlayerCardDef (eventController e) card
         -- one attack, however many instances of damage it deals the enemy
         if Ability.Attack `elem` labels

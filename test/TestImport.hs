@@ -8,11 +8,9 @@ import Marvel.EncounterSet qualified as EncounterSet
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
-import Data.Vector qualified as Vector
 import Marvel.MainScheme.Types (getMainSchemeThreat)
 import Marvel.Scenario.Types (scenarioDiscard)
 import Marvel.SideScheme.Types (getSideSchemeThreat)
-import Marvel.Card.Id (CardId (..))
 import Data.IORef as X
 import Marvel.Decklist as X
 import Marvel.Difficulty as X
@@ -50,21 +48,29 @@ import Test.Hspec.Expectations.Lifted as X (shouldBe, shouldMatchList, shouldRet
 import Control.Monad.IO.Class as X (liftIO)
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.Identity (getModifiedHandSize, getModifiedHp)
-import Marvel.MainScheme.Types (getMainSchemeThreat)
 import Marvel.Minion.Types (getMinionDamage)
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Scenario.Types (Field (ScenarioDiscard, ScenarioEncounterDeck))
-import Data.Aeson (Result (..), Value (Object), fromJSON)
-import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
 import Data.Aeson.Key (Key)
 
-import Marvel.Scenario.Types (Attrs (scenarioDiscard, scenarioEncounterDeck))
+import Marvel.Scenario.Types (Attrs (scenarioEncounterDeck))
 import Marvel.Ally.Types as X (Ally, Attrs (..))
 import Marvel.Support.Types as X (Support, Attrs (..))
 import Marvel.Upgrade.Types as X (Upgrade, Attrs (..))
 import Marvel.Minion.Types as X (Minion, Attrs (..))
 import Marvel.Damage as X
+
+-- | Fixture invariants should fail with the calling test's location, including
+-- when an unexpected empty list would otherwise hide the intended assertion.
+testHead :: HasCallStack => [a] -> a
+testHead = \case
+  value : _ -> value
+  [] -> error "test fixture expected a nonempty list"
+
+testTail :: HasCallStack => [a] -> [a]
+testTail = \case
+  _ : rest -> rest
+  [] -> error "test fixture expected a nonempty list before taking its tail"
 
 -- | A game dealt from the decks given against the scenario set up, played up to its first
 -- question, with the messages it runs kept, the latest first.
@@ -299,7 +305,8 @@ playDeclaring card payment r = do
 putInHand :: IdentityId -> CardCode -> GameAppT PlayerCard
 putInHand ident code = do
   cardId <- getRandom
-  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  def <- lookupPlayerCardInGame code
+  let card = MkPlayerCard cardId def (Just ident) (Just ident)
   withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
     PlayerIdentity a {playerIdentityHand = Hand (card : unHand a.playerIdentityHand)}
   pure card
@@ -394,7 +401,8 @@ stackDeck :: IdentityId -> [CardCode] -> GameAppT [PlayerCard]
 stackDeck ident codes = do
   cards <- for codes \code -> do
     cardId <- getRandom
-    pure $ MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+    def <- lookupPlayerCardInGame code
+    pure $ MkPlayerCard cardId def (Just ident) (Just ident)
   withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
     PlayerIdentity a {playerIdentityDeck = Deck (cards <> unDeck a.playerIdentityDeck)}
   pure cards
@@ -451,7 +459,8 @@ player1 tg = fromMaybe (error "no players") (headMay tg.seats)
 putIntoPlay :: IdentityId -> CardCode -> GameAppT PlayerCard
 putIntoPlay ident code = do
   cardId <- getRandom
-  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  def <- lookupPlayerCardInGame code
+  let card = MkPlayerCard cardId def (Just ident) (Just ident)
   resolve [PutCardIntoPlay ident card NoPayment Nothing True]
   pure card
 
@@ -469,7 +478,8 @@ stackDiscard :: IdentityId -> [CardCode] -> GameAppT [PlayerCard]
 stackDiscard ident codes = do
   cards <- for codes \code -> do
     cardId <- getRandom
-    pure $ MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+    def <- lookupPlayerCardInGame code
+    pure $ MkPlayerCard cardId def (Just ident) (Just ident)
   withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
     PlayerIdentity a {playerIdentityDiscard = Discard (cards <> unDiscard a.playerIdentityDiscard)}
   pure cards
@@ -766,7 +776,8 @@ chooseIf p = do
 putInDiscard :: IdentityId -> CardCode -> GameAppT PlayerCard
 putInDiscard ident code = do
   cardId <- getRandom
-  let card = MkPlayerCard cardId (lookupPlayerCard code) (Just ident) (Just ident)
+  def <- lookupPlayerCardInGame code
+  let card = MkPlayerCard cardId def (Just ident) (Just ident)
   withGame_ $ entitiesL . playersL . ix ident %~ \(PlayerIdentity a) ->
     PlayerIdentity a {playerIdentityDiscard = Discard (card : unDiscard a.playerIdentityDiscard)}
   pure card

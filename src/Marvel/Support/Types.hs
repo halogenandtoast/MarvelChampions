@@ -178,6 +178,10 @@ instance IsRef (Attrs Support) where
 
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "holdFacedownCard" (fromJSON -> Success card) ->
+      pure a {supportCanPlayHeldEvents = False, supportHeldCards = supportHeldCards a <> [card]}
+    CardSpecific (isTarget a -> True) "releaseHeldCard" (fromJSON -> Success card) ->
+      pure a {supportHeldCards = filter (/= card) (supportHeldCards a)}
     RemovePlayerCardFromHeldZones cid -> pure a {supportHeldCards = filter ((/= cid) . pcCardId) (supportHeldCards a)}
     PassFirstPlayer -> do
       follows <- elem ControlledByFirstPlayer <$> getModifiers a

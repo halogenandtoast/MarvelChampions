@@ -3,7 +3,7 @@
 // engaged with them, their allies, supports and upgrades, and their deck and discard.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { EnvironmentView, MinionView, PlayerView, SupportView } from '../server'
+import type { EnvironmentView, MinionView, PlayerView, SupportView, UpgradeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
@@ -36,10 +36,11 @@ const stats = computed(() =>
     ] as const
   ).filter(([, v]) => v !== null && v !== undefined),
 )
-const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])])
+type TableCard = SupportView & Partial<Pick<UpgradeView, 'resourceSlots' | 'occupiedSlots' | 'heldCardsFacedown'>>
+const supports = computed((): TableCard[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])])
 // cards attached to a support facedown, shown as such
-const facedown = (card: { id: string; facedownCards?: number }) =>
-  Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
+const facedown = (card: { id: string; facedownCards?: number; heldCardsFacedown?: number }) =>
+  Array.from({ length: card.facedownCards ?? card.heldCardsFacedown ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
 const holders = computed(() => [...(player.upgrades ?? []), ...(player.supports ?? [])].filter((u) => u.heldCards?.length))
 const detachedMinions = computed(() => minions.filter((m) => !m.attachedToMinion))
 const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedToMinion === m.id), ...(m.attachments ?? []), ...(m.upgrades ?? []), ...(m.heldCards ?? []), ...facedown(m)]
@@ -161,6 +162,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
           :name="card.name"
           :exhausted="card.exhausted"
           :counters="card.uses ?? card.counters ?? null"
+          :resource-slots="card.resourceSlots"
+          :occupied-slots="card.occupiedSlots"
           :damage="card.damage || 0"
           :threat="card.threat || null"
           :attached="facedown(card)"

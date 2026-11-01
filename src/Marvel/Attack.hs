@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 import Data.Aeson.KeyMap qualified as KeyMap
 
+import Marvel.Card.Id (CardId)
 import Marvel.Damage
 import Marvel.Id
 import Marvel.Keyword
@@ -11,6 +12,8 @@ import Marvel.Ref
 
 data Attack = Attack
   { attackCharacter :: CharacterId
+  , attackBlanksDefender :: Bool
+  , attackCompletionId :: Maybe CardId
   , attackOverkill :: Bool
   , attackDamage :: Natural
   , attackBaseReduction :: Natural
@@ -41,7 +44,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBlanksDefender", toJSON False), ("attackCompletionId", toJSON (Nothing :: Maybe CardId)), ("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -73,6 +76,8 @@ attack :: EnemyId -> CharacterId -> Natural -> Attack
 attack enemyId characterId dmg =
   Attack
     { attackCharacter = characterId
+    , attackBlanksDefender = False
+    , attackCompletionId = Nothing
     , attackOverkill = False
     , attackDamage = dmg
     , attackBaseReduction = 0
@@ -130,7 +135,9 @@ keepingGains :: Maybe Attack -> Attack -> Attack
 keepingGains Nothing a = a
 keepingGains (Just old) a =
   a
-    { attackOverkill = attackOverkill a || attackOverkill old
+    { attackBlanksDefender = attackBlanksDefender a || attackBlanksDefender old
+    , attackCompletionId = attackCompletionId old <|> attackCompletionId a
+    , attackOverkill = attackOverkill a || attackOverkill old
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
     , attackPrevented = attackPrevented a || attackPrevented old

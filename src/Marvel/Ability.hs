@@ -7,6 +7,7 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types as X
+import Marvel.Aspect qualified as Aspect
 import Marvel.Card.PlayerCard.Types
 import Marvel.Discard (unDiscard)
 import Marvel.Damage (damageAmount)
@@ -15,11 +16,12 @@ import Marvel.Card.Id (CardId (..))
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Game.Source
+import Marvel.GameValue (GameValue (Static))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
-import Marvel.Card.Def (cdKeywords, cardMatch)
+import Marvel.Card.Def (cdKeywords, cardMatch, CardType (AllyType), CardMatcher (..))
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -126,6 +128,7 @@ passesUseLimit x aMap a = case baseLimit (abilityLimit a) of
     SharedPerWindow other _ -> name == other
     _ -> False) usedAbilities < n
   PerPhase n -> count (== a) usedAbilities < n
+  EachPlayer limit -> passesUseLimit x aMap a {abilityLimit = limit}
  where
   usedAbilities = HashMap.findWithDefault [] x aMap
 
@@ -170,6 +173,13 @@ passesCriteria x a =
     CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents x (abilitySource a)
     ExtendedCardExists m -> selectAny m
     EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
+    NoCardsPlayedThisPhase -> not . any ((== x) . fst) <$> getPlayedThisPhase
+    HeldWeaponSwapAvailable uid -> notNull <$> getLegalHeldWeaponSwaps x uid
+    EncounterIconExists -> (> 0) <$> getEncounterIconCount
+    PoolIconEffectsCanResolve -> poolIconEffectsCanResolve x source
+    PoolAllyInHandCanEnterPlay -> selectAny $ InHandOf (IdentityWithId x) $
+      ExtendedCardMatches [BasicCardMatches (CardWithType AllyType <> CardWithAspect Aspect.Pool), CanEnterPlay]
+    MovableThreatExists -> anyM (canMoveSchemeThreatFrom source) =<< selectList (SchemeWithThreat $ GreaterThan $ Static 0)
     IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
@@ -234,6 +244,13 @@ passesCardCriteria ident card = go
     CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents ident (toSource card)
     ExtendedCardExists m -> selectAny (NotCard card <> m)
     EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
+    NoCardsPlayedThisPhase -> not . any ((== ident) . fst) <$> getPlayedThisPhase
+    HeldWeaponSwapAvailable uid -> notNull <$> getLegalHeldWeaponSwaps ident uid
+    EncounterIconExists -> (> 0) <$> getEncounterIconCount
+    PoolIconEffectsCanResolve -> poolIconEffectsCanResolve ident (toSource card)
+    PoolAllyInHandCanEnterPlay -> selectAny $ InHandOf (IdentityWithId ident) $
+      ExtendedCardMatches [BasicCardMatches (CardWithType AllyType <> CardWithAspect Aspect.Pool), CanEnterPlay]
+    MovableThreatExists -> anyM (canMoveSchemeThreatFrom $ toSource card) =<< selectList (SchemeWithThreat $ GreaterThan $ Static 0)
     IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     UpgradeExists m -> selectAny m
     EnvironmentExists m -> selectAny m

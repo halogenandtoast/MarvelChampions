@@ -67,7 +67,7 @@
     "hero": "Hero",
     "encounter": "Encounter",
     "campaign": "Campaign",
-    "pool": "Pool"
+    "pool": "’Pool"
   },
   "difficulty": {
     "Normal": "Standard",

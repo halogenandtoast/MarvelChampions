@@ -103,6 +103,7 @@ data WindowMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
   | PhaseBegins WindowTiming Phase
+  | PhaseEnds WindowTiming Phase
   | EnemyDefeatedWithUpgrade WindowTiming CardDef DamageMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | -- | after an enemy matching takes damage of the kind matching
@@ -275,6 +276,7 @@ data WindowType
   | SideSchemeEnteredPlay SideSchemeId
   | EncounterCardResolved IdentityId EncounterCard
   | PhaseBegan Phase
+  | PhaseEnded Phase
   | -- | the enemy took this damage, from this source: none a tough status card prevented
     EnemyTookDamageFrom EnemyId Damage Source
   | VillainDefeatWouldOccur VillainId

@@ -8,7 +8,7 @@ import Marvel.Id (EnemyId, CharacterId)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
-import Marvel.Id (IdentityId, MainSchemeId, SchemeId)
+import Marvel.Id (IdentityId, MainSchemeId, SchemeId, SideSchemeId)
 import Marvel.Resource.Types (Resource)
 import Marvel.Keyword
 import Marvel.Trait.Types
@@ -22,6 +22,7 @@ data Modifier
   | BaseThwart Natural
   | DamageTakenFromPrintedResource Resource Int
   | AmplifyIconModifier Natural
+  | MinionSchemesOn SideSchemeId
   | TakesFirstPlayerPhaseTurn
   | DamageMultiplierFromResource Resource Natural
   | DamageBonusFromResource Resource Natural
@@ -209,6 +210,9 @@ data Modifier
     -- (Cutthroat Ambition), after any reduction
     AttackDamageCap Natural
   | CannotBeCanceled
+  | AttacksBlankDefender
+  | CannotResolvePlayerCardAbilities
+  | RestrictedSlots Natural
   | AccelerationIconModifier Natural
   | HazardIconModifier Natural
   | CanOnlyRemoveThreatFrom SchemeId

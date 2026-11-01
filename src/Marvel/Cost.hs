@@ -6,9 +6,14 @@ module Marvel.Cost (
 import Marvel.Prelude
 
 import Marvel.Card.Id (CardId (..))
-import Marvel.Card.Def (printedResources, getCardDef, cdCost, cdKeywords, cardMatch, CardMatcher (CardWithType), CardType (MinionType, SideSchemeType))
+import Marvel.Card.Def
+    ( CardDef(cdCost, cdKeywords),
+      CardMatcher(CardWithType),
+      cardMatch,
+      CardType(MinionType, SideSchemeType),
+      HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards))
 import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
@@ -28,13 +33,11 @@ import Marvel.Matchers
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Queue
-import Marvel.Modifier.Types (Modifier (BasicAttackAdditionalCost))
 import Marvel.Question qualified as Q
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Status (StatusCard (ToughStatus))
-import Marvel.Modifier.Types (Modifier (CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, DamageReduction))
 
 -- | Resource restrictions apply to the card whose ability is paid for, just as
 -- they do to a card being played (RR Cost). This is context, never a payment source.
@@ -70,7 +73,6 @@ passesCanAffordCost ::
   ( HasQueue m
   , MonadRandom m
   , MonadThrow m
-  , Projection m PlayerIdentity
   , HasGame m
   ) =>
   IdentityId ->
@@ -134,15 +136,23 @@ canAffordCost identityId source cost = do
     DamageCharacterCost matcher _ -> do
       candidates <- selectList matcher
       notNull <$> filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates
+    ExhaustAnyIdentityCost -> selectAny UnexhaustedIdentity
+    MainSchemeAccelerationTokenCost -> selectAny EncounterMainScheme
     DamageCost n -> do
       tough <- project PlayerIdentityTough identityId
       modifiers <- getModifiers (IdentityRef identityId)
       let immune = CannotTakeDamage `elem` modifiers || CannotTakeDamageFromPlayerCards `elem` modifiers
           reduced = sum [k | DamageReduction k <- modifiers]
       pure $ n == 0 || not (tough || immune || reduced > 0)
+    UpToRemainingHitPointsDamageCost -> do
+      (remaining, _, _) <- getRemainingHitPoints identityId
+      (remaining > 0 &&) <$> go (DamageCost 1)
     HealCost n ->
       member identityId
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
+    DealDamageThisCost _ -> case source of
+      AllyRef aid -> selectAny (AllyWithId aid)
+      _ -> pure False
     DamageThisCost n -> case source of
       AllyRef aid -> do
         present <- selectAny (AllyWithId aid)

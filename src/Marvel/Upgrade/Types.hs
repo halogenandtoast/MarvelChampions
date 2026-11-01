@@ -1,6 +1,7 @@
 module Marvel.Upgrade.Types where
 
 import Marvel.Prelude
+import Marvel.Resource.Types (Resource)
 
 import Data.Typeable
 import Data.Aeson.KeyMap qualified as KeyMap
@@ -66,6 +67,9 @@ instance Entity Upgrade where
     , upgradeHeldCards :: [PlayerCard]
     -- ^ cards attached faceup to it, its controller may play as if in hand (Hawkeye's
     -- Quiver); discarded as it leaves play
+    , upgradeHeldCardsFacedown :: Bool
+    , upgradeResourceSlots :: [Resource]
+    , upgradeOccupiedSlots :: [Int]
     , upgradeFaceDown :: Bool
     -- ^ facedown, out of play for its text (Spectrum's energy forms)
     }
@@ -215,6 +219,9 @@ upgrade f cardDef =
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
             , upgradeHeldCards = []
+            , upgradeHeldCardsFacedown = False
+            , upgradeResourceSlots = []
+            , upgradeOccupiedSlots = []
             , upgradeFaceDown = False
             }
     }
@@ -235,7 +242,7 @@ thwartGuard u f = do
 
 -- | An attack: a stunned player only removes the stun (the cost is still paid).
 attackGuard ::
-  (ReverseQueue m, IsUpgrade u) =>
+  (ReverseQueue m) =>
   IdentityId ->
   u ->
   m u ->
@@ -266,6 +273,15 @@ instance IsCard (Attrs Upgrade) where
 
 instance RunMessage (Attrs Upgrade) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "configureResourceSlots" (fromJSON -> Success slots) ->
+      pure a {upgradeResourceSlots = slots, upgradeOccupiedSlots = []}
+    CardSpecific (isTarget a -> True) "occupyResourceSlot" (fromJSON -> Success slot) ->
+      pure $ if slot >= 0 && slot < length (upgradeResourceSlots a) && slot `notElem` upgradeOccupiedSlots a
+        then a {upgradeOccupiedSlots = upgradeOccupiedSlots a <> [slot]} else a
+    CardSpecific (isTarget a -> True) "holdFacedownCard" (fromJSON -> Success card) ->
+      pure a {upgradeHeldCardsFacedown = True, upgradeHeldCards = upgradeHeldCards a <> [card]}
+    CardSpecific (isTarget a -> True) "releaseHeldCard" (fromJSON -> Success card) ->
+      pure a {upgradeHeldCards = filter (/= card) (upgradeHeldCards a)}
     RemovePlayerCardFromHeldZones cid -> pure a {upgradeHeldCards = filter ((/= cid) . pcCardId) (upgradeHeldCards a)}
     CardSpecific (isTarget a -> True) "attachTouched" (fromJSON -> Success host) -> do
       let uid = upgradeId a
@@ -366,4 +382,5 @@ instance RunMessage (Attrs Upgrade) where
       _ -> Nothing
 
 instance FromJSON (Attrs Upgrade) where
-  parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ old -> old) "upgradeAttachedIdentity" (toJSON (Nothing :: Maybe IdentityId)) o)
+  parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
+    [("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]

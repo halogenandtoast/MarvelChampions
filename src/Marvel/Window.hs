@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Def (sameCard)
 import Marvel.Card.PlayerCard.Types (pcCardId)
-import Marvel.Card.Id (HasCardId (toCardId))
+import Marvel.Card.Id (CardId (..), HasCardId (toCardId))
 
 import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
@@ -117,11 +117,14 @@ windowMatches matcher w source = case matcher of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
     _ -> pure False
   PhaseBegins timing phase -> pure $ windowTiming w == timing && windowType w == PhaseBegan phase
+  PhaseEnds timing phase -> pure $ windowTiming w == timing && windowType w == PhaseEnded phase
   PlayThis timing -> case windowType w of
     PlayedAlly allyId ->
       pure $ timing == windowTiming w && source == AllyRef allyId
     PlayedSupport supportId ->
       pure $ timing == windowTiming w && source == SupportRef supportId
+    CardPlayed _ card | UpgradeRef uid <- source ->
+      pure $ timing == windowTiming w && pcCardId card == CardId (unUpgradeId uid)
     _ -> pure False
   AllyDefendsAgainst timing allyMatcher enemyMatcher -> case windowType w of
     AllyDefendedAgainst aid enemy | windowTiming w == timing ->

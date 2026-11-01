@@ -6,6 +6,7 @@ module Marvel.Identity (
 ) where
 
 import Marvel.Prelude
+import Marvel.Aspect (Aspect)
 import Control.Monad (replicateM_)
 
 import Data.Aeson.KeyMap qualified as KeyMap
@@ -173,7 +174,7 @@ getModifiedHandSize pid = do
   let raised = foldr applyModifier (unHandSize $ handSize pid) modifiers
   pure $ subtractNatural (sum [n | HandSizeReduction n <- modifiers]) raised
  where
-  applyModifier (HandSizeModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (HandSizeModifier n) = max 0 . (+ n)
   applyModifier (HandSizePenalty n) = subtractNatural n
   applyModifier _ = id
 
@@ -182,7 +183,7 @@ getModifiedHp pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (unHp $ playerIdentityHP attrs) modifiers
  where
-  applyModifier (HitPointModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (HitPointModifier n) = max 0 . (+ n)
   applyModifier _ = id
 
 instance HasTraits PlayerIdentity where
@@ -269,6 +270,8 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityDefended = False
       , playerIdentityAttackDamageTaken = 0
       , playerIdentityWeatherDeck = Nothing
+      , playerIdentityChosenAspects = []
+      , playerIdentityPreviousGameWon = Nothing
       , playerIdentityCounters = 0
       }
  where
@@ -362,8 +365,9 @@ isPlayableWith ignoringCost attrs c = do
     if cdUnique def
       then any (uniqueMatch (title $ cdName def, maybe [] pure (subtitle $ cdName def))) <$> getUniqueTitlesInPlay
       else pure False
+  permitted <- if cdCardType def == EventType then canResolvePlayerCardAbilities ident else pure True
   pure $
-    affordable
+    permitted && affordable
       && passedCriteria
       && passedPlayLimits
       && not matchesUnique
@@ -505,21 +509,21 @@ printedXChoices ignoringCost attrs c mTarget = do
   inHand <- projectP PlayerIdentityHand (elem c . unHand) ident
   let potentialReduction = if inHand then sum [fromIntegral n | MayReduceCostToPlay n <- modifiers] else 0
       upperPaid = max 0 (length resources - adjustment + potentialReduction)
-  upperEffect <- fromIntegral <$> selectListCount meaningful
+  upperEffect <- selectListCount meaningful
   let upper = if ignoringCost || ignored then upperEffect else fromIntegral upperPaid
   pure [minimumX .. upper]
 
 -- | The whole cost of playing the card on the target: its resource cost, and the cost
 -- of its ability (an event's "→"), paid together.
 getCardCost ::
-  (HasQueue m, MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  (MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
   PlayerIdentity ->
   PlayerCard ->
   Maybe Target ->
   m Cost
 getCardCost = getCardCostWithX Nothing
 
-getCardCostWithX :: (HasQueue m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
+getCardCostWithX :: (MonadThrow m, Projection m PlayerIdentity, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
 getCardCostWithX chosenX attrs c mTarget = do
   modifiedCost <- case chosenX of
     Nothing -> getModifiedCost attrs c mTarget
@@ -588,7 +592,7 @@ playableTargetsWith ignoringCost attrs c = do
 
 -- | Only cards with a continuously evaluated resource cost consider counter
 -- generation while spending. Ordinary card costs retain their standard timing.
-continuousSpendingCostReduction :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m, Projection m PlayerIdentity) => PlayerIdentity -> PlayerCard -> Maybe Target -> [IdentityId] -> m Int
+continuousSpendingCostReduction :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => PlayerIdentity -> PlayerCard -> Maybe Target -> [IdentityId] -> m Int
 continuousSpendingCostReduction attrs card target payers = do
   continuous <- elem ContinuouslyRecalculateResourceCost <$> getModifiers card
   if not continuous then pure 0 else do
@@ -996,6 +1000,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       restricted <- selectList restrictedMatcher
       weapons <- selectList $ restrictedMatcher <> UpgradeWithTrait Weapon
       let others = filter (`notElem` weapons) restricted
+      let slots u = maximum . ((1 :: Natural) :) . (\ms -> [n | RestrictedSlots n <- ms]) <$> getModifiers u
+      otherSlots <- sum <$> traverse slots others
+      totalSlots <- sum <$> traverse slots restricted
       let
         discardOf us = do
           discardable <- filterM (fmap not . upgradeMatches (UpgradeWithKeyword Permanent)) us
@@ -1005,8 +1012,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             [targeting u (removeFromPlay u >> identityStep playerIdentityId CheckRestrictedLimit) | u <- discardable]
       -- the Weapon-only slots cannot hold the others
       if
-        | length others > fromIntegral anyLimit -> discardOf others
-        | length restricted > fromIntegral (anyLimit + weaponLimit) -> discardOf restricted
+        | otherSlots > anyLimit -> discardOf others
+        | totalSlots > anyLimit + weaponLimit -> discardOf restricted
         | otherwise -> pure ()
       pure pid
     AllyRemoved allyId -> do
@@ -1020,13 +1027,15 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     SupportRemoved supportId -> do
       pure $ PlayerIdentity $ attrs & supportsL %~ HashSet.delete supportId
     AddToHand card -> do
-      when (cardMatch (CardWithTrait Shapeshifter) card) $ cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,card)
+      let received = card {pcController = Just playerIdentityId}
+          other c = pcCardId c /= pcCardId card
+      when (cardMatch (CardWithTrait Shapeshifter) received) $ cardSpecific GameRef "mgShapeshifterEnteredHand" (playerIdentityId,received)
       pure $
         PlayerIdentity $
           attrs
-            & (handL %~ Hand . (card :) . unHand)
-            & (deckL %~ Deck . filter (/= card) . unDeck)
-            & (discardL %~ Discard . filter (/= card) . unDiscard)
+            & (handL %~ Hand . (received :) . filter other . unHand)
+            & (deckL %~ Deck . filter other . unDeck)
+            & (discardL %~ Discard . filter other . unDiscard)
     ChooseFromDiscard target choiceRules chooseMin chooseMax -> do
       focusing (PlayerCard <$> unDiscard playerIdentityDiscard) $
         identityStep playerIdentityId $ ChosenFromDiscard target choiceRules chooseMin chooseMax []
@@ -1412,6 +1421,8 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific (IdentityRef who) "previousGameWon" (fromJSON -> Success won) | who == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityPreviousGameWon = Just won}
     CardSpecific (IdentityRef ident) "swapHandWithDeckTop" (fromJSON -> Success card)
       | ident == playerIdentityId attrs, card `elem` unHand (playerIdentityHand attrs)
       , top : rest <- unDeck (playerIdentityDeck attrs) -> pure $ PlayerIdentity attrs
@@ -1585,7 +1596,7 @@ getModifiedAllyLimit pid@(PlayerIdentity attrs) = do
   modifiers <- getModifiers pid
   pure $ foldr applyModifier (playerIdentityAllyLimit attrs) modifiers
  where
-  applyModifier (AllyLimitModifier n) = max 0 . (+ fromIntegral n)
+  applyModifier (AllyLimitModifier n) = max 0 . (+ n)
   applyModifier (AllyLimitReduction n) = subtractNatural n
   applyModifier _ = id
 
@@ -1598,7 +1609,7 @@ instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
       KeyMap.union o $ KeyMap.fromList
-        [("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
+        [("chosenAspects", toJSON ([] :: [Aspect])), ("previousGameWon", Null), ("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity

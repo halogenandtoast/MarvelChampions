@@ -25,10 +25,16 @@ data Cost
   | TouchedDamageCost Natural
   | DamageCharacterCost CharacterMatcher Natural
   | DamageCost Natural
+  | -- | Take an amount of damage chosen from 1 through the payer's remaining hit
+    -- points, inclusive (Maximum Effort and "Yoo-Hoo!").
+    UpToRemainingHitPointsDamageCost
   | IndirectDamageCost Natural
   | HealCost Natural
   | DamageThisCost Natural
+  | DealDamageThisCost Natural
   | PlaceThreatOnMainSchemeCost Natural
+  | ExhaustAnyIdentityCost
+  | MainSchemeAccelerationTokenCost
   | ExhaustCost
   | -- | at least so many cards from hand, and at most so many (any number for Nothing)
     DiscardHandCardsCost Natural (Maybe Natural)
@@ -208,12 +214,16 @@ costResources (IdentityCountersCost _) = []
 costResources (PlaceIdentityCountersCost _) = []
 costResources ExhaustMilanoCost = []
 costResources (IfControlsMilanoCost c c') = costResources c <> costResources c'
+costResources ExhaustAnyIdentityCost = []
+costResources MainSchemeAccelerationTokenCost = []
 costResources (DamageCost _) = []
+costResources UpToRemainingHitPointsDamageCost = []
 costResources (TouchedDamageCost _) = []
 costResources (DamageCharacterCost _ _) = []
 costResources (IndirectDamageCost _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
+costResources (DealDamageThisCost _) = []
 costResources (CountersFromUpgradeCost _ _) = []
 costResources UseCost = []
 -- | X is at least 1

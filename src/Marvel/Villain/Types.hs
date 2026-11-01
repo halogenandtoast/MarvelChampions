@@ -4,16 +4,16 @@ module Marvel.Villain.Types (
 ) where
 
 import Marvel.Prelude
-import Marvel.Message (recordPlayerAttackDamage)
+import Marvel.Message ()
 import Control.Monad (replicateM_)
 
 import Data.HashSet qualified as HashSet
-import Data.Aeson (genericParseJSON, defaultOptions)
+import Data.Aeson ()
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Attack
-import Marvel.Boost
+import Marvel.Boost ()
 import Marvel.Card
 import Marvel.Damage
 import Marvel.Entity
@@ -586,7 +586,7 @@ runVillainMessage msg attrs = case msg of
   newAttack ident = do
     base <- getModifiedAttackSigned attrs
     keywords <- getModifiedKeywords attrs
-    pure $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
+    prepareEnemyAttack (toEnemyId attrs) $ withAttackBase base $ attackWith keywords (toEnemyId attrs) (attackTarget ident) 0
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of

@@ -9,7 +9,7 @@ import Marvel.Cost.Types
 import Marvel.Id
 import Marvel.Payment.Types
 import {-# SOURCE #-} Marvel.Message (Message)
-import Marvel.Ref (Source)
+import Marvel.Ref (Source, Target)
 import Marvel.Window.Types
 
 data ActiveCostTarget
@@ -17,6 +17,7 @@ data ActiveCostTarget
   | ForAbility Ability
   | ForTreachery
   | ForContinuation Source [Message]
+  | ForPaymentContinuation Source Target Text Value
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

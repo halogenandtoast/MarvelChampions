@@ -2,6 +2,7 @@ module Marvel.Identity.Types where
 
 import Marvel.Prelude
 
+import Marvel.Aspect (Aspect)
 import Marvel.AlterEgo.Types
 import Marvel.Card.Types
 import Marvel.Deck
@@ -23,6 +24,8 @@ instance Entity PlayerIdentity where
     { playerIdentityId :: IdentityId
     , playerIdentityName :: Text
     -- ^ who plays it, as the table knows them
+    , playerIdentityChosenAspects :: [Aspect]
+    , playerIdentityPreviousGameWon :: Maybe Bool
     , playerIdentitySearching :: Bool
     -- ^ whether the deck's cards are out being searched
     , playerIdentitySide :: Side
