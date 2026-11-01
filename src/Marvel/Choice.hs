@@ -119,24 +119,30 @@ resolveChoice ident = \case
                     [TargetLabel (toRef x) [Run [f x]] | x <- xs]
               ]
   UseAbility a -> do
-    activeCostId <- getRandom
-    cost <- getAbilityCost a
     occurrence <- getCurrentWindows
     triggering <- case abilityWindow a of
       Nothing -> pure occurrence
       Just matcher -> filterM (\window -> windowMatches matcher window (abilitySource a)) occurrence
-    pure
-      [ SetActiveCost $
-          ActiveCost
-            activeCostId
-            ident
-            (ForAbility a)
-            cost
-            NoPayment
-            Nothing
-            mempty
-            (Just $ map windowType triggering)
-      ]
+    -- A debug/scenario advancement can invalidate a response while its question
+    -- waits (for example Kang removes the scheme whose threat was interrupted).
+    -- Reopen only the response loop, without paying or resolving the stale ability.
+    if isJust (abilityWindow a) && null triggering
+      then pure [CheckWindowsFor players windows | Run [CheckWindowsFor players windows] <- abilityChoices a]
+      else do
+        activeCostId <- getRandom
+        cost <- getAbilityCost a
+        pure
+          [ SetActiveCost $
+              ActiveCost
+                activeCostId
+                ident
+                (ForAbility a)
+                cost
+                NoPayment
+                Nothing
+                mempty
+                (Just $ map windowType triggering)
+          ]
   -- UseAbility a -> do
   --   rest <- concatMapM (choiceMessages ident) (abilityChoices a)
   --   costs <- costMessages ident a

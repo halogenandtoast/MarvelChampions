@@ -3,6 +3,7 @@ module Marvel.Hero.SheHulkSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Damage
+import Marvel.Phase (Phase (VillainPhase))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types (getMinionDamage)
 import Marvel.Minion.Types qualified as M
@@ -11,6 +12,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (isCrisis)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
+import Marvel.Window (Window (..), WindowTiming (Would), WindowType (ThreatPlaced), ThreatSource (ThreatFromVillain))
 import TestImport hiding (minionDamageOf)
 
 sheHulk :: IO TestGame
@@ -91,6 +93,30 @@ spec = describe "She-Hulk" do
       choose "I object" (isNamedAbility "\"I Object!\"")
       pass
       mainSchemeThreat `shouldReturn` before
+
+  it "I Object! revalidates a pending response when Kang removes its scheme" do
+    tg <- testGameAgainst "11001" ["she-hulk", "captain-marvel"]
+    let p = player1 tg
+    inGame tg do
+      [initial] <- getVillainsInArea . areaId =<< getAreaOf p
+      resolve [VillainMessage initial VillainDefeated, EndPhase VillainPhase]
+      ownArea <- areaId <$> getAreaOf p
+      [main] <- getMainSchemesIn ownArea
+      [kang] <- getVillainsInArea ownArea
+      runNow
+        [ CheckWindows [Window Would (ThreatPlaced ThreatFromVillain (SchemeMainSchemeId main) 2)]
+        , MainSchemeMessage main (MainSchemePlaceThreat 2)
+        ]
+      offers (isNamedAbility "\"I Object!\"") `shouldReturn` True
+      -- Smoke/debug advancement can remove the target while this question waits.
+      runNow [VillainMessage kang VillainDefeated]
+      getsGame (HashMap.member main . gameMainSchemes) `shouldReturn` False
+      choose "stale I Object!" (isNamedAbility "\"I Object!\"")
+      getsGame (null . gameActiveCost) `shouldReturn` True
+      -- The invalidated response spends neither its cost nor its once-round use.
+      used <- getUsedAbilities
+      pure (any ((== Just "\"I Object!\"") . abilityLabel) $ HashMap.lookupDefault [] p used)
+        `shouldReturn` False
 
   it "Hellcat returns to her owner's hand" do
     tg <- sheHulk
