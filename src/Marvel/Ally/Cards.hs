@@ -34,6 +34,8 @@ import Marvel.Aspect qualified as NE
 import Marvel.Card.Def qualified as NE
 import Marvel.Ability.Types qualified as NEAbility
 
+import Marvel.EncounterSet qualified as MojoSet
+import Marvel.GameValue.Types qualified as MojoValue
 
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
@@ -68,12 +70,19 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ ne40079, ne40130, whiteFox, atlasBear, wolfsbane, feral, outlaw, diamondback, cable40014, cable40015, cable40016, cable40024, cable40025, cable40204
+  [ ne40079, ne40130
+  , whiteFox
+  , atlasBear
+  , wolfsbane
+  , feral
+  , outlaw
+  , diamondback
+  , cable40014, cable40015, cable40016, cable40024, cable40025, cable40204
   , gambitRogue, iceman, karma, armor
   , rogueGambit, bishop, dazzler
   , havok, mirage, gentle, pixie, forge
-  , jubilee, psylocke, sunfire, longshot
   , phoenixJeanGrey, beast, dust, rockslide, blindfold, angel
+  , jubilee, psylocke, sunfire, longshot
   , mgRobertKelly, mgJubilee, mgRictor, mgBoomBoom, mgCannonball, mgWolfsbane, mgCampaignMagneto
   , blackCatFeliciaHardy
   , spiderWomanJessicaDrew
@@ -1244,6 +1253,20 @@ mgWolfsbane = (baseAlly "32092" ("Wolfsbane" <:> "Rahne Sinclair") 2 [] [] Nothi
   , cdResources = [(PrintedResource, Wild)]
   }
 
+-- Wolverine
+
+jubilee :: CardDef
+jubilee = (identityAlly "35003" ("Jubilee" <:> "Jubilation Lee") 2 [XMen] [Wild]) {cdUnique = True, cdDeckLimit = Just 1}
+
+psylocke :: CardDef
+psylocke = (ally "35013" ("Psylocke" <:> "Betsy Braddock") 4 [Psionic, XMen] [Mental] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
+
+sunfire :: CardDef
+sunfire = (ally "35014" ("Sunfire" <:> "Shiro Yoshida") 2 [XMen] [Energy] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
+
+longshot :: CardDef
+longshot = (basicAlly "35033" "Longshot" 4 [XMen] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait XMen)}
+
 
 -- Phoenix
 
@@ -1304,20 +1327,6 @@ pixie = (ally "36017" ("Pixie" <:> "Megan Gwynn") 2 [Aerial, XMen] [Energy] Lead
 forge :: CardDef
 forge = (basicAlly "36022" "Forge" 2 [XMen] [Mental]) { cdUnique = True, cdDeckLimit = Just 1 }
 
--- Wolverine
-
-jubilee :: CardDef
-jubilee = (identityAlly "35003" ("Jubilee" <:> "Jubilation Lee") 2 [XMen] [Wild]) {cdUnique = True, cdDeckLimit = Just 1}
-
-psylocke :: CardDef
-psylocke = (ally "35013" ("Psylocke" <:> "Betsy Braddock") 4 [Psionic, XMen] [Mental] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
-
-sunfire :: CardDef
-sunfire = (ally "35014" ("Sunfire" <:> "Shiro Yoshida") 2 [XMen] [Energy] Aggression) {cdUnique = True, cdDeckLimit = Just 1}
-
-longshot :: CardDef
-longshot = (basicAlly "35033" "Longshot" 4 [XMen] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait XMen)}
-
 -- Gambit
 
 rogueGambit :: CardDef
@@ -1343,6 +1352,7 @@ karma = (ally "38011" ("Karma" <:> "Xi'an Coy Manh") 4 [Psionic, XMen] [Energy] 
 
 armor :: CardDef
 armor = (ally "38012" ("Armor" <:> "Hisako Ichiki") 2 [XMen] [Physical] Protection) { cdUnique = True, cdDeckLimit = Just 1, cdKeywords = fromList [Toughness], cdCriteria = SelfMatches (IdentityWithTrait XMen) }
+
 
 
 -- NeXt Evolution: Cable

@@ -69,8 +69,8 @@ allSupports = fromList $ concatMap
   , moiraMacTaggert, medLab
   , theThievesGuild, warRoom
   , clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
-  , logansCabin, weaponX, commandCenter
   , utopia, dangerRoom
+  , logansCabin, weaponX, commandCenter
   , mgMetroPD
   , alphaFlightStation
   , auntMay
@@ -636,6 +636,17 @@ xmansion = reprintedAs ["37018", "36025"] $ (basicSupport "32049" "X-Mansion" 2 
 mgMetroPD :: CardDef
 mgMetroPD = (basicSupport "32171b" "Metro P.D." 0 [MGTrait.Persona] [MGResource.Mental]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1, cdKeywords = fromList [MGKeyword.Permanent]}
 
+-- Wolverine
+
+logansCabin :: CardDef
+logansCabin = (identitySupport "35007" "Logan's Cabin" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1}
+
+weaponX :: CardDef
+weaponX = (basicSupport "35022" "Weapon X" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant)}
+
+commandCenter :: CardDef
+commandCenter = (support "35032" "Command Center" 1 [Location] [Mental] Justice) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
+
 
 -- Phoenix
 
@@ -677,17 +688,6 @@ uncannyXMen = (support "36018" "Uncanny X-Men" 3 [Team] [Mental] Leadership) { c
 
 hangarBay :: CardDef
 hangarBay = (support "36035" "Hangar Bay" 1 [Location] [Mental] Protection) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }
-
--- Wolverine
-
-logansCabin :: CardDef
-logansCabin = (identitySupport "35007" "Logan's Cabin" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1}
-
-weaponX :: CardDef
-weaponX = (basicSupport "35022" "Weapon X" 1 [Location] [Mental]) {cdUnique = True, cdDeckLimit = Just 1, cdCriteria = SelfMatches (IdentityWithTrait Mutant)}
-
-commandCenter :: CardDef
-commandCenter = (support "35032" "Command Center" 1 [Location] [Mental] Justice) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
 
 -- Gambit
 

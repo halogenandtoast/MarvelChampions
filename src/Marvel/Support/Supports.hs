@@ -144,16 +144,19 @@ import Marvel.Support.Supports.Xmansion as X
 
 import Marvel.Support.Supports.MutantGenesisCampaign as X
 
--- Cyclops
-import Marvel.Support.Supports.Utopia as X
-import Marvel.Support.Supports.DangerRoom as X
 import Marvel.Support.Supports.LogansCabin as X
+
 import Marvel.Support.Supports.WeaponX as X
+
 import Marvel.Support.Supports.CommandCenter as X
 
 import Marvel.Support.Supports.WhiteHotRoom as X
 
 import Marvel.Support.Supports.Cerebro as X
+
+-- Cyclops
+import Marvel.Support.Supports.Utopia as X
+import Marvel.Support.Supports.DangerRoom as X
 
 -- Storm
 import Marvel.Support.Supports.ClearSkies as X

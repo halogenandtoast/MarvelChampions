@@ -246,16 +246,12 @@ import Marvel.Ally.Allies.MutantGenesisCampaign as X
 
 import Marvel.Ally.Allies.MutantGenesis as X
 
--- Cyclops
-import Marvel.Ally.Allies.PhoenixJeanGrey as X
-import Marvel.Ally.Allies.Beast as X
-import Marvel.Ally.Allies.Dust as X
-import Marvel.Ally.Allies.Rockslide as X
-import Marvel.Ally.Allies.Blindfold as X
-import Marvel.Ally.Allies.Angel as X
 import Marvel.Ally.Allies.Jubilee as X
+
 import Marvel.Ally.Allies.Psylocke as X
+
 import Marvel.Ally.Allies.Sunfire as X
+
 import Marvel.Ally.Allies.Longshot as X
 
 import Marvel.Ally.Allies.CyclopsScottSummers as X
@@ -267,6 +263,14 @@ import Marvel.Ally.Allies.MarvelGirl as X
 import Marvel.Ally.Allies.StormOroroMunroe as X
 
 import Marvel.Ally.Allies.ControlledMinion as X
+
+-- Cyclops
+import Marvel.Ally.Allies.PhoenixJeanGrey as X
+import Marvel.Ally.Allies.Beast as X
+import Marvel.Ally.Allies.Dust as X
+import Marvel.Ally.Allies.Rockslide as X
+import Marvel.Ally.Allies.Blindfold as X
+import Marvel.Ally.Allies.Angel as X
 
 -- Storm
 import Marvel.Ally.Allies.Havok as X

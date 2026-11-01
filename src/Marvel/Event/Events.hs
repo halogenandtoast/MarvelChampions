@@ -423,18 +423,20 @@ import Marvel.Event.Events.QuickShift as X
 
 import Marvel.Event.Events.TeamStrike as X
 
--- Cyclops
-import Marvel.Event.Events.FullBlast as X
-import Marvel.Event.Events.RicochetBeam as X
-import Marvel.Event.Events.TacticalBrilliance as X
-import Marvel.Event.Events.GameTime as X
 import Marvel.Event.Events.BerserkerBarrage as X
+
 import Marvel.Event.Events.SliceAndDice as X
+
 import Marvel.Event.Events.LungingStrike as X
+
 import Marvel.Event.Events.TrackByScent as X
+
 import Marvel.Event.Events.RegenerativeHealing as X
+
 import Marvel.Event.Events.OuttaMyWay as X
+
 import Marvel.Event.Events.PrecisionStrike as X
+
 import Marvel.Event.Events.FastballSpecial as X
 
 import Marvel.Event.Events.TelekineticAttack as X
@@ -458,6 +460,12 @@ import Marvel.Event.Events.PsychicMisdirection as X
 import Marvel.Event.Events.PsychicKicker as X
 
 import Marvel.Event.Events.SoulSisters as X
+
+-- Cyclops
+import Marvel.Event.Events.FullBlast as X
+import Marvel.Event.Events.RicochetBeam as X
+import Marvel.Event.Events.TacticalBrilliance as X
+import Marvel.Event.Events.GameTime as X
 
 -- Storm
 import Marvel.Event.Events.WeatherGoddess as X

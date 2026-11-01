@@ -52,8 +52,8 @@ allEvents = fromList $ concatMap
   , goinRogue, southernCross, energyTransfer, bulletproofBelle, superpowerAdaptation, notToday
   , chargedCard, royalFlush, naturalAgility, creoleCharmer, breakingAndEntering, beautyAndTheThief, mutantEducation, xMenInstruction
   , weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
-  , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
   , fullBlast, ricochetBeam, tacticalBrilliance, gameTime
+  , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
   , backflip
   , enhancedSpiderSense
   , swingingWebKick
@@ -2550,6 +2550,32 @@ teamStrike = (event "32045" "Team Strike" 1 HeroAction [Attack] [Energy] Aggress
   , cdAbilityCost = ExhaustCost <> ExhaustAlliesWithTraitCost XMen 0 Nothing
   }
 
+-- Wolverine
+
+berserkerBarrage :: CardDef
+berserkerBarrage = (identityEvent "35008" "Berserker Barrage" 2 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
+
+sliceAndDice :: CardDef
+sliceAndDice = (identityEvent "35009" "Slice and Dice" 3 HeroAction [Attack] [Energy]) {cdDeckLimit = Just 2, cdCriteria = canAttack}
+
+lungingStrike :: CardDef
+lungingStrike = (identityEvent "35010" "Lunging Strike" 3 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
+
+trackByScent :: CardDef
+trackByScent = (identityEvent "35011" "Track by Scent" 2 HeroAction [Superpower, Thwart] [Mental]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart]}
+
+regenerativeHealing :: CardDef
+regenerativeHealing = (identityEvent "35012" "Regenerative Healing" 1 Action [Superpower] [Energy]) {cdDeckLimit = Just 2, cdCriteria = AnyCriteria [SelfMatches (IdentityWithAnyDamage <> IdentityCanBeHealed), CharacterExists (IdentityCharacters You <> CharacterWithStatus StunnedStatus), CharacterExists (IdentityCharacters You <> CharacterWithStatus ConfusedStatus)]}
+
+outtaMyWay :: CardDef
+outtaMyWay = (event "35017" "Outta My Way!" 2 HeroAction [Attack] [Physical] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
+
+precisionStrike :: CardDef
+precisionStrike = (event "35018" "Precision Strike" 1 HeroAction [Attack] [Mental] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
+
+fastballSpecial :: CardDef
+fastballSpecial = (basicEvent "35023" "Fastball Special" 1 HeroAction [Aerial, Attack] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Colossus", "Wolverine"), cdCriteria = teamUp "Colossus" "Wolverine", cdAbilitySubTypes = [Ability.Attack]}
+
 
 -- Phoenix
 
@@ -2621,32 +2647,6 @@ blastOfWind = (identityEvent "36013" "Blast of Wind" 3 HeroAction [Superpower] [
 
 toMeMyXMen :: CardDef
 toMeMyXMen = (event "36020" "\"To Me, My X-Men!\"" 1 HeroAction [Tactic] [Energy] Leadership) { cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait XMen) }
-
--- Wolverine
-
-berserkerBarrage :: CardDef
-berserkerBarrage = (identityEvent "35008" "Berserker Barrage" 2 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
-
-sliceAndDice :: CardDef
-sliceAndDice = (identityEvent "35009" "Slice and Dice" 3 HeroAction [Attack] [Energy]) {cdDeckLimit = Just 2, cdCriteria = canAttack}
-
-lungingStrike :: CardDef
-lungingStrike = (identityEvent "35010" "Lunging Strike" 3 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
-
-trackByScent :: CardDef
-trackByScent = (identityEvent "35011" "Track by Scent" 2 HeroAction [Superpower, Thwart] [Mental]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart]}
-
-regenerativeHealing :: CardDef
-regenerativeHealing = (identityEvent "35012" "Regenerative Healing" 1 Action [Superpower] [Energy]) {cdDeckLimit = Just 2, cdCriteria = AnyCriteria [SelfMatches (IdentityWithAnyDamage <> IdentityCanBeHealed), CharacterExists (IdentityCharacters You <> CharacterWithStatus StunnedStatus), CharacterExists (IdentityCharacters You <> CharacterWithStatus ConfusedStatus)]}
-
-outtaMyWay :: CardDef
-outtaMyWay = (event "35017" "Outta My Way!" 2 HeroAction [Attack] [Physical] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
-
-precisionStrike :: CardDef
-precisionStrike = (event "35018" "Precision Strike" 1 HeroAction [Attack] [Mental] Aggression) {cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Attack]}
-
-fastballSpecial :: CardDef
-fastballSpecial = (basicEvent "35023" "Fastball Special" 1 HeroAction [Aerial, Attack] [Energy]) {cdDeckLimit = Just 1, cdTeamUp = Just ("Colossus", "Wolverine"), cdCriteria = teamUp "Colossus" "Wolverine", cdAbilitySubTypes = [Ability.Attack]}
 
 -- Gambit
 

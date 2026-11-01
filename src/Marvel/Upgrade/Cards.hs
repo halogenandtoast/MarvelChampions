@@ -61,8 +61,8 @@ allUpgrades = fromList $ concatMap
   , touched, roguesJacket, judokaSkill, xGene
   , gambitsStaff, gambitsGuildArmor, operativeSkill
   , stormsCrown, stormsCape, leadershipSkill
-  , wolverinesClaws, adamantiumSkeleton, berserkerFrenzy, iGotBetter, warriorSkill
   , rubyQuartzVisor, fieldCommander, exploitWeakness, practicedDefense, priorityTarget, dangerRoomTraining, coordinatedAttack, marked, befuddle, pinnedDown, honoraryXMen
+  , wolverinesClaws, adamantiumSkeleton, berserkerFrenzy, iGotBetter, warriorSkill
   , mgCoupDeGrace, mgSwagger, mgBrazenDefense, mgFerociousAttack, mgWarCry, mgCommanderCoupDeGrace, mgCompassion, mgGroupAssault, mgShockAndAwe, mgImprovisation, mgDefenderSwagger, mgSurprise, mgHeroicIntervention, mgDeterminedDefense, mgBodyguard, mgPeacekeeperSurprise, mgPeacekeeperCompassion, mgRescueOperation, mgMentorship, mgFortitude
   , smCompactDartsA, smCompactDartsB, smImpactDampeningSuitA, smImpactDampeningSuitB, smLaserGogglesA, smLaserGogglesB, smPropulsionGauntletA, smPropulsionGauntletB, smRetinalDisplayA, smRetinalDisplayB, smShockKnucklesA, smShockKnucklesB, smWaveBracersA, smWaveBracersB, smWristNavigatorA, smWristNavigatorB
   , spiderTracer
@@ -1714,6 +1714,23 @@ mgMentorship = (basicUpgrade "32194" "Mentorship" 0 [MGTrait.Skill, MGTrait.Tact
 mgFortitude :: CardDef
 mgFortitude = (basicUpgrade "32195" "Fortitude" 0 [MGTrait.Skill] [MGResource.Wild]) {cdEncounterSet = Just MGSet.MutantGenesisCampaign, cdEncounterSetQuantity = Just 1}
 
+-- Wolverine
+
+wolverinesClaws :: CardDef
+wolverinesClaws = (identityUpgrade "35002" "Wolverine's Claws" 0 [Weapon] [Physical]) {cdUnique = True, cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent]}
+
+adamantiumSkeleton :: CardDef
+adamantiumSkeleton = (identityUpgrade "35004" "Adamantium Skeleton" 2 [] [Physical]) {cdDeckLimit = Just 1}
+
+berserkerFrenzy :: CardDef
+berserkerFrenzy = (identityUpgrade "35005" "Berserker Frenzy" 2 [Condition] [Mental]) {cdDeckLimit = Just 1}
+
+iGotBetter :: CardDef
+iGotBetter = (identityUpgrade "35006" "\"I Got Better\"" 4 [Superpower] [Energy]) {cdDeckLimit = Just 1}
+
+warriorSkill :: CardDef
+warriorSkill = (upgrade "35016" "Warrior Skill" 2 [Skill] [Mental] Aggression) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
+
 
 -- Phoenix
 
@@ -1788,23 +1805,6 @@ stormsCape = (identityUpgrade "36007" "Storm's Cape" 3 [Item] [Energy]) { cdUniq
 
 leadershipSkill :: CardDef
 leadershipSkill = (upgrade "36019" "Leadership Skill" 1 [Skill] [Physical] Leadership) { cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1) }
-
--- Wolverine
-
-wolverinesClaws :: CardDef
-wolverinesClaws = (identityUpgrade "35002" "Wolverine's Claws" 0 [Weapon] [Physical]) {cdUnique = True, cdDeckLimit = Just 1, cdCost = Nothing, cdKeywords = fromList [Permanent]}
-
-adamantiumSkeleton :: CardDef
-adamantiumSkeleton = (identityUpgrade "35004" "Adamantium Skeleton" 2 [] [Physical]) {cdDeckLimit = Just 1}
-
-berserkerFrenzy :: CardDef
-berserkerFrenzy = (identityUpgrade "35005" "Berserker Frenzy" 2 [Condition] [Mental]) {cdDeckLimit = Just 1}
-
-iGotBetter :: CardDef
-iGotBetter = (identityUpgrade "35006" "\"I Got Better\"" 4 [Superpower] [Energy]) {cdDeckLimit = Just 1}
-
-warriorSkill :: CardDef
-warriorSkill = (upgrade "35016" "Warrior Skill" 2 [Skill] [Mental] Aggression) {cdDeckLimit = Just 3, cdLimit = Just (MaxPerPlayer 1)}
 
 -- Gambit
 

@@ -32,11 +32,13 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ dominoHero, cable40001a
+  [ dominoHero
+  , cable40001a
+  , rogueHero
   , gambitHero
   , stormHero
-  , wolverineHero
   , cyclopsHero
+  , wolverineHero
   , spiderMan
   , captainMarvel
   , sheHulk
@@ -343,6 +345,11 @@ shadowcatHero = (hero "32030a" "Shadowcat" [XMen])
   { cdUnique = True
   }
 
+-- Wolverine
+
+wolverineHero :: CardDef
+wolverineHero = (hero "35001a" "Wolverine" [XMen]) {cdUnique = True}
+
 
 -- Phoenix
 
@@ -361,16 +368,16 @@ cyclopsHero = (hero "33001a" "Cyclops" [XMen]) { cdDeckLimit = Just 1, cdUnique 
 stormHero :: CardDef
 stormHero = (hero "36001a" "Storm" [XMen]) { cdUnique = True }
 
--- Wolverine
-
-wolverineHero :: CardDef
-wolverineHero = (hero "35001a" "Wolverine" [XMen]) {cdUnique = True}
-
 -- Gambit
 
 gambitHero :: CardDef
 gambitHero = (hero "37001a" "Gambit" [Thief, XMen]) { cdUnique = True }
 
+
+-- Rogue
+
+rogueHero :: CardDef
+rogueHero = (hero "38001a" "Rogue" [XMen]) { cdUnique = True }
 
 -- NeXt Evolution: Cable
 

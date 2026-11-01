@@ -33,11 +33,13 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ cable40001b, neenaThurman
-    , annaMarie
+    [ cable40001b
+  , neenaThurman
+  , annaMarie
+  , remyLeBeau
   , ororoMunroe
-  , logan
   , scottSummers
+  , logan
   , peterParker
     , carolDanvers
     , jenniferWalters
@@ -319,6 +321,11 @@ kittyPryde = (alterEgo "32030b" "Kitty Pryde" [Mutant])
   { cdUnique = True
   }
 
+-- Wolverine
+
+logan :: CardDef
+logan = (alterEgo "35001b" "Logan" [Mutant]) {cdUnique = True}
+
 
 -- Phoenix
 
@@ -336,11 +343,6 @@ scottSummers = (alterEgo "33001b" "Scott Summers" [Mutant]) { cdDeckLimit = Just
 
 ororoMunroe :: CardDef
 ororoMunroe = (alterEgo "36001b" "Ororo Munroe" [Mutant]) { cdUnique = True }
-
--- Wolverine
-
-logan :: CardDef
-logan = (alterEgo "35001b" "Logan" [Mutant]) {cdUnique = True}
 
 -- Gambit
 

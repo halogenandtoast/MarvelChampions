@@ -87,10 +87,13 @@ import Marvel.Hero.Heroes.ColossusHero as X
 import Marvel.Hero.Heroes.ShadowcatHero as X
 
 import Marvel.Hero.Heroes.WolverineHero as X
+
+import Marvel.Hero.Heroes.PhoenixHero as X
+
 -- Cyclops
 import Marvel.Hero.Heroes.CyclopsHero as X
 
-import Marvel.Hero.Heroes.PhoenixHero as X
+-- Cyclops
 
 -- Storm
 import Marvel.Hero.Heroes.StormHero as X

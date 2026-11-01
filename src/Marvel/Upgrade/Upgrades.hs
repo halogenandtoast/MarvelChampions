@@ -313,22 +313,14 @@ import Marvel.Upgrade.Upgrades.Gatekeeper as X
 
 import Marvel.Upgrade.Upgrades.MutantGenesisCampaign as X
 
--- Cyclops
-import Marvel.Upgrade.Upgrades.RubyQuartzVisor as X
-import Marvel.Upgrade.Upgrades.FieldCommander as X
-import Marvel.Upgrade.Upgrades.ExploitWeakness as X
-import Marvel.Upgrade.Upgrades.PracticedDefense as X
-import Marvel.Upgrade.Upgrades.PriorityTarget as X
-import Marvel.Upgrade.Upgrades.DangerRoomTraining as X
-import Marvel.Upgrade.Upgrades.CoordinatedAttack as X
-import Marvel.Upgrade.Upgrades.Marked as X
-import Marvel.Upgrade.Upgrades.Befuddle as X
-import Marvel.Upgrade.Upgrades.PinnedDown as X
-import Marvel.Upgrade.Upgrades.HonoraryXMen as X
 import Marvel.Upgrade.Upgrades.WolverinesClaws as X
+
 import Marvel.Upgrade.Upgrades.AdamantiumSkeleton as X
+
 import Marvel.Upgrade.Upgrades.BerserkerFrenzy as X
+
 import Marvel.Upgrade.Upgrades.IGotBetter as X
+
 import Marvel.Upgrade.Upgrades.WarriorSkill as X
 
 import Marvel.Upgrade.Upgrades.PhoenixSuit as X
@@ -344,6 +336,19 @@ import Marvel.Upgrade.Upgrades.MindControl as X
 import Marvel.Upgrade.Upgrades.MissionTraining as X
 
 import Marvel.Upgrade.Upgrades.PhoenixForce as X
+
+-- Cyclops
+import Marvel.Upgrade.Upgrades.RubyQuartzVisor as X
+import Marvel.Upgrade.Upgrades.FieldCommander as X
+import Marvel.Upgrade.Upgrades.ExploitWeakness as X
+import Marvel.Upgrade.Upgrades.PracticedDefense as X
+import Marvel.Upgrade.Upgrades.PriorityTarget as X
+import Marvel.Upgrade.Upgrades.DangerRoomTraining as X
+import Marvel.Upgrade.Upgrades.CoordinatedAttack as X
+import Marvel.Upgrade.Upgrades.Marked as X
+import Marvel.Upgrade.Upgrades.Befuddle as X
+import Marvel.Upgrade.Upgrades.PinnedDown as X
+import Marvel.Upgrade.Upgrades.HonoraryXMen as X
 
 -- Storm
 import Marvel.Upgrade.Upgrades.StormsCrown as X
