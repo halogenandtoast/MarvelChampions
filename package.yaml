@@ -57,6 +57,7 @@ default-extensions:
 - OverloadedRecordDot
 
 ghc-options:
+- -Werror
 - -Wall
 - -Wcompat
 - -Widentities
