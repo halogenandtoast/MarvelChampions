@@ -6,6 +6,10 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Magneto Hero Pack rules insert (MC49) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/84/33/8433f555-b1bc-4b23-a022-86120417b018/mc49_magneto_rules_insert.pdf |
+| Nightcrawler Hero Pack rules insert (MC48) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/e3/7b/e37bce25-fb98-4d80-91cd-64f13284972c/mc48_nightcrawler_rules_insert.pdf |
+| Jubilee Hero Pack rules insert (MC47) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/68/7e/687e6308-1160-42c6-bade-3469b6b53d11/mc47_jubilee_rules_insert-web.pdf |
+| Iceman Hero Pack rules insert (MC46) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/93/f8/93f8dca2-fed8-4e66-88c7-11d89539d1f0/mc46_iceman_rules_insert-web.pdf |
 | Age of Apocalypse rulebook (MC45) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc45_age_of_apocalypse_rulebook.pdf |
 | Deadpool Hero Pack rules insert (MC44) | 2 rules pages and poster art | https://images-cdn.fantasyflightgames.com/filer_public/8a/98/8a987c42-a835-4fa7-b0b7-11f466e0faa4/mc44_deadpool_rules_insert-web.pdf |
 | X-23 Hero Pack rules insert (MC43) | 2 pages (p.2 artwork) | https://images-cdn.fantasyflightgames.com/filer_public/32/e8/32e82755-7b86-4ba0-9201-aa32b52faaa8/mc43_x-23_rules_insert-web.pdf |
@@ -55,6 +59,10 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-iceman.md](hero-iceman.md) | Iceman: Frostbite supply, activation timing, Sauron, published rulings and starter deck |
+| [hero-jubilee.md](hero-jubilee.md) | Jubilee: distinct resources, Shopping Spree, Lost Child, Nanny, Arcade and starter deck |
+| [hero-nightcrawler.md](hero-nightcrawler.md) | Nightcrawler: Bamf! defenses, Rogue base powers, Alliance, Crazy Gang and starter deck |
+| [hero-magneto.md](hero-magneto.md) | Magneto: Magnetic Pull, current errata, Linked recruits, designer rulings and starter deck |
 | [scenario-aoa-standard-iii.md](scenario-aoa-standard-iii.md) | Pursuit counters, nemesis Find, activation timing, and Drawing Near |
 | [campaign-age-of-apocalypse.md](campaign-age-of-apocalypse.md) | Missions, Overseers, campaign rewards, expert campaign, and the Professor victory condition |
 | [scenario-aoa-unus.md](scenario-aoa-unus.md) | Unus, Infinites, Dystopian Nightmare, and optional Gene Pool setup difficulty |
