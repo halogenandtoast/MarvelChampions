@@ -80,6 +80,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [campaign-rise-of-red-skull.md](campaign-rise-of-red-skull.md) | Rise of Red Skull: keywords as printed, campaign mode, campaign log, per-scenario setup/victory steps (Crossbones … Red Skull), Experimental Weapons deck, side-scheme deck, expert campaign (persistent damage, obligations in player decks); campaign card text (Hydra Campaign upgrades, Captive allies, expert obligations) |
 | [scenario-kang.md](scenario-kang.md) | Once and Future Kang: setup, separate game areas (creating, playing in, joining), stage 2B, Kang stages, expert mode, modular sets, clarifications; scenario card text |
 | [hero-ant-man.md](hero-ant-man.md) | Ant-Man pack: the three-sided identity card, Team-Up, form-change clarifications, rulings |
+| [hero-angel.md](hero-angel.md) | Angel pack: three identity faces, printed acceleration icon, event timing, starter deck and published rulings |
 | [hero-wasp.md](hero-wasp.md) | Wasp pack: the three-sided identity card, Team-Up, Piercing, divided thwart and attack, rulings |
 | [hero-quicksilver.md](hero-quicksilver.md) | Quicksilver pack: Team-Up, Incite X, Piercing, the Super Speed FAQ, rulings (wild resources declared, exhausting as a target) |
 | [hero-gamora.md](hero-gamora.md) | Gamora pack: the Skilled Tactician FAQ, starter deck, rulings |
