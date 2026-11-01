@@ -15,14 +15,14 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Stats
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types
 import Marvel.Window
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 newtype SmSandmanVillain = SmSandmanVillain (Attrs Villain)
   deriving anyclass (IsVillain)

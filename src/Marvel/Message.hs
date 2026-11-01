@@ -249,7 +249,7 @@ recordPlayerAttackDamage enemy source damage = when (damageAmount damage > 0 && 
     AllyRef aid -> [Window After $ W.AllyAttackDamaged aid enemy confused | not (any (hasAllyEnemy aid) ws)]
     _ -> []]
   mapWindow _ message = [message]
-  update window@(Window timing (W.BasicAttackDamaged who enemies)) | source == IdentityRef who = Window timing $ W.BasicAttackDamaged who (nub $ enemies <> [enemy])
+  update (Window timing (W.BasicAttackDamaged who enemies)) | source == IdentityRef who = Window timing $ W.BasicAttackDamaged who (nub $ enemies <> [enemy])
   update window = window
   hasBasic you (Window _ (W.BasicAttackDamaged who _)) = who == you
   hasBasic _ _ = False

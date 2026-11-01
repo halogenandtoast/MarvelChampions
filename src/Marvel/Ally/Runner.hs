@@ -10,14 +10,20 @@ import Marvel.Message.Lifted as X
 import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
-import Marvel.Game.Source (HasGame, characterHasCondition, getModifiers, isBlanked, cannotTakeDamageFrom, abilityCardDef, getsGame, schemeHasKeyword)
+import Marvel.Game.Source
+    ( cannotTakeDamageFrom,
+      characterHasCondition,
+      getModifiers,
+      isBlanked,
+      schemeHasKeyword,
+      HasGame )
 import Marvel.Ability
 import Marvel.Attack
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Card (Card (..))
-import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck)
-import Marvel.Card.Def
+import Marvel.Card ()
+import Marvel.Card.PlayerCard.Types ()
+import Marvel.Card.Def ()
 import Marvel.Damage
 import Marvel.Keyword
 import Marvel.Id
@@ -332,6 +338,8 @@ instance RunMessage (Attrs Ally) where
         if protected then pure a else defeated Nothing
       AllyDefeatedByDamage -> defeated Nothing
       AllyDefeatedByAttack enemy -> defeated (Just enemy)
+      -- The game handles the departure before dispatching to entities.
+      AllyLeavePlayByDefeat -> pure a
       SpendAllyUse -> pure $ a & countersL -~ 1
       AllyHoldsTreachery card -> pure a {allyHeldTreacheries = allyHeldTreacheries a <> [card]}
       AllyPaidWith payment -> pure a {allyPaidWith = payment}

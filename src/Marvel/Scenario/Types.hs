@@ -18,11 +18,10 @@ import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Keyword qualified as Keyword
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Id (IdentityId, VillainId (..))
+import Marvel.Id ( IdentityId, EnemyId(..) )
 import Marvel.Name (Name (..))
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Id (EnemyId (..))
 import Marvel.Identity.Types (Field (PlayerIdentityEncounterCards))
 import Marvel.Modifier (Modifier (TakesFirstPlayerPhaseTurn))
 import Marvel.Phase

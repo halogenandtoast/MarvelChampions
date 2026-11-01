@@ -1,7 +1,7 @@
 module Marvel.Villain.Villains.TheHood where
 
 import Marvel.Ability
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Difficulty
 import Marvel.Entity
@@ -13,7 +13,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Prelude
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question (runAbility)
 import Marvel.Ref
 import Marvel.Stats

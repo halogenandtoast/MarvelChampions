@@ -87,7 +87,7 @@ instance RunMessage Drang where
             then dealBoost attrs
             else searchAndRevealEncounterCard first (CardIs Attachments.drangsSpear)
         _ -> do
-          n <- fromIntegral <$> fromGameValue (PerPlayer 4)
+          n <- fromGameValue (PerPlayer 4)
           cardSpecific attrs "discardNext" (n :: Int)
       pure e
     CardSpecific (isTarget attrs -> True) "discardNext" (fromJSON -> Success (n :: Int)) | n > 0 -> do

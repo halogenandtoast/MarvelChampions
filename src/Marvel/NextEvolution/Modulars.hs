@@ -1,13 +1,13 @@
 module Marvel.NextEvolution.Modulars where
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types qualified as Ally
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ally.Types qualified as Ally ()
 import Marvel.Card
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Game.Source
 import Marvel.Hand
 import Marvel.Keyword
-import Marvel.Hp
+import Marvel.Hp ()
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
@@ -16,10 +16,10 @@ import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Ref
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Resource.Types
-import Marvel.Villain.Types qualified as Villain
-import Marvel.Minion.Types qualified as Minion
+import Marvel.Villain.Types qualified as Villain ()
+import Marvel.Minion.Types qualified as Minion ()
 
 printedResourcesInHand :: HasGame m => IdentityId -> Resource -> m Natural
 printedResourcesInHand you resource = do

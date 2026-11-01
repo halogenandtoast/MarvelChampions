@@ -14,8 +14,8 @@ import Marvel.Log (idText, sendLog)
 import Marvel.Log.Narrator
 import Marvel.Id
 import Marvel.Message
-import Marvel.Message.Identity
-import Marvel.Message.Villain
+import Marvel.Message.Identity ()
+import Marvel.Message.Villain ()
 
 narrate :: Message -> GameAppT ()
 narrate msg = do

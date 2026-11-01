@@ -1,9 +1,9 @@
 module Marvel.Scenario.MojoOpening where
 
 import Data.HashSet qualified as HashSet
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.EncounterSet qualified as Set
-import Marvel.Game.Source
+import Marvel.Game.Source ()
 import Marvel.Message.Lifted
 import Marvel.Prelude
 import Marvel.Scenario.Types

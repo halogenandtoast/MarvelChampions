@@ -2,7 +2,7 @@ module Marvel.NextEvolution.Sinister where
 
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Prelude
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers

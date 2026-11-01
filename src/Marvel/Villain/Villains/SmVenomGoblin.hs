@@ -5,7 +5,7 @@ import Marvel.Ability
 import Marvel.Cost
 import Marvel.Difficulty
 import Marvel.Window
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -13,7 +13,7 @@ import Marvel.Question (runAbility)
 import Marvel.Query
 import Marvel.MainScheme.MainSchemes.SmVenomGoblin qualified as Goblin
 import Marvel.Window qualified as W
-import Marvel.Card.Code
+import Marvel.Card.Code ()
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hp

@@ -6,13 +6,12 @@ import Marvel.Scenario.NextEvolution
 import Marvel.Scenario.Mojo
 import Marvel.Scenario.MojoOpening
 import Data.HashSet qualified as HashSet
-import Data.List (nub, sortOn)
-import Marvel.Query (selectOne, selectList)
-import Marvel.Matchers (VillainMatcher (ActiveVillain))
+import Data.List ( nub, find )
+import Marvel.Query (selectOne, selectList, selectJust)
+import Marvel.Matchers (VillainMatcher (ActiveVillain), IdentityMatcher (FirstPlayer), SideSchemeMatcher (AnySideScheme, SideSchemeIs), SchemeMatcher (SchemeWithId, EncounterMainScheme, MainScheme))
 import Marvel.Prelude
 import Marvel.Scenario.MutantGenesis
 
-import Marvel.Card.Builder
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Area (experimentalWeaponsDeck, newArea)
 import Marvel.Attachment.Cards (allAttachments)
@@ -25,30 +24,23 @@ import Marvel.Card.Def
 import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as EncounterSet
-import Marvel.EncounterCard (isPlayerObligation)
+import Marvel.EncounterCard (isPlayerObligation, genEncounterCard, gatherEncounterSet)
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Villain.Villains.SmSinisterSix qualified as Six
-import Marvel.Matchers (VillainMatcher (AnyVillain), SideSchemeMatcher (AnySideScheme, SideSchemeIs), SchemeMatcher (SchemeWithId, MainScheme, EncounterMainScheme))
 import Marvel.Modifier (Modifier (ThreatCannotBeRemoved))
 import Marvel.Message.Lifted
 import Marvel.Ref
-import Data.Aeson (Result (..), fromJSON)
-import Marvel.Matchers (IdentityMatcher (FirstPlayer))
-import Marvel.Query (selectJust)
+import Data.Aeson ()
 import Marvel.Question (Choice (CardLabel))
 import Marvel.Scenario.Types
 import Marvel.Scenario.Types qualified as Types
-import Data.List (find)
 import Marvel.MainScheme.Cards qualified as MainSchemes
 import Marvel.MainScheme.MainSchemes.KangsWrath (kangsDominionDeck)
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.Matchers (IdentityMatcher (FirstPlayer))
-import Marvel.Query (selectJust)
 import Marvel.Card (Card (EncounterCard))
 import Marvel.Id (MainSchemeId (..), VillainId, IdentityId, SchemeId (..))
 import Marvel.Name (Name (..))
-import Marvel.EncounterCard (genEncounterCard, gatherEncounterSet)
 import Marvel.Villain.Cards qualified as VillainCards
 import System.Random.Shuffle (shuffleM)
 

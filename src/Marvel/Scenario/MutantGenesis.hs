@@ -7,9 +7,9 @@ import Marvel.EncounterCard (genEncounterCard)
 import Marvel.EncounterSet qualified as Set
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.Matchers
+import Marvel.Matchers ()
 import Marvel.Message.Lifted
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Ref
 import Marvel.Scenario.Types
 import Marvel.Villain.Cards qualified as Villains

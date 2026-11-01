@@ -3,14 +3,14 @@ module Marvel.Villain.Villains.Thunderball where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Attack
+import Marvel.Attack ()
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Id
-import Marvel.Keyword
+import Marvel.Keyword ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier

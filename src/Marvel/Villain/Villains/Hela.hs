@@ -13,7 +13,7 @@ module Marvel.Villain.Villains.Hela (
 
 import Marvel.Prelude
 
-import Data.Aeson (Result (..), fromJSON)
+import Data.Aeson ()
 import Marvel.Ability
 import Marvel.Ally.Cards qualified as Allies
 import Marvel.Card

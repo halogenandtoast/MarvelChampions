@@ -5,7 +5,7 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Vector qualified as Vector
 
 import Marvel.Attack
-import Marvel.Card.Code (CardCode)
+import Marvel.Card.Code ()
 import Marvel.Card.Types
 import Marvel.Damage
 import Marvel.Id

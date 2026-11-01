@@ -4,7 +4,7 @@ module Marvel.Effect.CardPlayReduction (CardPlayReduction (..)) where
 
 import Marvel.Prelude
 import Marvel.Effect.Types
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Ref
 import Marvel.Message.Lifted
 

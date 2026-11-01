@@ -10,14 +10,14 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Projection
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 
 handTypeCount :: HasGame m => IdentityId -> m Natural
 handTypeCount you = do
   cards <- unHand <$> project PlayerIdentityHand you
   pure $ fromIntegral $ maximum (0 : [length [c | c <- cards, cdCardType (getCardDef c) == t] | t <- [AllyType, EventType, ResourceType, SupportType, UpgradeType, PlayerSideSchemeType]])
 
-returnControlledCard :: (ReverseQueue m, HasGame m) => IdentityId -> m ()
+returnControlledCard :: (ReverseQueue m) => IdentityId -> m ()
 returnControlledCard you = do
   upgrades <- selectList (upgradeControlledBy you)
   supports <- selectList (SupportControlledBy $ IdentityWithId you)

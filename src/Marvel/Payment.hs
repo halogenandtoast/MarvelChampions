@@ -15,10 +15,8 @@ import Marvel.Queue
 import Marvel.Resource
 
 paymentResources
-  :: ( Projection m PlayerIdentity
-     , HasQueue m
+  :: ( HasQueue m
      , HasGame m
-     , MonadRandom m
      , MonadThrow m
      )
   => Payment
@@ -46,10 +44,8 @@ paymentResources payment = case paymentActualResources payment of
 -- using a [physical] resource". A wild resource counts as the type it was declared as,
 -- and only that (RR Wild Resource).
 paidWith
-  :: ( Projection m PlayerIdentity
-     , HasQueue m
+  :: ( HasQueue m
      , HasGame m
-     , MonadRandom m
      , MonadThrow m
      )
   => Resource
@@ -61,10 +57,8 @@ paidWith r payment = elem r <$> paymentResources payment
 -- card using only [physical] resources". A wild resource counts as the type it was
 -- declared as; nothing paid, for a cost reduced to 0, is not paying with it.
 paidUsingOnly
-  :: ( Projection m PlayerIdentity
-     , HasQueue m
+  :: ( HasQueue m
      , HasGame m
-     , MonadRandom m
      , MonadThrow m
      )
   => Resource

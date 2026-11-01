@@ -4,14 +4,13 @@ import Marvel.Card
 import Marvel.Game.Source
 import Marvel.Deck
 import Marvel.Discard
-import Marvel.Game.Source
-import {-# SOURCE #-} Marvel.Game (isBlanked)
+import {-# SOURCE #-} Marvel.Game ()
 import Marvel.Hero.Cards qualified as Heroes
 import Marvel.Identity.Types
 import Marvel.Matchers
-import Marvel.Modifier
+import Marvel.Modifier ()
 import Marvel.Projection
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Resource.Types
 import Marvel.Id
 

@@ -9,7 +9,7 @@ import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Cost.Types
-import Marvel.Card.Def
+import Marvel.Card.Def ()
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity

@@ -14,7 +14,7 @@ import Marvel.Stats as X
 
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
-import Data.HashSet qualified as HashSet
+import Data.HashSet qualified as HashSet ()
 import Marvel.Ability.Types
 import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Game.Source

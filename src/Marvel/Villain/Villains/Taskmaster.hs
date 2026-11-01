@@ -3,8 +3,8 @@ module Marvel.Villain.Villains.Taskmaster where
 import Marvel.Prelude
 
 import Marvel.Ability
-import Marvel.Boost
-import Marvel.Card
+import Marvel.Boost ()
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Difficulty

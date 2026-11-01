@@ -17,7 +17,7 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Identity.Types (Field (PlayerIdentityDeck))
 import Marvel.Matchers
 import Marvel.Message.Lifted

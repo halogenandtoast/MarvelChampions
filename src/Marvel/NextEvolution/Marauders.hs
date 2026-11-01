@@ -1,14 +1,14 @@
 module Marvel.NextEvolution.Marauders (marauderAttackChoice, canGainStatus) where
 
 import Marvel.Prelude
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types qualified as Ally
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ally.Types qualified as Ally ()
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Identity qualified as Identity
-import Marvel.Identity.Types
+import Marvel.Identity qualified as Identity ()
+import Marvel.Identity.Types ()
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -16,7 +16,7 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Resource.Types (Resource (Mental))
-import Marvel.Status
+import Marvel.Status ()
 
 -- | The seven Marauders share their attacks between villain A/B and minion cards.
 -- Choices that cannot change the game are not offered. Highest-stat/cost choices

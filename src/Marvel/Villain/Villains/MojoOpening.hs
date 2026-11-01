@@ -14,7 +14,7 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.MojoOpening
 import Marvel.Prelude
-import Marvel.Query
+import Marvel.Query ()
 import Marvel.Question (runAbility)
 import Marvel.Ref
 import Marvel.Stats

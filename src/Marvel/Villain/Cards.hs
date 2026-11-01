@@ -1,43 +1,40 @@
 module Marvel.Villain.Cards where
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
-import Marvel.Resource.Types qualified as NEResource
+import Marvel.Resource.Types qualified as NEResource ()
 
-import Marvel.Boost qualified as NEBoost
+import Marvel.Boost qualified as NEBoost ()
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword
+import Marvel.Keyword qualified as NEKeyword ()
 
 import Marvel.Trait qualified as NETrait
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
 import Marvel.Trait qualified as MojoTrait
 import Marvel.EncounterSet qualified as MojoSet
-import Marvel.Keyword qualified as MojoKeyword
-import Marvel.GameValue.Types qualified as MojoValue
-import Marvel.Boost qualified as MojoBoost
+import Marvel.Keyword qualified as MojoKeyword ()
+import Marvel.GameValue.Types qualified as MojoValue ()
+import Marvel.Boost qualified as MojoBoost ()
 
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
-import Marvel.GameValue.Types qualified as SMValue
-import Marvel.Boost qualified as SMBoost
+import Marvel.GameValue.Types qualified as SMValue ()
+import Marvel.Boost qualified as SMBoost ()
 
 import Data.HashSet (singleton)
-import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.EncounterSet (EncounterSet (Bulldozer, Piledriver, Thunderball, Wrecker))
 import Marvel.Trait qualified as MGTrait
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
-import Marvel.GameValue.Types qualified as MGValue
-import Marvel.Boost qualified as MGBoost
+import Marvel.GameValue.Types qualified as MGValue ()
+import Marvel.Boost qualified as MGBoost ()
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))
@@ -47,7 +44,6 @@ import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Name
 import Marvel.Trait
-import Data.HashSet (singleton)
 import Marvel.Keyword
 
 allVillainCards :: [CardDef]

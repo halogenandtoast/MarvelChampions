@@ -16,7 +16,7 @@
 module Marvel.Log.Narrator (narrationFor) where
 
 import Marvel.Prelude
-import Data.Aeson (Result (Success), fromJSON)
+import Data.Aeson ()
 import Marvel.Window.Types qualified as W
 
 import Marvel.Ability.Types (Ability (..), AbilityType (..))
@@ -182,7 +182,7 @@ narrationFor = \case
   CardSpecific (UpgradeRef uid) "flipPsiEnergy" _ -> Just do
     locked <- elem CannotFlipPsiEnergy <$> getModifiers (UpgradeRef uid)
     if locked then pure [] else simply "log.flips" (UpgradeRef uid)
-  CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \form ->
+  CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \_form ->
     getSourceController (UpgradeRef uid) >>= \case
       Just p -> do
         who <- playerRef' p
@@ -224,9 +224,6 @@ narrationFor = \case
     one $ mechanic [ikeyPart "log.controlledMinion" ["player" ~> who, "card" ~> card]]
   RestoreControlledMinion aid -> Just $ simply "log.restoredMinion" (AllyRef aid)
   UpgradeMessage uid (AddUpgradeUses n) | n > 0 -> Just $ counted "log.countersPlaced" (UpgradeRef uid) n
-  VillainMessage vid (VillainSchemeRemovesThreat _ _) -> Just $ simply "log.schemeRemovesThreat" (VillainRef vid)
-  VillainMessage vid (VillainAttackDamageRedirected enemy) -> Just $ redirected (VillainRef vid) (enemyRef enemy)
-  MinionMessage mid (MinionAttackDamageRedirected enemy) -> Just $ redirected (MinionRef mid) (enemyRef enemy)
   PlaceCharacterThreat character n | n > 0 -> Just $ counted "log.characterThreatPlaced" (characterRef character) n
   RemoveCharacterThreat character n | n > 0 -> Just $ counted "log.characterThreatRemoved" (characterRef character) n
   MoveCharacterThreatToMainScheme character -> Just $ do
@@ -708,7 +705,3 @@ villainPhaseStepKey = \case
   StepEnemiesActivate -> "log.step.enemiesActivate"
   StepDealEncounterCards -> "log.step.dealEncounterCards"
   StepRevealEncounterCards -> "log.step.revealEncounterCards"
-
-redirected :: HasGame m => Target -> Target -> m [LogEntry]
-redirected source target = whenRef source $ \enemy -> whenRef target $ \recipient ->
-  one $ mechanic [ikeyPart "log.attackDamageRedirected" ["enemy" ~> enemy, "target" ~> recipient]]

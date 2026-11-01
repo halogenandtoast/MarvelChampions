@@ -2,14 +2,14 @@
 module Marvel.MojoOpening where
 
 import Marvel.Prelude
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Window qualified as W
 
 showDeck :: DeckKey

@@ -21,7 +21,7 @@ import Marvel.Modifier
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question (runAbility)
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Stats
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types

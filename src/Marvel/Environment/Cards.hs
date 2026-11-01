@@ -5,50 +5,44 @@ import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
 import Marvel.Keyword qualified as HoodKeyword
 import Marvel.Boost qualified as HoodBoost
-import Marvel.GameValue.Types qualified as HoodValue
+import Marvel.GameValue.Types qualified as HoodValue ()
 
-import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
-import Marvel.Criteria (Criteria (NoCriteria))
 
-import Marvel.Resource.Types qualified as NEResource
+import Marvel.Resource.Types qualified as NEResource ()
 
-import Marvel.Boost qualified as NEBoost
+import Marvel.Boost qualified as NEBoost ()
 
-import Marvel.GameValue.Types qualified as NEValue
+import Marvel.GameValue.Types qualified as NEValue ()
 
 import Marvel.EncounterSet qualified as NESet
 
-import Marvel.Keyword qualified as NEKeyword
+import Marvel.Keyword qualified as NEKeyword ()
 
-import Marvel.Trait qualified as NETrait
+import Marvel.Trait qualified as NETrait ()
 
-import Marvel.Aspect qualified as NEAspect
+import Marvel.Aspect qualified as NEAspect ()
 
 import Marvel.Trait qualified as MojoTrait
 import Marvel.EncounterSet qualified as MojoSet
-import Marvel.Keyword qualified as MojoKeyword
-import Marvel.GameValue.Types qualified as MojoValue
+import Marvel.Keyword qualified as MojoKeyword ()
+import Marvel.GameValue.Types qualified as MojoValue ()
 import Marvel.Boost qualified as MojoBoost
 
 import Marvel.EncounterSet qualified as MGSet
-import Marvel.Keyword qualified as MGKeyword
+import Marvel.Keyword qualified as MGKeyword ()
 import Marvel.Trait qualified as MGTrait
-import Marvel.Resource qualified as MGResource
+import Marvel.Resource qualified as MGResource ()
 import Marvel.Boost qualified as MGBoost
 import Marvel.Keyword qualified as SpdrKeyword
 import Marvel.EncounterSet qualified as SpdrSet
 import Marvel.EncounterSet qualified as SMSet
 import Marvel.Trait qualified as SMTrait
 import Marvel.Keyword qualified as SMKeyword
-import Marvel.GameValue.Types qualified as SMValue
-import Marvel.Boost qualified as SMBoost
+import Marvel.GameValue.Types qualified as SMValue ()
+import Marvel.Boost qualified as SMBoost ()
 
-import Marvel.Trait qualified as MGTrait
-import Marvel.EncounterSet qualified as MGSet
-import Marvel.Keyword qualified as MGKeyword
-import Marvel.GameValue.Types qualified as MGValue
-import Marvel.Boost qualified as MGBoost
+import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Prelude
 
 import Marvel.Cost.Types (Cost (NoCost))

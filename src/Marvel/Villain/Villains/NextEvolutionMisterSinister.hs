@@ -5,26 +5,24 @@ import Marvel.Question (runAbility)
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage
+import Marvel.Damage ()
 import Marvel.Game.Source
-import Marvel.Id
-import Marvel.Keyword qualified as Keyword
+import Marvel.Id ()
+import Marvel.Keyword qualified as Keyword ()
 import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Payment
-import Marvel.Projection
-import Marvel.Query
-import Marvel.Status
-import Marvel.Trait qualified as Trait
+import Marvel.Payment ()
+import Marvel.Projection ()
+import Marvel.Query ()
+import Marvel.Status ()
+import Marvel.Trait qualified as Trait ()
 import Marvel.Window qualified as W
 import Marvel.NextEvolution.Sinister
 
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Entity
 import Marvel.Villain.Cards qualified as Cards
 import Marvel.Villain.Types
-import Marvel.Ability (HasAbilities)
-import Marvel.Modifier (HasModifiersFor)
 import Marvel.Ref
 import Marvel.GameValue
 import Marvel.Stats

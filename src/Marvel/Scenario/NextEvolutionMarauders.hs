@@ -4,15 +4,15 @@ import Marvel.Prelude
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign
 import Marvel.Card
-import Marvel.Attachment.Types qualified as Attachment
+import Marvel.Attachment.Types qualified as Attachment ()
 import Marvel.Keyword (Keyword (Permanent))
 import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
-import Marvel.Environment.Cards qualified as Environments
+import Marvel.Environment.Cards qualified as Environments ()
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Trait (Trait (Morlock))
-import Marvel.Status (StatusCard (ToughStatus))
+import Marvel.Status ()
 import Text.Read (readMaybe)
 import Data.Text qualified as T
 import Marvel.Matchers

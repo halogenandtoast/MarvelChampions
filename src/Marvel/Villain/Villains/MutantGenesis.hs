@@ -20,14 +20,13 @@ import Marvel.Matchers
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question
-import Marvel.Damage
-import Marvel.Identity.Types (Field (PlayerIdentityHand))
-import Marvel.Projection
-import Marvel.Hand
-import Marvel.Deck
-import Marvel.Identity.Types (Field (PlayerIdentityDeck))
-import Marvel.MainScheme.Types (Field (MainSchemeCounters))
-import Marvel.MainScheme.Cards qualified as Schemes
+import Marvel.Damage ()
+import Marvel.Identity.Types ()
+import Marvel.Projection ()
+import Marvel.Hand ()
+import Marvel.Deck ()
+import Marvel.MainScheme.Types ()
+import Marvel.MainScheme.Cards qualified as Schemes ()
 import Marvel.SideScheme.Cards qualified as Sides
 import Marvel.Trait qualified as Trait
 import Marvel.Window qualified as W

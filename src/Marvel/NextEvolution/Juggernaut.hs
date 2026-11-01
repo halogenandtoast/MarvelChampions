@@ -1,13 +1,13 @@
 module Marvel.NextEvolution.Juggernaut where
 import Marvel.Prelude
-import Marvel.Status
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types qualified as Ally
+import Marvel.Status ()
+import Data.HashMap.Strict qualified as HashMap ()
+import Marvel.Ally.Types qualified as Ally ()
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Card
-import Marvel.Entity
+import Marvel.Entity ()
 import Marvel.Game.Source
-import Marvel.Hp
+import Marvel.Hp ()
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers

@@ -15,7 +15,7 @@ import Marvel.Prelude
 
 import Marvel.Ability
 import Marvel.Attack
-import Marvel.Card
+import Marvel.Card ()
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Difficulty

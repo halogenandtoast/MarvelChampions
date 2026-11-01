@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability.Types hiding (Attack, Thwart)
 import Marvel.Ability.Types qualified as Ability
-import Marvel.Card.Def (CardDef (..), printedResources)
+import Marvel.Card.Def ( printedResources )
 import Marvel.ActiveCost.Types
 import Marvel.Cost (getAbilityCost, canAffordCost)
 import Marvel.Cost.Types (Cost (NoCost))
@@ -88,6 +88,21 @@ resolveChoice ident = \case
           [x] -> pure [f x]
           xs -> pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]]
       MainSchemeEntity sid -> pure [CreatedEffect def source (MainSchemeEntity sid)]
+      VillainsAndEngagedMinions you -> pure [CreatedEffect def source (VillainsAndEngagedMinions you)]
+      UpgradeEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . UpgradeEntity . UpgradeWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure [Ask ident $ ChooseOne [TargetLabel (toRef x) [Run [f x]] | x <- xs]]
+      EnemyEntity matcher -> do
+        targets <- selectList matcher
+        let f = CreatedEffect def source . EnemyEntity . EnemyWithId
+        case targets of
+          [] -> throwM NoChoices
+          [x] -> pure [f x]
+          xs -> pure [Ask ident $ ChooseOne [TargetLabel (enemyRef x) [Run [f x]] | x <- xs]]
       EventEntity eid -> pure [CreatedEffect def source (EventEntity eid)]
       AttachmentEntity matcher -> do
         targets <- selectList matcher
@@ -405,7 +420,7 @@ removeThreatFrom basic thwarting target source n = do
 -- | Resolve the removal after its interrupt window and additional cost. Reading
 -- modifiers here makes an interrupt apply to the first instance as well as later
 -- instances of the same event.
-resolveThreatRemoval :: (HasQueue m, HasGame m, MonadThrow m, MonadRandom m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
+resolveThreatRemoval :: (HasGame m) => Bool -> Bool -> Target -> Source -> Natural -> m [Message]
 resolveThreatRemoval basic thwarting target source n' = do
   modifiers <- getModifiers source
   let bonus = if ThreatRemovalBonusInTotal `elem` modifiers then 0 else sum [n | ThreatRemovedModifier n <- modifiers]

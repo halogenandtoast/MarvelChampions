@@ -11,9 +11,9 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id hiding (MainSchemeId)
 import Marvel.Id as X (MainSchemeId)
-import Marvel.Matchers.Types (SideSchemeMatcher (CrisisSideScheme))
+import Marvel.Matchers.Types ()
 import Marvel.Message.Lifted
-import Marvel.Query (selectAny)
+import Marvel.Query ()
 import Marvel.Modifier
 import Marvel.Ref
 import Marvel.Window qualified as W

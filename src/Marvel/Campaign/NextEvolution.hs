@@ -6,7 +6,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.List qualified as List
 import Data.Maybe (maybeToList)
 import Data.Text qualified as T
-import Marvel.Ally.Types qualified as Ally
+import Marvel.Ally.Types qualified as Ally ()
 import Marvel.Campaign
 import Marvel.Card
 import Marvel.Damage
@@ -16,7 +16,7 @@ import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.PlayerCard (lookupPlayerCard)
-import Marvel.Projection
+import Marvel.Projection ()
 import Marvel.Query
 import Marvel.Ref
 import Marvel.Trait (Trait (Morlock, Psionic))

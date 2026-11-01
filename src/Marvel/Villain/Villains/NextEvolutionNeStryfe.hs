@@ -9,8 +9,8 @@ import Marvel.Ability
 import Marvel.Question (runAbility)
 import Marvel.Cost
 import Marvel.Damage
-import Marvel.Deck
-import Marvel.Game.Source
+import Marvel.Deck ()
+import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.Id
 import Marvel.NextEvolution.Stryfe

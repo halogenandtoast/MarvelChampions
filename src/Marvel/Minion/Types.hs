@@ -2,7 +2,7 @@ module Marvel.Minion.Types where
 
 import Marvel.Prelude
 
-import Data.HashSet qualified as HashSet
+import Data.HashSet qualified as HashSet ()
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability (windowAbility)

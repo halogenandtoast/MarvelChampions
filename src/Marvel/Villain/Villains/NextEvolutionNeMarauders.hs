@@ -10,7 +10,7 @@ import Data.Text qualified as T
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Name (display)
 import Marvel.NextEvolution.Marauders

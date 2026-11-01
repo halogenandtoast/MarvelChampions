@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Def (getCardDef, sameCard, cdCanPayForOthersWithTrait)
 import Marvel.Matchers
-import Marvel.Ref
+import Marvel.Ref ()
 import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.Id (IdentityId)
 import Marvel.Message.Lifted

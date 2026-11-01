@@ -9,11 +9,11 @@ import Data.Text qualified as T
 import Marvel.Campaign
 import Marvel.Card
 import Marvel.Deck
-import Marvel.Discard
+import Marvel.Discard ()
 import Marvel.EncounterCard (allEncounterCards, genEncounterCard)
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Identity.Types (Field (PlayerIdentityDeck, PlayerIdentityDiscard))
+import Marvel.Identity.Types ( Field(PlayerIdentityDeck) )
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.PlayerCard (allPlayerCards, lookupPlayerCard)

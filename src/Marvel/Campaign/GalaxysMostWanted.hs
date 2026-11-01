@@ -26,7 +26,7 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Hand
 import Marvel.Environment.Environments.NebulasShip (getEvasionCounters, placeEvasionCounters)
-import Marvel.Status
+import Marvel.Status ()
 import Marvel.Trait (Trait (Technique))
 
 runGalaxyStep :: (ReverseQueue m) => Campaign -> CampaignStepKind -> m ()

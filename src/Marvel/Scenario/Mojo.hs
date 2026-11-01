@@ -9,7 +9,7 @@ import Marvel.EncounterSet qualified as Set
 import Marvel.Entity
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Game.Source
-import Marvel.Id
+import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Query

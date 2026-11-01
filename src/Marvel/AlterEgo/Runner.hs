@@ -19,7 +19,7 @@ import Marvel.Message.Lifted
 import Marvel.Question
 import Marvel.Trait
 import Marvel.Stats
-import Marvel.Window qualified as W
+import Marvel.Window qualified as W ()
 
 instance HasAbilities AlterEgo where
   getAbilities (AlterEgo a) = getAbilities a <> basicAbilities
