@@ -295,3 +295,54 @@ spec = describe "Psylocke" do
       choose "confuse Whiplash" (isTargetChoice mid)
       damageOf p `shouldReturn` 1
       minionDamageOf mid `shouldReturn` Just 0
+
+  it "Psionic Training lets Psylocke attack the villain past a guard minion" do
+    tg <- testGame ["psylocke"]
+    inGame tg do
+      let p = player1 tg
+      asPsylocke p
+      _ <- putIntoPlay p "41010"
+      bot <- addMinion p Minions.servantBot
+      choose "basic attack" (isHeroAttack p)
+      pass
+      chooseVillain
+      villainDamageNow `shouldReturn` 1
+      minionDamageOf bot `shouldReturn` Just 0
+
+  it "Psionic Training lets Psylocke thwart the main scheme past a patrol minion" do
+    tg <- testGame ["psylocke"]
+    inGame tg do
+      let p = player1 tg
+      asPsylocke p
+      _ <- putIntoPlay p "41010"
+      bot <- addMinion p Minions.servantBot
+      placeMainThreat 3
+      before <- mainSchemeThreatNow
+      choose "basic thwart" (isHeroThwart p)
+      pass
+      chooseMainScheme
+      pass
+      mainSchemeThreatNow `shouldReturn` (before - 3)
+      minionDamageOf bot `shouldReturn` Just 0
+
+  it "Weapons Training retaliates after an enemy attacks Psylocke" do
+    tg <- testGame ["psylocke"]
+    inGame tg do
+      let p = player1 tg
+      asPsylocke p
+      _ <- putIntoPlay p "41011"
+      rhinoAttacks p
+      pass
+      damageOf p `shouldReturn` 2
+      villainDamageNow `shouldReturn` 1
+
+  it "Weapons Training does not give Betsy Braddock retaliate" do
+    tg <- testGame ["psylocke"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      _ <- putIntoPlay p "41011"
+      rhinoAttacks p
+      pass
+      damageOf p `shouldReturn` 2
+      villainDamageNow `shouldReturn` 0
