@@ -81,13 +81,16 @@ const versionOptions = computed(() =>
 const modularReleases = computed(() => releasesOf(modularSets.value, modularRelease))
 const modularFilter = ref('')
 const modularSearch = ref('')
-// the sets chosen stay in view, whatever the filter, so they can be taken out again
+// Keep the common choices and current lineup visible without opening the library.
+const sortedModulars = computed(() => byRelease(modularSets.value, modularRelease, modularName))
+const pinnedModulars = computed(() => sortedModulars.value.filter(
+  (set) => modularRelease(set).code === 'core' || scenario.value?.modulars.includes(set) || modulars.value.includes(set),
+))
+const otherModulars = computed(() => sortedModulars.value.filter((set) => !pinnedModulars.value.includes(set)))
 const shownModulars = computed(() => {
   const search = modularSearch.value.trim().toLowerCase()
-  return byRelease(modularSets.value, modularRelease, modularName).filter(
-    (set) =>
-      modulars.value.includes(set) ||
-      ((!modularFilter.value || modularRelease(set).code === modularFilter.value) && (!search || modularName(set).toLowerCase().includes(search))),
+  return otherModulars.value.filter(
+    (set) => (!modularFilter.value || modularRelease(set).code === modularFilter.value) && (!search || modularName(set).toLowerCase().includes(search)),
   )
 })
 
@@ -291,16 +294,13 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
             </details>
           </div>
           <template v-if="modularGuidance?.usesModulars">
-            <div class="filters">
-              <input v-model="modularSearch" class="input" type="search" :placeholder="$t('newGame.searchSets')" :aria-label="$t('newGame.searchSets')" />
-              <select v-model="modularFilter" class="input" :aria-label="$t('newGame.release')">
-                <option value="">{{ $t('newGame.allReleases') }}</option>
-                <option v-for="r in modularReleases" :key="r.code" :value="r.code">{{ r.name }}</option>
-              </select>
+            <div class="modular-heading">
+              <span class="field-title">{{ $t('newGame.quickPickSets') }}</span>
+              <span class="hint" role="status">{{ $t('newGame.selectedSets', { count: modulars.length }) }}</span>
             </div>
             <div class="chips">
               <button
-                v-for="set in shownModulars"
+                v-for="set in pinnedModulars"
                 :key="set"
                 type="button"
                 class="set-chip"
@@ -308,10 +308,29 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
                 :aria-pressed="modulars.includes(set)"
                 @click="toggleModular(set)"
               >
+                <Check v-if="modulars.includes(set)" class="set-check" aria-hidden="true" />
                 {{ modularName(set) }}
                 <small v-if="scenario.modulars.includes(set)">{{ $t('newGame.recommended') }}</small>
               </button>
             </div>
+            <details class="modular-library">
+              <summary>{{ $t('newGame.browseSets') }} <span class="hint">{{ $t('newGame.moreSets', { count: otherModulars.length }) }}</span></summary>
+              <div class="filters">
+                <input v-model="modularSearch" class="input" type="search" :placeholder="$t('newGame.searchSets')" :aria-label="$t('newGame.searchSets')" />
+                <select v-model="modularFilter" class="input" :aria-label="$t('newGame.release')">
+                  <option value="">{{ $t('newGame.allReleases') }}</option>
+                  <option v-for="r in modularReleases" :key="r.code" :value="r.code">{{ r.name }}</option>
+                </select>
+              </div>
+              <div class="modular-results" role="group" :aria-label="$t('newGame.browseSets')" tabindex="0">
+                <button v-for="set in shownModulars" :key="set" type="button" class="modular-option" :aria-label="modularName(set)" :aria-pressed="false" @click="toggleModular(set)">
+                  <span>{{ modularName(set) }}</span>
+                  <small>{{ modularRelease(set).name }}</small>
+                  <span class="add-set" aria-hidden="true">+</span>
+                </button>
+                <p v-if="!shownModulars.length" class="hint modular-empty">{{ $t('newGame.noMatchingSets') }}</p>
+              </div>
+            </details>
             <p class="hint">{{ isHood ? $t('newGame.hoodModularsHint', { count: modulars.length }) : scenario.modulars.length ? $t('newGame.modularsHint') : $t('newGame.noRecommendedModulars') }}</p>
           </template>
         </div>
@@ -369,8 +388,18 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
 .art-strip .art { aspect-ratio: auto; height: 100%; }
+.art-strip .art[data-code='40136'],
+.art-strip .art[data-code='40137'],
+.art-strip .art[data-code='40138'] { background-position: 95% calc(19% + 16px); }
 .art-strip .art[data-code='16103'] { background-position: 95% 12%; }
 .art-strip .art:not(:only-child) { background-size: auto 210%; background-position: 72% 12%; }
+.art-strip .art[data-code='27096'],
+.art-strip .art[data-code='27098'] { background-position: 72% calc(12% - 16px); }
+.art-strip .art[data-code='27099'],
+.art-strip .art[data-code='27097'],
+.art-strip .art[data-code='27095'] { background-position: calc(72% + 12px) calc(12% - 16px); }
+.art-strip .art[data-code='27094'] { background-position: calc(72% + 80px) calc(12% - 16px); }
+.art-strip .art[data-code='27096'] { background-position: calc(72% + 64px) calc(12% - 16px); }
 .art-strip .art[data-code='07002'] { background-position: calc(72% + 16px) calc(12% - 8px); }
 .art-strip .art[data-code='07017'] { background-position: calc(72% + 32px) calc(12% - 8px); }
 .art-strip .art[data-code='07032'] { background-position: calc(72% + 48px) calc(12% - 8px); }
@@ -414,6 +443,21 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .villain-sets { margin: 4px 14px 0; font-size: 0.75rem; color: var(--text-faint); }
 .tick { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: var(--crimson); color: #fff; }
 
+.modular-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.modular-heading .field-title { margin: 0; }
+.set-check { width: 14px; height: 14px; flex-shrink: 0; align-self: center; }
+.modular-library { margin-top: 4px; border-block: 1px solid var(--line); }
+.modular-library summary { padding: 12px 0; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+.modular-library summary .hint { margin-left: 8px; font-weight: 400; }
+.modular-library .filters { padding-bottom: 10px; }
+.modular-results { max-height: 18rem; overflow-y: auto; overscroll-behavior: contain; margin-bottom: 10px; }
+.modular-option { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; width: 100%; padding: 10px; text-align: left; font: inherit; font-size: 0.85rem; background: transparent; border: 0; border-bottom: 1px solid var(--line); color: var(--text); cursor: pointer; }
+.modular-option small { grid-column: 1; color: var(--text-faint); font-size: 0.72rem; }
+.add-set { grid-column: 2; grid-row: 1 / 3; align-self: center; font-size: 1.2rem; color: var(--text-muted); }
+.modular-option:hover { background: var(--ink-3); }
+.modular-empty { padding: 16px 10px; }
+.set-chip:hover { border-color: var(--crimson); }
+.set-chip:focus-visible, .modular-option:focus-visible, .modular-library summary:focus-visible, .modular-results:focus-visible { outline: 2px solid var(--steel-bright); outline-offset: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .set-chip {
   display: inline-flex;

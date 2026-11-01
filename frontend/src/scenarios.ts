@@ -10,7 +10,7 @@ import type { ScenarioOption } from './server'
 export interface Release { code: string; name: string; order: number }
 const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
-const SET_CODES: Record<string, string> = { ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers' }
+const SET_CODES: Record<string, string> = { ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
@@ -29,11 +29,13 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {
+  '40077': ['40080'],
+  '40103': ['40102'],
   '07001': ['07002', '07017', '07032', '07046'],
   '21098': ['21092'],
   '21160': ['21163'],
   '27100': ['27094', '27095', '27096', '27097', '27098', '27099'],
-  '32121': ['32121a', '32122a', '32123a', '32124a'],
+  '32121': ['32130'],
 }
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')

@@ -30,6 +30,7 @@ test('the Hood has no recommended selection and requires seven deliberate choice
   await expect(page.getByText('0/7 modular sets selected.', { exact: false })).toBeVisible()
   const create = page.getByRole('button', { name: 'Open the lobby', exact: true })
   await expect(create).toBeDisabled()
+  await page.locator('.modular-library summary').click()
   for (const name of ['Bomb Scare', 'Masters of Evil', 'Under Attack', 'Goblin Gimmicks', 'Temporal', 'Anachronauts']) {
     await page.getByRole('button', { name, exact: true }).click()
   }
@@ -49,6 +50,16 @@ test('printed recommendations remain selected for Rhino', async ({ page }) => {
   await expect(page.locator('.set-chip.on')).toHaveCount(1)
   await expect(page.locator('.set-chip.on')).toContainText('Bomb Scare')
   await expect(page.locator('.set-chip.on small')).toHaveText('recommended')
+  await expect(page.getByRole('button', { name: 'Masters of Evil', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Temporal', exact: true })).toBeHidden()
+  await page.locator('.modular-library summary').click()
+  await page.getByRole('searchbox', { name: 'Search sets' }).fill('Temporal')
+  await expect(page.locator('.modular-option')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Temporal', exact: true }).click()
+  await page.locator('.modular-library summary').click()
+  await expect(page.getByRole('button', { name: 'Temporal', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Temporal', exact: true }).click()
+  await expect(page.locator('.set-chip.on')).toHaveCount(1)
 })
 
 for (const [tile, text] of [
