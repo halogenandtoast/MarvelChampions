@@ -194,3 +194,6 @@ import Marvel.Attachment.Attachments.PsionicShield as X
 import Marvel.Attachment.Attachments.CyberneticEnhancements as X
 
 import Marvel.Attachment.Attachments.Cable as X
+
+-- Psylocke
+import Marvel.Attachment.Attachments.PsionicIllusion as X

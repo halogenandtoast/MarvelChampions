@@ -1,5 +1,19 @@
 module Marvel.Event.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Boost qualified as NEB
 import Marvel.EncounterSet qualified as NES
 import Marvel.Aspect qualified as NEA
@@ -43,7 +57,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ thePosse
+  [ flurryOfBlades, mentalDetection, psionicRedirect, telepathicSuggestion, upsideTheHead, directedForce, soaringHearts, psiBowAttack, psiFlailStrike
+  , thePosse
   , teamInvestigation
   , rightPlaceRightTime
   , luckBeaLady
@@ -778,7 +793,7 @@ melee =
     }
 
 concussiveBlow :: CardDef
-concussiveBlow =
+concussiveBlow = reprintedAs ["41014"] $
   (event "05031" "Concussive Blow" 3 HeroAction [Attack] [Physical] Justice)
     { cdAbilitySubTypes = [Ability.Attack]
     }
@@ -2788,4 +2803,141 @@ thePosse = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- Psylocke
+
+flurryOfBlades :: CardDef
+flurryOfBlades = CardDef
+  { cdCardCode = "41004", cdName = "Flurry of Blades", cdCost = Just 3
+  , cdTraits = fromList [PsyTrait.Attack, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroAction, cdAbilitySubTypes = [PsyAbility.Attack]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+mentalDetection :: CardDef
+mentalDetection = CardDef
+  { cdCardCode = "41005", cdName = "Mental Detection", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Psionic, PsyTrait.Thwart], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroAction, cdAbilitySubTypes = [PsyAbility.Thwart]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+psionicRedirect :: CardDef
+psionicRedirect = CardDef
+  { cdCardCode = "41006", cdName = "Psionic Redirect", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Defense, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroInterrupt, cdAbilitySubTypes = [PsyAbility.Defense]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (PsyWindow.IdentityWouldTakeAttackDamageFrom PsyMatch.AnyEnemy PsyMatch.You), cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+telepathicSuggestion :: CardDef
+telepathicSuggestion = CardDef
+  { cdCardCode = "41007", cdName = "Telepathic Suggestion", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroInterrupt, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (PsyWindow.EncounterCardRevealedFromDeckBy PsyWindow.When PsyMatch.You PsyMatch.AnyEncounterCard), cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+upsideTheHead :: CardDef
+upsideTheHead = CardDef
+  { cdCardCode = "41015", cdName = "Upside the Head", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroResponse, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Justice, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (PsyWindow.BasicAttackDamagedEnemy PsyMatch.You), cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+directedForce :: CardDef
+directedForce = CardDef
+  { cdCardCode = "41019", cdName = "Directed Force", cdCost = Just 0
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroInterrupt, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (PsyWindow.MakesKeywordAttack PsyWindow.When PsyMatch.You [PsyKeyword.Overkill, PsyKeyword.Piercing, PsyKeyword.Ranged]), cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Just (PsyCard.MaxPerWindow 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+soaringHearts :: CardDef
+soaringHearts = CardDef
+  { cdCardCode = "41020", cdName = "Soaring Hearts", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Aerial, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroAction, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Neutral, cdCriteria = teamUp "Angel" "Psylocke"
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Just ("Angel", "Psylocke")
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+psiBowAttack :: CardDef
+psiBowAttack = CardDef
+  { cdCardCode = "41030", cdName = "Psi-Bow Attack", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Attack, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroAction, cdAbilitySubTypes = [PsyAbility.Attack]
+  , cdUnique = False, cdAspect = Just PsyAspect.Aggression, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.HeroIdentity <> PsyMatch.IdentityWithTrait PsyTrait.Psionic)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+psiFlailStrike :: CardDef
+psiFlailStrike = CardDef
+  { cdCardCode = "41032", cdName = "Psi-Flail Strike", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Attack, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroResponse, cdAbilitySubTypes = [PsyAbility.Attack]
+  , cdUnique = False, cdAspect = Just PsyAspect.Protection, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.HeroIdentity <> PsyMatch.IdentityWithTrait PsyTrait.Psionic)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (PsyWindow.HeroDefended PsyWindow.After PsyMatch.You PsyMatch.AnyEnemy), cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

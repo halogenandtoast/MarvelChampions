@@ -467,5 +467,12 @@
   "neArmamentPhysical": "Spend 2 physical resources to discard Heavy Armament",
   "neArmamentMental": "Spend 2 mental resources to discard Heavy Armament",
   "neArmamentEnergy": "Spend 2 energy resources to discard Heavy Armament",
-  "neArmamentWild": "Spend 2 wild resources to discard Heavy Armament"
+  "neArmamentWild": "Spend 2 wild resources to discard Heavy Armament",
+  "flipPsiEnergy": "Flip this Psi-Energy upgrade",
+  "mental": "Mental",
+  "physical": "Physical",
+  "energy": "Energy",
+  "wild": "Wild",
+  "spendMentalResource": "Spend a mental resource",
+  "confuseYourIdentity": "Confuse your identity"
 }

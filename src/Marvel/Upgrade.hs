@@ -25,7 +25,8 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard sharpshooter
+  [ SomeUpgradeCard psiKnife, SomeUpgradeCard psiKatana, SomeUpgradeCard martialArtsTraining, SomeUpgradeCard psionicTraining, SomeUpgradeCard weaponsTraining, SomeUpgradeCard floatLikeAButterfly, SomeUpgradeCard telepathy, SomeUpgradeCard telekinesis
+  , SomeUpgradeCard sharpshooter
   , SomeUpgradeCard probabilityField
   , SomeUpgradeCard luckyBreak
   , SomeUpgradeCard luckyandGood

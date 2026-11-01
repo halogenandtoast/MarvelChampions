@@ -113,3 +113,6 @@ import Marvel.Obligation.Obligations.GuildBusiness as X
 import Marvel.Obligation.Obligations.DeadlyTouch as X
 
 import Marvel.Obligation.Obligations.Cable as X
+
+-- Psylocke
+import Marvel.Obligation.Obligations.BodySwapped as X

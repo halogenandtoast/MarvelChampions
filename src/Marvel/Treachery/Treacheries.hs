@@ -260,3 +260,6 @@ import Marvel.Treachery.Treacheries.AcolyteFrenzy as X
 import Marvel.Treachery.Treacheries.Misled as X
 
 import Marvel.Treachery.Treacheries.Cable as X
+
+-- Psylocke
+import Marvel.Treachery.Treacheries.TelekineticDragon as X

@@ -1,5 +1,19 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -75,7 +89,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ ne40160, ne40161
+    [ bodySwapped
+  , ne40160, ne40161
   , memoriesofArmageddon
   , cable40031
   , mojo39030, mojo39036, mojo39061, mojo39062, mojo39063, mojo39064, mojo39065
@@ -692,4 +707,21 @@ ne40161 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Psylocke
+
+bodySwapped :: CardDef
+bodySwapped = CardDef
+  { cdCardCode = "41025", cdName = "Body Swapped", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = PsyCard.ObligationType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [], cdBoostIcons = [PsyBoost.Boost, PsyBoost.Boost]
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

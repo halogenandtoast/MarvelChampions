@@ -176,3 +176,8 @@ import Marvel.Support.Supports.MoiraMacTaggert as X
 import Marvel.Support.Supports.MedLab as X
 
 import Marvel.Support.Supports.Cable as X
+
+-- Psylocke
+import Marvel.Support.Supports.TrainingRegimen as X
+import Marvel.Support.Supports.IPAC as X
+import Marvel.Support.Supports.XBunker as X

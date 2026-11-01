@@ -310,7 +310,7 @@ molecularAcceleration = (identityResource "37010" "Molecular Acceleration" [] [E
 -- NeXt Evolution: Cable
 
 cable40028 :: CardDef
-cable40028 = (basicResource "40028" "The Power of the Mind" [] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3, cdResources = [(NE.PrintedResource, NE.Mental), (NE.ResourceForCardsMatching (NE.CardWithTrait NE.Psionic), NE.Mental)] }
+cable40028 = reprintedAs ["41021"] $ (basicResource "40028" "The Power of the Mind" [] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3, cdResources = [(NE.PrintedResource, NE.Mental), (NE.ResourceForCardsMatching (NE.CardWithTrait NE.Psionic), NE.Mental)] }
 
 -- NeXt Evolution: Domino
 jackpot :: CardDef

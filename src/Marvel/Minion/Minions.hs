@@ -251,3 +251,6 @@ import Marvel.Minion.Minions.WadeCole as X
 import Marvel.Minion.Minions.MurrayReese as X
 
 import Marvel.Minion.Minions.Cable as X
+
+-- Psylocke
+import Marvel.Minion.Minions.Chimera as X

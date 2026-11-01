@@ -1,5 +1,19 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -85,7 +99,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ hood24019, hood24020, hood24021, hood24022, hood24037, hood24038, hood24039, hood24040
+      [ psionicIllusion
+  , hood24019, hood24020, hood24021, hood24022, hood24037, hood24038, hood24039, hood24040
       , ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173
   , superpowerFeedback
   , cable40034
@@ -2305,4 +2320,21 @@ hood24040 = (hoodCardDef "24040" "Tech Gauntlets" HoodSet.RansackedArmory Attach
   , cdUnique = False
   , cdAcceleration = 0
   , cdHazards = 0
+  }
+
+-- Psylocke
+
+psionicIllusion :: CardDef
+psionicIllusion = CardDef
+  { cdCardCode = "41028", cdName = "Psionic Illusion", cdCost = Nothing
+  , cdTraits = fromList [PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.AttachmentType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [], cdBoostIcons = [PsyBoost.Boost, PsyBoost.Boost]
+  , cdEncounterSet = Just PsySet.PsylockeNemesis, cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

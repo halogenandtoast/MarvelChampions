@@ -1,5 +1,19 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Boost qualified as NEB
 import Marvel.EncounterSet qualified as NES
 import Marvel.Aspect qualified as NEA
@@ -52,7 +66,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ sharpshooter
+  [ psiKnife, psiKatana, martialArtsTraining, psionicTraining, weaponsTraining, floatLikeAButterfly, telepathy, telekinesis
+  , sharpshooter
   , probabilityField
   , luckyBreak
   , luckyandGood
@@ -1928,4 +1943,126 @@ sharpshooter = CardDef
   , cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- Psylocke
+
+psiKnife :: CardDef
+psiKnife = CardDef
+  { cdCardCode = "41002a", cdName = "Psi-Knife", cdCost = Nothing
+  , cdTraits = fromList [PsyTrait.PsiEnergy, PsyTrait.Weapon], cdKeywords = fromList [PsyKeyword.Permanent]
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+psiKatana :: CardDef
+psiKatana = CardDef
+  { cdCardCode = "41002b", cdName = "Psi-Katana", cdCost = Nothing
+  , cdTraits = fromList [PsyTrait.PsiEnergy, PsyTrait.Weapon], cdKeywords = fromList [PsyKeyword.Permanent, PsyKeyword.Restricted]
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+martialArtsTraining :: CardDef
+martialArtsTraining = CardDef
+  { cdCardCode = "41009", cdName = "Martial Arts Training", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+psionicTraining :: CardDef
+psionicTraining = CardDef
+  { cdCardCode = "41010", cdName = "Psionic Training", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+weaponsTraining :: CardDef
+weaponsTraining = CardDef
+  { cdCardCode = "41011", cdName = "Weapons Training", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+floatLikeAButterfly :: CardDef
+floatLikeAButterfly = CardDef
+  { cdCardCode = "41017", cdName = "Float Like a Butterfly", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Skill], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Justice, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Just (PsyCard.MaxPerPlayerUnderAnyControl 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+telepathy :: CardDef
+telepathy = CardDef
+  { cdCardCode = "41024", cdName = "Telepathy", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Psionic, PsyTrait.Superpower], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.IdentityWithTrait PsyTrait.Psionic)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Just (PsyCard.MaxPerPlayer 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+telekinesis :: CardDef
+telekinesis = CardDef
+  { cdCardCode = "41033", cdName = "Telekinesis", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Psionic, PsyTrait.Superpower], cdKeywords = fromList []
+  , cdCardType = PsyCard.UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.HeroIdentity <> PsyMatch.IdentityWithTrait PsyTrait.Psionic)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Just (PsyCard.MaxPerPlayer 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

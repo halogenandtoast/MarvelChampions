@@ -294,3 +294,10 @@ import Marvel.Ally.Allies.Karma as X
 import Marvel.Ally.Allies.Armor as X
 
 import Marvel.Ally.Allies.Cable as X
+
+-- Psylocke
+import Marvel.Ally.Allies.AngelPsylocke as X
+import Marvel.Ally.Allies.CaptainBritain as X
+import Marvel.Ally.Allies.Cypher as X
+import Marvel.Ally.Allies.PeteWisdom as X
+import Marvel.Ally.Allies.DominoPsylocke as X

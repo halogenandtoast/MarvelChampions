@@ -7,6 +7,7 @@ import Marvel.Card.Code
 data EncounterSet
   = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
   | NextEvolutionCampaign
+  | PsylockeNemesis
   | CableNemesis
   | DominoNemesis
   | DominoObligation
@@ -315,6 +316,7 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "35001" -> WolverineNemesis
   "40001" -> CableNemesis
   "40037" -> DominoNemesis
+  "41001" -> PsylockeNemesis
   cCode ->
     error $
       "No nemesis set for "

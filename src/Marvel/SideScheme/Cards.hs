@@ -1,5 +1,19 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -83,7 +97,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ hood24014, hood24023, hood24033, hood24042, hood24055, hood24056, hood24057, hood24058, hood24064
+  [ layTheTrap, interdimensionalPlunder
+  , hood24014, hood24023, hood24033, hood24042, hood24055, hood24056, hood24057, hood24058, hood24064
       , ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202
   , notMyLuckyDay
   , superpowerTraining
@@ -2673,3 +2688,35 @@ hood24064 = (hoodCardDef "24064" "Top Talent" HoodSet.WreckingCrewModular SideSc
 hasWhenRevealed :: HasCardCode a => a -> Bool
 hasWhenRevealed card = toCardCode card `elem`
   ["01107", "01109", "01125", "01126", "01128", "01148", "01149", "01150", "01151", "01161", "01166", "01171", "01176", "01180", "01183", "02010", "02026", "02037", "02046", "03027", "05026", "06027", "08027", "09029", "04028", "04055", "04071", "04091", "04107", "04122", "04140", "04144", "11022", "11024", "16099", "16113", "21084", "21124", "21155", "21181", "24023", "24033", "24042", "24055", "24056", "24057", "24058", "26030", "27057", "27069", "27079", "27125", "27156", "27173", "29036", "32027", "32137", "32157", "32158", "32169", "32173a", "35035", "39008", "40067", "40084", "40085", "40086", "40087", "40101", "40117", "40131", "40168b", "40175", "40176", "40189", "41027", "44039", "45055", "45117", "47025", "49041", "50031", "50095", "50101", "50121", "50127", "50135", "50136", "50150", "50180", "51033", "52030", "52036", "53041", "55006", "55021", "55022", "55045", "56167", "56183", "57068", "59038", "60062", "61032"]
+
+-- Psylocke
+
+layTheTrap :: CardDef
+layTheTrap = CardDef
+  { cdCardCode = "41016", cdName = "Lay the Trap", cdCost = Just 1
+  , cdTraits = fromList [], cdKeywords = fromList [PsyKeyword.Victory 0]
+  , cdCardType = PsyCard.PlayerSideSchemeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Justice, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+interdimensionalPlunder :: CardDef
+interdimensionalPlunder = CardDef
+  { cdCardCode = "41027", cdName = "Interdimensional Plunder", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = PsyCard.SideSchemeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [], cdBoostIcons = [PsyBoost.Boost, PsyBoost.Boost, PsyBoost.Boost]
+  , cdEncounterSet = Just PsySet.PsylockeNemesis, cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }

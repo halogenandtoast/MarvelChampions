@@ -1,5 +1,19 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -73,7 +87,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ hood24017, hood24028, hood24029, hood24030, hood24031, hood24032, hood24036, hood24048, hood24050, hood24051, hood24052, hood24053, hood24054, hood24059, hood24069, hood24070
+  [ telekineticDragon
+  , hood24017, hood24028, hood24029, hood24030, hood24031, hood24032, hood24036, hood24048, hood24050, hood24051, hood24052, hood24053, hood24054, hood24059, hood24069, hood24070
       , ne40154
   , ne40080, ne40088, ne40089, ne40102, ne40110, ne40111, ne40125, ne40126, ne40127, ne40128, ne40129, ne40135, ne40147, ne40148, ne40149, ne40150, ne40158, ne40162, ne40177, ne40178, ne40179, ne40203
   , cable40035, cable40036
@@ -2577,4 +2592,21 @@ hood24070 = (hoodCardDef "24070" "Magic Muscle" HoodSet.WreckingCrewModular Trea
   , cdUnique = False
   , cdAcceleration = 0
   , cdHazards = 0
+  }
+
+-- Psylocke
+
+telekineticDragon :: CardDef
+telekineticDragon = CardDef
+  { cdCardCode = "41029", cdName = "Telekinetic Dragon", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = PsyCard.TreacheryType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [], cdBoostIcons = [PsyBoost.Star]
+  , cdEncounterSet = Just PsySet.PsylockeNemesis, cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

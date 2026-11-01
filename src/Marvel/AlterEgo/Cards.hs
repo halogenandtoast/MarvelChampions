@@ -1,5 +1,19 @@
 module Marvel.AlterEgo.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Trait qualified as NE
 import Marvel.Resource qualified as NE
 import Marvel.Keyword qualified as NE
@@ -33,7 +47,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ cable40001b
+    [ betsyBraddock
+  , cable40001b
   , neenaThurman
   , annaMarie
   , remyLeBeau
@@ -374,3 +389,20 @@ neenaThurman = CardDef
 
 cable40001b :: CardDef
 cable40001b = (alterEgo "40001b" "Nathan Summers" [NE.Mutant, NE.Soldier]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+-- Psylocke
+
+betsyBraddock :: CardDef
+betsyBraddock = CardDef
+  { cdCardCode = "41001b", cdName = "Betsy Braddock", cdCost = Nothing
+  , cdTraits = fromList [PsyTrait.Mutant, PsyTrait.Psionic], cdKeywords = fromList []
+  , cdCardType = PsyCard.AlterEgoType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }

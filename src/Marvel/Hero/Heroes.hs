@@ -104,3 +104,6 @@ import Marvel.Hero.Heroes.GambitHero as X
 import Marvel.Hero.Heroes.RogueHero as X
 
 import Marvel.Hero.Heroes.Cable as X
+
+-- Psylocke
+import Marvel.Hero.Heroes.PsylockeHero as X

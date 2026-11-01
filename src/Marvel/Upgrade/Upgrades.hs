@@ -369,3 +369,13 @@ import Marvel.Upgrade.Upgrades.JudokaSkill as X
 import Marvel.Upgrade.Upgrades.XGene as X
 
 import Marvel.Upgrade.Upgrades.Cable as X
+
+-- Psylocke
+import Marvel.Upgrade.Upgrades.PsiKnife as X
+import Marvel.Upgrade.Upgrades.PsiKatana as X
+import Marvel.Upgrade.Upgrades.MartialArtsTraining as X
+import Marvel.Upgrade.Upgrades.PsionicTraining as X
+import Marvel.Upgrade.Upgrades.WeaponsTraining as X
+import Marvel.Upgrade.Upgrades.FloatLikeAButterfly as X
+import Marvel.Upgrade.Upgrades.Telepathy as X
+import Marvel.Upgrade.Upgrades.Telekinesis as X

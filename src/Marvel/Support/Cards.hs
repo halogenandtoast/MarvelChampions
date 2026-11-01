@@ -1,5 +1,19 @@
 module Marvel.Support.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -62,7 +76,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ ne40197
+  [ trainingRegimen, ipac, xBunker
+  , ne40197
   , thePaintedLady
   , pipthePug
   , cable40007, cable40008, cable40021, cable40022
@@ -783,4 +798,51 @@ ne40197 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Psylocke
+
+trainingRegimen :: CardDef
+trainingRegimen = CardDef
+  { cdCardCode = "41008", cdName = "Training Regimen", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Training], cdKeywords = fromList []
+  , cdCardType = PsyCard.SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+ipac :: CardDef
+ipac = CardDef
+  { cdCardCode = "41022", cdName = "IPAC", cdCost = Just 1
+  , cdTraits = fromList [PsyTrait.Vehicle, PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.IdentityWithTrait PsyTrait.XForce)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+xBunker :: CardDef
+xBunker = CardDef
+  { cdCardCode = "41023", cdName = "X-Bunker", cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.Location, PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

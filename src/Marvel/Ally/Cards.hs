@@ -1,5 +1,19 @@
 module Marvel.Ally.Cards where
 
+import Marvel.Ability.Types qualified as PsyAbility
+import Marvel.Aspect qualified as PsyAspect
+import Marvel.Boost qualified as PsyBoost
+import Marvel.Card.Def qualified as PsyCard
+import Marvel.Cost.Types qualified as PsyCost
+import Marvel.Criteria qualified as PsyCriteria
+import Marvel.EncounterSet qualified as PsySet
+import Marvel.Keyword qualified as PsyKeyword
+import Marvel.Matchers qualified as PsyMatch
+import Marvel.Name qualified as PsyName
+import Marvel.Resource.Types qualified as PsyResource
+import Marvel.Trait qualified as PsyTrait
+import Marvel.Window.Types qualified as PsyWindow
+
 import Marvel.Card.Def (ResourceRestriction (PrintedResource))
 
 import Marvel.Criteria (Criteria (NoCriteria))
@@ -73,7 +87,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ ne40079, ne40130
+  [ angelPsylocke, captainBritain, cypher, peteWisdom, dominoPsylocke
+  , ne40079, ne40130
   , whiteFox
   , atlasBear
   , wolfsbane
@@ -1577,4 +1592,81 @@ ne40130 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Psylocke
+
+angelPsylocke :: CardDef
+angelPsylocke = CardDef
+  { cdCardCode = "41003", cdName = ("Angel" PsyName.<:> "Warren Worthington III"), cdCost = Just 3
+  , cdTraits = fromList [PsyTrait.Aerial, PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+captainBritain :: CardDef
+captainBritain = CardDef
+  { cdCardCode = "41012", cdName = ("Captain Britain" PsyName.<:> "Brian Braddock"), cdCost = Just 4
+  , cdTraits = fromList [PsyTrait.Aerial, PsyTrait.Excalibur], cdKeywords = fromList []
+  , cdCardType = PsyCard.AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Justice, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+cypher :: CardDef
+cypher = CardDef
+  { cdCardCode = "41013", cdName = ("Cypher" PsyName.<:> "Doug Ramsey"), cdCost = Just 2
+  , cdTraits = fromList [PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Justice, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+peteWisdom :: CardDef
+peteWisdom = CardDef
+  { cdCardCode = "41018", cdName = "Pete Wisdom", cdCost = Just 4
+  , cdTraits = fromList [PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Neutral, cdCriteria = PsyCriteria.SelfMatches (PsyMatch.IdentityWithTrait PsyTrait.XForce)
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+dominoPsylocke :: CardDef
+dominoPsylocke = CardDef
+  { cdCardCode = "41031", cdName = ("Domino" PsyName.<:> "Neena Thurman"), cdCost = Just 3
+  , cdTraits = fromList [PsyTrait.Posse, PsyTrait.XForce], cdKeywords = fromList []
+  , cdCardType = PsyCard.AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just PsyAspect.Leadership, cdCriteria = PsyCriteria.NoCriteria
+  , cdResources = [(PsyCard.PrintedResource, PsyResource.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
   }

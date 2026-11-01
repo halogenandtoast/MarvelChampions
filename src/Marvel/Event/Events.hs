@@ -498,3 +498,14 @@ import Marvel.Event.Events.SuperpowerAdaptation as X
 import Marvel.Event.Events.NotToday as X
 
 import Marvel.Event.Events.Cable as X
+
+-- Psylocke
+import Marvel.Event.Events.FlurryOfBlades as X
+import Marvel.Event.Events.MentalDetection as X
+import Marvel.Event.Events.PsionicRedirect as X
+import Marvel.Event.Events.TelepathicSuggestion as X
+import Marvel.Event.Events.UpsideTheHead as X
+import Marvel.Event.Events.DirectedForce as X
+import Marvel.Event.Events.SoaringHearts as X
+import Marvel.Event.Events.PsiBowAttack as X
+import Marvel.Event.Events.PsiFlailStrike as X

@@ -100,3 +100,6 @@ import Marvel.AlterEgo.AlterEgos.RemyLeBeau as X
 import Marvel.AlterEgo.AlterEgos.AnnaMarie as X
 
 import Marvel.AlterEgo.AlterEgos.Cable as X
+
+-- Psylocke
+import Marvel.AlterEgo.AlterEgos.BetsyBraddock as X

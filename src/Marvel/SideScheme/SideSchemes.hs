@@ -248,3 +248,7 @@ import Marvel.SideScheme.SideSchemes.MystiquesManipulations as X
 import Marvel.SideScheme.SideSchemes.TheReavers as X
 
 import Marvel.SideScheme.SideSchemes.Cable as X
+
+-- Psylocke
+import Marvel.SideScheme.SideSchemes.LayTheTrap as X
+import Marvel.SideScheme.SideSchemes.InterdimensionalPlunder as X
