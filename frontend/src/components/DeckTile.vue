@@ -16,7 +16,7 @@ const { face, selected = false, compact = false } = defineProps<{
 const cards = useCards()
 const { t } = useI18n()
 const tr = useServerText()
-const heroName = computed(() => cards.name(heroFace(face.hero), face.hero))
+const heroName = computed(() => heroFace(face.hero) === '31001a' ? 'SP//dr' : cards.name(heroFace(face.hero), face.hero))
 </script>
 
 <template>
