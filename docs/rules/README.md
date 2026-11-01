@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Psylocke Hero Pack rules insert (MC41) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/b3/41/b341e3d0-01ef-471d-b0d3-657ae05757c6/mc41_psylocke_rules_insert-web.pdf |
 | MojoMania rules insert | 20 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc39_mojomania_rules_insert-compressed.pdf |
 | [scenario-mojo-mania.md](scenario-mojo-mania.md) | Standalone MaGog, Spiral and Mojo, genre sets, show deck, ratings and character threat |
 | Rogue Hero Pack rules insert (MC38) | 2 pages (p.2 blank) | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc38_rogue_rules_insert.pdf |
@@ -51,6 +52,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [hero-psylocke.md](hero-psylocke.md) | Psylocke: double-sided weapons, distinct attack targets, printed stats, starter deck and official rulings |
 | [hero-gambit.md](hero-gambit.md) | Gambit: charge counters, alter-ego thwarts, Psionic Shield errata and timing, starter deck |
 | [hero-rogue.md](hero-rogue.md) | Rogue: Touched, copied traits, Karma, Med Lab, Reavers, current errata and rulings |
 | [hero-storm.md](hero-storm.md) | Storm: Weather deck, Special abilities, Flash Freeze ruling, Possessed, starter deck and errata |
