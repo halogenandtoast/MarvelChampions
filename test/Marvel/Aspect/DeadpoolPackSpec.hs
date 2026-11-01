@@ -218,7 +218,9 @@ spec = describe "DeadpoolPack" do
         attrs <- allyIn "44015"
         Ally.allyExhausted attrs `shouldBe` False
         Ally.getModifiedAttack attrs `shouldReturn` 3
-        resolve [EndPhase PlayerPhase]
+        -- Inspect expiry at the next phase boundary question. Resolving every
+        -- subsequent choice can send Kidpool into a lethal villain defense.
+        runNow [EndPhase PlayerPhase]
         (Ally.getModifiedAttack =<< allyIn "44015") `shouldReturn` 2
 
     it "can boost a ready ally and can target another player's ally" do
