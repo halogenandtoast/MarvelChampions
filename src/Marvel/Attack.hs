@@ -14,6 +14,8 @@ data Attack = Attack
   { attackCharacter :: CharacterId
   , attackBlanksDefender :: Bool
   , attackCompletionId :: Maybe CardId
+  , attackIsSimultaneousAdditional :: Bool
+  , attackSimultaneousGroupId :: Maybe CardId
   , attackOverkill :: Bool
   , attackDamage :: Natural
   , attackBaseReduction :: Natural
@@ -44,7 +46,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackBlanksDefender", toJSON False), ("attackCompletionId", toJSON (Nothing :: Maybe CardId)), ("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackSimultaneousGroupId", toJSON (Nothing :: Maybe CardId)), ("attackIsSimultaneousAdditional", toJSON False), ("attackBlanksDefender", toJSON False), ("attackCompletionId", toJSON (Nothing :: Maybe CardId)), ("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -78,6 +80,8 @@ attack enemyId characterId dmg =
     { attackCharacter = characterId
     , attackBlanksDefender = False
     , attackCompletionId = Nothing
+    , attackIsSimultaneousAdditional = False
+    , attackSimultaneousGroupId = Nothing
     , attackOverkill = False
     , attackDamage = dmg
     , attackBaseReduction = 0

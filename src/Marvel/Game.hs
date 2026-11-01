@@ -197,6 +197,17 @@ data TrackedEnemyAttack = TrackedEnemyAttack
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data SimultaneousMinionAttackGroup = SimultaneousMinionAttackGroup
+  { simultaneousMinion :: MinionId
+  , simultaneousGroupId :: CardId
+  , simultaneousAttacks :: [(IdentityId, Attack, [EncounterCard], Natural, (Natural, Bool))]
+  , simultaneousCurrent :: Int
+  , simultaneousDefenders :: [CharacterId]
+  , simultaneousPrevious :: Maybe SimultaneousMinionAttackGroup
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Game = Game
   { gamePhase :: Phase
   , gameState :: GameState
@@ -218,6 +229,7 @@ data Game = Game
   -- the active player
   , gameBlankedAttackTargets :: [(Source, CharacterId)]
   , gameTrackedEnemyAttacks :: [TrackedEnemyAttack]
+  , gameSimultaneousMinionAttack :: Maybe SimultaneousMinionAttackGroup
   , gameActiveCost :: [ActiveCost]
   , gameWindowDepth :: Int
   , gameDepth :: Int
@@ -390,6 +402,7 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "characterThreat" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "blankedAttackTargets" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "trackedEnemyAttacks" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "simultaneousMinionAttack" Null
             . KeyMap.insertWith (\_ existing -> existing) "bombCounters" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "boostAllyDefeatEffects" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "pendingAttackDefeats" (toJSON ([] :: [Value]))
@@ -1850,6 +1863,63 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     let defeated = maybe True (playerIdentityDefeated . toAttrs) $ lookup ident (gamePlayers g)
     when defeated $ checkWindows [W.Window W.After $ W.EnemyAttackDefeatedCharacter enemy (IdentityCharacter ident)]
     pure g
+  CardSpecific GameRef "beginSimultaneousMinionAttacks" (fromJSON -> Success (mid, you, others)) -> do
+    case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        let attrs = toAttrs minion
+        nonce <- getRandom
+        keywords <- Minion.getModifiedKeywords attrs
+        base <- Minion.getModifiedAttackSigned attrs
+        extras <- for others \other -> do
+          attack' <- prepareEnemyAttack (EnemyMinionId mid) $ withAttackBase base $ attackWith keywords (EnemyMinionId mid) (IdentityCharacter other) 0
+          pure (other, attack' {attackIsSimultaneousAdditional = True, attackSimultaneousGroupId = Just nonce}, [], 0, (0, False))
+        case Minion.minionAttacking attrs of
+          Nothing -> pure g
+          Just attack' -> do
+            cardSpecific GameRef "simultaneousMinionStep" ("announce" :: Text, 1 :: Int)
+            let initial = attack' {attackSimultaneousGroupId = Just nonce}
+            pure $ (g & entitiesL . minionsL . ix mid %~ overMinion (\a -> a {Minion.minionAttacking = Just initial}))
+              {gameSimultaneousMinionAttack = Just $ SimultaneousMinionAttackGroup mid nonce
+                ((you, initial, Minion.minionBoostCards attrs, Minion.minionBoost attrs, (0, False)) : extras) 0 [] gameSimultaneousMinionAttack}
+  CardSpecific GameRef "simultaneousMinionStep" (fromJSON -> Success (stage, cursor)) ->
+    runSimultaneousMinionStep stage cursor g
+  CardSpecific GameRef "captureSimultaneousMinionStep" (fromJSON -> Success (stage, cursor)) -> do
+    let saved = saveSimultaneousMinionAttack g
+        withDefender = case saved.gameSimultaneousMinionAttack of
+          Just group | stage == ("defend" :: Text), Just (_, attack', _, _, _) <- headMay $ drop cursor $ simultaneousAttacks group ->
+            let defense = case attackCharacter attack' of
+                  IdentityCharacter who | attackDefended attack', Just player <- lookup who (gamePlayers saved) ->
+                    (playerIdentityDamageReduction $ toAttrs player, playerIdentityDefended $ toAttrs player)
+                  _ -> (0, False)
+                record n (who, attack0, boosts, bonus, oldDefense) = (who, attack0, boosts, bonus, if n == cursor then defense else oldDefense)
+             in saved {gameSimultaneousMinionAttack = Just group
+                { simultaneousDefenders = nub $ simultaneousDefenders group <> [attackCharacter attack' | attackDefended attack']
+                , simultaneousAttacks = zipWith record [0 ..] (simultaneousAttacks group)}}
+          _ -> saved
+    cardSpecific GameRef "simultaneousMinionStep" (stage, cursor + (1 :: Int))
+    pure withDefender
+  CardSpecific GameRef "finishSimultaneousMinionAttacks" _ -> do
+    for_ gameSimultaneousMinionAttack \group -> do
+      for_ [0 .. length (simultaneousAttacks group) - 1] \cursor ->
+        cardSpecific GameRef "afterSimultaneousMinionAttack" cursor
+      cardSpecific GameRef "closeSimultaneousMinionAttacks" ()
+    pure g
+  CardSpecific GameRef "afterSimultaneousMinionAttack" (fromJSON -> Success cursor) -> do
+    let selected = selectSimultaneousMinionAttack cursor g
+    for_ (selected.gameSimultaneousMinionAttack) \group ->
+      for_ (headMay $ drop cursor $ simultaneousAttacks group) \(you, attack', _, _, _) -> do
+        controller <- getSourceController (refocus $ characterRef $ attackCharacter attack')
+        checkWindows [W.Window W.After $ W.EnemyAttack (EnemyMinionId $ simultaneousMinion group) (fromMaybe you controller)]
+    pure selected
+  CardSpecific GameRef "closeSimultaneousMinionAttacks" _ -> do
+    let selected = selectSimultaneousMinionAttack 0 g
+    for_ gameSimultaneousMinionAttack \group ->
+      afterMatching (== MinionMessage (simultaneousMinion group) MinionEndAttack) $
+        cardSpecific GameRef "restorePreviousSimultaneousMinionAttacks" (simultaneousPrevious group)
+    pure selected
+  CardSpecific GameRef "restorePreviousSimultaneousMinionAttacks" (fromJSON -> Success previous) ->
+    pure $ restoreSimultaneousMinionAttack previous g
   PrepareDividedThreat ident source upTo n matcher -> do
     sourceModifiers <- getModifiers source
     let bonus = if ThreatRemovalBonusInTotal `elem` sourceModifiers
@@ -3108,7 +3178,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   DeclareDefenseWithout ident enemyId AllyIfAble [] -> do
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
     restricted <- any (\case OnlyIdentityCanDefend _ -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
-    own <- if forbidden || restricted then pure [] else selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
+    used <- pure $ maybe [] simultaneousDefenders gameSimultaneousMinionAttack
+    own <- if forbidden || restricted then pure [] else filter ((`notElem` used) . AllyCharacter) <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
     if null own
       then declareDefenseWithout ident enemyId AnyDefense []
       else chooseOnePromptedAbout ident "$label.declareDefender" enemyId [pure (AllyDefend a enemyId) | a <- own]
@@ -3117,7 +3188,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
     restrictions <- getModifiers (enemyRef enemyId)
     let restricted = any (\case OnlyIdentityCanDefend _ -> True; _ -> False) restrictions
-    allies <- if forbidden || restricted then pure [] else selectList UnexhaustedAlly
+    used <- pure $ maybe [] simultaneousDefenders gameSimultaneousMinionAttack
+    allies <- if forbidden || restricted then pure [] else filter ((`notElem` used) . AllyCharacter) <$> selectList UnexhaustedAlly
     identities <- if forbidden then pure mempty else select $ UnexhaustedIdentity <> HeroIdentity <> IdentityCanDefend
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
@@ -3281,12 +3353,16 @@ isWindowPlayable window attrs c = do
   passedWindow <- maybe (pure False) (\matcher -> windowMatches matcher window GameRef) (cdResponseWindow def)
   if not passedWindow then pure False else do
     effectiveDef <- effectivePlayerCardDef ident c
-    affordable <- notNull <$> playableTargets attrs c
-    passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
-    passedPlayLimits <- checkPlayLimits attrs c
-    forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
-    permitted <- canResolvePlayerCardAbilities ident
-    pure $ permitted && not forbidden && affordable && passedCriteria && passedPlayLimits
+    blockedDefense <- if Ability.Defense `elem` cdAbilitySubTypes effectiveDef
+      then getsGame $ isDefendingOtherSimultaneousAttack ident
+      else pure False
+    if blockedDefense then pure False else do
+      affordable <- notNull <$> playableTargets attrs c
+      passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
+      passedPlayLimits <- checkPlayLimits attrs c
+      forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
+      permitted <- canResolvePlayerCardAbilities ident
+      pure $ permitted && not forbidden && affordable && passedCriteria && passedPlayLimits
  where
   ident = toId attrs
   def = getCardDef c
@@ -3487,6 +3563,23 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage (WithSimultaneousAttackContext cursor (Ask who question)) g = runQueueT do
+    push $ Ask who question
+    pure $ selectSimultaneousMinionAttack cursor g
+  runMessage (WithSimultaneousAttackContext _ (IdentityMessage who _)) g | not (HashMap.member who $ gamePlayers g) = pure g
+  runMessage (WithSimultaneousAttackContext cursor message) g = do
+    let selected = selectSimultaneousMinionAttack cursor g
+    (after, following) <- runReaderT (captureQueueT $ runMessage message selected) (refreshTraits selected)
+    let beganNested = case (message, gameSimultaneousMinionAttack g) of
+          (MinionMessage mid step, Just group) | mid == simultaneousMinion group -> case step of
+            MinionAttacks {} -> True
+            MinionAttacksWithChange {} -> True
+            MinionAttacksAlly {} -> True
+            MinionAttacksEnemy {} -> True
+            _ -> False
+          _ -> False
+    pushAll $ if beganNested then following else map (inSimultaneousAttackContext (WithSimultaneousAttackContext cursor message)) following
+    pure after
   runMessage (ResolveEnemyDamage original) g = dispatchGameMessage original g
   runMessage (PrepareEnemyDamage original) g = runQueueT do
     checkWindows =<< enemyDamageTakenWindows original
@@ -3494,20 +3587,25 @@ instance RunMessage Game where
     pure g
   runMessage (PrepareEnemyDamageGroup messages cursor) g = runQueueT do
     if cursor >= length messages then push $ TakeEnemyDamageGroup messages 0 [] else do
-      for_ (enemyDamageMessage $ messages !! cursor) $ \(enemy, source, damage) ->
-        checkWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
+      let original = messages !! cursor
+      for_ (enemyDamageMessage original) $ \(enemy, source, damage) ->
+        push $ inSimultaneousAttackContext original $ CheckWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
       push $ PrepareEnemyDamageGroup messages (cursor + 1)
     pure g
   runMessage (TakeEnemyDamageGroup messages cursor deferred) g = runQueueT do
-    if cursor >= length messages then pushAll deferred else do
-      checkWindows =<< enemyDamageTakenWindows (messages !! cursor)
+    if cursor >= length messages then pushAll (coalesceSimultaneousDefeats deferred) else do
+      let original = messages !! cursor
+          selected = messageAttackContext original g
+      windows <- runReaderT (enemyDamageTakenWindows original) (refreshTraits selected)
+      unless (null windows) $ push $ inSimultaneousAttackContext original $ CheckWindows windows
       push $ ResolveEnemyDamageGroup messages cursor deferred
     pure g
   runMessage (ResolveEnemyDamageGroup messages cursor deferred) g = do
     let original = messages !! cursor
-    (after, following) <- captureQueueT $
-      if isJust (enemyDamageMessage original) then dispatchGameMessage original g else runMessage original g
-    push $ TakeEnemyDamageGroup messages (cursor + 1) (deferred <> following)
+        selected = messageAttackContext original g
+    (after, following) <- runReaderT (captureQueueT $
+      if isJust (enemyDamageMessage original) then dispatchGameMessage original selected else runMessage original selected) (refreshTraits selected)
+    push $ TakeEnemyDamageGroup messages (cursor + 1) (deferred <> map (inSimultaneousAttackContext original) following)
     pure after
   runMessage (ResolveWhenDefeated original) g = dispatchGameMessage original g
   runMessage (ResolveMinionLeavingPlay mid original) g
@@ -3526,7 +3624,7 @@ instance RunMessage Game where
       push $ ResolveAllyLeavingPlay (getAllyController ally) aid def original
     pure g
   runMessage (Simultaneously msgs) g
-    | any (isJust . enemyDamageMessage) flattened = runQueueT do
+    | any (isJust . enemyDamageMessage) flattened || any (\case WithSimultaneousAttackContext {} -> True; _ -> False) flattened = runQueueT do
         push $ PrepareEnemyDamageGroup flattened 0
         pure g
     | otherwise = foldlM (flip runMessage) g (reverse msgs)
@@ -3671,8 +3769,187 @@ resolveMessageCardCosts players = go
     SetActiveCost cost -> SetActiveCost $ snapshot cost
     other -> other
 
+inSimultaneousAttackContext :: Message -> Message -> Message
+inSimultaneousAttackContext _ question@(Ask _ _) = question
+inSimultaneousAttackContext (WithSimultaneousAttackContext cursor _) message = case message of
+  WithSimultaneousAttackContext {} -> message
+  _ -> WithSimultaneousAttackContext cursor message
+inSimultaneousAttackContext _ message = message
+
+messageAttackContext :: Message -> Game -> Game
+messageAttackContext (WithSimultaneousAttackContext cursor _) = selectSimultaneousMinionAttack cursor
+messageAttackContext _ = id
+
+isDefendingOtherSimultaneousAttack :: IdentityId -> Game -> Bool
+isDefendingOtherSimultaneousAttack who g = case gameSimultaneousMinionAttack g of
+  Nothing -> False
+  Just group -> any (\(index, (_, attack', _, _, _)) -> index /= simultaneousCurrent group
+    && attackDefended attack' && attackCharacter attack' == IdentityCharacter who) (zip [0 ..] $ simultaneousAttacks group)
+
+-- One attack can deal damage to both its ally defender and an identity through
+-- overkill. Keep every such damage instance in the group's damage step.
+splitSimultaneousAttack :: [Message] -> ([Message], [Message], [Message])
+splitSimultaneousAttack messages = (filter isWindow damageSteps, filter (not . isWindow) damageSteps, after)
+ where
+  (damageSteps, after) = span (not . followsDamage) messages
+  isWindow = \case CheckWindows {} -> True; _ -> False
+  followsDamage = \case
+    IdentityMessage _ (IdentityRetaliate _) -> True
+    IdentityMessage _ (AttackDefended _ _ _) -> True
+    AllyMessage _ (AllyRetaliates _ _) -> True
+    CheckWindows windows -> any (\case W.Window W.After (W.AllyDefendedAgainst _ _) -> True; _ -> False) windows
+    _ -> False
+
+-- Piercing has an explicit tough-discard step before its incoming damage
+-- windows. Expand that step while collecting the simultaneous damage messages.
+expandSimultaneousAttackDamage :: (HasQueue m, MonadThrow m, MonadRandom m) => Game -> [Message] -> m (Game, [Message])
+expandSimultaneousAttackDamage state = go state []
+ where
+  go current collected [] = pure (current, collected)
+  go current collected (message : rest) = case message of
+    CardSpecific (IdentityRef _) "discardToughForPiercing" _ -> do
+      (after, following) <- runReaderT (captureQueueT $ dispatchGameMessage message current) (refreshTraits current)
+      go after collected (following <> rest)
+    _ -> go current (collected <> [message]) rest
+
+-- Several simultaneous hits can reduce one identity to zero. Its single defeat
+-- is interrupted once, after every hit has landed.
+coalesceSimultaneousDefeats :: [Message] -> [Message]
+coalesceSimultaneousDefeats = go [] [] []
+ where
+  go _ _ _ [] = []
+  go windows defeats callbacks (message : rest) =
+    let raw = queuedMessage message
+        keep replacement ws ds cs = inSimultaneousAttackContext message replacement : go ws ds cs rest
+     in case raw of
+      CheckWindows opened ->
+        let identities = [you | W.Window W.Would (W.IdentityDefeat you) <- opened]
+            duplicates = filter (`elem` windows) identities
+            remaining = filter (\window -> case W.windowType window of
+              W.IdentityDefeat you -> you `notElem` duplicates
+              W.IdentityDefeatFromDamage you _ _ -> you `notElem` duplicates
+              _ -> True) opened
+         in if null remaining then go windows defeats callbacks rest
+            else keep (CheckWindows remaining) (nub $ windows <> identities) defeats callbacks
+      IdentityMessage you IdentityDefeated | you `elem` defeats -> go windows defeats callbacks rest
+      IdentityMessage you IdentityDefeated -> keep raw windows (you : defeats) callbacks
+      CardSpecific GameRef "enemyDefeatedIdentity" (fromJSON -> Success (you :: IdentityId, _ :: EnemyId))
+        | you `elem` callbacks -> go windows defeats callbacks rest
+        | otherwise -> keep raw windows defeats (you : callbacks)
+      _ -> message : go windows defeats callbacks rest
+
+restoreSimultaneousMinionAttack :: Maybe SimultaneousMinionAttackGroup -> Game -> Game
+restoreSimultaneousMinionAttack previous g = case previous of
+  Just group | Just (_, attack', boosts, bonus, _) <- headMay $ drop (simultaneousCurrent group) (simultaneousAttacks group) ->
+    (g & entitiesL . minionsL . ix (simultaneousMinion group) %~ overMinion (\attrs -> attrs
+      {Minion.minionAttacking = Just attack', Minion.minionBoostCards = boosts, Minion.minionBoost = bonus}))
+      {gameSimultaneousMinionAttack = previous}
+  _ -> g {gameSimultaneousMinionAttack = previous}
+
+saveSimultaneousMinionAttack :: Game -> Game
+saveSimultaneousMinionAttack g = case gameSimultaneousMinionAttack g of
+  Just group | Just minion <- lookup (simultaneousMinion group) (gameMinions g), Just current <- Minion.minionAttacking (toAttrs minion), attackSimultaneousGroupId current == Just (simultaneousGroupId group) ->
+    let attrs = toAttrs minion
+        save n entry@(you, _, _, _, defense) = if n == simultaneousCurrent group then (you, current, Minion.minionBoostCards attrs, Minion.minionBoost attrs, defense) else entry
+     in g {gameSimultaneousMinionAttack = Just group {simultaneousAttacks = zipWith save [0 ..] (simultaneousAttacks group)}}
+  _ -> g
+
+selectSimultaneousMinionAttack :: Int -> Game -> Game
+selectSimultaneousMinionAttack cursor original = case gameSimultaneousMinionAttack saved of
+  Just group | Just (_, attack', boosts, bonus, _) <- headMay $ drop cursor (simultaneousAttacks group) ->
+    (saved & entitiesL . minionsL . ix (simultaneousMinion group) %~ overMinion (\attrs -> attrs
+      {Minion.minionAttacking = Just attack', Minion.minionBoostCards = boosts, Minion.minionBoost = bonus}))
+      {gameSimultaneousMinionAttack = Just group {simultaneousCurrent = cursor}}
+  _ -> saved
+ where
+  saved = saveSimultaneousMinionAttack original
+
+runSimultaneousMinionStep :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Text -> Int -> Game -> m Game
+runSimultaneousMinionStep stage cursor original = runQueueT $ case gameSimultaneousMinionAttack saved of
+  Nothing -> pure saved
+  Just group | not (HashMap.member (simultaneousMinion group) $ gameMinions saved) -> do
+    pure $ restoreSimultaneousMinionAttack (simultaneousPrevious group) saved
+  Just group -> do
+    let mid = simultaneousMinion group
+        enemy = EnemyMinionId mid
+        entries = simultaneousAttacks group
+        next nextStage = cardSpecific GameRef "simultaneousMinionStep" (nextStage :: Text, 0 :: Int)
+    if cursor >= length entries then case stage of
+      "announce" -> next "defend" >> pure saved
+      "defend" -> next "boost" >> pure saved
+      "boost" -> next "calculate" >> pure saved
+      "calculate" -> next "damage" >> pure saved
+      _ -> pure saved
+    else case headMay $ drop cursor entries of
+      Nothing -> pure saved
+      Just (you, _, _, _, _) -> do
+        let selected = selectSimultaneousMinionAttack cursor saved
+            current = fromMaybe (error "simultaneous minion disappeared") $ lookup mid (gameMinions selected)
+            attrs = toAttrs current
+            captureStep = cardSpecific GameRef "captureSimultaneousMinionStep" (stage, cursor)
+        case stage of
+          "announce" -> do
+            checkWindows [W.Window W.When $ W.EnemyAttack enemy you]
+            villainous <- elem Villainous <$> runReaderT (Minion.getModifiedKeywords attrs) selected
+            when villainous $ dealBoost mid
+            captureStep
+            pure selected
+          "defend" -> do
+            declareDefense you enemy (Minion.minionDefensePriority attrs)
+            captureStep
+            pure selected
+          "boost" -> do
+            minionStep mid MinionFlipBoostCards
+            captureStep
+            pure selected
+          "calculate" -> do
+            base <- runReaderT (Minion.getModifiedAttackSigned attrs) selected
+            attack' <- traverse (\attack0 -> runReaderT (undefendedIfDefenderGone attack0) selected) (Minion.minionAttacking attrs)
+            let refreshed = fmap (withAttackBase $ base + toInteger (Minion.minionBoost attrs)) attack'
+                calculated = selected & entitiesL . minionsL . ix mid %~ overMinion (\a -> a {Minion.minionAttacking = refreshed})
+            captureStep
+            pure calculated
+          "damage" -> do
+            (after, outputs) <- foldlM (captureIncoming mid) (selected, []) [0 .. length entries - 1]
+            let grouped = [let (before, now, afterMessages) = splitSimultaneousAttack messages
+                               wrap message = WithSimultaneousAttackContext index message
+                            in (map wrap before, map wrap now, map wrap afterMessages)
+                          | (index, messages) <- zip [0 :: Int ..] outputs]
+                (befores, damage, afters) = unzip3 grouped
+            pushAll $ concat befores <> [Simultaneously $ concat damage] <> concat afters
+            cardSpecific GameRef "finishSimultaneousMinionAttacks" ()
+            pure after
+          _ -> pure selected
+ where
+  saved = saveSimultaneousMinionAttack original
+  captureIncoming mid (state, outputs) index = do
+    let rotated = selectSimultaneousMinionAttack index state
+        selected = case gameSimultaneousMinionAttack rotated >>= headMay . drop index . simultaneousAttacks of
+          Just (_, attack', _, _, (reduction, basic)) -> case attackCharacter attack' of
+            IdentityCharacter who -> rotated & entitiesL . playersL . ix who %~ \(PlayerIdentity attrs) ->
+              PlayerIdentity attrs {playerIdentityDamageReduction = reduction, playerIdentityDefended = basic}
+            _ -> rotated
+          _ -> rotated
+    case lookup mid (gameMinions selected) >>= Minion.minionAttacking . toAttrs of
+      Nothing -> pure (selected, outputs)
+      Just attack' -> do
+        incoming <- capture $ wasAttacked attack'
+        (after, following) <- runReaderT (captureQueueT $ foldlM (flip dispatchGameMessage) selected incoming) (refreshTraits selected)
+        (expanded, damage) <- expandSimultaneousAttackDamage after following
+        pure (expanded, outputs <> [damage])
+
 dispatchGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
-dispatchGameMessage original g =
+dispatchGameMessage (WithSimultaneousAttackContext cursor message) g =
+  let selected = selectSimultaneousMinionAttack cursor g
+   in runReaderT (dispatchGameMessage message selected) (refreshTraits selected)
+dispatchGameMessage original g
+  | isJust (gameSimultaneousMinionAttack g) =
+      let selected = saveSimultaneousMinionAttack g
+       in runReaderT (dispatchGameMessageCore original selected) (refreshTraits selected)
+  | otherwise = dispatchGameMessageCore original g
+
+dispatchGameMessageCore :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
+dispatchGameMessageCore original g =
   let normalized = resolveMessageCardCosts (max (length $ gameSeats g) (length $ gamePlayerOrder g)) original
       msg = case normalized of
         CheckWindows windows ->
@@ -3909,6 +4186,7 @@ newGame player scenario =
     , gameCharacterThreat = []
     , gameBlankedAttackTargets = []
     , gameTrackedEnemyAttacks = []
+    , gameSimultaneousMinionAttack = Nothing
     , gameBombCounters = []
     , gameBoostAllyDefeatEffects = []
     , gamePendingAttackDefeats = []
@@ -4537,7 +4815,8 @@ getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
 -- reject irrelevant ability types/windows before asking for that expensive work.
 getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
 getAbilitiesForMatching ident matches = do
-  candidates <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a) (getAbilities g)
+  candidates <- getsGame \g -> filter (\a -> maybe True (== ident) (abilityController g a) && unhelped g a
+    && (abilitySubType a /= Just Ability.Defense || not (isDefendingOtherSimultaneousAttack ident g))) (getAbilities g)
   permitted <- canResolvePlayerCardAbilities ident
   snapshot <- getGame
   let playerAbility a = not (isIdentity (abilitySource a) && abilityIndex a == 100) &&
@@ -5947,9 +6226,11 @@ getModifiers a = withDepthGuard 2 $ do
   supportsInHand <- inHandOf SupportType createSupport
   upgradesInHand <- inHandOf UpgradeType createUpgrade
   attackBlank <- getsGame $ \g -> [Blank | attackBlanksTarget g (toTarget a)]
+  groupedDefense <- getsGame $ \g -> [CannotDefend | IdentityRef who <- [toTarget a], isDefendingOtherSimultaneousAttack who g]
   mconcat
     <$> sequence
       [ pure attackBlank
+      , pure groupedDefense
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) effects
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) inHand
       , concatMapM (getModifiersFor (toSource a) (toTarget a)) eventsInHand
@@ -6554,7 +6835,7 @@ beginLabeledDefense you = do
   for_ (headMay $ filter eligible attacks) \attack -> do
     let enemy = attackEnemy attack
     blocked <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
-    unless blocked do
+    unless (blocked || isDefendingOtherSimultaneousAttack you g) do
       unless (attackDefended attack) $ enemyDefendedBy enemy (IdentityCharacter you)
       when (not (attackDefended attack) || attackCharacter attack == IdentityCharacter you) $
         checkWindows [W.Window W.When $ W.HeroDefends you enemy]
@@ -6982,6 +7263,7 @@ attackBlanksTarget g target = any ((== target) . characterRef) characters
   active = mapMaybe (Villain.villainAttacking . toAttrs) (HashMap.elems $ gameVillains g)
     <> mapMaybe (Minion.minionAttacking . toAttrs) (HashMap.elems $ gameMinions g)
     <> mapMaybe trackedAttackPrevious (gameTrackedEnemyAttacks g)
+    <> [attack' | Just group <- [gameSimultaneousMinionAttack g], (_, attack', _, _, _) <- simultaneousAttacks group]
   characters = [attackCharacter a | a <- active, attackBlanksDefender a, nonVillain $ attackCharacter a]
     <> [character | (_,character) <- gameBlankedAttackTargets g]
   nonVillain (VillainCharacter _) = False

@@ -5,6 +5,7 @@ module Marvel.Minion.Minions.Whirlwind (
 
 import Marvel.Prelude
 
+import Marvel.Attack (attackIsSimultaneousAdditional)
 import Marvel.Ability
 import Marvel.Cost
 import Marvel.Damage
@@ -12,7 +13,6 @@ import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Minion.Runner
 import Marvel.Window
-import Marvel.Window qualified as W
 
 whirlwind :: MinionCard Whirlwind
 whirlwind = minion Whirlwind Cards.whirlwind (Sch 1) (Atk 2) (HP 6)
@@ -22,6 +22,7 @@ newtype Whirlwind = Whirlwind (Attrs Minion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Whirlwind where
+  getAbilities (Whirlwind attrs) | maybe False attackIsSimultaneousAdditional (minionAttacking attrs) = []
   getAbilities (Whirlwind a) =
     [ windowAbility
         a
@@ -34,17 +35,11 @@ instance HasAbilities Whirlwind where
 
 instance RunMessage Whirlwind where
   runMessage msg e@(Whirlwind attrs) = runQueueT $ case msg of
-    -- the attack is resolved against each other hero once it is done with you, each
-    -- defended on its own; "you" stays the player first attacked, so this does not fire
-    -- again for them
+    -- Each hero has a separate attack, with each step resolved for all heroes
+    -- before the next step (RR Whirlwind FAQ).
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
       others <- filter (/= ident) <$> selectList HeroIdentity
-      let
-        self = EnemyMinionId (minionId attrs)
-        attackDone = \case
-          CheckWindows [W.Window W.After (W.EnemyAttack enemy ident')] -> enemy == self && ident' == ident
-          _ -> False
-      afterMatching attackDone $ for_ others (minionBeginsAttack (minionId attrs))
+      simultaneousMinionAttacks (minionId attrs) ident others
       pure e
     Boost msg' -> case msg' of
       RevealedAsBoost target _ | isTarget attrs target -> do

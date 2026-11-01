@@ -55,17 +55,19 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  WithSimultaneousAttackContext _ message -> narrationFor message
   PrepareAllyDepartureByDefeat _ _ -> Nothing
   PrepareEnemyDamageGroup _ _ -> Nothing
   TakeEnemyDamageGroup _ _ _ -> Nothing
-  ResolveEnemyDamageGroup messages cursor _ -> case messages !! cursor of
+  ResolveEnemyDamageGroup messages cursor _ -> case queuedMessage (messages !! cursor) of
     VillainMessage vid inner -> villainNarration vid inner
     MinionMessage mid inner -> minionNarration mid inner
     message -> narrationFor message
   PrepareEnemyDamage _ -> Nothing
-  ResolveEnemyDamage (VillainMessage vid inner) -> villainNarration vid inner
-  ResolveEnemyDamage (MinionMessage mid inner) -> minionNarration mid inner
-  ResolveEnemyDamage _ -> Nothing
+  ResolveEnemyDamage original -> case queuedMessage original of
+    VillainMessage vid inner -> villainNarration vid inner
+    MinionMessage mid inner -> minionNarration mid inner
+    _ -> Nothing
   VillainMessage _ (VillainDamaged _ _) -> Nothing
   MinionMessage _ (MinionDamaged _ _) -> Nothing
   RemoveFromPlayAfterWindow {} -> Nothing

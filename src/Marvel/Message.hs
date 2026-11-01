@@ -357,6 +357,7 @@ data DefensePriority
 
 data Message
   = ResolveWhenDefeated Message
+  | WithSimultaneousAttackContext Int Message
   | PrepareEnemyDamageGroup [Message] Int
   | TakeEnemyDamageGroup [Message] Int [Message]
   | ResolveEnemyDamageGroup [Message] Int [Message]
@@ -737,11 +738,13 @@ queuedMessage :: Message -> Message
 queuedMessage = \case
   PrepareEnemyDamage original -> queuedMessage original
   ResolveEnemyDamage original -> queuedMessage original
+  WithSimultaneousAttackContext _ original -> queuedMessage original
   original -> original
 
 -- | Preserve the continuation for modified damage, but run replacements of other
 -- kinds normally. Canceling the raw damage therefore cancels its continuation.
 rewrapQueuedMessages :: Message -> [Message] -> [Message]
+rewrapQueuedMessages (WithSimultaneousAttackContext cursor original) = map (WithSimultaneousAttackContext cursor) . rewrapQueuedMessages original
 rewrapQueuedMessages wrapper = map $ case wrapper of
   PrepareEnemyDamage _ -> wrap PrepareEnemyDamage
   ResolveEnemyDamage _ -> wrap ResolveEnemyDamage
@@ -753,6 +756,7 @@ rewrapQueuedMessages wrapper = map $ case wrapper of
 
 enemyDamageMessage :: Message -> Maybe (EnemyId, Source, Damage)
 enemyDamageMessage = \case
+  WithSimultaneousAttackContext _ original -> enemyDamageMessage original
   VillainMessage vid (VillainDamaged source damage) -> Just (EnemyVillainId vid, source, damage)
   MinionMessage mid (MinionDamaged source damage) -> Just (EnemyMinionId mid, source, damage)
   _ -> Nothing
@@ -764,6 +768,7 @@ enemyDamageMessage = \case
 -- A replacement may remove a child or insert several messages in its position.
 queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]
 queuedChildEdits message = case message of
+  WithSimultaneousAttackContext cursor original -> [(original, map (WithSimultaneousAttackContext cursor))]
   PrepareAllyDepartureByDefeat _ departure ->
     [(departure, map (\replacement -> if replacement == departure then message else replacement))]
   PrepareEnemyDamageGroup messages cursor -> group PrepareEnemyDamageGroup messages cursor

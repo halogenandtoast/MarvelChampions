@@ -1117,6 +1117,21 @@ minionBeginsAttack mid = push . MinionMessage mid . MinionBeginAttack
 minionAttacked :: (ReverseQueue m) => MinionId -> m ()
 minionAttacked mid = push $ MinionMessage mid MinionAttacked
 
+-- | Replace the current attack's remaining steps with attacks whose steps resolve
+-- together, as Whirlwind's rules require. The original attack's cleanup remains.
+simultaneousMinionAttacks :: ReverseQueue m => MinionId -> IdentityId -> [IdentityId] -> m ()
+simultaneousMinionAttacks mid you others = do
+  insteadOf (\case DeclareDefense who (EnemyMinionId enemy) _ -> who == you && enemy == mid; _ -> False) $
+    cardSpecific GameRef "beginSimultaneousMinionAttacks" (mid, you, others)
+  withQueue_ $ \messages ->
+    let (current, later) = break (== MinionMessage mid MinionEndAttack) messages
+        keep = \case
+          MinionMessage enemy MinionFlipBoostCards -> enemy /= mid
+          MinionMessage enemy MinionAttacked -> enemy /= mid
+          CheckWindows [Window After (W.EnemyAttack (EnemyMinionId enemy) who)] -> enemy /= mid || who /= you
+          _ -> True
+     in filter keep current <> later
+
 minionEndsAttack :: (ReverseQueue m) => MinionId -> m ()
 minionEndsAttack mid = push $ MinionMessage mid MinionEndAttack
 
@@ -2601,6 +2616,7 @@ modifyCurrentPlayerAttack you n keywords = do
   apply Ranged d = d {damageRanged = True}
   apply _ d = d
   change current = \case
+    WithSimultaneousAttackContext cursor message -> WithSimultaneousAttackContext cursor (change current message)
     PrepareEnemyDamageGroup messages cursor -> PrepareEnemyDamageGroup (map (change current) messages) cursor
     TakeEnemyDamageGroup messages cursor deferred -> TakeEnemyDamageGroup (map (change current) messages) cursor deferred
     ResolveEnemyDamageGroup messages cursor deferred -> ResolveEnemyDamageGroup (map (change current) messages) cursor deferred
@@ -2907,6 +2923,7 @@ redirectCurrentPlayerAttack you enemy friend = do
   rewrite source beforeTarget message = case damageFor source message of
     d : _ -> [CardSpecific GameRef "psylockeRedirectedAttackDamage" (toJSON (you, source, friend, fromMaybe d beforeTarget))]
     [] -> case message of
+      WithSimultaneousAttackContext cursor original -> map (WithSimultaneousAttackContext cursor) (rewrite source beforeTarget original)
       PrepareEnemyDamage original -> rewrite source beforeTarget original
       ResolveEnemyDamage original -> rewrite source beforeTarget original
       EventMessage eid (EventAttacked attacker target _) | source == EventRef eid && attacker == you && target == enemy -> []
