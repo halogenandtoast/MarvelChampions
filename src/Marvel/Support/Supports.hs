@@ -181,3 +181,7 @@ import Marvel.Support.Supports.Cable as X
 import Marvel.Support.Supports.TrainingRegimen as X
 import Marvel.Support.Supports.IPAC as X
 import Marvel.Support.Supports.XBunker as X
+
+-- Angel
+import Marvel.Support.Supports.WorthingtonIndustries as X
+import Marvel.Support.Supports.AngelsAerie as X

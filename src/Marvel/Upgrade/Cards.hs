@@ -1,5 +1,19 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -66,7 +80,8 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ psiKnife, psiKatana, martialArtsTraining, psionicTraining, weaponsTraining, floatLikeAButterfly, telepathy, telekinesis
+  [ technoOrganicWings, containmentStrategy, soaringAcrobatics, eyesInTheSky, xForceRecruit
+  , psiKnife, psiKatana, martialArtsTraining, psionicTraining, weaponsTraining, floatLikeAButterfly, telepathy, telekinesis
   , sharpshooter
   , probabilityField
   , luckyBreak
@@ -2065,4 +2080,171 @@ telekinesis = CardDef
   , cdLimit = Just (PsyCard.MaxPerPlayer 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+technoOrganicWings :: CardDef
+technoOrganicWings = CardDef
+  { cdCardCode = "42010"
+  , cdName = "Techno-Organic Wings"
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.Superpower, AnTrait.Tech]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+containmentStrategy :: CardDef
+containmentStrategy = CardDef
+  { cdCardCode = "42019"
+  , cdName = "Containment Strategy"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (AnCard.MaxPerScheme 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+soaringAcrobatics :: CardDef
+soaringAcrobatics = CardDef
+  { cdCardCode = "42023"
+  , cdName = "Soaring Acrobatics"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Skill]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Neutral
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (AnCard.MaxPerPlayerUnderAnyControl 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+eyesInTheSky :: CardDef
+eyesInTheSky = CardDef
+  { cdCardCode = "42030"
+  , cdName = "Eyes in the Sky"
+  , cdCost = Just 0
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Preparation]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Justice
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+xForceRecruit :: CardDef
+xForceRecruit = CardDef
+  { cdCardCode = "42032"
+  , cdName = "X-Force Recruit"
+  , cdCost = Just 0
+  , cdTraits = fromList [AnTrait.Title]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.UpgradeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Neutral
+  , cdCriteria = AnCriteria.SelfMatches (AnMatch.IdentityWithTrait AnTrait.XForce)
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (AnCard.MaxPerCharacter 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

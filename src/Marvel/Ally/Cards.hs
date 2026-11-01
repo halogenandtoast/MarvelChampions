@@ -1,5 +1,19 @@
 module Marvel.Ally.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -87,7 +101,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ angelPsylocke, captainBritain, cypher, peteWisdom, dominoPsylocke
+  [ psylockeAngel, elixir, siryn, warpath, cannonball
+  , angelPsylocke, captainBritain, cypher, peteWisdom, dominoPsylocke
   , ne40079, ne40130
   , whiteFox
   , atlasBear
@@ -1669,4 +1684,171 @@ dominoPsylocke = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+psylockeAngel :: CardDef
+psylockeAngel = CardDef
+  { cdCardCode = "42002"
+  , cdName = AnName.Name "Psylocke" (Just "Betsy Braddock")
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.Psionic, AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+elixir :: CardDef
+elixir = CardDef
+  { cdCardCode = "42011"
+  , cdName = AnName.Name "Elixir" (Just "Josh Foley")
+  , cdCost = Just 4
+  , cdTraits = fromList [AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.AnyCriteria [AnCriteria.SelfMatches (AnMatch.IdentityWithTrait AnTrait.XForce), AnCriteria.SelfMatches (AnMatch.IdentityWithTrait AnTrait.XMen)]
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+siryn :: CardDef
+siryn = CardDef
+  { cdCardCode = "42012"
+  , cdName = AnName.Name "Siryn" (Just "Theresa Cassidy")
+  , cdCost = Just 4
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+warpath :: CardDef
+warpath = CardDef
+  { cdCardCode = "42013"
+  , cdName = AnName.Name "Warpath" (Just "James Proudstar")
+  , cdCost = Just 4
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.XForce]
+  , cdKeywords = fromList [AnKeyword.Toughness]
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+cannonball :: CardDef
+cannonball = CardDef
+  { cdCardCode = "42020"
+  , cdName = AnName.Name "Cannonball" (Just "Sam Guthrie")
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Neutral
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

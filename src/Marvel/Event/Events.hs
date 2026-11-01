@@ -509,3 +509,14 @@ import Marvel.Event.Events.DirectedForce as X
 import Marvel.Event.Events.SoaringHearts as X
 import Marvel.Event.Events.PsiBowAttack as X
 import Marvel.Event.Events.PsiFlailStrike as X
+
+-- Angel
+import Marvel.Event.Events.AdaptivePlumage as X
+import Marvel.Event.Events.AerialAgility as X
+import Marvel.Event.Events.Metamorphosis as X
+import Marvel.Event.Events.NaturalFlight as X
+import Marvel.Event.Events.RazorDive as X
+import Marvel.Event.Events.AerialIntervention as X
+import Marvel.Event.Events.Taunt as X
+import Marvel.Event.Events.BombsAway as X
+import Marvel.Event.Events.FlyingFormation as X

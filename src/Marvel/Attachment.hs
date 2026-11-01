@@ -53,7 +53,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard psionicIllusion
+      [ SomeAttachmentCard harpoonsHarpoon
+  , SomeAttachmentCard psionicIllusion
   , SomeAttachmentCard HoodPack.hood24019, SomeAttachmentCard HoodPack.hood24020, SomeAttachmentCard HoodPack.hood24021, SomeAttachmentCard HoodPack.hood24022, SomeAttachmentCard HoodPack.hood24037, SomeAttachmentCard HoodPack.hood24038, SomeAttachmentCard HoodPack.hood24039, SomeAttachmentCard HoodPack.hood24040
   , SomeAttachmentCard ne40082, SomeAttachmentCard ne40083, SomeAttachmentCard ne40090, SomeAttachmentCard ne40091, SomeAttachmentCard ne40092, SomeAttachmentCard ne40105a, SomeAttachmentCard ne40105b, SomeAttachmentCard ne40106, SomeAttachmentCard ne40107, SomeAttachmentCard ne40122a, SomeAttachmentCard ne40122b, SomeAttachmentCard ne40123, SomeAttachmentCard ne40144, SomeAttachmentCard ne40151, SomeAttachmentCard ne40152, SomeAttachmentCard ne40153, SomeAttachmentCard ne40155, SomeAttachmentCard ne40156, SomeAttachmentCard ne40157, SomeAttachmentCard ne40159, SomeAttachmentCard ne40169, SomeAttachmentCard ne40170, SomeAttachmentCard ne40171, SomeAttachmentCard ne40172, SomeAttachmentCard ne40173
   , SomeAttachmentCard superpowerFeedback

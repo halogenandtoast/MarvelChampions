@@ -1,5 +1,19 @@
 module Marvel.Support.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -76,7 +90,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ trainingRegimen, ipac, xBunker
+  [ worthingtonIndustries, angelsAerie
+  , trainingRegimen, ipac, xBunker
   , ne40197
   , thePaintedLady
   , pipthePug
@@ -845,4 +860,72 @@ xBunker = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+worthingtonIndustries :: CardDef
+worthingtonIndustries = CardDef
+  { cdCardCode = "42009"
+  , cdName = "Worthington Industries"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+angelsAerie :: CardDef
+angelsAerie = CardDef
+  { cdCardCode = "42018"
+  , cdName = "Angel's Aerie"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

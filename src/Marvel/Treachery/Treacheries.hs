@@ -263,3 +263,6 @@ import Marvel.Treachery.Treacheries.Cable as X
 
 -- Psylocke
 import Marvel.Treachery.Treacheries.TelekineticDragon as X
+
+-- Angel
+import Marvel.Treachery.Treacheries.SpearShot as X

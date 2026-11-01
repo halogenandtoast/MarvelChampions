@@ -38,6 +38,7 @@ import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
 import Marvel.Resource.Resources (afterSpent)
+import Marvel.Resource.Resources.AvianAnatomy (avianAnatomySpent)
 import Marvel.Resource.Resources.MolecularAcceleration (molecularAccelerationSpent)
 import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
 import Marvel.Resource.Resources.MutantGenesis (mutantEnergySpent)
@@ -950,6 +951,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
         ForCard played -> for_ (reverse $ activeCostSpentCards activeCost) \card -> do
           mutantEnergySpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
           passionForJusticeSpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
+          avianAnatomySpent (fromMaybe payer $ pcController card <|> pcOwner card) played card
         _ -> pure ()
       disableActiveCost ident
       case activeCostTarget activeCost of

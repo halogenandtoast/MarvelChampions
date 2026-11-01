@@ -379,3 +379,10 @@ import Marvel.Upgrade.Upgrades.WeaponsTraining as X
 import Marvel.Upgrade.Upgrades.FloatLikeAButterfly as X
 import Marvel.Upgrade.Upgrades.Telepathy as X
 import Marvel.Upgrade.Upgrades.Telekinesis as X
+
+-- Angel
+import Marvel.Upgrade.Upgrades.TechnoOrganicWings as X
+import Marvel.Upgrade.Upgrades.ContainmentStrategy as X
+import Marvel.Upgrade.Upgrades.SoaringAcrobatics as X
+import Marvel.Upgrade.Upgrades.EyesInTheSky as X
+import Marvel.Upgrade.Upgrades.XForceRecruit as X

@@ -1,5 +1,19 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -97,7 +111,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ layTheTrap, interdimensionalPlunder
+  [ renderMedicalAid, hookLineAndSinker
+  , layTheTrap, interdimensionalPlunder
   , hood24014, hood24023, hood24033, hood24042, hood24055, hood24056, hood24057, hood24058, hood24064
       , ne40084, ne40085, ne40086, ne40087, ne40093, ne40101, ne40108, ne40109, ne40117, ne40124, ne40131, ne40134, ne40146, ne40168a, ne40168b, ne40175, ne40176, ne40184, ne40189, ne40190a, ne40191a, ne40192a, ne40193a, ne40194a, ne40195a, ne40202
   , notMyLuckyDay
@@ -2719,4 +2734,72 @@ interdimensionalPlunder = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+renderMedicalAid :: CardDef
+renderMedicalAid = CardDef
+  { cdCardCode = "42017"
+  , cdName = "Render Medical Aid"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList [AnKeyword.Victory 0]
+  , cdCardType = AnCard.PlayerSideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+hookLineAndSinker :: CardDef
+hookLineAndSinker = CardDef
+  { cdCardCode = "42026"
+  , cdName = "Hook, Line, and Sinker"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AnBoost.Boost, AnBoost.Boost, AnBoost.Boost]
+  , cdEncounterSet = Just AnSet.AngelNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

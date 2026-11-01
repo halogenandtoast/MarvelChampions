@@ -107,3 +107,7 @@ import Marvel.Hero.Heroes.Cable as X
 
 -- Psylocke
 import Marvel.Hero.Heroes.PsylockeHero as X
+
+-- Angel
+import Marvel.Hero.Heroes.AngelHero as X
+import Marvel.Hero.Heroes.ArchangelHero as X

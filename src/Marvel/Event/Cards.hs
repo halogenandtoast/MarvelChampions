@@ -1,5 +1,19 @@
 module Marvel.Event.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -57,7 +71,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ flurryOfBlades, mentalDetection, psionicRedirect, telepathicSuggestion, upsideTheHead, directedForce, soaringHearts, psiBowAttack, psiFlailStrike
+  [ adaptivePlumage, aerialAgility, metamorphosis, naturalFlight, razorDive, aerialIntervention, taunt, bombsAway, flyingFormation
+  , flurryOfBlades, mentalDetection, psionicRedirect, telepathicSuggestion, upsideTheHead, directedForce, soaringHearts, psiBowAttack, psiFlailStrike
   , thePosse
   , teamInvestigation
   , rightPlaceRightTime
@@ -1422,7 +1437,7 @@ agileFlight =
     }
 
 everVigilant :: CardDef
-everVigilant =
+everVigilant = reprintedAs ["42015"] $
   (event "17030" "Ever Vigilant" 2 HeroAction [Aerial, Skill] [Mental] Protection)
     { cdCriteria = SelfMatches (IdentityWithTrait Aerial)
     }
@@ -2898,7 +2913,7 @@ directedForce = CardDef
   }
 
 soaringHearts :: CardDef
-soaringHearts = CardDef
+soaringHearts = reprintedAs ["42021"] $ CardDef
   { cdCardCode = "41020", cdName = "Soaring Hearts", cdCost = Just 2
   , cdTraits = fromList [PsyTrait.Aerial, PsyTrait.Psionic], cdKeywords = fromList []
   , cdCardType = PsyCard.EventType, cdAbilityType = Just PsyAbility.HeroAction, cdAbilitySubTypes = []
@@ -2940,4 +2955,303 @@ psiFlailStrike = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+adaptivePlumage :: CardDef
+adaptivePlumage = CardDef
+  { cdCardCode = "42003"
+  , cdName = "Adaptive Plumage"
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Attack, AnTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.AnyCriteria [AnCriteria.SelfMatches (AnMatch.IdentityWithTitle "Angel") <> AnCriteria.AnyCriteria [AnCriteria.SchemeExists AnMatch.SchemeYouCanThwart, AnCriteria.EnemyExists AnMatch.AnyEnemy], AnCriteria.SelfMatches (AnMatch.IdentityWithTitle "Archangel") <> AnCriteria.canAttack]
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+aerialAgility :: CardDef
+aerialAgility = CardDef
+  { cdCardCode = "42004"
+  , cdName = "Aerial Agility"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Defense]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroInterrupt
+  , cdAbilitySubTypes = [AnAbility.Defense]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.EnemyAttacksPlayerOrAlly AnWindow.When AnMatch.AnyEnemy AnMatch.AnyIdentity)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+metamorphosis :: CardDef
+metamorphosis = CardDef
+  { cdCardCode = "42005"
+  , cdName = "Metamorphosis"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Aerial]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.SelfMatches AnMatch.IdentityCanChangeForm
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+naturalFlight :: CardDef
+naturalFlight = CardDef
+  { cdCardCode = "42006"
+  , cdName = "Natural Flight"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = [AnAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.AnyCriteria [AnCriteria.SelfMatches (AnMatch.IdentityWithTitle "Angel") <> AnCriteria.SchemeExists (AnMatch.ThwartableSchemeIgnoringCrisis <> AnMatch.SchemeWithoutThwartPrevention), AnCriteria.NotCriteria (AnCriteria.SelfMatches (AnMatch.IdentityWithTitle "Angel")) <> AnCriteria.SchemeExists AnMatch.SchemeYouCanThwart]
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+razorDive :: CardDef
+razorDive = CardDef
+  { cdCardCode = "42007"
+  , cdName = "Razor Dive"
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = [AnAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = canAttack
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+aerialIntervention :: CardDef
+aerialIntervention = CardDef
+  { cdCardCode = "42014"
+  , cdName = "Aerial Intervention"
+  , cdCost = Just 0
+  , cdTraits = fromList [AnTrait.Aerial]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.Interrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.CharacterWouldTakeAttackDamage AnMatch.AnyCharacter)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.ExhaustCharacterWithTraitCost AnTrait.Aerial
+  }
+
+taunt :: CardDef
+taunt = CardDef
+  { cdCardCode = "42016"
+  , cdName = "Taunt"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+bombsAway :: CardDef
+bombsAway = CardDef
+  { cdCardCode = "42029"
+  , cdName = "Bombs Away"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Aggression
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.ExhaustCharacterWithTraitCost AnTrait.Aerial
+  }
+
+flyingFormation :: CardDef
+flyingFormation = CardDef
+  { cdCardCode = "42031"
+  , cdName = "Flying Formation"
+  , cdCost = Just 4
+  , cdTraits = fromList [AnTrait.Aerial, AnTrait.Tactic]
+  , cdKeywords = fromList [AnKeyword.Alliance]
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Leadership
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

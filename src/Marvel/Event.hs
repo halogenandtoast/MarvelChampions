@@ -26,7 +26,8 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard flurryOfBlades, SomeEventCard mentalDetection, SomeEventCard psionicRedirect, SomeEventCard telepathicSuggestion, SomeEventCard upsideTheHead, SomeEventCard directedForce, SomeEventCard soaringHearts, SomeEventCard psiBowAttack, SomeEventCard psiFlailStrike
+  [ SomeEventCard adaptivePlumage, SomeEventCard aerialAgility, SomeEventCard metamorphosis, SomeEventCard naturalFlight, SomeEventCard razorDive, SomeEventCard aerialIntervention, SomeEventCard taunt, SomeEventCard bombsAway, SomeEventCard flyingFormation
+  , SomeEventCard flurryOfBlades, SomeEventCard mentalDetection, SomeEventCard psionicRedirect, SomeEventCard telepathicSuggestion, SomeEventCard upsideTheHead, SomeEventCard directedForce, SomeEventCard soaringHearts, SomeEventCard psiBowAttack, SomeEventCard psiFlailStrike
   , SomeEventCard thePosse
   , SomeEventCard teamInvestigation
   , SomeEventCard rightPlaceRightTime

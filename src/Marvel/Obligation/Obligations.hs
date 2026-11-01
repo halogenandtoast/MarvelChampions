@@ -116,3 +116,6 @@ import Marvel.Obligation.Obligations.Cable as X
 
 -- Psylocke
 import Marvel.Obligation.Obligations.BodySwapped as X
+
+-- Angel
+import Marvel.Obligation.Obligations.ApocalypticInfluence as X

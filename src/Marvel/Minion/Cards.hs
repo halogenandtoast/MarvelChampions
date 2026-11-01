@@ -1,5 +1,19 @@
 module Marvel.Minion.Cards where
 
+import Marvel.Ability.Types qualified as AnAbility
+import Marvel.Aspect qualified as AnAspect
+import Marvel.Boost qualified as AnBoost
+import Marvel.Card.Def qualified as AnCard
+import Marvel.Cost.Types qualified as AnCost
+import Marvel.Criteria qualified as AnCriteria
+import Marvel.EncounterSet qualified as AnSet
+import Marvel.Keyword qualified as AnKeyword
+import Marvel.Matchers qualified as AnMatch
+import Marvel.Name qualified as AnName
+import Marvel.Resource.Types qualified as AnResource
+import Marvel.Trait qualified as AnTrait
+import Marvel.Window.Types qualified as AnWindow
+
 import Marvel.Ability.Types qualified as PsyAbility
 import Marvel.Aspect qualified as PsyAspect
 import Marvel.Boost qualified as PsyBoost
@@ -97,7 +111,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ chimera
+      [ harpoon
+  , chimera
   , hood24015, hood24016, hood24018, hood24024, hood24025, hood24026, hood24027, hood24034, hood24035, hood24041, hood24043, hood24044, hood24045, hood24046, hood24047, hood24065, hood24066, hood24067, hood24068
       , ne40094, ne40095, ne40096, ne40097, ne40098, ne40099, ne40100, ne40112, ne40113, ne40114, ne40115, ne40116, ne40132, ne40133, ne40145, ne40174, ne40180, ne40181, ne40182, ne40183, ne40185, ne40186, ne40187, ne40188, ne40198, ne40199, ne40200, ne40201
   , prototype
@@ -2956,4 +2971,39 @@ chimera = CardDef
   , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
   , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = PsyCost.NoCost
+  }
+
+-- Angel
+
+harpoon :: CardDef
+harpoon = CardDef
+  { cdCardCode = "42025"
+  , cdName = "Harpoon"
+  , cdCost = Nothing
+  , cdTraits = fromList [AnTrait.Brute, AnTrait.Marauder]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AnBoost.Boost, AnBoost.Boost]
+  , cdEncounterSet = Just AnSet.AngelNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
   }

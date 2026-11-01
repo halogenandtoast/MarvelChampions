@@ -254,3 +254,6 @@ import Marvel.Minion.Minions.Cable as X
 
 -- Psylocke
 import Marvel.Minion.Minions.Chimera as X
+
+-- Angel
+import Marvel.Minion.Minions.Harpoon as X

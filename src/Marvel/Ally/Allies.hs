@@ -301,3 +301,10 @@ import Marvel.Ally.Allies.CaptainBritain as X
 import Marvel.Ally.Allies.Cypher as X
 import Marvel.Ally.Allies.PeteWisdom as X
 import Marvel.Ally.Allies.DominoPsylocke as X
+
+-- Angel
+import Marvel.Ally.Allies.PsylockeAngel as X
+import Marvel.Ally.Allies.Elixir as X
+import Marvel.Ally.Allies.Siryn as X
+import Marvel.Ally.Allies.Warpath as X
+import Marvel.Ally.Allies.Cannonball as X

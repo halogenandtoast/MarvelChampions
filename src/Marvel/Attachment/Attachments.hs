@@ -197,3 +197,6 @@ import Marvel.Attachment.Attachments.Cable as X
 
 -- Psylocke
 import Marvel.Attachment.Attachments.PsionicIllusion as X
+
+-- Angel
+import Marvel.Attachment.Attachments.HarpoonsHarpoon as X

@@ -7,6 +7,7 @@ import Marvel.Event.Events.SneakAttack (sneakAttackEffect)
 import Marvel.Attachment.Attachments.MojoGenres (mojoStakeEffect)
 import Marvel.Event.Events.Cable (cableMissionPlanningEffect)
 import Marvel.Minion.Minions.NextEvolutionMisterSinister (ne40145BoostEffect)
+import Marvel.Resource.Resources.AvianAnatomy (avianAnatomyEffect)
 import Marvel.Prelude
 import Marvel.Resource.Resources.Cyclops (effectiveLeadershipEffect)
 import Marvel.Resource.Resources.PassionForJustice (passionForJusticeEffect)
@@ -43,7 +44,11 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("41019", SomeCardEffect directedForceEffect)
+    [ ("42008", SomeCardEffect avianAnatomyEffect)
+    , ("42004", SomeCardEffect aerialAgilityEffect)
+    , ("42010", SomeCardEffect technoOrganicWingsEffect)
+    , ("42016", SomeCardEffect tauntEffect)
+    , ("41019", SomeCardEffect directedForceEffect)
     , ("41017", SomeCardEffect floatLikeAButterflyEffect)
     , ("40145", SomeCardEffect ne40145BoostEffect)
     , ("40017", SomeCardEffect cableMissionPlanningEffect)

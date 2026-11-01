@@ -103,3 +103,6 @@ import Marvel.AlterEgo.AlterEgos.Cable as X
 
 -- Psylocke
 import Marvel.AlterEgo.AlterEgos.BetsyBraddock as X
+
+-- Angel
+import Marvel.AlterEgo.AlterEgos.WarrenWorthingtonIII as X
