@@ -41,7 +41,8 @@ const supports = computed((): SupportView[] => [...(player.supports ?? []), ...(
 const facedown = (card: { id: string; facedownCards?: number }) =>
   Array.from({ length: card.facedownCards ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
 const holders = computed(() => [...(player.upgrades ?? []), ...(player.supports ?? [])].filter((u) => u.heldCards?.length))
-const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgrades ?? []), ...(m.heldCards ?? []), ...facedown(m)]
+const detachedMinions = computed(() => minions.filter((m) => !m.attachedToMinion))
+const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedToMinion === m.id), ...(m.attachments ?? []), ...(m.upgrades ?? []), ...(m.heldCards ?? []), ...facedown(m)]
 </script>
 
 <template>
@@ -75,10 +76,10 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
       <div v-if="$slots.default" class="asked"><slot /></div>
     </div>
 
-    <div v-if="minions.length" class="zone engaged">
+    <div v-if="detachedMinions.length" class="zone engaged">
       <span class="zone-label">{{ t('game.zones.engaged') }}</span>
       <div class="cards">
-        <div v-for="minion in minions" :key="minion.id" class="minion">
+        <div v-for="minion in detachedMinions" :key="minion.id" class="minion">
           <div class="body">
             <dl class="stats">
               <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme }}</dd></div>
@@ -89,7 +90,7 @@ const minionAttached = (m: MinionView) => [...(m.attachments ?? []), ...(m.upgra
               :code="minion.code"
               :name="minion.name"
               :exhausted="minion.exhausted"
-              :damage="minion.damage"
+              :damage="minion.damage" :counters="minion.counters || null"
               :stun-cards="minion.stunCards"
               :confuse-cards="minion.confuseCards"
               :stunned="minion.stunned"

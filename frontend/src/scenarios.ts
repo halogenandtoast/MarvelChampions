@@ -10,7 +10,7 @@ import type { ScenarioOption } from './server'
 export interface Release { code: string; name: string; order: number }
 const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
-const SET_CODES: Record<string, string> = { ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers' }
+const SET_CODES: Record<string, string> = { ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers', NeMarauders: 'marauders', NeJuggernaut: 'juggernaut', NeStryfe: 'stryfe', HopeSummersSet: 'hope_summers', FlightSet: 'flight', SuperStrengthSet: 'super_strength', TelepathySet: 'telepathy', NextEvolutionCampaign: 'next_evol_campaign' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
@@ -24,6 +24,7 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
   gmw: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf`,
   mts: `${RULEBOOK_ROOT}mc21_the_mad_titans_shadow_rulebook-compressed.pdf`,
   sm: `${RULEBOOK_ROOT}mc27_sinister_motives_rules_v5-compressed.pdf`,
+  next_evol: `${RULEBOOK_ROOT}mc40_next_evolution_rulebook-web.pdf`,
   mut_gen: `${RULEBOOK_ROOT}mc32_mutant_genesis_rulebook_v5-compressed.pdf`,
   hood: 'https://images-cdn.fantasyflightgames.com/filer_public/89/66/89666652-cfcb-47c1-822f-a7a377a69401/mc24_the_hood_rules_insert.pdf',
 }

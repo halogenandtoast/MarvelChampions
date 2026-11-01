@@ -135,7 +135,9 @@
     "reputation": "The group gains {count} reputation.",
     "planningAhead": "{player} records {card} for Planning Ahead.",
     "wakingNightmare": "Waking Nightmare is recorded as {count}.",
-    "finalReputation": "The group records its final reputation score."
+    "finalReputation": "The group records its final reputation score.",
+    "morlocksSaved": "Record {count} Morlocks saved.",
+    "hopeDamage": "Record {count} damage on Hope Summers after scenario {scenario}."
   },
   "attackGainsOverkill": "{target}'s attack gains overkill",
   "attackGainsPiercing": "{target}'s attack gains piercing",
@@ -164,5 +166,7 @@
   "controlledMinion": "{player} takes control of {card} as an ally",
   "restoredMinion": "{target} is a minion again",
   "schemeRemovesThreat": "{target}’s scheme removes threat instead of placing it",
-  "attackDamageRedirected": "Damage from {enemy}’s attack is dealt to {target} instead"
+  "attackDamageRedirected": "Damage from {enemy}’s attack is dealt to {target} instead",
+  "exhausted": "{target} exhausts.",
+  "readied": "{target} readies."
 }

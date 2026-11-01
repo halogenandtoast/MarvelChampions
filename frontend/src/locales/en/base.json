@@ -137,7 +137,8 @@
       "hood": "Choose any seven modular encounter sets from this product or other products; you may choose them at random. No single lineup is specified. Set all seven aside, then shuffle one randomly chosen set into the encounter deck. The others are recruited during play.",
       "other": "Follow the main scheme and product rulebook for the number of modular sets and any required encounter sets. Choose your own modular sets when no specific sets are recommended.",
       "mut_gen": "Use the recommended modular sets: Brotherhood and Mystique for Sabretooth, Sentinels for Project Wideawake, Zero Tolerance for Master Mold, Mystique for Mansion Attack, and Acolytes for Magneto. You may replace these when customizing the scenario. Other required sets remain included automatically. Future Past uses a separate deck in campaign play.",
-      "sm": "Sinister Motives fixes certain modular sets to their scenarios: City in Chaos for Sandman, Symbiotic Strength for Venom and Venom Goblin, and Personal Nightmare for Mysterio. The other listed set may be replaced. Osborn Tech and Sinister Assault are added to campaign scenarios only when campaign rules direct it."
+      "sm": "Sinister Motives fixes certain modular sets to their scenarios: City in Chaos for Sandman, Symbiotic Strength for Venom and Venom Goblin, and Personal Nightmare for Mysterio. The other listed set may be replaced. Osborn Tech and Sinister Assault are added to campaign scenarios only when campaign rules direct it.",
+      "next_evol": "The recommended modular sets may be replaced. Keep each scenario’s required sets, including Hope Summers for Juggernaut, Mister Sinister and Stryfe. Campaign cards enter only when campaign instructions direct it."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",
@@ -283,7 +284,13 @@
     "futurePastActive": "Future Past cards in the encounter deck",
     "futurePastRemoved": "Future Past cards removed from the campaign",
     "roleUpgradesRemoved": "Role upgrades removed from the campaign",
-    "jubilee": "Jubilee in play"
+    "jubilee": "Jubilee in play",
+    "NextEvolution": "NeXt Evolution",
+    "chosenSideScheme": "Chosen player side scheme",
+    "earnedEnvironments": "Earned environments",
+    "maraudersDefeated": "Marauders defeated",
+    "morlocksSaved": "Morlocks saved",
+    "hopeDamage": "Damage on Hope Summers"
   },
   "settings": {
     "title": "Settings",

@@ -113,6 +113,7 @@ export interface PlayerView {
 }
 
 export interface VillainView extends CardView {
+  counters: number
   bombCounters?: number
   stunCards?: number
   confuseCards?: number
@@ -159,6 +160,8 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
+  counters: number
+  attachedToMinion?: string | null
   exhausted?: boolean
   bombCounters?: number
   heldCards?: CardView[]
@@ -180,6 +183,7 @@ export interface MinionView extends CardView {
 }
 
 export interface SchemeView extends CardView {
+  exhausted?: boolean
   threat: number
   accelerationTokens?: number
   glider?: boolean
@@ -421,6 +425,7 @@ export interface CampaignLog {
   titan: TitanLog
   sinister: SinisterLog
   mutantGenesis: MutantGenesisLog
+  nextEvolution: NextEvolutionLog
 }
 
 export type MutantRole = 'Brawler' | 'Commander' | 'Defender' | 'Peacekeeper'
@@ -428,6 +433,14 @@ export type MutantRole = 'Brawler' | 'Commander' | 'Defender' | 'Peacekeeper'
 export interface MutantPlayer {
   identity: string
   role: MutantRole | null
+}
+
+export interface NextEvolutionLog {
+  chosenSchemes: [number, string][]
+  earnedEnvironments: string[]
+  maraudersDefeated: string[]
+  morlocksSaved: number
+  hopeDamage: [number, number][]
 }
 
 export interface MutantGenesisLog {
@@ -493,7 +506,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

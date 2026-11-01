@@ -90,6 +90,7 @@ const escalation = (scheme: SchemeView) => {
           :code="villain.code"
           :name="villain.name"
           :damage="villain.damage"
+          :counters="villain.counters || null"
           :stunned="villain.stunned"
           :stun-cards="villain.stunCards"
           :confuse-cards="villain.confuseCards"
@@ -121,7 +122,7 @@ const escalation = (scheme: SchemeView) => {
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
         <span v-if="scheme.glider" class="glider-marker">{{ t('game.glider') }}</span>
-        <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
+        <BoardCard :id="scheme.id" :code="scheme.code"  :name="scheme.name" :exhausted="scheme.exhausted" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
           {{ t('game.perRound', { count: escalation(scheme)! + (scheme.accelerationTokens ?? tokens) + icons }) }}
@@ -140,7 +141,7 @@ const escalation = (scheme: SchemeView) => {
       <div v-if="sideSchemes.length" class="side-schemes">
         <div v-for="scheme in sideSchemes" :key="scheme.id" class="scheme side">
           <TokenStack v-if="scheme.accelerationTokens" kind="acceleration" :count="scheme.accelerationTokens" :title="t('game.acceleration', { count: scheme.accelerationTokens })" />
-          <BoardCard :id="scheme.id" :code="scheme.code" :name="scheme.name" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? [])]" :held="scheme.held || null" />
+          <BoardCard :id="scheme.id" :code="scheme.code"  :name="scheme.name" :exhausted="scheme.exhausted" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         </div>
       </div>
     </div>

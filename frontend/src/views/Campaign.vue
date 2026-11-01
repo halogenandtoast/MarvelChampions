@@ -85,6 +85,7 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const nextEvolution = computed(() => view.value?.campaign.kind === 'NextEvolution')
 const mutant = computed(() => view.value?.campaign.kind === 'MutantGenesis')
 const mutantPlayer = (identity: string) => log.value?.mutantGenesis?.mutantPlayers.find((p) => p.identity === identity) ?? null
 const mutantSchemes = ['32171a', '32172a', '32173a', '32174a']
@@ -263,6 +264,22 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="nextEvolution && log.nextEvolution" class="scenario-log">
+          <template v-for="[n, code] in log.nextEvolution.chosenSchemes" :key="n">
+            <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t('campaign.chosenSideScheme') }}</dt>
+            <dd>{{ name(code) }}</dd>
+          </template>
+          <dt>{{ $t('campaign.earnedEnvironments') }}</dt>
+          <dd>{{ names(log.nextEvolution.earnedEnvironments) }}</dd>
+          <dt>{{ $t('campaign.maraudersDefeated') }}</dt>
+          <dd>{{ names(log.nextEvolution.maraudersDefeated) }}</dd>
+          <dt>{{ $t('campaign.morlocksSaved') }}</dt>
+          <dd>{{ log.nextEvolution.morlocksSaved }}</dd>
+          <template v-for="[n, damage] in log.nextEvolution.hopeDamage" :key="n">
+            <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t('campaign.hopeDamage') }}</dt>
+            <dd>{{ damage }}</dd>
+          </template>
         </dl>
         <dl v-else-if="mutant" class="scenario-log">
           <template v-for="(code, i) in mutantSchemes" :key="code">

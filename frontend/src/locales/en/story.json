@@ -969,5 +969,77 @@
         ]
       }
     }
+  },
+  "nextEvolution": {
+    "morlockSiege": {
+      "setup": {
+        "title": "Morlock Siege — Setup",
+        "text": [
+          "The Marauders are attacking the Morlocks. Defeat three Marauders to win. Choose a campaign player side scheme; its paired encounter card remains in the campaign even if the scheme is not defeated. Earned reverse-side environments return in later scenarios."
+        ]
+      },
+      "victory": {
+        "title": "Morlock Siege — Victory",
+        "text": [
+          "Record the defeated Marauders and Morlocks still in play. Mark the campaign environment in play as earned. In expert campaign mode, record remaining identity hit points, capped at base hit points."
+        ]
+      }
+    },
+    "onTheRun": {
+      "setup": {
+        "title": "On The Run — Setup",
+        "text": [
+          "Pursue Hope’s captor. Previously defeated Marauder villains are unavailable. Each saved Morlock grants a chosen player a deck search. Bring the earned environment into play and give enemies tough, then choose a new campaign scheme and add all chosen schemes’ paired encounters. Expert healing costs an acceleration token."
+        ]
+      },
+      "victory": {
+        "title": "On The Run — Victory",
+        "text": [
+          "Hope is free. Mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+        ]
+      }
+    },
+    "juggernaut": {
+      "setup": {
+        "title": "Juggernaut — Setup",
+        "text": [
+          "Juggernaut bars the way into the orphanage. Bring earned environments into play in a chosen order and add a momentum counter for each. Deal the Black Tom Cassidy and Creeping Willow campaign encounter cards, then choose a new campaign scheme. Expert healing costs a facedown encounter card."
+        ]
+      },
+      "victory": {
+        "title": "Juggernaut — Victory",
+        "text": [
+          "Record Hope Summers’s damage and mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+        ]
+      }
+    },
+    "misterSinister": {
+      "setup": {
+        "title": "Mister Sinister — Setup",
+        "text": [
+          "Enter Mister Sinister’s laboratory. Bring earned environments into play, add Teleported Away with additional threat for those environments, and choose whether Hope’s recorded damage becomes damage or threat. Choose a new campaign scheme. Expert healing costs an acceleration token."
+        ]
+      },
+      "victory": {
+        "title": "Mister Sinister — Victory",
+        "text": [
+          "Record Hope Summers’s damage and mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+        ]
+      }
+    },
+    "stryfe": {
+      "setup": {
+        "title": "Stryfe — Setup",
+        "text": [
+          "Follow Hope through the time portal. Bring earned environments into play and add threat to Stryfe’s Grasp for each. Choose whether Hope’s recorded damage becomes damage or threat. Each player reveals a discarded minion or Psionic attachment, then the discard pile is shuffled back. Choose the final campaign scheme. Expert healing costs a facedown encounter card; losing this expert scenario loses the campaign."
+        ]
+      },
+      "victory": {
+        "title": "Stryfe — Victory",
+        "text": [
+          "Stryfe is defeated. The heroes win the NeXt Evolution campaign."
+        ]
+      }
+    }
   }
 }

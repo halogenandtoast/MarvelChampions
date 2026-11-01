@@ -111,6 +111,9 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [hero-miles-morales.md](hero-miles-morales.md) | Miles Morales: Specials, Requirement and starter deck |
 | [hero-nova.md](hero-nova.md) | Nova: stacked tough, Requirement, wild resources, Ms. Marvel errata, starter deck and Armadillo modular set |
 | [hero-ironheart.md](hero-ironheart.md) | Ironheart: progressing identity cards, Requirement, printed-card corrections, Go for Champions errata and FAQ, starter deck, Zzzax modular set and pending rulings |
+| [hero-cable.md](hero-cable.md) | Cable: player side schemes, victory display, Temporal Leap, starter deck and official rulings |
+| [hero-domino.md](hero-domino.md) | Domino: deck swaps, discard responses, printed resources, starter deck and official rulings |
+| [campaign-next-evolution.md](campaign-next-evolution.md) | NeXt Evolution: five scenarios, modular sets, campaign setup/rewards and recorded rulings |
 
 ## Conventions
 
