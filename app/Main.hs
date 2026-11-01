@@ -441,8 +441,14 @@ villainOf :: ScenarioSetup -> (Text, CardCode)
 -- a scenario of several villains (Breakout) is set up by, and named for, its main scheme
 villainOf setup = (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes), setup.scenarioCode)
 
-summary :: Entity MarvelGame -> Maybe GameSummary
-summary (Entity gid row) = do
+summaries :: MonadIO m => [Entity MarvelGame] -> ReaderT SqlBackend m [GameSummary]
+summaries games = do
+  seats <- selectList [MarvelSeatGameId <-. [gid | Entity gid row <- games, row.marvelGameWithFriends]] [Asc MarvelSeatPosition]
+  let decks = Map.fromListWith (flip (<>)) [(seat.marvelSeatGameId, [seat.marvelSeatDeck]) | Entity _ seat <- seats]
+  pure $ mapMaybe (\game -> summary (Map.findWithDefault [] (entityKey game) decks) game) games
+
+summary :: [Maybe Value] -> Entity MarvelGame -> Maybe GameSummary
+summary friendDecks (Entity gid row) = do
   setup <- case fromJSON row.marvelGameScenario of
     Success s -> Just s
     Error _ -> Nothing
@@ -477,10 +483,20 @@ summary (Entity gid row) = do
             , seats =
                 [ case HashMap.lookup pid (gamePlayers g) of
                     Just p -> SeatSummary (toAttrs p).playerIdentityName (CardDef.cdCardCode $ CardDef.getCardDef p) (fromIntegral $ identityDamage p) False
-                    Nothing -> SeatSummary "" "" 0 True
-                | pid <- gameSeats g
+                    Nothing -> case HashMap.lookup pid (entitiesPlayers $ gameRemovedEntities g) of
+                      Just p -> SeatSummary (toAttrs p).playerIdentityName (CardDef.cdCardCode $ CardDef.getCardDef p) (fromIntegral $ identityDamage p) True
+                      Nothing -> SeatSummary row.marvelGamePlayerName (fromMaybe "" hero) 0 True
+                | (pid, hero) <- zip (gameSeats g) (map (Just . (.hero)) dealt <> repeat Nothing)
                 ]
             }
+ where
+  -- Older saves discarded eliminated identities; their original decks still name them.
+  dealt :: [DeckList]
+  dealt = case if row.marvelGameWithFriends
+    then traverse (maybe (Error "missing deck") fromJSON) friendDecks
+    else maybe (Error "missing decks") fromJSON row.marvelGameDeck of
+      Success decks -> decks
+      Error _ -> []
 
 getGamesR :: Handler Value
 getGamesR = do
@@ -488,7 +504,7 @@ getGamesR = do
   games <- runDB do
     seatedAt <- map ((.marvelSeatGameId) . entityVal) <$> selectList [MarvelSeatUserId ==. userId] []
     selectList ([MarvelGameUserId ==. userId] ||. [MarvelGameId <-. seatedAt]) [Desc MarvelGameUpdatedAt]
-  pure $ toJSON $ mapMaybe summary games
+  toJSON <$> runDB (summaries games)
 
 -- | A starter, one of your decks, or a deck loaded for this game alone and not kept.
 data DeckChoice = StarterDeck Text | ImportedDeck MarvelDeckId | ListedDeck DeckList
@@ -725,7 +741,7 @@ getSpectatableR :: Handler Value
 getSpectatableR = do
   userId <- lookupUserId
   games <- runDB $ selectList ((MarvelGameAllowSpectators ==. True) : maybe [] (\u -> [MarvelGameUserId !=. u]) userId) [Desc MarvelGameUpdatedAt, LimitTo 50]
-  pure $ toJSON $ filter (isNothing . (.outcome)) $ mapMaybe summary games
+  toJSON . filter (isNothing . (.outcome)) <$> runDB (summaries games)
 
 data AdminDashboard = AdminDashboard
   { users :: Int
@@ -747,7 +763,8 @@ getAdminR = do
     games <- Database.Persist.Postgresql.count ([] :: [Filter MarvelGame])
     active <- rawSql "SELECT COUNT(DISTINCT user_id) FROM marvel_games WHERE updated_at >= ?" [toPersistValue since]
     recent <- selectList [] [Desc MarvelGameUpdatedAt, LimitTo 20]
-    pure $ toJSON AdminDashboard {users, activeUsers = sum (map unSingle active), games, recentGames = mapMaybe summary recent}
+    recentGames <- summaries recent
+    pure $ toJSON AdminDashboard {users, activeUsers = sum (map unSingle active), games, recentGames}
 
 data Answer = Answer
   { choice :: Int

@@ -1760,6 +1760,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         pure $
           g
             & (entitiesL . playersL %~ deleteMap iid)
+            & (removedEntitiesL . playersL %~ maybe id (insertMap iid) (lookup iid $ gamePlayers g))
             & (activeCostL %~ filter ((/= iid) . activeCostIdentityId))
             & (playerOrderL .~ order)
             & (activePlayerL %~ \active -> if active == iid then fromMaybe active next else active)
@@ -2182,12 +2183,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   ClearBoosts -> do
     for_ (HashMap.elems gameBoostCards) discardCard
     pure $ g & boostEntitiesL .~ defaultEntities & boostCardsL .~ mempty
-  ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities
+  -- Keep eliminated identities for game summaries after their leave-play windows close.
+  ClearRemoved -> pure $ g & removedEntitiesL .~ defaultEntities {entitiesPlayers = entitiesPlayers gameRemovedEntities}
   -- indirect damage (RR): assigned a point at a time among the characters the player
   -- controls that can take damage, none past what would defeat it (a tough one too, its
   -- card preventing what it is given), then dealt at once; what cannot be assigned is
   -- ignored
   AttachPlayerCardToMinion mid card -> do
+    removePlayerCardFromHeldZones card
     removeFromGame card
     minionStep mid (MinionHoldsCard card)
     pure g
@@ -3330,7 +3333,10 @@ dispatchGameMessage original g =
    in runPreGameMessage msg g
     >>= traverseOf scenarioL (runMessage msg)
     >>= traverseOf entitiesL (runMessage msg)
-    >>= traverseOf removedEntitiesL (runMessage msg)
+    >>= traverseOf removedEntitiesL (\removed -> do
+      -- Eliminated identities remain available as snapshots, but no longer act.
+      updated <- runMessage msg removed {entitiesPlayers = mempty}
+      pure updated {entitiesPlayers = entitiesPlayers removed})
     >>= traverseOf boostEntitiesL (runMessage (Boost msg))
     >>= traverseOf (activeCostL . ix 0) (\c -> asYou (activeCostIdentityId c) $ runMessage msg c)
     >>= runHandCardMessage msg
@@ -4197,6 +4203,8 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
+            Just (Ask ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
+            Just (IdentityMessage ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
             Just (Ask ident asked) -> do
               patrolled <- isPatrolled ident
               cleaned <- withoutPatrolledThwarts g patrolled (withoutPermanentTargets g asked)
@@ -4351,7 +4359,12 @@ getResourceAbilities ::
   -- | the card being paid for, if a card is
   Maybe PlayerCard ->
   m [Ability]
-getResourceAbilities ident mc = asYou ident do
+getResourceAbilities ident mc = do
+  present <- getsGame (HashMap.member ident . gamePlayers)
+  if present then resourceAbilitiesForLivingIdentity ident mc else pure []
+
+resourceAbilitiesForLivingIdentity :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> Maybe PlayerCard -> m [Ability]
+resourceAbilitiesForLivingIdentity ident mc = asYou ident do
   printedAbilities <- getAbilitiesForMatching ident (pure . (`elem` [Resource, HeroResource, AlterEgoResource]) . abilityType)
   counters <- project PlayerIdentityCounters ident
   -- With no counters this payment cannot be made. Avoid a full modifier pass for

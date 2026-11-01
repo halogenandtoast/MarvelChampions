@@ -19,6 +19,8 @@ spec = describe "an eliminated player" do
       runNow [IdentityMessage p (DealtEncounterCard dealt)]
       runNow [IdentityMessage p IdentityDefeated]
       getsGame (HashMap.member p . gamePlayers) `shouldReturn` False
+      runNow [ClearRemoved]
+      getsGame (HashMap.member p . entitiesPlayers . gameRemovedEntities) `shouldReturn` True
       getsGame (length . gameSupports) `shouldReturn` 0
       getsGame (fmap (Minion.minionEngagedIdentity . toAttrs) . HashMap.lookup minion . gameMinions) `shouldReturn` Just other
       encounterDiscardNow >>= (`shouldSatisfy` elem dealt)
