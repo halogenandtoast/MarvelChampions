@@ -162,16 +162,16 @@ const kindOptions = computed(() => [
 ])
 const campaignMode = ref<CampaignMode>('StandardCampaign')
 // which box's campaign
-const campaignKind = ref<CampaignKind>('RiseOfRedSkull')
+const campaignKind = ref<CampaignKind>()
 const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow', 'SinisterMotives', 'MutantGenesis', 'NextEvolution']
-const campaignTitle = computed(() => t(`campaign.${campaignKind.value}`))
+const campaignTitle = computed(() => campaignKind.value ? t(`campaign.${campaignKind.value}`) : '')
 const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
   { value: 'ExpertCampaign' as CampaignMode, label: t('campaign.ExpertCampaign') },
 ])
-const canCreateCampaign = computed(() => !creating.value)
+const canCreateCampaign = computed(() => !!campaignKind.value && !creating.value)
 const createCampaignNow = async () => {
-  if (!canCreateCampaign.value) return
+  if (!canCreateCampaign.value || !campaignKind.value) return
   creating.value = true
   error.value = null
   try {
@@ -432,7 +432,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 
 .new-game { display: grid; gap: 22px; }
 .kind { width: 20rem; max-width: 100%; }
-.box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: center / contain no-repeat; }
+.box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: center / cover no-repeat; }
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
 .art-strip .art { aspect-ratio: auto; height: 100%; }
