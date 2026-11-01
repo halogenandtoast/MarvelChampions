@@ -2,7 +2,6 @@ module Marvel.Hero.VenomSpec (spec) where
 
 import Data.List (sort)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Payment.Types (Payment (NoPayment))
 import TestImport
 
 venomGame :: IO TestGame

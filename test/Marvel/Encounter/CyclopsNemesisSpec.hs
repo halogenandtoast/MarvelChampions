@@ -3,7 +3,6 @@ module Marvel.Encounter.CyclopsNemesisSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
-import Marvel.Card.Side (Side (A))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Modifier

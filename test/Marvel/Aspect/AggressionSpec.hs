@@ -32,7 +32,7 @@ spec = describe "Aggression" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01050"
+        _ <- putIntoPlay p "01050"
         _ <- stackDeck p ["01089"]
         h <- allyIn "01050"
         villain <- getVillain
@@ -47,7 +47,7 @@ spec = describe "Aggression" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01050"
+        _ <- putIntoPlay p "01050"
         _ <- stackDeck p ["01088"]
         h <- allyIn "01050"
         villain <- getVillain
@@ -66,7 +66,7 @@ spec = describe "Aggression" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01051"
+        _ <- putIntoPlay p "01051"
         mercenary <- addMinion p Cards.hydraMercenary
         tigra <- allyIn "01051"
         resolve [AllyMessage (allyId tigra) (AllyDamaged (toSource p) (toDamage 1 FromAbility))]
@@ -84,7 +84,7 @@ spec = describe "Aggression" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01051"
+        _ <- putIntoPlay p "01051"
         mercenary <- addMinion p Cards.hydraMercenary
         tigra <- allyIn "01051"
         resolve [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 1 FromAbility))]
@@ -217,7 +217,7 @@ spec = describe "Aggression" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01056"
+        _ <- putIntoPlay p "01056"
         [team] <- supportsWith "01056"
         team.supportUses `shouldBe` 3
         villain <- getVillain

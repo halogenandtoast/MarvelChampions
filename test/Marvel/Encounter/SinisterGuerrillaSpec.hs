@@ -37,7 +37,7 @@ spec = describe "Guerrilla Tactics" do
           resolve [VillainMessage vid (VillainAttacks p)]
           decoys <- getsGame (filter ((== "27142") . toCardCode . getCardDef) . HashMap.elems . gameMinions)
           length decoys `shouldBe` 1
-          minionTough (toAttrs $ head decoys) `shouldBe` (difficulty == Expert)
+          minionTough (toAttrs $ testHead decoys) `shouldBe` (difficulty == Expert)
 
     it "stops its engaged player's identity and allies thwarting side schemes, but permits the main scheme and another player" do
       tg <- modularGame Normal ["spider-man-miles-morales", "ghost-spider"]

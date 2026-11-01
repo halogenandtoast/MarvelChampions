@@ -1,6 +1,5 @@
 module Marvel.Hero.GamoraSignatureSpec (spec) where
 
-import Marvel.Card.Side (Side (..))
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Obligation.Cards qualified as Obligations
 import TestImport

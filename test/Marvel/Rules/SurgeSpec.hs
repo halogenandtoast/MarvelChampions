@@ -110,7 +110,7 @@ spec = describe "surge" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01075"
+        _ <- putIntoPlay p "01075"
         widow <- allyIn "01075"
         genius <- putInHand p "01089"
         [next] <- stackEncounterDeck [Treacheries.advance]

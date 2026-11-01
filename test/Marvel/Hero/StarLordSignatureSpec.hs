@@ -1,12 +1,11 @@
 module Marvel.Hero.StarLordSignatureSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import TestImport
 
-import Control.Monad (replicateM, replicateM_)
+import Control.Monad ( replicateM )
 
 starLord :: IO TestGame
 starLord = testGame ["star-lord"]

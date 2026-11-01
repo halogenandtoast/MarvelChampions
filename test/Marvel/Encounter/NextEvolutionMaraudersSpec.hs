@@ -9,7 +9,6 @@ import Marvel.Phase
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Environment.Types qualified as Environment
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted qualified as Lifted
@@ -19,7 +18,6 @@ import Marvel.NextEvolution.Helpers
 import Marvel.Query
 import Marvel.Villain.Types (villainTough)
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.SideScheme.Types qualified as Scheme
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
@@ -58,7 +56,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
         inGame tg do
           changeForm (player1 tg)
           pass
-          putIntoPlay (player1 tg) "01065"
+          _ <- putIntoPlay (player1 tg) "01065"
           card <- encounterCard def
           resolve [PutEncounterCardIntoPlay (player1 tg) card]
           runNow [MinionMessage (minionOf card) (MinionAttacks $ player1 tg)]
@@ -82,8 +80,8 @@ spec = describe "Next Evolution Marauders and Morlocks" do
           changeForm you
           pass
           clearHand you
-          putInHand you "01089"
-          putIntoPlay you "01065"
+          _ <- putInHand you "01089"
+          _ <- putIntoPlay you "01065"
           vid <- villainIdNow
           resolve [ReplaceVillain vid code Swapped]
           runNow [VillainMessage vid (VillainAttacks you)]
@@ -157,7 +155,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
       tg <- testGame ["spider-man"]
       inGame tg do
         morlock <- putIntoPlay (player1 tg) "40079"
-        card <- revealNow (player1 tg) Treacheries.ne40080
+        _card <- revealNow (player1 tg) Treacheries.ne40080
         choose "give Morlock tough" (isTargetChoice $ AllyRef $ allyIdOf morlock)
         alliesWith "40079" >>= (\xs -> liftIO $ map allyTough xs `shouldBe` [True])
 
@@ -238,7 +236,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
     it "counts a character with several matching traits once and grants Marauders quickstrike" do
       tg <- testGame ["spider-man"]
       inGame tg do
-        card <- revealNow (player1 tg) Schemes.ne40101
+        _card <- revealNow (player1 tg) Schemes.ne40101
         minion <- encounterCard Minions.ne40094
         resolve [PutEncounterCardIntoPlay (player1 tg) minion]
         mods <- getModifiers (MinionRef $ minionOf minion)
@@ -253,7 +251,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
         resolve [PutEncounterCardIntoPlay (player1 tg) existing]
         -- Set encounter deck through the ordinary deck message to retain its state.
         resolve [CreateDeck EncounterDeckKey [duplicate,fresh]]
-        card <- revealNow (player1 tg) Treacheries.ne40102
+        _card <- revealNow (player1 tg) Treacheries.ne40102
         pass
         selectAny (MinionIs Minions.ne40095) `shouldReturn` True
 
@@ -262,7 +260,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
       tg <- testGame ["spider-man"]
       inGame tg do
         before <- mainSchemeThreatNow
-        card <- revealNow (player1 tg) Treacheries.ne40088
+        _card <- revealNow (player1 tg) Treacheries.ne40088
         pass
         villain <- getVillain
         liftIO $ villainTough (toAttrs villain) `shouldBe` True
@@ -271,7 +269,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
     it "Bolstered by Wrath grants one ATK and SCH while attached" do
       tg <- testGame ["spider-man"]
       inGame tg do
-        card <- revealNow (player1 tg) Attachments.ne40082
+        _card <- revealNow (player1 tg) Attachments.ne40082
         vid <- villainIdNow
         mods <- getModifiers (VillainRef vid)
         liftIO do
@@ -281,7 +279,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
     it "Dizzying Deeds exhausts a ready character even without any named Marauders" do
       tg <- testGame ["spider-man"]
       inGame tg do
-        card <- revealNow (player1 tg) Treacheries.ne40110
+        _card <- revealNow (player1 tg) Treacheries.ne40110
         choose "exhaust identity" (isTargetChoice $ player1 tg)
         playerIdentityExhausted <$> playerAttrs (player1 tg) `shouldReturn` True
 
@@ -291,7 +289,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
         marauder <- encounterCard Minions.ne40095
         fillers <- traverse (const $ encounterCard Schemes.bombScare) [1..7 :: Int]
         resolve [CreateDeck EncounterDeckKey (marauder : fillers)]
-        card <- revealNow (player1 tg) Treacheries.ne40111
+        _card <- revealNow (player1 tg) Treacheries.ne40111
         choose "discard seven" (isLabel "$label.neTagTeamDiscard")
         pass
         selectAny (MinionIs Minions.ne40095 <> MinionEngagedWith (IdentityWithId $ player1 tg)) `shouldReturn` True
@@ -327,7 +325,7 @@ spec = describe "Next Evolution Marauders and Morlocks" do
         let you = player1 tg
         changeForm you
         pass
-        putIntoPlay you "16016"
+        _ <- putIntoPlay you "16016"
         soldier <- encounterCard Minions.hydraSoldier
         resolve [PutEncounterCardIntoPlay you soldier,GiveStatus (IdentityRef you) ToughStatus]
         clutter <- revealNow you Attachments.ne40106

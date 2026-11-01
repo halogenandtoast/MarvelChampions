@@ -1,10 +1,8 @@
 module Marvel.Hero.AdamWarlockSpec (spec) where
 
-import Marvel.Card.Id (CardId (..))
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Obligation.Cards qualified as Obligations
-import Marvel.Status (StatusCard (..), statusLabel)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types (villainIsTough)
 import TestImport

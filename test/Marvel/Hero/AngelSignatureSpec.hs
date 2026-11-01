@@ -5,8 +5,6 @@ import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Villain.Types (villainConfused, villainStunned)
-import Marvel.Identity.Types (playerIdentitySide)
-import Marvel.Window qualified as W
 import TestImport
 
 angel :: IO TestGame

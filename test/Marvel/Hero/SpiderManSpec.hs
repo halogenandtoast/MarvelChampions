@@ -9,7 +9,6 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.SideScheme.Types (sideSchemeHeldCards)
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
-import Marvel.Minion.Types (minionAttacking, minionStunned)
 import TestImport
 
 spec :: Spec

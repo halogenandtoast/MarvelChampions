@@ -5,8 +5,6 @@ import Marvel.Identity (getModifiedCost)
 import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier (Modifier (KeywordModifier))
-import Marvel.PlayerCard (lookupPlayerCard)
-import Marvel.Status (StatusCard (ToughStatus))
 import Marvel.Matchers (AllyMatcher (AllyNamedAs, AllyWithTitle))
 import Marvel.Query (selectAny)
 import TestImport

@@ -1,13 +1,11 @@
 module Marvel.Rules.SteadyIdentitySpec (spec) where
 
-import Data.Aeson (Result (..), Value (Object), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability (HasAbilities)
 import Marvel.Identity (identityIsStunned, identityIsConfused)
 import Marvel.Keyword (Keyword (Steady))
 import Marvel.Modifier (Modifier (KeywordModifier), HasModifiersFor (..))
-import Marvel.Status (StatusCard (StunnedStatus))
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade (..))
 import TestImport
 

@@ -2,7 +2,7 @@ module Marvel.Hero.StormSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Minions
@@ -15,17 +15,17 @@ import Marvel.Keyword
 import TestImport
 
 weatherCode :: IdentityId -> GameAppT CardCode
-weatherCode p = getsGame $ toCardCode . supportCardDef . toAttrs . head . filter (\s -> supportController (toAttrs s) == p && Weather `elem` cdTraits (supportCardDef $ toAttrs s)) . HashMap.elems . gameSupports
+weatherCode p = getsGame $ toCardCode . supportCardDef . toAttrs . testHead . filter (\s -> supportController (toAttrs s) == p && Weather `elem` cdTraits (supportCardDef $ toAttrs s)) . HashMap.elems . gameSupports
 
 weatherId :: IdentityId -> GameAppT SupportId
-weatherId p = getsGame $ toId . head . filter (\s -> supportController (toAttrs s) == p && Weather `elem` cdTraits (supportCardDef $ toAttrs s)) . HashMap.elems . gameSupports
+weatherId p = getsGame $ toId . testHead . filter (\s -> supportController (toAttrs s) == p && Weather `elem` cdTraits (supportCardDef $ toAttrs s)) . HashMap.elems . gameSupports
 
 setWeather :: IdentityId -> CardCode -> GameAppT ()
 setWeather p code = do
   current <- weatherCode p
   when (current /= code) do
     cards <- fromMaybe [] . playerIdentityWeatherDeck <$> playerAttrs p
-    let card = head [c | c <- cards, toCardCode c == code]
+    let card = testHead [c | c <- cards, toCardCode c == code]
     runNow [IdentityMessage p (ChooseWeatherSupport card False)]
     pass
 

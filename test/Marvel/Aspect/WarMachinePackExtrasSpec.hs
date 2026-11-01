@@ -6,15 +6,11 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Hero ()
 import Marvel.Stats (Atk (..))
 import Marvel.Count (selectCount)
-import Marvel.Card.Side (Side (A))
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
-import Marvel.Game.Source (getModifiers)
 import Marvel.Keyword (Keyword (Ranged))
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Trait (Trait (Avenger, Guardian))
 import TestImport
 
 ownAbility :: (IsRef a) => a -> Natural -> Choice -> Bool

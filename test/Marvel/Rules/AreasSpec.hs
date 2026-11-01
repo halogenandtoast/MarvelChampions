@@ -1,7 +1,6 @@
 module Marvel.Rules.AreasSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.Aeson (Value (..), toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)

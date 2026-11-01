@@ -3,11 +3,8 @@ module Marvel.Encounter.MysterioModularsSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
-import Marvel.Card.PlayerCard.Types (playerZoneEncounterCard)
-import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Runner qualified as Minion
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
@@ -336,7 +333,7 @@ spec = describe "Mysterio modular sets" do
       let p = player1 tg
           other = player2 tg
       inGame tg do
-        ally <- putIntoPlay p "01068"
+        _ally <- putIntoPlay p "01068"
         _ <- putIntoPlay other "01075"
         _ <- setEncounterDeck [Attachments.smOldGrudge, Minions.hydraSoldier] []
         vid <- villainIdNow

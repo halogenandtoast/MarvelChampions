@@ -1,9 +1,5 @@
 module Marvel.Aspect.SinisterShieldSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (B))
-import Marvel.Event.Cards qualified as Events
-import Marvel.Minion.Cards qualified as Minions
 import TestImport
 
 asHero :: IdentityId -> GameAppT ()

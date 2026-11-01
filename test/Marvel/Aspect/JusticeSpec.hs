@@ -12,7 +12,7 @@ spec = describe "Justice" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01058"
+        _ <- putIntoPlay p "01058"
         placeMainThreat 3
         threat <- mainSchemeThreatNow
         dd <- allyIn "01058"
@@ -32,7 +32,7 @@ spec = describe "Justice" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01059"
+        _ <- putIntoPlay p "01059"
         placeMainThreat 5
         scheme <- encounterCard Cards.breakinAndTakin
         resolve [RevealEncounterCard p scheme]
@@ -151,7 +151,7 @@ spec = describe "Justice" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01063"
+        _ <- putIntoPlay p "01063"
         room2 <- putInHand p "01063"
         _ <- putInHand p "01088"
         offers (isPlay room2) `shouldReturn` False
@@ -175,7 +175,7 @@ spec = describe "Justice" do
           other = player2 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01063"
+        _ <- putIntoPlay p "01063"
         mercenary <- addMinion p Cards.hydraMercenary
         runNow [MinionMessage mercenary (MinionDamaged (toSource other) (toDamage 10 FromAbility))]
         [room] <- supportsWith "01063"
@@ -186,7 +186,7 @@ spec = describe "Justice" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01063"
+        _ <- putIntoPlay p "01063"
         _ <- putIntoPlay p "01058"
         mercenary <- addMinion p Cards.hydraMercenary
         runNow [MinionMessage mercenary (MinionDamaged (toSource p) (toDamage 2 FromAbility))]
@@ -203,7 +203,7 @@ spec = describe "Justice" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01064"
+        _ <- putIntoPlay p "01064"
         placeMainThreat 5
         threat <- mainSchemeThreatNow
         [team] <- supportsWith "01064"

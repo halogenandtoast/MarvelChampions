@@ -4,8 +4,8 @@ module Marvel.Encounter.KeywordsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
-import Marvel.Entity
-import Marvel.Matchers (EnemyMatcher (..), SchemeMatcher (..), pattern AttackableEnemy)
+import Marvel.Matchers
+    ( SchemeMatcher(ThwartableScheme), data AttackableEnemy )
 import Marvel.Minion.Cards qualified as Cards
 import Marvel.Query (select)
 import Marvel.SideScheme.Cards qualified as Cards

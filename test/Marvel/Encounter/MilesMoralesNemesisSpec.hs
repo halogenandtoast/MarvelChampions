@@ -1,14 +1,10 @@
 module Marvel.Encounter.MilesMoralesNemesisSpec (spec) where
 
-import Data.Aeson (Result (..), Value (Object), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
-import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Runner qualified as Minion
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries

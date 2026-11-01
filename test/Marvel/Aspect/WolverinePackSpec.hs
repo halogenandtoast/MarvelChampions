@@ -1,7 +1,6 @@
 module Marvel.Aspect.WolverinePackSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes

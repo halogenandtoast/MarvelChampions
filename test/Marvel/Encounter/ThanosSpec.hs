@@ -670,7 +670,7 @@ thanosSetSpec = describe "The Thanos set" do
       haymaker <- putInHand you "01087"
       _ <- putInHand you "01088"
       _ <- putInHand you "01090"
-      armor <- attachNow you AttachmentCards.thanossArmor
+      _armor <- attachNow you AttachmentCards.thanossArmor
       playWith haymaker []
       chooseIf (isPayWithCode "01088")
       chooseIf isFinishPayment
@@ -826,7 +826,7 @@ thanosSetSpec = describe "The Thanos set" do
 
   it "The Mad Titan's boost: no ally defeated, no stone" do
     tg <- thanosGame ["spider-man"]
-    let you = player1 tg
+    let _you = player1 tg
     inGame tg do
       removeGauntlet
       clearStones

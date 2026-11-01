@@ -3,7 +3,6 @@ module Marvel.Encounter.TaskmasterSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (sort)
 import Data.Text qualified as T
-import Data.Aeson (Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGame)
 import Marvel.Attachment.Cards qualified as Attachments

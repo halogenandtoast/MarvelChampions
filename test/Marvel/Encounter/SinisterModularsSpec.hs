@@ -1,10 +1,8 @@
 module Marvel.Encounter.SinisterModularsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (A))
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Hero.GhostSpiderSpec (ghostSpider, asGhost)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
@@ -109,7 +107,7 @@ spec = describe "Sinister Motives modular sets" do
         (_, discard) <- setEncounterDeck [Minions.hydraMercenary] [Attachments.smAdvancedGlider]
         _ <- revealNow p Treacheries.smRemoteNavigation
         pass
-        attachmentPresent (head discard) `shouldReturn` True
+        attachmentPresent (testHead discard) `shouldReturn` True
 
     it "Concussive Bombs exhausts one upgrade and one support, spending its counter" do
       tg <- ghostSpider
@@ -255,7 +253,7 @@ spec = describe "Sinister Motives modular sets" do
       inGame tg do
         asGhost p
         card <- revealAttachment p Attachments.smNeocarbonScales
-        vid <- villainIdNow
+        _vid <- villainIdNow
         choose "remove Neocarbon Scales" (isAbilityOf $ AttachmentRef $ attachmentOf card)
         pass
         attachmentPresent card `shouldReturn` False

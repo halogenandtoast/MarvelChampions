@@ -7,7 +7,6 @@ import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity (currentIdentity)
-import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier

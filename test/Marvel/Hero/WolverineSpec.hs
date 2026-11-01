@@ -2,7 +2,7 @@ module Marvel.Hero.WolverineSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Phase
 import Marvel.Status

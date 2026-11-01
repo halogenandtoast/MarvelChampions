@@ -7,7 +7,7 @@ import Data.Functor.Identity (Identity (..))
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign
 import Marvel.EncounterCard (allEncounterCards)
-import Marvel.Environment.Types (Environment, Attrs (..))
+import Marvel.Environment.Types ( Attrs(environmentId) )
 import TestImport
 
 spiderMan, captainMarvel :: CardCode

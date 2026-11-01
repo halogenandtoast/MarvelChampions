@@ -6,7 +6,6 @@ import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
 import Marvel.Attack (attack)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity (currentIdentity)
-import Marvel.Identity.Types (PlayerIdentitySide (..))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Modifier
@@ -14,7 +13,6 @@ import Marvel.Query
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Villain.Types qualified as Villain
 import TestImport
 
 alliesOf :: IdentityId -> GameAppT [AllyId]
@@ -583,7 +581,9 @@ spec = describe "Nebula" do
         technique <- putIntoPlay p "22008"
         cards <- stackEncounterDeck [Treacheries.assault, Treacheries.advance, Treacheries.gangUp]
         gamoraSpecial p technique
-        let [a, b, c] = cards
+        let (a, b, c) = case cards of
+              [first, second, third] -> (first, second, third)
+              _ -> error "Gamora fixture: expected exactly three encounter cards"
         choose "discard the middle card" (isTargetChoice b)
         choose "return the last card first" (isTargetChoice c)
         deck <- encounterDeckNow
@@ -599,6 +599,6 @@ spec = describe "Nebula" do
         technique <- putIntoPlay p "22008"
         (cards, _) <- setEncounterDeck [Treacheries.assault] [Treacheries.advance]
         gamoraSpecial p technique
-        choose "discard the only card" (isTargetChoice $ head cards)
+        choose "discard the only card" (isTargetChoice $ testHead cards)
         offers (isTargetChoice $ upgradeIdOf technique) `shouldReturn` False
         hasUpgrade p technique `shouldReturn` True

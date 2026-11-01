@@ -5,7 +5,6 @@ import Data.Text qualified as T
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.EncounterSet qualified as Set
-import Marvel.MainScheme.Types qualified as Main
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
@@ -13,7 +12,6 @@ import Marvel.NextEvolution.Sinister (superpowers)
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Query
-import Marvel.Scenario.Types (scenarioMainSchemes, scenarioSetAsideCards)
 import Marvel.Trait (Trait (..))
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
@@ -44,7 +42,7 @@ settle = go (200 :: Int)
     Nothing -> pure ()
 
 mainCode :: GameAppT CardCode
-mainCode = getsGame $ toCardCode . getCardDef . snd . head . HashMap.toList . gameMainSchemes
+mainCode = getsGame $ toCardCode . getCardDef . snd . testHead . HashMap.toList . gameMainSchemes
 
 advanceCurrent :: GameAppT ()
 advanceCurrent = mainSchemeIdNow >>= \sid -> resolve [AdvanceMainScheme sid]
@@ -98,7 +96,7 @@ spec = describe "Mister Sinister" do
       advanceCurrent
       advanceCurrent
       mainCode `shouldReturn` "40143"
-      hope <- head <$> alliesWith "40130"
+      hope <- testHead <$> alliesWith "40130"
       let aid = allyId hope
       resolve [GiveStatus (AllyRef aid) ToughStatus]
       before <- damageOf p
@@ -263,7 +261,7 @@ spec = describe "Mister Sinister" do
       tg <- testGame ["spider-man"]
       inGame tg do
         let p = player1 tg
-        top <- head <$> stackEncounterDeck [Treacheries.imTough]
+        top <- testHead <$> stackEncounterDeck [Treacheries.imTough]
         card <- encounterCard Treacheries.ne40158
         resolve [RevealEncounterCard p card]
         playerIdentityEncounterCards . toAttrs <$> getPlayer p `shouldReturn` [top]

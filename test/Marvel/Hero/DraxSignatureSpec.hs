@@ -1,6 +1,5 @@
 module Marvel.Hero.DraxSignatureSpec (spec) where
 
-import Marvel.Card.Side (Side (..))
 import Marvel.Count
 import Marvel.Matchers qualified as M
 import Marvel.Minion.Cards qualified as Minions

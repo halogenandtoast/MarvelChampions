@@ -67,7 +67,7 @@ spec = describe "Valkyrie signature events" do
         handOf p `shouldReturn` [own !! 2]
         discard <- discardOf p
         discard `shouldSatisfy` notElem (own !! 2)
-        all (`elem` discard) [head own, own !! 1, own !! 3, own !! 4, own !! 5, card] `shouldBe` True
+        all (`elem` discard) [testHead own, own !! 1, own !! 3, own !! 4, own !! 5, card] `shouldBe` True
         take 1 . unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` top
         exhaustedNow p `shouldReturn` True
 
@@ -103,13 +103,13 @@ spec = describe "Valkyrie signature events" do
         resolve [IdentityMessage p ExhaustedIdentity]
         playWith card []
         length <$> handOf p `shouldReturn` 0
-        offers (isTargetChoice $ head deck) `shouldReturn` True
-        offers (isTargetChoice $ head discard) `shouldReturn` True
+        offers (isTargetChoice $ testHead deck) `shouldReturn` True
+        offers (isTargetChoice $ testHead discard) `shouldReturn` True
         offers (isTargetChoice $ deck !! 1) `shouldReturn` False
         offers (isTargetChoice $ discard !! 1) `shouldReturn` False
-        choose "put Shocker into play" (isTargetChoice $ head deck)
+        choose "put Shocker into play" (isTargetChoice $ testHead deck)
         pass
-        let mid = MinionId $ unCardId $ ecCardId $ head deck
+        let mid = MinionId $ unCardId $ ecCardId $ testHead deck
         getsGame (fmap (minionEngagedIdentity . toAttrs) . HashMap.lookup mid . gameMinions) `shouldReturn` Just p
         length <$> handOf p `shouldReturn` 2
         -- Put into play does not reveal him: Shocker's When Revealed deals no damage.
@@ -126,11 +126,11 @@ spec = describe "Valkyrie signature events" do
         (_, discard) <- setEncounterDeck [Schemes.bombScare] [Minions.hydraMercenary]
         card <- putInHand p "25010"
         playWith card []
-        choose "take the discarded minion" (isTargetChoice $ head discard)
+        choose "take the discarded minion" (isTargetChoice $ testHead discard)
         pass
-        let mid = MinionId $ unCardId $ ecCardId $ head discard
+        let mid = MinionId $ unCardId $ ecCardId $ testHead discard
         getsGame (HashMap.member mid . gameMinions) `shouldReturn` True
-        encounterDiscard >>= (`shouldSatisfy` notElem (head discard))
+        encounterDiscard >>= (`shouldSatisfy` notElem (testHead discard))
         length <$> handOf p `shouldReturn` 2
 
     it "finishes a searched minion's quickstrike attack before drawing its2 cards" do
@@ -142,7 +142,7 @@ spec = describe "Valkyrie signature events" do
         (deck, _) <- setEncounterDeck [Minions.vulture, Schemes.bombScare] []
         card <- putInHand p "25010"
         playWith card []
-        choose "search for Vulture" (isTargetChoice $ head deck)
+        choose "search for Vulture" (isTargetChoice $ testHead deck)
         length <$> handOf p `shouldReturn` 0
         choose "do not defend quickstrike" isNoDefender
         pass
@@ -160,7 +160,7 @@ spec = describe "Valkyrie signature events" do
         (deck, _) <- setEncounterDeck [Minions.shocker, Schemes.bombScare] []
         card <- putInHand p "25010"
         playWith card []
-        choose "attempt to put another unique Shocker into play" (isTargetChoice $ head deck)
+        choose "attempt to put another unique Shocker into play" (isTargetChoice $ testHead deck)
         pass
         hand <- handOf p
         all (`notElem` hand) top `shouldBe` True

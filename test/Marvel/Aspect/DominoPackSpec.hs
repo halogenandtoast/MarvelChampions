@@ -1,5 +1,4 @@
 module Marvel.Aspect.DominoPackSpec (spec) where
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types
 import Marvel.Deck
 import Marvel.SideScheme.Cards qualified as Schemes

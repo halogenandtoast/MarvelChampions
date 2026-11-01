@@ -12,7 +12,6 @@ import Marvel.Environment.Cards qualified as EnvironmentCards
 import Marvel.Environment.Types (Attrs (..))
 import Marvel.Minion.Cards qualified as MinionCards
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
-import Marvel.Status (StatusCard (..))
 import Marvel.Support.Cards qualified as SupportCards
 import Marvel.Treachery.Cards qualified as TreacheryCards
 import Marvel.Hp (unHp)

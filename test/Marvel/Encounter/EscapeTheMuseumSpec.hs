@@ -3,7 +3,6 @@
 -- brought back, Library Labyrinth and Museum Ship, and the scenario's treacheries.
 module Marvel.Encounter.EscapeTheMuseumSpec (spec) where
 
-import Data.Aeson ((.:))
 import Data.Aeson.Types (parseMaybe)
 import Data.HashMap.Strict qualified as HashMap
 import Data.Text (isInfixOf)

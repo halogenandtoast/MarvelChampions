@@ -16,7 +16,6 @@ import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier (Modifier (..))
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.Stats (Atk (..), Sch (..))
-import Marvel.Status (StatusCard (..))
 import Marvel.Trait (HasTraits (..), Trait (Shield, Undead))
 import Marvel.Treachery.Cards qualified as TreacheryCards
 import Marvel.Villain.Cards qualified as VillainCards

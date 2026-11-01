@@ -2,10 +2,9 @@ module Marvel.Rules.SinisterMotivesLogSpec (spec) where
 
 import Data.Aeson.Key qualified as Key
 import Data.Aeson.KeyMap qualified as KeyMap
-import Data.List (foldl')
 import Marvel.Campaign
-import Marvel.Card.Code
 import Marvel.Prelude
+import TestImport (testTail)
 import Test.Hspec
 
 campaign :: Campaign
@@ -95,7 +94,7 @@ spec = describe "Sinister Motives campaign log" do
 
   it "removes only chosen physical Tech cards from the next player's random pool" do
     let rewarded = recordInLog (RecordShieldTech "27001a" "27182a") campaign
-    shieldTechLeft rewarded `shouldBe` tail shieldTechUpgrades
+    shieldTechLeft rewarded `shouldBe` testTail shieldTechUpgrades
     recordInLog (RecordShieldTech "27030a" "27182a") rewarded `shouldBe` rewarded
     recordInLog (RecordShieldTech "27001a" "27182a") rewarded `shouldBe` rewarded
 
@@ -106,7 +105,7 @@ spec = describe "Sinister Motives campaign log" do
   it "records unique Osborn attachments and returns the remaining random pool" do
     let recorded = recordInLog (RecordOsbornTech "27147") $ recordInLog (RecordOsbornTech "27147") campaign
     recorded.campaignLog.sinister.osbornTech `shouldBe` ["27147"]
-    osbornTechLeft recorded `shouldBe` tail osbornTechAttachments
+    osbornTechLeft recorded `shouldBe` testTail osbornTechAttachments
     recordInLog (RecordOsbornTech "27066") recorded `shouldBe` recorded
 
   it "excludes only completed Community Service from later random choices" do

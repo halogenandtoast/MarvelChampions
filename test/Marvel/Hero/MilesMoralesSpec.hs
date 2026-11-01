@@ -2,7 +2,6 @@ module Marvel.Hero.MilesMoralesSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as Text
-import Marvel.Card.Side (Side (A, B))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as Schemes

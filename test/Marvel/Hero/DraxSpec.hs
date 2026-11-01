@@ -1,6 +1,5 @@
 module Marvel.Hero.DraxSpec (spec) where
 
-import Data.Aeson (Value (..))
 import Data.Aeson.Key (Key)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGame)

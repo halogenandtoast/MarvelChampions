@@ -13,7 +13,7 @@ spec = describe "Leadership" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01066"
+        _ <- putIntoPlay p "01066"
         hawkeye <- allyIn "01066"
         hawkeye.allyCounters `shouldBe` 4
         card <- encounterCard Cards.hydraMercenary
@@ -45,7 +45,7 @@ spec = describe "Leadership" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01068"
+        _ <- putIntoPlay p "01068"
         vision <- allyIn "01068"
         energy <- putInHand p "01088"
         _ <- putInHand p "01088"
@@ -72,7 +72,7 @@ spec = describe "Leadership" do
         clearHand p
         getReady <- putInHand p "01069"
         offers (isPlay getReady) `shouldReturn` False
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         villain <- getVillain
         choose "attack with Maria Hill" (isAllyAttack maria)
@@ -88,7 +88,7 @@ spec = describe "Leadership" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         lead <- putInHand p "01070"
         energy <- putInHand p "01088"
@@ -173,7 +173,7 @@ spec = describe "Leadership" do
         clearHand p
         inspired <- putInHand p "01074"
         offers (isPlay inspired) `shouldReturn` False
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         genius <- putInHand p "01089"
         playOn inspired (allyId maria) [genius]

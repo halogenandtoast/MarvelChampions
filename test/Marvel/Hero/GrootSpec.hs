@@ -1,6 +1,5 @@
 module Marvel.Hero.GrootSpec (spec) where
 
-import Data.Aeson (Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGame)
 import Marvel.Minion.Cards qualified as Minions

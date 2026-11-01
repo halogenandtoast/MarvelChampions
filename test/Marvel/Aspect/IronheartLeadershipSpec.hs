@@ -3,8 +3,7 @@ module Marvel.Aspect.IronheartLeadershipSpec (spec) where
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Phase
 import TestImport
 
@@ -287,7 +286,7 @@ spec = describe "Ironheart Leadership" do
         offers (isPlay facility) `shouldReturn` False
         mental <- putInHand p "29011"
         playWith facility [oneMental, physical, mental]
-        supportUses . head <$> supportsWith "29020" `shouldReturn` 3
+        supportUses . testHead <$> supportsWith "29020" `shouldReturn` 3
         offers (printedAbility facility) `shouldReturn` False
 
     it "exhausts and spends a counter to improve any friendly character until phase end" do
@@ -303,8 +302,8 @@ spec = describe "Ironheart Leadership" do
         pass
         allyThwartPower "01067" `shouldReturn` 3
         allyAttackPower "01067" `shouldReturn` 2
-        supportUses . head <$> supportsWith "29020" `shouldReturn` 2
-        supportExhausted . head <$> supportsWith "29020" `shouldReturn` True
+        supportUses . testHead <$> supportsWith "29020" `shouldReturn` 2
+        supportExhausted . testHead <$> supportsWith "29020" `shouldReturn` True
         offers (printedAbility facility) `shouldReturn` False
         runNow [EndPhase PlayerPhase]
         allyThwartPower "01067" `shouldReturn` 2

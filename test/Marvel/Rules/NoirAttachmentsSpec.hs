@@ -1,6 +1,5 @@
 module Marvel.Rules.NoirAttachmentsSpec (spec) where
 
-import Data.Aeson (Result (..), Value (..), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types qualified as Ally

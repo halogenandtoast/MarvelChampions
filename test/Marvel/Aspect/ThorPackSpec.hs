@@ -1,6 +1,5 @@
 module Marvel.Aspect.ThorPackSpec (spec) where
 
-import Data.Aeson (Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Game.Public (publicGame)
@@ -24,8 +23,8 @@ inPlay p code codes = do
   pure card
 
 -- | A card from hand played on the target, paying with new copies of the cards given.
-inPlayOn :: (IsRef a) => IdentityId -> CardCode -> a -> [CardCode] -> GameAppT PlayerCard
-inPlayOn p code target codes' = do
+_inPlayOn :: (IsRef a) => IdentityId -> CardCode -> a -> [CardCode] -> GameAppT PlayerCard
+_inPlayOn p code target codes' = do
   card <- putInHand p code
   payment <- traverse (putInHand p) codes'
   playOn card target payment

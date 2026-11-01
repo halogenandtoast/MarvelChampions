@@ -24,7 +24,7 @@ oneKatanaAndIllusion you = do
   clearHand you
   changeForm you
   pass
-  knife <- head <$> upgradesWith "41002a"
+  knife <- testHead <$> upgradesWith "41002a"
   L.runQueueT (L.capture $ L.flipPsiEnergy $ upgradeId knife) >>= resolve
   card <- encounterCard Attachments.psionicIllusion
   resolve [RevealEncounterCard you card]

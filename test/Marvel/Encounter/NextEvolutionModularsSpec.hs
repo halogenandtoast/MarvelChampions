@@ -10,8 +10,6 @@ import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier
-import Marvel.NextEvolution.Modulars
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
@@ -53,8 +51,8 @@ isAttachmentAbility aid n = \case
   UseAbility ab -> abilitySource ab == toSource aid && abilityIndex ab == n
   _ -> False
 
-cardAbility :: PlayerCard -> Natural -> Choice -> Bool
-cardAbility card n = \case
+_cardAbility :: PlayerCard -> Natural -> Choice -> Bool
+_cardAbility card n = \case
   UseAbility ab -> isAbilityOfCard card (UseAbility ab) && abilityIndex ab == n
   _ -> False
 
@@ -258,7 +256,7 @@ spec = describe "NeXt Evolution modulars" do
       tg <- modularGame Set.NastyBoys ["spider-man"]
       inGame tg do
         let p = player1 tg
-        ally <- putIntoPlay p "01083"
+        _ally <- putIntoPlay p "01083"
         _ <- revealNow p Minions.ne40115
         ackForced
         pass

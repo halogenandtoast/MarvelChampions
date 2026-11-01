@@ -1,7 +1,6 @@
 module Marvel.Aspect.WarMachinePackSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (..))
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Hp (HP (..))
 import Marvel.Identity (getModifiedCost)

@@ -3,7 +3,6 @@ module Marvel.Aspect.HulkPackSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Villain.Types qualified as V
-import Marvel.Card.Side (Side (A))
 import TestImport
 
 hulk :: IO TestGame

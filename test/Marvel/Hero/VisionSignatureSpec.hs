@@ -6,7 +6,7 @@ import Marvel.Modifier (Modifier (ThreatCannotBeRemovedByThwarting))
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
-import Marvel.Hero.VisionSpec (changeMass, massForm)
+import Marvel.Hero.VisionSpec ( changeMass )
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Query
 import TestImport

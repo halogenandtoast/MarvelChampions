@@ -4,16 +4,13 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Environment.Types qualified as Environment
 import Marvel.Keyword qualified as K
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
-import Marvel.Modifier
 import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as Scheme
-import Marvel.Window qualified as W
 import TestImport
 
 settle :: GameAppT ()
@@ -80,8 +77,8 @@ spec = describe "SP//dr Iron Spider's Sinister Six" do
       let p = player1 tg
       inGame tg do
         asHero p
-        fury <- putIntoPlay p "01084"
-        bird <- putIntoPlay p "01083"
+        _fury <- putIntoPlay p "01084"
+        _bird <- putIntoPlay p "01083"
         mid <- addMinion p Minions.bombshellSinister
         runNow [MinionMessage mid (MinionAttacks p)]
         settle
@@ -282,7 +279,7 @@ spec = describe "SP//dr Iron Spider's Sinister Six" do
         minionTough attrs `shouldBe` True
         keywords <- Minion.getModifiedKeywords attrs
         keywords `shouldSatisfy` (\ks -> all (`elem` ks) [K.Guard, K.Patrol, K.Retaliate 1, K.Overkill])
-        main <- mainSchemeIdNow
+        _main <- mainSchemeIdNow
         offers (isHeroThwart p) `shouldReturn` False
         resolve [MinionMessage mid $ MinionDamaged (IdentityRef p) (toDamage 1 $ FromPlayerAttack p)]
         minionDamageOf mid `shouldReturn` Just 0
@@ -391,7 +388,7 @@ spec = describe "SP//dr Iron Spider's Sinister Six" do
         resolveSinisterBoost Minions.spot
         mids <- selectList (MinionIs Minions.spot)
         length mids `shouldBe` 1
-        minionEngagedIdentity <$> minionAttrs (head mids) `shouldReturn` p
+        minionEngagedIdentity <$> minionAttrs (testHead mids) `shouldReturn` p
 
   describe "Surge in Crime" do
     it "surges itself and makes Criminal minions surge" do

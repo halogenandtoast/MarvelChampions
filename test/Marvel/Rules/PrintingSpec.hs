@@ -11,7 +11,7 @@ spec = describe "a card reprinted in another pack" do
     inGame tg do
       clearHand p
       -- Captain America's Hawkeye is the core set's
-      putIntoPlay p "03012"
+      _ <- putIntoPlay p "03012"
       hawkeye <- allyIn "03012"
       hawkeye.allyCounters `shouldBe` 4
       sameCard (allyCardDef hawkeye) Cards.hawkeyeClintBarton `shouldBe` True

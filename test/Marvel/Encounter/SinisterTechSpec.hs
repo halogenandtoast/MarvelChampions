@@ -1,17 +1,14 @@
 module Marvel.Encounter.SinisterTechSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.GhostSpiderSpec (ghostSpider, asGhost, attackVillain)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity (currentIdentity, getModifiedHp, getModifiedKeywords)
 import Marvel.Keyword (Keyword (Steady, Stalwart))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Phase (Phase (PlayerPhase, VillainPhase))
 import Marvel.Villain.Types qualified as Villain
-import Marvel.Window qualified as W
 import TestImport
 
 stats :: IdentityId -> GameAppT (Natural, Natural, Natural)
@@ -33,7 +30,7 @@ spec = describe "Sinister Motives S.H.I.E.L.D. Tech" do
       inGame tg do
         tech <- putIntoPlay p "27182a"
         resolve [UpgradeMessage (upgradeIdOf tech) $ AddUpgradeUses 3]
-        before <- head <$> upgradesWith "27182a"
+        before <- testHead <$> upgradesWith "27182a"
         resolve [CardSpecific (UpgradeRef $ upgradeIdOf tech) "enhance" $ toJSON ()]
         [after] <- upgradesWith "27182b"
         upgradeId after `shouldBe` upgradeId before
@@ -266,7 +263,7 @@ spec = describe "Sinister Motives S.H.I.E.L.D. Tech" do
           choose "draw from Wrist Navigator" (techAbility wrist 2)
           when (code == "27189b") do
             cards <- handOf p
-            choose "discard after drawing two" (isTargetChoice $ head cards)
+            choose "discard after drawing two" (isTargetChoice $ testHead cards)
           pass
           length <$> handOf p `shouldReturn` (before + 1)
           [attrs] <- upgradesWith code

@@ -264,7 +264,7 @@ spec = describe "Gambit nemesis and Exodus modular" do
           mid <- addMinion p Minions.exodus
           shields <- getsGame $ filter ((== "37034") . toCardCode . getCardDef) . HashMap.elems . gameAttachments
           length shields `shouldBe` 1
-          Attachment.attachmentEnemy (toAttrs $ head shields) `shouldBe` Just (EnemyMinionId mid)
+          Attachment.attachmentEnemy (toAttrs $ testHead shields) `shouldBe` Just (EnemyMinionId mid)
           dealtTo p `shouldReturn` []
 
     it "still enters when no Shield can be found" do
@@ -303,7 +303,7 @@ spec = describe "Gambit nemesis and Exodus modular" do
         resolve [SideSchemeMessage (sideSchemeOf scheme) $ SideSchemeThreatRemoved (IdentityRef other) 6]
         exodus <- getsGame $ filter ((== "37032") . toCardCode . getCardDef) . HashMap.elems . gameMinions
         length exodus `shouldBe` 1
-        Minion.minionEngagedIdentity (toAttrs $ head exodus) `shouldBe` other
+        Minion.minionEngagedIdentity (toAttrs $ testHead exodus) `shouldBe` other
 
   describe "Psionic Shield" do
     it "adds one attack and scheme while attached" do

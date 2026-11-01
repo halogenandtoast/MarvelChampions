@@ -2,11 +2,8 @@ module Marvel.Encounter.NextEvolutionCampaignSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Environment.Types qualified as Environment
 import Marvel.Keyword
-import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.SideScheme.Types qualified as Scheme
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Upgrade.Types qualified as Upgrade
@@ -123,7 +120,7 @@ spec = describe "Next Evolution campaign cards" do
   it "Prepared Defenses applies DEF and retaliate to heroes but not alter-egos" do
     tg <- testGame ["spider-man"]
     inGame tg do
-      env <- addEnvironment (player1 tg) Environments.ne40195b
+      _env <- addEnvironment (player1 tg) Environments.ne40195b
       mods <- getModifiers (player1 tg)
       liftIO $ DefenseModifier 1 `elem` mods `shouldBe` False
       changeForm (player1 tg)
@@ -153,8 +150,8 @@ spec = describe "Next Evolution campaign cards" do
     tg <- testGame ["spider-man"]
     inGame tg do
       clearHand (player1 tg)
-      putInHand (player1 tg) "01005"
-      putInHand (player1 tg) "01088"
+      _ <- putInHand (player1 tg) "01005"
+      _ <- putInHand (player1 tg) "01088"
       resolve . pure . RevealEncounterCard (player1 tg) =<< encounterCard Minions.ne40198
       damageOf (player1 tg) `shouldReturn` 3
 
@@ -162,7 +159,7 @@ spec = describe "Next Evolution campaign cards" do
     tg <- testGame ["spider-man"]
     inGame tg do
       upgrade <- putIntoPlay (player1 tg) "01065"
-      card <- revealNow (player1 tg) Minions.ne40200
+      _card <- revealNow (player1 tg) Minions.ne40200
       choose "discard upgrade" (isTargetChoice $ UpgradeRef $ upgradeIdOf upgrade)
       getsGame (HashMap.member (upgradeIdOf upgrade) . gameUpgrades) `shouldReturn` False
 
@@ -170,7 +167,7 @@ spec = describe "Next Evolution campaign cards" do
     tg <- testGame ["spider-man"]
     inGame tg do
       house <- putIntoPlay (player1 tg) "40197"
-      card <- revealNow (player1 tg) Minions.ne40201
+      _card <- revealNow (player1 tg) Minions.ne40201
       choose "return Safehouse" (isTargetChoice $ SupportRef $ supportIdOf house)
       (map toCardCode <$> handOf (player1 tg)) >>= (`shouldSatisfy` elem "40197")
 
@@ -178,7 +175,7 @@ spec = describe "Next Evolution campaign cards" do
     tg <- testGame ["spider-man"]
     inGame tg do
       resource <- putInHand (player1 tg) "01088"
-      card <- revealNow (player1 tg) Treacheries.ne40203
+      _card <- revealNow (player1 tg) Treacheries.ne40203
       choose "discard resource" (isTargetChoice resource)
       damageOf (player1 tg) `shouldReturn` 0
       (map toCardId <$> handOf (player1 tg)) >>= (`shouldSatisfy` notElem (toCardId resource))
@@ -187,7 +184,7 @@ spec = describe "Next Evolution campaign cards" do
     tg <- testGame ["spider-man"]
     inGame tg do
       clearHand (player1 tg)
-      card <- revealNow (player1 tg) Treacheries.ne40203
+      _card <- revealNow (player1 tg) Treacheries.ne40203
       choose "take damage" (isLabel "$label.neTakeTwoDamage")
       damageOf (player1 tg) `shouldReturn` 2
 
@@ -197,7 +194,7 @@ spec = describe "Next Evolution campaign cards" do
       changeForm (player1 tg)
       pass
       clearHand (player1 tg)
-      env <- addEnvironment (player1 tg) Environments.ne40194b
+      _env <- addEnvironment (player1 tg) Environments.ne40194b
       kick <- putInHand (player1 tg) "01005"
       energy <- putInHand (player1 tg) "01088"
       playWith kick [energy]

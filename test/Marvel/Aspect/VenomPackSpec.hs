@@ -3,7 +3,6 @@ module Marvel.Aspect.VenomPackSpec (spec) where
 import Control.Monad (replicateM)
 import Data.List (find)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V

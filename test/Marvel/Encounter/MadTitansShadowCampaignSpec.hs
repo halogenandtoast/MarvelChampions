@@ -15,7 +15,6 @@ import Marvel.Phase (Phase (PlayerPhase))
 import Marvel.Query
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.SideScheme.Types qualified as SideScheme
-import Marvel.Status (StatusCard (..))
 import Marvel.Treachery.Cards qualified as TreacheryCards
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W

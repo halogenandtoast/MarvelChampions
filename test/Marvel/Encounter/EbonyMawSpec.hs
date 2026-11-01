@@ -17,7 +17,6 @@ import Marvel.Minion.Cards qualified as MinionCards
 import Marvel.Query (selectList)
 import Marvel.SideScheme.Cards qualified as SideSchemeCards
 import Marvel.SideScheme.Types qualified as SideScheme
-import Marvel.Status (StatusCard (ToughStatus))
 import Marvel.Trait (Trait (Spell))
 import Marvel.Treachery.Cards qualified as TreacheryCards
 import Marvel.Villain.Cards qualified as VillainCards

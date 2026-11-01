@@ -1,18 +1,14 @@
 module Marvel.Hero.CableSpec (spec) where
 
 import Data.Maybe (fromJust)
-import Marvel.GameValue
 import Marvel.Trait (Trait (..))
-import Marvel.MainScheme.Types (mainSchemeAccelerationTokens)
 import Marvel.Window qualified as W
 import Marvel.Scenario.Types (scenarioEncounterDeck)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Game (getPlayerVictoryDisplay)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Matchers hiding (ExhaustedIdentity)
@@ -125,7 +121,7 @@ spec = describe "Cable" do
       asHero p
       sid <- fromJust <$> purge
       resolve [AddToVictoryDisplay $ SideSchemeRef sid]
-      top <- head <$> stackEncounterDeck [Treacheries.advance]
+      top <- testHead <$> stackEncounterDeck [Treacheries.advance]
       precognition <- putInHand p "40004"
       playWith precognition []
       choose "discard the looked-at card" (isTargetChoice top)

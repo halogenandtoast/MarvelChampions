@@ -21,7 +21,7 @@ spec = describe "player side schemes" do
       playWith card [energy]
       board <- schemes
       length board `shouldBe` 1
-      let scheme = head board
+      let scheme = testHead board
       SideScheme.sideSchemeThreat (toAttrs scheme) `shouldBe` 4
       toCard scheme `shouldBe` PlayerCard card
 

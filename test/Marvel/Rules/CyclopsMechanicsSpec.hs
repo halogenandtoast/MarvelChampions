@@ -6,7 +6,6 @@ import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Choice qualified as Choices
 import Marvel.Cost qualified as Cost
 import Marvel.Criteria
-import Marvel.Payment.Types (Payment (ResourcePayment))
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.Aeson.KeyMap qualified as KeyMap

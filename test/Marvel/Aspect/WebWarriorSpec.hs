@@ -4,7 +4,6 @@ import TestImport
 import Marvel.Identity (currentIdentity)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.AlterEgo.Runner qualified as AlterEgo
-import Marvel.Identity.Types (PlayerIdentitySide (..))
 
 spec :: Spec
 spec = describe "Sinister Motives basic cards" do

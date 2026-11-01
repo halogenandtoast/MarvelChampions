@@ -256,8 +256,8 @@ spec = describe "Ghost-Spider signature cards" do
           clearGeorges p
           george <- case zone of
             "hand" -> putInHand p "27007"
-            "deck" -> head <$> stackDeck p ["27007"]
-            _ -> head <$> stackDiscard p ["27007"]
+            "deck" -> testHead <$> stackDeck p ["27007"]
+            _ -> testHead <$> stackDiscard p ["27007"]
           card <- revealNow p Obligations.worriedFather
           pass
           let oid = ObligationId $ unCardId $ ecCardId card

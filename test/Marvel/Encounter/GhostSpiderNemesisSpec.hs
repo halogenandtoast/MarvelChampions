@@ -7,7 +7,6 @@ import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Runner qualified as Minion
 import Marvel.Phase (Phase (PlayerPhase, VillainPhase))
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Trait (Trait (Creature))
 import Marvel.Treachery.Cards qualified as Treacheries

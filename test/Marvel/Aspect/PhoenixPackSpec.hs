@@ -7,7 +7,6 @@ import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Types qualified as Minion
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Discard (Discard (..))
 import Marvel.Phase (Phase (..))
 import Marvel.Status
 import Marvel.Villain.Types (villainConfused)

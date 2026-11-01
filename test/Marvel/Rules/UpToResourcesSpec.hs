@@ -6,10 +6,8 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.Ally.Runner ()
 import Marvel.Cost.Types
 import Marvel.Criteria
-import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Modifier
 import Marvel.Payment.Types
-import Marvel.Question (runAbility)
 import TestImport
 
 -- A test ally exposes the resource payment independently of Machine Man's interrupt.

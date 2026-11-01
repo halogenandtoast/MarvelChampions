@@ -3,12 +3,9 @@ module Marvel.Encounter.MysterioSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Choice (choiceMessages)
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck, playerZoneEncounterCard)
 import Marvel.EncounterSet (EncounterSet (WhispersOfParanoia))
-import Marvel.MainScheme.Cards qualified as MainSchemes
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Villain.Types qualified as Villain
 import TestImport
 
 mysterio :: [Text] -> IO TestGame
@@ -28,8 +25,8 @@ playerDeck p = unDeck . playerIdentityDeck <$> playerAttrs p
 setPlayerDeck :: IdentityId -> [PlayerCard] -> GameAppT ()
 setPlayerDeck p cards = withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity attrs) -> PlayerIdentity attrs {playerIdentityDeck = Deck cards}
 
-clearApparitions :: GameAppT ()
-clearApparitions = do
+_clearApparitions :: GameAppT ()
+_clearApparitions = do
   minions <- getsGame (HashMap.keys . gameMinions)
   resolve [RemoveFromGame (toRef mid) | mid <- minions]
 

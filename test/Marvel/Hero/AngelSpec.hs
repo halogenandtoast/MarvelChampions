@@ -1,17 +1,14 @@
 module Marvel.Hero.AngelSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ability qualified as Ability
-import Marvel.GameValue
 import Marvel.Effect.Types (Effect (..), Attrs (..), IsEffect)
 import Marvel.Matchers.Types (EntityMatcher (AllyEntity), AllyMatcher (AllyWithId))
 import Marvel.Modifier (Modifier (..))
 import Marvel.Phase
 import Marvel.Stats
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.AlterEgo.Runner qualified as AlterEgo
-import Marvel.Window qualified as W
 import TestImport
 
 angel :: IO TestGame

@@ -2,8 +2,7 @@ module Marvel.Encounter.SinisterMotivesCampaignCardsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Environment.Types qualified as Environment
-import Marvel.Hero.GhostSpiderSpec (ghostSpider, asGhost, attackVillain)
+import Marvel.Hero.GhostSpiderSpec ( asGhost, ghostSpider )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme

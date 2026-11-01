@@ -1,7 +1,7 @@
 module Marvel.Hero.IronheartSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Identity (currentIdentity, ironheartVersion, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity, ironheartVersion )
 import Marvel.Hero.Runner qualified as Hero
 import TestImport
 

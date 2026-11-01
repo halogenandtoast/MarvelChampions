@@ -2,7 +2,6 @@ module Marvel.SmokeSpec (spec) where
 
 import Control.Exception (SomeException, displayException, evaluate, try)
 import Data.Text (unpack)
-import Control.Monad.IO.Class (liftIO)
 import System.Random (mkStdGen, randomR)
 import Marvel.EncounterSet (modularSets)
 import Marvel.EncounterSet qualified as Encounter
@@ -16,7 +15,6 @@ import TestImport
 import SmokeMonitor (withQuestionMonitor)
 import Marvel.Campaign
 import Data.HashMap.Strict qualified as HashMap
-import Data.Aeson (encode)
 import Data.ByteString.Lazy qualified as BL
 import Marvel.Game.Public (publicGameFor)
 
@@ -75,13 +73,13 @@ spec = parallel do
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
-      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution], (n, villain) <- zip [0..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
                <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
                <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases)) | name <- campaigns]
-      mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
-      nextEvolutionCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0..] (campaignScenarios NextEvolution), mode <- [StandardCampaign, ExpertCampaign]]
+      mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
+      nextEvolutionCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios NextEvolution), mode <- [StandardCampaign, ExpertCampaign]]
   selected <- if not focused then pure Nothing else runIO do
     for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
     for_ focusModulars $ \modular -> unless (any ((== Text.toCaseFold modular) . Text.toCaseFold . Text.pack . show) modularSets) $

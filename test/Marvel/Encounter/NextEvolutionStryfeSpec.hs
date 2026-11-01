@@ -112,7 +112,7 @@ spec = describe "Next Evolution Stryfe" do
       _ <- revealNow you Treacheries.ne40177
       resolve []
       dealt <- dealtTo you
-      liftIO $ map ecCardId dealt `shouldBe` [ecCardId $ head deck]
+      liftIO $ map ecCardId dealt `shouldBe` [ecCardId $ testHead deck]
 
   it "Psychic Override counts chosen cards after drawing up to hand size" do
     tg <- testGame ["spider-man"]

@@ -46,12 +46,12 @@ spec = describe "Valkyrie minion search costs" do
       card <- searchingAssessment p
       (deck, _) <- setEncounterDeck [Minions.shocker, Schemes.bombScare] []
       playWith card []
-      choose "attempt another unique Shocker" (isTargetChoice $ head deck)
+      choose "attempt another unique Shocker" (isTargetChoice $ testHead deck)
       pass
       handSizeOf p `shouldReturn` before
       getsGame (HashMap.keys . gameMinions) `shouldReturn` [existing]
       handOf p >>= (`shouldSatisfy` elem card)
-      encounterDiscard >>= (`shouldSatisfy` elem (head deck))
+      encounterDiscard >>= (`shouldSatisfy` elem (testHead deck))
 
   it "pays the cost when the minion enters but later dies to retaliate during its quickstrike" do
     tg <- testGame ["spider-man"]
@@ -64,11 +64,11 @@ spec = describe "Valkyrie minion search costs" do
       card <- searchingAssessment p
       (deck, _) <- setEncounterDeck [Minions.vulture, Schemes.bombScare] []
       playWith card []
-      choose "put Vulture into play" (isTargetChoice $ head deck)
+      choose "put Vulture into play" (isTargetChoice $ testHead deck)
       handSizeOf p `shouldReturn` before
       choose "do not defend quickstrike" isNoDefender
       pass
-      let mid = MinionId $ unCardId $ ecCardId $ head deck
+      let mid = MinionId $ unCardId $ ecCardId $ testHead deck
       damageOf p `shouldReturn` 3
       getsGame (HashMap.member mid . gameMinions) `shouldReturn` False
       handSizeOf p `shouldReturn` before + 1

@@ -2,7 +2,6 @@
 -- victory display, patrol, stalwart, peril and the amplify icon.
 module Marvel.Rules.GalaxysMostWantedSpec (spec) where
 
-import Data.Aeson (Result (..), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet

@@ -3,10 +3,7 @@ module Marvel.Aspect.RoguePackSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Data.Maybe (fromJust)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Types (upgradeUses)
 import Marvel.Stats (unAtk, unThw)
-import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Window qualified as W
 import TestImport
 
@@ -244,7 +241,7 @@ spec = describe "Rogue pack" do
         moira <- putInHand p "38018"
         energy <- putInHand p "01088"
         playWith moira [energy]
-        top <- head <$> stackDeck p ["38005"]
+        top <- testHead <$> stackDeck p ["38005"]
         changeForm p
         choose "Moira sees the Mutant change" (cardAbility moira 1)
         handOf p `shouldReturn` [top]
@@ -270,7 +267,7 @@ spec = describe "Rogue pack" do
         clearHand p
         clearHand q
         moira <- putIntoPlay p "38018"
-        top <- head <$> stackDeck q ["37006"]
+        top <- testHead <$> stackDeck q ["37006"]
         runNow [IdentityMessage q $ ChangedToForm A]
         choose "Moira sees Gambit's change" (cardAbility moira 1)
         handOf q `shouldReturn` [top]
@@ -464,8 +461,8 @@ spec = describe "Rogue pack" do
         choose "Med Lab captures the defeated controlled minion" (cardAbility lab 1)
         held <- concatMap supportHeldCards <$> supportsWith "38028"
         length held `shouldBe` 1
-        pcOwner (head held) `shouldBe` Nothing
-        cdCardType (getCardDef $ head held) `shouldBe` MinionType
+        pcOwner (testHead held) `shouldBe` Nothing
+        cdCardType (getCardDef $ testHead held) `shouldBe` MinionType
         getEncounterDiscard >>= (`shouldSatisfy` all ((/= CardId (unMinionId mid)) . ecCardId))
         resolve [SupportMessage (supportIdOf lab) ReadiedSupport, IdentityMessage p $ ChangedToForm B]
         _ <- putInHand p "01088"
@@ -481,7 +478,7 @@ spec = describe "Rogue pack" do
         clearHand p
         moira <- putIntoPlay p "38018"
         perseverance <- putInHand p "13033"
-        top <- head <$> stackDeck p ["01090"]
+        top <- testHead <$> stackDeck p ["01090"]
         changeForm p
         choose "draw with Moira first" (cardAbility moira 1)
         offers (isPlay perseverance) `shouldReturn` True
@@ -541,7 +538,7 @@ spec = describe "Rogue pack" do
         clearHand p
         energy <- putInHand p "01088"
         strength <- putInHand p "01090"
-        top <- head <$> stackDeck p ["38005"]
+        top <- testHead <$> stackDeck p ["38005"]
         choose "Med Lab replay" (cardAbility lab 2)
         choose "White Tiger" (isTargetChoice tiger)
         payWith [energy, strength]

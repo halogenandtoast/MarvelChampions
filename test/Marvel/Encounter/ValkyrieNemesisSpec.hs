@@ -8,9 +8,9 @@ import Marvel.Attachment.Types qualified as Attachment
 import Marvel.EncounterCard (gatherEncounterSet)
 import Marvel.EncounterSet (EncounterSet (ValkyrieNemesis), getNemesisSet)
 import Marvel.Hp (HP (..))
-import Marvel.Matchers (EnemyMatcher (..), IdentityMatcher (IdentityWithId), identityMatches)
+import Marvel.Matchers
+    ( IdentityMatcher(IdentityWithId), EnemyMatcher(AttackableBy) )
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier (Modifier (CannotBeDiscarded))
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types qualified as Obligation
@@ -313,7 +313,7 @@ spec = describe "Valkyrie nemesis" do
           let inDeck = if associatedInDeck then Attachments.seducedValkyrie else Attachments.seduced
               inDiscard = if associatedInDeck then Attachments.seduced else Attachments.seducedValkyrie
           (deck, discarded) <- setEncounterDeck [inDeck, Treacheries.advance] [inDiscard]
-          let modular = if associatedInDeck then head discarded else head deck
+          let modular = if associatedInDeck then testHead discarded else testHead deck
           _ <- revealNow p Minions.enchantressValkyrie
           settle
           [attached] <- attachmentsOf Attachments.seducedValkyrie
@@ -330,7 +330,7 @@ spec = describe "Valkyrie nemesis" do
           aside <- getSetAsideEncounterCards
           resolve [RemoveFromGame $ toRef card | card <- aside, toCardCode card == "25032"]
           (deck, discarded) <- setEncounterDeck [Attachments.seduced, Treacheries.advance] [Attachments.seducedValkyrie]
-          let chosen = if chooseValkyriePrinting then head discarded else head deck
+          let chosen = if chooseValkyriePrinting then testHead discarded else testHead deck
               expected = if chooseValkyriePrinting then Attachments.seducedValkyrie else Attachments.seduced
           _ <- revealNow p Minions.enchantress
           choose "choose the available Seduced printing" (isTargetChoice chosen)
@@ -421,7 +421,7 @@ spec = describe "Valkyrie nemesis" do
         deck <- stackEncounterDeck [Minions.hydraMercenary, Treacheries.advance]
         _ <- revealNow p Attachments.beguiledValkyrie
         settle
-        dealtTo p >>= (`shouldSatisfy` elem (head deck))
+        dealtTo p >>= (`shouldSatisfy` elem (testHead deck))
         encounterDiscardCodes >>= (`shouldSatisfy` elem "25031")
 
     it "defeating the hostile minion discards the ally to its owner and Beguiled to the encounter discard" do

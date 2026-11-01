@@ -1,6 +1,5 @@
 module Marvel.Encounter.LongshotEncounterSpec (spec) where
 
-import Data.Aeson (Result (..), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Ally.Cards qualified as Allies
 import Marvel.Ally.Types qualified as Ally

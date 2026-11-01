@@ -5,7 +5,6 @@ import Data.List (find)
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Query
 import Marvel.Damage
-import Marvel.Game.Source (getModifiers)
 import Marvel.Identity (getModifiedKeywords)
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity)

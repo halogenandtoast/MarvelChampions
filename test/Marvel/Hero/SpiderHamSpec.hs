@@ -1,10 +1,9 @@
 module Marvel.Hero.SpiderHamSpec (spec) where
 
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Matchers hiding (ExhaustedIdentity)
-import Marvel.Query
 import Marvel.Trait
 import Marvel.Phase
 import TestImport

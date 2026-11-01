@@ -5,7 +5,6 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Keyword
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Status
 import TestImport

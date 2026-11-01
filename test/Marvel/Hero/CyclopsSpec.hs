@@ -4,12 +4,10 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.AlterEgo.Types qualified as AlterEgo
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
-import Marvel.Matchers
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Message.Identity qualified as Identity
-import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Stats
 import Marvel.Villain.Types qualified as Villain

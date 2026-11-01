@@ -7,11 +7,9 @@ import Data.HashSet qualified as HashSet
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
-import Marvel.Cost
 import Marvel.Damage
 import Marvel.EncounterSet qualified as Set
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Hood.Helpers
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted qualified as L

@@ -1,13 +1,11 @@
 module Marvel.Rules.SteadyMinionSpec (spec) where
 
-import Data.Aeson (Result (..), Value (Object), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Keyword (Keyword (Steady))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Runner qualified as Minion
-import Marvel.Status (StatusCard (StunnedStatus))
 import Marvel.Stats (Sch (..))
 import TestImport
 

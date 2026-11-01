@@ -1,11 +1,9 @@
 module Marvel.Hero.PsylockeSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Data.List (nub)
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Deck (unDeck)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Query
 import Marvel.Upgrade.Cards qualified as Upgrades
@@ -54,7 +52,7 @@ spec = describe "Psylocke" do
       let p = player1 tg
       asPsylocke p
       stats p `shouldReturn` (3,1,2)
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       runNow [CardSpecific (UpgradeRef u) "flipPsiEnergy" Null]
       stats p `shouldReturn` (2,2,2)
       us <- weaponIds p
@@ -68,7 +66,7 @@ spec = describe "Psylocke" do
       asPsylocke p
       choose "basic attack" (isHeroAttack p)
       choose "Psi-Energy Control" (psiControl p)
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "flip first knife" (isTargetChoice u)
       chooseVillain
       villainDamageNow `shouldReturn` 2
@@ -95,7 +93,7 @@ spec = describe "Psylocke" do
       before <- mainSchemeThreatNow
       choose "basic thwart" (isHeroThwart p)
       choose "Psi-Energy Control" (psiControl p)
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "flip knife" (isTargetChoice u)
       chooseMainScheme
       mainSchemeThreatNow `shouldReturn` (before - 2)
@@ -108,7 +106,7 @@ spec = describe "Psylocke" do
       rhinoAttacks p
       choose "defend" isDefend
       choose "Psi-Energy Control" (psiControl p)
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "flip knife" (isTargetChoice u)
       pass
       length <$> upgradesWith "41002b" `shouldReturn` 1
@@ -129,7 +127,7 @@ spec = describe "Psylocke" do
       let p = player1 tg
       asPsylocke p
       skill <- putInHand p "41010"
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "play skill" (isPlay skill)
       choose "knife resource" (isAbilityOf u)
       choose "flip weapon" (isLabel "$label.flipPsiEnergy")
@@ -144,7 +142,7 @@ spec = describe "Psylocke" do
       let p = player1 tg
       asPsylocke p
       skill <- putInHand p "41010"
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "play skill" (isPlay skill)
       choose "knife resource" (isAbilityOf u)
       choose "keep side" (isLabel "$label.done")
@@ -161,7 +159,7 @@ spec = describe "Psylocke" do
       choose "Psionic Manifestation action" $ \case
         UseAbility ab -> abilitySource ab == IdentityRef p && abilityIndex ab == 2
         _ -> False
-      u <- head <$> weaponIds p
+      u <- testHead <$> weaponIds p
       choose "exhaust weapon" (isTargetChoice u)
       choose "shuffle Psionic" (isTargetChoice card)
       map toCardCode <$> discardOf p `shouldReturn` []
@@ -195,7 +193,7 @@ spec = describe "Psylocke" do
       let p = player1 tg
       clearHand p
       regimen <- putIntoPlay p "41008"
-      found <- head <$> stackDeck p ["41009", "41005"]
+      found <- testHead <$> stackDeck p ["41009", "41005"]
       choose "Training Regimen" (isAbilityOfCard regimen)
       choose "Skill card" (isTargetChoice found)
       (map toCardCode <$> handOf p) `shouldReturn` ["41009"]
@@ -206,7 +204,7 @@ spec = describe "Psylocke" do
       let p = player1 tg
       asPsylocke p
       regimen <- putIntoPlay p "41008"
-      found <- head <$> stackDeck p ["41009", "41005"]
+      found <- testHead <$> stackDeck p ["41009", "41005"]
       choose "Training Regimen" (isAbilityOfCard regimen)
       choose "Skill card" (isTargetChoice found)
       choose "discard found card" (isTargetChoice found)

@@ -1,9 +1,8 @@
 module Marvel.Encounter.VisionNemesisSpec (spec) where
 
-import Marvel.Card.Id (CardId (..))
 import Marvel.Hero.VisionSpec (changeMass, massForm)
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Minion.Cards qualified as Minions
@@ -138,7 +137,7 @@ spec = describe "Vision nemesis" do
       inGame tg do
         _ <- revealNow p Environments.ultronDronesVision
         pass
-        top <- head . unDeck . playerIdentityDeck <$> playerAttrs p
+        top <- testHead . unDeck . playerIdentityDeck <$> playerAttrs p
         before <- selectList (MinionWithTrait Drone)
         resolve [PutTopOfDeckIntoPlayAsDrone p]
         drones <- filter (`notElem` before) <$> selectList (MinionWithTrait Drone)

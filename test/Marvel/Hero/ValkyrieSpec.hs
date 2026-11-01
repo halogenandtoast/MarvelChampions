@@ -80,7 +80,7 @@ spec = describe "Valkyrie" do
         deck <- unDeck . playerIdentityDeck <$> playerAttrs p
         map toCardCode (hand <> discard <> deck) `shouldSatisfy` notElem "25002"
         length (hand <> discard <> deck) `shouldBe` 40
-        pcOwner (head glows) `shouldBe` Just p
+        pcOwner (testHead glows) `shouldBe` Just p
 
     it "runs Setup after drawing and mulliganing, without replacing a Death-Glow kept in hand" do
       tg <- testGame ["valkyrie"]
@@ -260,13 +260,13 @@ spec = describe "Valkyrie" do
         offers (isTargetChoice $ top !! 1) `shouldReturn` True
         offers (isTargetChoice $ top !! 3) `shouldReturn` True
         offers (isTargetChoice $ top !! 5) `shouldReturn` False
-        offers (isTargetChoice $ head top) `shouldReturn` False
+        offers (isTargetChoice $ testHead top) `shouldReturn` False
         choose "take Aragorn" (isTargetChoice $ top !! 1)
         pass
         handOf p >>= (`shouldSatisfy` elem (top !! 1))
         after <- unDeck . playerIdentityDeck <$> playerAttrs p
         length after `shouldBe` before - 1
-        all (`elem` after) [head top, top !! 2, top !! 3, top !! 4, top !! 5] `shouldBe` True
+        all (`elem` after) [testHead top, top !! 2, top !! 3, top !! 4, top !! 5] `shouldBe` True
         getsGame (fmap (Ally.allyExhausted . toAttrs) . HashMap.lookup (allyIdOf annabelle) . gameAllies) `shouldReturn` Just True
         offers (cardAbility annabelle 1) `shouldReturn` False
 
@@ -302,7 +302,7 @@ spec = describe "Valkyrie" do
         top <- stackDeck other ["01002", "25009", "01088", "01089", "01090"]
         endTurn
         choose "Annabelle searches for her controller" (cardAbility annabelle 1)
-        offers (isTargetChoice $ head top) `shouldReturn` False
+        offers (isTargetChoice $ testHead top) `shouldReturn` False
         choose "take the Valkyrie event" (isTargetChoice $ top !! 1)
         pass
         handOf other >>= (`shouldSatisfy` elem (top !! 1))

@@ -5,7 +5,6 @@ import Marvel.Ability (windowAbility)
 import Marvel.Ability.Types (AbilityType (..), HasAbilities (..))
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.Side (Side (A))
 import Marvel.Cost.Types (Cost (..))
 import Marvel.Matchers.Types hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted qualified as L
@@ -288,7 +287,7 @@ spec = describe "Valkyrie shared engine mechanics" do
       replaceHandCard p card
       (deck, _) <- setEncounterDeck [Minions.vulture, Schemes.bombScare] []
       playWith card []
-      choose "search for Vulture" (isTargetChoice $ head deck)
+      choose "search for Vulture" (isTargetChoice $ testHead deck)
       -- Quickstrike's defender choice is still part of paying the cost.
       damageOf p `shouldReturn` 1
       choose "do not defend quickstrike" isNoDefender
@@ -310,8 +309,8 @@ spec = describe "Valkyrie shared engine mechanics" do
       replaceHandCard p card
       (deck, discard) <- setEncounterDeck [Schemes.bombScare] [Schemes.crowdControl]
       playWith card []
-      offers (isTargetChoice $ head discard) `shouldReturn` False
-      choose "reveal the scheme from the deck" (isTargetChoice $ head deck)
+      offers (isTargetChoice $ testHead discard) `shouldReturn` False
+      choose "reveal the scheme from the deck" (isTargetChoice $ testHead deck)
       pass
       threats <- getsGame (map (Scheme.getSideSchemeThreat) . HashMap.elems . gameSideSchemes)
       threats `shouldBe` [3]

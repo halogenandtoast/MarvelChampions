@@ -1,7 +1,7 @@
 module Marvel.Hero.RocketRaccoonSpec (spec) where
 
 import Marvel.Hero.Runner (getModifiedAttack, getModifiedThwart)
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers (IdentityMatcher (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query (selectAny)

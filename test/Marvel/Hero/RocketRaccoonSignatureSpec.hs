@@ -1,8 +1,7 @@
 module Marvel.Hero.RocketRaccoonSignatureSpec (spec) where
 
-import Marvel.Card.Side (Side (..))
 import Marvel.Hero.Runner (getModifiedThwart)
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier (Modifier (ThwartModifier))
 import Marvel.Obligation.Cards qualified as Obligations

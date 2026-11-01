@@ -5,7 +5,6 @@ import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Cost.Types
 import Marvel.Criteria
 import Marvel.Matchers
-import Marvel.Payment.Types (Payment (ResourcePayment))
 import Marvel.Window qualified as W
 import TestImport
 

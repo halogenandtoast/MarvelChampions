@@ -1,14 +1,10 @@
 module Marvel.Hero.IronheartSignatureSpec (spec) where
 
-import Data.Aeson (Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGameFor)
 import Marvel.Identity (ironheartVersion)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
-import Marvel.Card.Def (getCardDef)
-import Marvel.Status (StatusCard (ToughStatus))
 import TestImport
 
 ironheartGame :: IO TestGame
@@ -170,7 +166,7 @@ spec = describe "Ironheart signature" do
         choose "ready" (isLabel "$label.newAndImprovedReady")
         known <- stackDeck p ["29005"]
         choose "search" (isLabel "$label.newAndImprovedSearch")
-        choose "Ironheart card" (isTargetChoice $ head known)
+        choose "Ironheart card" (isTargetChoice $ testHead known)
         exhaustedNow p `shouldReturn` False
         (.playerIdentityTough) <$> playerAttrs p `shouldReturn` True
 
@@ -257,7 +253,7 @@ spec = describe "Ironheart signature" do
         ai <- putIntoPlay p "29011"
         cards <- stackDeck p ["01088", "01089"]
         choose "Tony Stark A.I." (isAbilityOfCard ai)
-        choose "first card" (isTargetChoice $ head cards)
+        choose "first card" (isTargetChoice $ testHead cards)
         map toCardCode <$> handOf p `shouldReturn` ["01088"]
         discard <- map toCardCode <$> discardOf p
         discard `shouldSatisfy` elem "01089"

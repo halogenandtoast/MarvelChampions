@@ -6,7 +6,6 @@ module Marvel.Rules.VenomRulesSpec (spec) where
 import Data.HashSet qualified as HashSet
 import Marvel.Matchers (SchemeMatcher (SchemeYouCanThwart))
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Query (select)
 import Marvel.Villain.Types qualified as V
 import TestImport

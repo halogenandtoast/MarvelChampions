@@ -1,7 +1,6 @@
 module Marvel.Encounter.QuicksilverNemesisSpec (spec) where
 
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.Side (Side (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as SideSchemes
@@ -189,14 +188,14 @@ spec = describe "Quicksilver nemesis" do
         pass
         villainDamageNow `shouldReturn` 1
         -- Maria Hill's 1 ATK
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         choose "attack with Maria Hill" (isAllyAttack maria)
         chooseVillain
         pass
         villainDamageNow `shouldReturn` 1
         -- Tac Team's 2 damage is no attack
-        putIntoPlay p "01056"
+        _ <- putIntoPlay p "01056"
         [team] <- supportsWith "01056"
         choose "use Tac Team" (isAbilityOf (supportId team))
         chooseVillain

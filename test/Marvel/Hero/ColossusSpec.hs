@@ -2,7 +2,7 @@ module Marvel.Hero.ColossusSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Status
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Minion.Cards qualified as Minions
@@ -144,7 +144,7 @@ spec = describe "Colossus" do
       let p = player1 tg
       clearHand p
       armor <- putInHand p "32010"
-      vid <- villainIdNow
+      _vid <- villainIdNow
       start [IdentityMessage p VillainAndMinionsActivate]
       offers (isPlay armor) `shouldReturn` True
 

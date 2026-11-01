@@ -2,7 +2,6 @@ module Marvel.Rules.PrintedCostSpec (spec) where
 
 import Marvel.ActiveCost.Types (ActiveCost (..), ActiveCostTarget (ForContinuation))
 import Marvel.Cost (Cost (PrintedResourceCost), canAffordCost)
-import Marvel.Payment.Types (Payment (NoPayment))
 import TestImport
 
 spec :: Spec

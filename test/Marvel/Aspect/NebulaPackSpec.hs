@@ -10,7 +10,6 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types (overMinion)
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Payment (Payment (..))
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport hiding (allyDamage)

@@ -1,6 +1,5 @@
 module Marvel.Rules.ChosenHandCardCostSpec (spec) where
 
-import Marvel.Card.Side (Side (A))
 import Marvel.ActiveCost.Types
 import Marvel.Cost (canAffordAllianceCost)
 import Marvel.Cost.Types

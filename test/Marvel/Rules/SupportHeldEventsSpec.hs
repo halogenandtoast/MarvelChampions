@@ -6,8 +6,6 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Support.Types qualified as Support
 import Marvel.Ability.Types (HasAbilities)
 import Marvel.Modifier (HasModifiersFor (..))
-import Marvel.Matchers.Types
-import Marvel.Modifier (Modifier (Blank))
 import TestImport
 
 newtype StoredSupport = StoredSupport (Attrs Support)

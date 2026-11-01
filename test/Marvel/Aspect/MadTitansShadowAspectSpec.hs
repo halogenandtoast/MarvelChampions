@@ -1,6 +1,5 @@
 module Marvel.Aspect.MadTitansShadowAspectSpec (spec) where
 
-import Marvel.Card.Def (canonicalCardCode)
 import Marvel.Event.Cards qualified as Events
 import Marvel.Identity (getModifiedCost)
 import Marvel.Keyword (Keyword (Retaliate, Toughness))

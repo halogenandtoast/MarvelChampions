@@ -5,7 +5,6 @@ import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
-import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Runner qualified as Minion
 import Marvel.Modifier
@@ -15,8 +14,8 @@ import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
-environmentOf :: EncounterCard -> EnvironmentId
-environmentOf = EnvironmentId . unCardId . ecCardId
+_environmentOf :: EncounterCard -> EnvironmentId
+_environmentOf = EnvironmentId . unCardId . ecCardId
 
 obligationOf :: EncounterCard -> ObligationId
 obligationOf = ObligationId . unCardId . ecCardId

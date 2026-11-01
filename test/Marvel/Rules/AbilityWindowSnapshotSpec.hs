@@ -1,9 +1,7 @@
 module Marvel.Rules.AbilityWindowSnapshotSpec (spec) where
 
-import Data.Aeson (Result (..), fromJSON, toJSON, Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Cost.Types (Cost (NoCost))
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.ActiveCost.Types
 import Marvel.Choice qualified as Choice
 import Marvel.Environment.Environments.SmVenom (bellTowers)

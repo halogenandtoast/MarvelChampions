@@ -3,13 +3,12 @@ module Marvel.Encounter.VillainStagesSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types (AbilityType (..))
 import Marvel.Card.Code
-import Marvel.Card.Def (getCardDef)
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Public (ChoiceView (..), describeChoice)
 import Marvel.Ref
 import Marvel.SideScheme.Cards qualified as Cards
-import Marvel.Villain.Types (Villain, villainIsTough)
+import Marvel.Villain.Types (villainIsTough)
 import Marvel.Villain.Types qualified as Villain
 import TestImport
 

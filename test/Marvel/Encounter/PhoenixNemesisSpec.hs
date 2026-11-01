@@ -7,9 +7,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Query
 import TestImport
 

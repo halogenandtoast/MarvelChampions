@@ -1,7 +1,7 @@
 module Marvel.Aspect.QuicksilverPackSpec (spec) where
 
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V

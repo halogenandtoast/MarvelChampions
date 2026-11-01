@@ -2,19 +2,18 @@ module Marvel.Aspect.IronheartPackSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
-import Marvel.Ability (AbilityType (HeroInterrupt, Response, HeroResponse, ForcedInterrupt))
+import Marvel.Ability ( AbilityType(ForcedInterrupt) )
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Attack qualified as Attack
 import Marvel.Choice (choiceMessages)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Cost (canAffordCost)
 import Marvel.Cost.Types
-import Marvel.Keyword (Keyword (Guard, Overkill, Retaliate, Permanent, Patrol))
-import Marvel.Matchers
+import Marvel.Keyword
+    ( Keyword(Patrol, Overkill, Guard, Retaliate) )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Trait (Trait (Aerial, Mercenary))
 import TestImport
@@ -282,7 +281,7 @@ spec = describe "IronheartPack" do
         resolve [MainSchemeMessage scheme $ MainSchemePlaceThreat 4]
         crisis <- encounterCard SideSchemes.crowdControl
         resolve [RevealEncounterCard p crisis]
-        minion <- addMinion p (Minions.hydraMercenary {cdKeywords = HashSet.singleton Patrol})
+        _minion <- addMinion p (Minions.hydraMercenary {cdKeywords = HashSet.singleton Patrol})
         attrs <- allyIn "29034"
         choose "Wasp thwarts" (isAllyThwart attrs)
         choose "the main scheme through patrol and crisis" (isTargetChoice scheme)

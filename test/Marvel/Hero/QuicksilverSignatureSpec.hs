@@ -1,7 +1,7 @@
 module Marvel.Hero.QuicksilverSignatureSpec (spec) where
 
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import TestImport
 
 quicksilver :: IO TestGame

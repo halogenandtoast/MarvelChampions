@@ -13,7 +13,6 @@ import Marvel.Keyword (Keyword (Piercing))
 import Marvel.Matchers (EnvironmentMatcher (AnyEnvironment), VillainMatcher (VillainWithTrait))
 import Marvel.Query (selectAny, selectList)
 import Marvel.Trait (Trait (..))
-import Data.Aeson (Value (Object), parseJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
 import Marvel.Attack (attack)

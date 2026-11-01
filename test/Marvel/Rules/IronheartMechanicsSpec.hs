@@ -2,7 +2,6 @@ module Marvel.Rules.IronheartMechanicsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson.KeyMap qualified as KeyMap
-import Data.Aeson (Value (..))
 import Data.Aeson.Key qualified as Key
 import Marvel.ActiveCost.Types
 import Marvel.Attachment.Cards qualified as Attachments
@@ -12,12 +11,10 @@ import Marvel.Keyword (Keyword (Guard, Retaliate))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.Card.PlayerCard (printedResourcesFor)
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Game.Public (publicGameFor)
 import Marvel.Identity (ironheartVersion)
 import Marvel.Matchers.Types
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Modifier
 import Marvel.Resource (resourcesFor)
 import TestImport

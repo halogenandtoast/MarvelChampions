@@ -3,7 +3,6 @@
 module Marvel.Encounter.LokiSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.Aeson (toJSON)
 import Marvel.Area (DeckKey (..), Pile (..))
 import Marvel.Attachment.Cards qualified as AttachmentCards
 import Marvel.Attachment.Types (Attachment, Attrs (..))

@@ -1,8 +1,7 @@
 module Marvel.Hero.SpectrumSpec (spec) where
 
-import Marvel.Card.Id (CardId (..))
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity, getModifiedKeywords)
+import Marvel.Identity ( currentIdentity, getModifiedKeywords )
 import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations

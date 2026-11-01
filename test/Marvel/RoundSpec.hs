@@ -1,6 +1,5 @@
 module Marvel.RoundSpec (spec) where
 
-import Data.Aeson (Result (..), fromJSON)
 import Data.List (isPrefixOf)
 import Data.List qualified as List
 import Data.Text qualified as T
@@ -23,7 +22,7 @@ spec = describe "the round as the board shows it" do
     (app, _) <- dealtGameTelling id setup [starter "spider-man"] 1 \m -> modifyIORef' told (<> [m])
     card <- runGameApp app do
       toFirstTurn
-      p <- getsGame (head . gameSeats)
+      p <- getsGame (testHead . gameSeats)
       liftIO $ writeIORef told []
       revealNow p SideScheme.crowdControl
     said <- readIORef told
@@ -36,7 +35,7 @@ spec = describe "the round as the board shows it" do
       (app, _) <- dealtGameTelling id setup [starter "she-hulk"] 1 \m -> modifyIORef' told (<> [m])
       runGameApp app do
         toFirstTurn
-        p <- getsGame (head . gameSeats)
+        p <- getsGame (testHead . gameSeats)
         clearHand p
         event <- putInHand p code
         strength <- putInHand p "01090"

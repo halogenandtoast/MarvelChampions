@@ -2,14 +2,10 @@ module Marvel.Aspect.NovaPackSpec (spec) where
 
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.ActiveCost (allocationLabel)
-import Marvel.Ability.Types (AbilityType (HeroResponse))
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Query
 import Marvel.Villain.Types (villainStage)
-import Marvel.Window qualified as W
 import Marvel.Phase
 import TestImport
 
@@ -33,8 +29,8 @@ heroAttack p = currentIdentity <$> getPlayer p >>= \case
   HeroSide h -> Hero.getModifiedAttack (toAttrs h)
   _ -> pure 0
 
-novaAttack :: IdentityId -> GameAppT ()
-novaAttack p = do
+_novaAttack :: IdentityId -> GameAppT ()
+_novaAttack p = do
   choose "basic attack" (isHeroAttack p)
   chooseVillain
   chooseIf isNoResponse
@@ -48,7 +44,7 @@ spec = describe "Nova pack" do
       inGame tg do
         clearHand p
         locust <- putInHand p "28010"
-        money <- putInHand p "01088"
+        _money <- putInHand p "01088"
         offers (isPlay locust) `shouldReturn` False
         asNova p
         locust' <- putInHand p "28010"
@@ -125,7 +121,7 @@ spec = describe "Nova pack" do
         pass
         minionDamageOf target `shouldReturn` Nothing
         hand <- handOf p
-        hand `shouldSatisfy` elem (head top)
+        hand `shouldSatisfy` elem (testHead top)
         hand `shouldSatisfy` elem (top !! 2)
         hand `shouldSatisfy` notElem (top !! 1)
         discardOf p >>= (`shouldSatisfy` elem (top !! 1))
@@ -140,11 +136,11 @@ spec = describe "Nova pack" do
         _ <- playPaying p "28013" ["01090"]
         choose "Sandman" (isTargetChoice tough)
         pass
-        playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` (elem (head top) . unDeck))
+        playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` (elem (testHead top) . unDeck))
         _ <- playPaying p "28013" ["01090"]
         chooseVillain
         pass
-        playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` (elem (head top) . unDeck))
+        playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` (elem (testHead top) . unDeck))
 
     it "retrieves for damage already dealt even when an interrupt replaces the enemy's defeat" do
       tg <- testGame ["nova"]
@@ -162,7 +158,7 @@ spec = describe "Nova pack" do
         pass
         minionDamageOf target `shouldReturn` Just 0
         hand <- handOf p
-        hand `shouldSatisfy` elem (head top)
+        hand `shouldSatisfy` elem (testHead top)
         hand `shouldSatisfy` elem (top !! 2)
         discardOf p >>= (`shouldSatisfy` elem (top !! 1))
 
@@ -180,7 +176,7 @@ spec = describe "Nova pack" do
         pass
         villainStage . toAttrs <$> getVillain `shouldReturn` 2
         hand <- handOf p
-        hand `shouldSatisfy` elem (head top)
+        hand `shouldSatisfy` elem (testHead top)
         hand `shouldSatisfy` elem (top !! 2)
 
   describe "One by One" do
@@ -505,11 +501,11 @@ spec = describe "Nova pack" do
         choose "use bunker" (cardResponse bunker)
         choose "choose Nova" (isTargetChoice p)
         choose "draw" (isLabel "$label.championsMobileBunkerDraw")
-        choose "discard first drawn card" (isTargetChoice $ head top)
+        choose "discard first drawn card" (isTargetChoice $ testHead top)
         choose "discard second drawn card" (isTargetChoice $ top !! 1)
         pass
         handOf p `shouldReturn` []
-        (supportExhausted . head) <$> supportsWith "28020" `shouldReturn` True
+        (supportExhausted . testHead) <$> supportsWith "28020" `shouldReturn` True
 
     it "allows the selected Champion to decline and cannot be used in alter ego" do
       tg <- testGame ["nova"]

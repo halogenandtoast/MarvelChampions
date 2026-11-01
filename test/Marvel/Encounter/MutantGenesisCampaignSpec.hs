@@ -5,13 +5,10 @@ import Control.Monad (replicateM_)
 import Marvel.Campaign
 import Marvel.Obligation.Types (obligationOwner)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Environment.Types qualified as Environment
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Support.Types qualified as Support
-import Marvel.Upgrade.Types qualified as Upgrade
-import Marvel.Window qualified as W
 import Test.Hspec qualified as Hspec
 import TestImport
 
@@ -298,7 +295,7 @@ spec = describe "Mutant Genesis campaign" do
       inGame tg do
         allies <- stackDeck p ["01002"]
         front <- revealNow p Schemes.mgFindThePrisoners
-        choose "hide Black Cat" (isTargetChoice $ head allies)
+        choose "hide Black Cat" (isTargetChoice $ testHead allies)
         let sid = schemeId front
         before <- getsGame (maybe [] (SideScheme.sideSchemeHeldCards . toAttrs) . HashMap.lookup sid . gameSideSchemes)
         liftIO $ map toCardId before `shouldBe` map toCardId allies

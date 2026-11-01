@@ -1,11 +1,8 @@
 module Marvel.Hero.NovaSpec (spec, nova, asNova) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Ally.Types qualified as Ally
-import Marvel.Card.Def (CardDef (..))
-import Marvel.Card.Side (Side (..))
 import Marvel.Matchers (identityMatches, IdentityMatcher (IdentityWithTrait))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
@@ -524,7 +521,7 @@ spec = describe "Nova" do
       let p = player1 tg
       inGame tg do
         asNova p
-        ally <- putIntoPlay p "01084"
+        _ally <- putIntoPlay p "01084"
         minion <- addMinion p Minions.hydraBomber
         resolve [MinionMessage minion (MinionDamaged GameRef $ toDamage 1 FromAbility)]
         useForce p

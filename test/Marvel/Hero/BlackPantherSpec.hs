@@ -1,11 +1,8 @@
 module Marvel.Hero.BlackPantherSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Def (CardDef (cdTraits), cdCardType)
-import Marvel.Card.Types (CardType (UpgradeType))
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types qualified as Minion
 import Marvel.Obligation.Cards qualified as Cards
 import Marvel.SideScheme.Cards qualified as Cards
 import Marvel.SideScheme.Types (getSideSchemeThreat)

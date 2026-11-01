@@ -2,11 +2,9 @@ module Marvel.Encounter.SinisterAttackRestrictionsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Status
-import Marvel.Villain.Types qualified as Villain
 import TestImport
 
 attachments :: CardCode -> GameAppT [AttachmentId]

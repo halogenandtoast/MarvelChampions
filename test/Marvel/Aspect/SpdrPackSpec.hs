@@ -3,20 +3,16 @@ module Marvel.Aspect.SpdrPackSpec (spec) where
 import Control.Monad (replicateM_)
 import Marvel.Identity (currentIdentity)
 import Data.HashMap.Strict qualified as HashMap
-import Data.HashSet qualified as HashSet
 import Marvel.Ally.Runner qualified as Ally
 import Marvel.Ability (HasAbilities)
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade (..))
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Keyword (Keyword (Incite, Steady))
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Query
-import Marvel.Status (StatusCard (ConfusedStatus, ToughStatus))
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Cards qualified as Upgrades
 import Marvel.Villain.Types qualified as Villain
 import TestImport
 
@@ -116,7 +112,7 @@ spec = describe "SP//dr pack" do
       tg <- pack
       let p = player1 tg
       inGame tg do
-        card <- putIntoPlay p "31014"
+        _card <- putIntoPlay p "31014"
         placeMainThreat 3
         attrs <- allyIn "31014"
         choose "Daredevil thwarts" (isAllyThwart attrs)
@@ -397,7 +393,7 @@ spec = describe "SP//dr pack" do
         let p = player1 tg
         inGame tg do
           changeForm p
-          noir <- putIntoPlay p "31015"
+          _noir <- putIntoPlay p "31015"
           tingle <- putIntoPlay p "31020"
           _ <- stackEncounterDeck [Minions.hydraMercenary]
           _ <- revealNow p treacheryDef

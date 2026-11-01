@@ -4,11 +4,9 @@ import Control.Monad (replicateM_)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Keyword (Keyword (Overkill))
-import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Minion.Cards qualified as Minions
 import TestImport

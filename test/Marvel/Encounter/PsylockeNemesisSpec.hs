@@ -2,17 +2,14 @@ module Marvel.Encounter.PsylockeNemesisSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Runner qualified as Minion
-import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types qualified as Obligation
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Types qualified as Upgrade
 import Marvel.Villain.Types (villainConfused)
 import TestImport
 
@@ -204,7 +201,7 @@ spec = describe "Psylocke nemesis" do
         villainDamageNow `shouldReturn` 1
         damageOf p `shouldReturn` 0
         attachmentPresent card `shouldReturn` True
-        discardOf p >>= (`shouldSatisfy` elem (head discarded))
+        discardOf p >>= (`shouldSatisfy` elem (testHead discarded))
 
     it "redirects a failed basic attack to the attacking hero and discards itself; wild is not mental" do
       tg <- testGame ["psylocke"]

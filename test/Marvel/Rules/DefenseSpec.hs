@@ -1,6 +1,5 @@
 module Marvel.Rules.DefenseSpec (spec) where
 
-import Marvel.Card.Side (Side (A))
 import TestImport
 
 spec :: Spec

@@ -1,8 +1,5 @@
 module Marvel.Encounter.WarMachineNemesisSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (A))
-import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as SideSchemes

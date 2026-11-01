@@ -2,7 +2,6 @@ module Marvel.Rules.PrintedXSpec (spec) where
 
 import Marvel.Cost.Types
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
-import Marvel.Identity (printedXChoices)
 import Marvel.Matchers.Types
 import Marvel.Modifier
 import Marvel.Payment.Types

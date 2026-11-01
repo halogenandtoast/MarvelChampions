@@ -1,6 +1,5 @@
 module Marvel.Aspect.GambitPackSpec (spec) where
 
-import Control.Monad (forM_)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
@@ -484,7 +483,7 @@ spec = describe "Gambit pack" do
         clearHand p
         _ <- putIntoPlay p "37018"
         signature <- putInDiscard p "37006"
-        top <- head <$> stackDeck p ["37007"]
+        top <- testHead <$> stackDeck p ["37007"]
         card <- putInHand p "37021"
         playWith card []
         choose "choose no cards" (isLabel "$label.done")
@@ -498,7 +497,7 @@ spec = describe "Gambit pack" do
         clearHand p
         withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity attrs) -> PlayerIdentity attrs {playerIdentityDiscard = Discard []}
         _ <- putIntoPlay p "37018"
-        top <- head <$> stackDeck p ["37007"]
+        top <- testHead <$> stackDeck p ["37007"]
         card <- putInHand p "37021"
         playWith card []
         handOf p `shouldReturn` [top]
@@ -563,7 +562,7 @@ spec = describe "Gambit pack" do
         clearHand p
         _ <- putIntoPlay (player2 tg) "37018"
         rogue <- putInDiscard p "37002"
-        top <- head <$> stackDeck p ["37007"]
+        top <- testHead <$> stackDeck p ["37007"]
         card <- putInHand p "37031"
         playWith card []
         choose "no allies" (isLabel "$label.done")

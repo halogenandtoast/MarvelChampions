@@ -2,7 +2,7 @@ module Marvel.Hero.WaspSpec (spec) where
 
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers (AllyMatcher (AllyWithTrait), IdentityMatcher (IdentityWithTrait), allyMatches, identityMatches)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes

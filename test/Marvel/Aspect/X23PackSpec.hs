@@ -2,14 +2,12 @@ module Marvel.Aspect.X23PackSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (find)
-import Marvel.Ally.Types qualified as Ally
 import Marvel.Keyword (Keyword (Assault))
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.Status
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Window qualified as W
 import TestImport
@@ -87,7 +85,7 @@ spec = describe "X23 pack" do
       minionDamageOf other `shouldReturn` Just 0
       villainDamageNow `shouldReturn` 2
       discard <- discardOf p
-      map pcCardId discard `shouldSatisfy` (pcCardId (head top) `elem`)
+      map pcCardId discard `shouldSatisfy` (pcCardId (testHead top) `elem`)
 
   it "Rictor's star does not trigger after thwarting" do
     tg <- testGame ["x-23"]

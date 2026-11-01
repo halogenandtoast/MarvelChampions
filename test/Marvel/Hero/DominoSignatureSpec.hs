@@ -1,13 +1,10 @@
 module Marvel.Hero.DominoSignatureSpec (spec) where
-import Data.HashMap.Strict qualified as HashMap
-import Data.IORef (readIORef, writeIORef)
 import Data.Text qualified as Text
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Hp
 import Marvel.Ally.Types
 import Marvel.Matchers
-import Marvel.Query
 import TestImport
 
 cardAbility :: PlayerCard -> Natural -> Choice -> Bool

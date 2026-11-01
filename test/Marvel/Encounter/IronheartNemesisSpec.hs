@@ -7,13 +7,11 @@ import Marvel.Attachment.Types qualified as Attachment
 import Marvel.EncounterSet (EncounterSet (IronheartNemesis), getNemesisSet)
 import Marvel.Game.Source
 import Marvel.Keyword (Keyword (Retaliate))
-import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Phase
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Status
 import Marvel.Treachery.Cards qualified as Treacheries

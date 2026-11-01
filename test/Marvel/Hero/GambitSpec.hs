@@ -7,10 +7,8 @@ import Marvel.Boost (BoostIcon (..))
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.AlterEgo.Types (alterEgoBaseRecovery)
 import Marvel.Stats (unRec)
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Matchers hiding (ExhaustedIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Modifier
 import Marvel.Status
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
@@ -330,12 +328,12 @@ spec = describe "Gambit" do
   it "Remy counts boost icons but not boost stars" do
     tg <- testGame ["gambit"]
     inGame tg do
-      let p = player1 tg
+      let _p = player1 tg
       placeMainThreat 5
       (cards, _) <- setEncounterDeck [Minions.hydraMercenary {cdBoostIcons = [Boost, Star]}, Treacheries.advance] []
       before <- mainSchemeThreatNow
       choose "Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "one icon and a star" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "one icon and a star" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       chooseMainScheme
       pass
       mainSchemeThreatNow `shouldReturn` before - 1
@@ -349,21 +347,21 @@ spec = describe "Gambit" do
       (cards, _) <- setEncounterDeck [Treacheries.advance, Treacheries.assault] []
       before <- mainSchemeThreatNow
       choose "confused Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "pay the encounter discard" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "pay the encounter discard" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       pass
       mainSchemeThreatNow `shouldReturn` before
       playerIdentityConfused <$> playerAttrs p `shouldReturn` False
-      encounterDiscardCodes `shouldReturn` [toCardCode $ head cards]
+      encounterDiscardCodes `shouldReturn` [toCardCode $ testHead cards]
       isExhaustedPlayer p `shouldReturn` True
 
   it "Remy works with one card remaining and resets the exhausted encounter deck" do
     tg <- testGame ["gambit"]
     inGame tg do
-      let p = player1 tg
+      let _p = player1 tg
       placeMainThreat 5
       (cards, _) <- setEncounterDeck [Minions.hydraMercenary] [Treacheries.advance]
       choose "Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "only card" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "only card" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       chooseMainScheme
       pass
       accelerationTokensNow `shouldReturn` 1
@@ -378,7 +376,7 @@ spec = describe "Gambit" do
       placeMainThreat 2
       (cards, _) <- setEncounterDeck [Minions.hydraMercenary {cdBoostIcons = [Boost]}, Treacheries.advance] []
       choose "Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       offers (isAbilityOfCard guild) `shouldReturn` False
       chooseMainScheme
       choose "The Thieves Guild" (isAbilityOfCard guild)
@@ -399,7 +397,7 @@ spec = describe "Gambit" do
       placeMainThreat 6
       (cards, _) <- setEncounterDeck [Minions.hydraMercenary {cdBoostIcons = [Boost]}, Treacheries.advance] []
       choose "Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       chooseMainScheme
       choose "Guild" (isAbilityOfCard guild)
       chooseMainScheme
@@ -414,11 +412,11 @@ spec = describe "Gambit" do
       guild <- putIntoPlay p "37003"
       _ <- revealNow p Schemes.crowdControl
       pass
-      sid <- getsGame $ head . HashMap.keys . gameSideSchemes
+      sid <- getsGame $ testHead . HashMap.keys . gameSideSchemes
       placeMainThreat 1
       (cards, _) <- setEncounterDeck [Minions.hydraMercenary {cdBoostIcons = [Boost]}, Treacheries.advance] []
       choose "Thief" (isNamedAbility "$label.thiefExtraordinaire")
-      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ head cards)
+      choose "one boost" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
       mid <- mainSchemeIdNow
       offers (isTargetChoice mid) `shouldReturn` False
       choose "thwart Crowd Control" (isTargetChoice sid)

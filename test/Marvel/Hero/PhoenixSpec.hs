@@ -1,17 +1,15 @@
 module Marvel.Hero.PhoenixSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, getModifiedKeywords, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity, getModifiedKeywords )
 import Marvel.Keyword (Keyword (Steady, Retaliate))
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Stats
 import Marvel.Hp (HP (..))
 import Marvel.Phase
-import Marvel.Query
 import Marvel.Trait (Trait (Aerial, Restrained, Unleashed))
 import TestImport
 

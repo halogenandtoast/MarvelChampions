@@ -6,11 +6,8 @@ import Marvel.Modifier (Modifier (KeywordModifier))
 import Marvel.Keyword (Keyword (Patrol))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Ally.Types qualified as Ally
-import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
 import Marvel.Window qualified as W
 import Marvel.Villain.Types (villainConfused)
-import Marvel.Status
 import TestImport
 
 allyWithCode :: CardCode -> GameAppT AllyId

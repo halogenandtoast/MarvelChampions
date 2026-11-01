@@ -4,7 +4,7 @@ module Marvel.Encounter.KangSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (nub, sort)
-import Marvel.Attack (Attack (attackDamage), attackValue)
+import Marvel.Attack ( attackValue )
 import Marvel.Area
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.MainScheme.MainSchemes.KangsWrath (kangsDominionDeck)

@@ -1,13 +1,11 @@
 module Marvel.Hero.WarMachineSignatureSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (..))
 import Marvel.Hp (HP (..))
 import Marvel.MainScheme.Types (Attrs (mainSchemeThreat))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types (overMinion)
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.Status (StatusCard (ToughStatus))
 import TestImport hiding (mainSchemeThreat)
 
 warMachine :: IO TestGame

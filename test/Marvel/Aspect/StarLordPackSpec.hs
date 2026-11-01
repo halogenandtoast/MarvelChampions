@@ -40,7 +40,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17011"
+        _ <- putIntoPlay p "17011"
         adam <- allyIn "17011"
         strength <- putInHand p "01090"
         placeMainThreat 5
@@ -59,7 +59,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17011"
+        _ <- putIntoPlay p "17011"
         adam <- allyIn "17011"
         _ <- putInHand p "01088"
         setDamage p 4
@@ -74,7 +74,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17011"
+        _ <- putIntoPlay p "17011"
         adam <- allyIn "17011"
         _ <- putInHand p "01089"
         placeMainThreat 3
@@ -89,7 +89,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17011"
+        _ <- putIntoPlay p "17011"
         adam <- allyIn "17011"
         _ <- putInHand p "01044"
         choose "attack with Adam Warlock" (isAllyAttack adam)
@@ -106,7 +106,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17011"
+        _ <- putIntoPlay p "17011"
         adam <- allyIn "17011"
         threat <- mainSchemeThreatNow
         choose "attack with Adam Warlock" (isAllyAttack adam)
@@ -122,7 +122,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17012"
+        _ <- putIntoPlay p "17012"
         bill <- allyIn "17012"
         placeMainThreat 4
         threat <- mainSchemeThreatNow
@@ -139,7 +139,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17012"
+        _ <- putIntoPlay p "17012"
         bill <- allyIn "17012"
         -- Whiplash has 4 hit points
         whiplash <- addMinion p Cards.whiplash
@@ -153,7 +153,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17012"
+        _ <- putIntoPlay p "17012"
         bill <- allyIn "17012"
         mercenary <- addMinion p Cards.hydraMercenary
         damageMinion p mercenary 3
@@ -166,7 +166,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17013"
+        _ <- putIntoPlay p "17013"
         yondu <- allyIn "17013"
         whiplash <- addMinion p Cards.whiplash
         choose "attack with Yondu" (isAllyAttack yondu)
@@ -217,8 +217,8 @@ spec = describe "Star-Lord pack" do
       inGame tg do
         asHero p
         -- Yondu is a Guardian, Maria Hill is not
-        putIntoPlay p "17013"
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "17013"
+        _ <- putIntoPlay p "01067"
         yondu <- allyIn "17013"
         maria <- allyIn "01067"
         blaze <- putInHand p "17015"
@@ -258,7 +258,7 @@ spec = describe "Star-Lord pack" do
       inGame tg do
         clearHand p
         getReady <- putInHand p "17016"
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         choose "attack with Maria Hill" (isAllyAttack maria)
         chooseVillain
@@ -272,7 +272,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17013"
+        _ <- putIntoPlay p "17013"
         yondu <- allyIn "17013"
         attachLaserBlaster p yondu
         practice <- putIntoPlay p "17017"
@@ -288,7 +288,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17013"
+        _ <- putIntoPlay p "17013"
         yondu <- allyIn "17013"
         practice <- putIntoPlay p "17017"
         choose "attack with Yondu" (isAllyAttack yondu)
@@ -314,11 +314,11 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         laser <- putInHand p "17019"
         energy <- putInHand p "01088"
         offers (isPlay laser) `shouldReturn` False
-        putIntoPlay p "17013"
+        _ <- putIntoPlay p "17013"
         yondu <- allyIn "17013"
         playOn laser (allyId yondu) [energy]
         [blaster] <- upgradesWith "17019"
@@ -332,7 +332,7 @@ spec = describe "Star-Lord pack" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "17013"
+        _ <- putIntoPlay p "17013"
         yondu <- allyIn "17013"
         attachLaserBlaster p yondu
         mercenary <- addMinion p Cards.hydraMercenary

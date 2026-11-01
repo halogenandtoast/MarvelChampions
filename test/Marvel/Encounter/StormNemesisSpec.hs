@@ -222,7 +222,7 @@ spec = describe "Storm nemesis and Shadow King modular" do
         changeForm p
         pass
         cards <- fromMaybe [] . playerIdentityWeatherDeck <$> playerAttrs p
-        let blizzard = head [card | card <- cards, toCardCode card == "36005"]
+        let blizzard = testHead [card | card <- cards, toCardCode card == "36005"]
         resolve [IdentityMessage p (ChooseWeatherSupport blizzard False)]
         sid <- selectJust (SupportNamed "Blizzard")
         resolve [ResolveWeatherSpecial p sid]

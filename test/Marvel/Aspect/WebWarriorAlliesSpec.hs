@@ -1,6 +1,5 @@
 module Marvel.Aspect.WebWarriorAlliesSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.GhostSpiderSpec (ghostSpider, asGhost)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -25,9 +24,9 @@ spec = describe "Sinister Motives Web-Warrior allies" do
         (deck, _) <- setEncounterDeck [Treacheries.advance, Treacheries.caughtOffGuard, Minions.shocker] []
         playWith silk [energy]
         choose "Silk's response" (printedAbility silk)
-        choose "discard Advance" (isTargetChoice $ head deck)
-        encounterDiscard >>= (`shouldSatisfy` elem (head deck))
-        scenarioEncounterDeckNow >>= (`shouldSatisfy` notElem (head deck))
+        choose "discard Advance" (isTargetChoice $ testHead deck)
+        encounterDiscard >>= (`shouldSatisfy` elem (testHead deck))
+        scenarioEncounterDeckNow >>= (`shouldSatisfy` notElem (testHead deck))
         mainSchemeThreatNow `shouldReturn` 0
 
     it "does not trigger when put into play or when no other Web-Warrior is controlled" do

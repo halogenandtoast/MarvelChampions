@@ -1,37 +1,24 @@
 module Marvel.Aspect.CablePackSpec (spec) where
 
-import Data.Maybe (fromJust)
-import Marvel.GameValue
 import Marvel.Trait (Trait (..))
-import Marvel.MainScheme.Types (mainSchemeAccelerationTokens)
-import Marvel.Window qualified as W
-import Marvel.Scenario.Types (scenarioEncounterDeck)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.SideScheme.Types qualified as SideScheme
-import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Game (getPlayerVictoryDisplay)
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Matchers
 import TestImport
-import Marvel.Ally.Runner qualified as Ally
-import Marvel.Status
-import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Cards qualified as Upgrades
 
 
 asHero :: IdentityId -> GameAppT ()
 asHero p = changeForm p >> pass >> clearHand p
 
-cardAbility :: PlayerCard -> Natural -> Choice -> Bool
-cardAbility card n choice = isAbilityOfCard card choice && case choice of
+_cardAbility :: PlayerCard -> Natural -> Choice -> Bool
+_cardAbility card n choice = isAbilityOfCard card choice && case choice of
   UseAbility ab -> abilityIndex ab == n
   _ -> False
 
-purge :: GameAppT (Maybe SideSchemeId)
-purge = getsGame $ headMay . HashMap.keys . HashMap.filter ((== "40006") . toCardCode . getCardDef) . gameSideSchemes
+_purge :: GameAppT (Maybe SideSchemeId)
+_purge = getsGame $ headMay . HashMap.keys . HashMap.filter ((== "40006") . toCardCode . getCardDef) . gameSideSchemes
 
 
 spec :: Spec
@@ -56,7 +43,7 @@ spec = describe "Cable pack" do
     inGame tg do
       let p = player1 tg
       asHero p
-      eva <- head <$> stackDeck p ["40021"]
+      eva <- testHead <$> stackDeck p ["40021"]
       fantomex <- putInHand p "40015"
       e <- putInHand p "01088"
       m <- putInHand p "01089"
@@ -304,7 +291,7 @@ spec = describe "Cable pack" do
     inGame tg do
       let p = player1 tg
       ally <- putIntoPlay p "40024"
-      sidearm <- head <$> stackDeck p ["40030"]
+      sidearm <- testHead <$> stackDeck p ["40030"]
       scheme <- putIntoPlay p "40019"
       let sid = SideSchemeId $ unCardId $ pcCardId scheme
       runNow [SideSchemeMessage sid DefeatSideScheme, DefeatedLeavesPlay (SideSchemeRef sid)]
@@ -318,7 +305,7 @@ spec = describe "Cable pack" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let p = player1 tg
-      sidearm <- head <$> stackDeck p ["40030"]
+      sidearm <- testHead <$> stackDeck p ["40030"]
       scheme <- putIntoPlay p "40019"
       let sid = SideSchemeId $ unCardId $ pcCardId scheme
       runNow [SideSchemeMessage sid DefeatSideScheme, DefeatedLeavesPlay (SideSchemeRef sid)]
@@ -331,7 +318,7 @@ spec = describe "Cable pack" do
     inGame tg do
       let p = player1 tg
       _ <- putIntoPlay p "40007"
-      duplicate <- head <$> stackDeck p ["40007"]
+      duplicate <- testHead <$> stackDeck p ["40007"]
       scheme <- putIntoPlay p "40027"
       let sid = SideSchemeId $ unCardId $ pcCardId scheme
       runNow [SideSchemeMessage sid DefeatSideScheme, DefeatedLeavesPlay (SideSchemeRef sid)]
@@ -344,7 +331,7 @@ spec = describe "Cable pack" do
     inGame tg do
       let p = player1 tg
       _ <- putIntoPlay p "40024"
-      duplicate <- head <$> stackDeck p ["40024"]
+      duplicate <- testHead <$> stackDeck p ["40024"]
       scheme <- putIntoPlay p "40018"
       let sid = SideSchemeId $ unCardId $ pcCardId scheme
       runNow [SideSchemeMessage sid DefeatSideScheme, DefeatedLeavesPlay (SideSchemeRef sid)]

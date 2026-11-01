@@ -10,7 +10,6 @@ import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types qualified as Obligation
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Status (StatusCard (ToughStatus))
 import TestImport
 
 settle :: GameAppT ()

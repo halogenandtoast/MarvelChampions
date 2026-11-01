@@ -53,7 +53,7 @@ spec = describe "Psylocke target interrupts" do
     inGame tg do
       let you = player1 tg
       asHero you
-      knife <- head <$> upgradesWith "41002a"
+      knife <- testHead <$> upgradesWith "41002a"
       L.runQueueT (L.capture $ L.flipPsiEnergy $ upgradeId knife) >>= resolve
       host <- addMinion you Minions.tombstone
       _ <- revealNow you Attachments.ne40091

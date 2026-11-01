@@ -7,7 +7,6 @@ import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Upgrade.Types (getUpgradeUses)
 import Marvel.Villain.Types qualified as V
-import Marvel.Damage (DamageSource (..), toDamage)
 import TestImport
 
 captainMarvel :: IO TestGame

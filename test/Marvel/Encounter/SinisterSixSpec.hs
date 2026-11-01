@@ -5,8 +5,6 @@ import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Matchers
 import Marvel.Message.Lifted qualified as L
 import Marvel.SideScheme.Types qualified as Side
 import Marvel.Villain.Villains.SmSinisterSix qualified as Six

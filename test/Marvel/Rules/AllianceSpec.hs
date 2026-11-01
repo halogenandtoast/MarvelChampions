@@ -1,7 +1,6 @@
 module Marvel.Rules.AllianceSpec (spec) where
 
 import Data.HashSet qualified as HashSet
-import Marvel.Card.Side (Side (A))
 import Marvel.Cost (canAffordAllianceCost)
 import Marvel.Cost.Types
 import Marvel.Keyword (Keyword (Alliance))

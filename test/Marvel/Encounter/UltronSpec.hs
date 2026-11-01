@@ -4,16 +4,11 @@ import Control.Monad.Reader (runReaderT)
 import Marvel.Villain (lookupVillain)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Cards
-import Marvel.Card.Def (getCardDef)
-import Marvel.Card.PlayerCard (PlayerCard (..))
 import Marvel.Damage
-import Marvel.Deck (unDeck)
-import Marvel.Discard (unDiscard)
 import Marvel.Entity
 import Marvel.Environment.Cards qualified as Cards
-import Marvel.Identity.Types (Attrs (..), PlayerIdentity)
 import Marvel.Minion.Cards qualified as Cards
-import Marvel.Minion.Types (Minion, getMinionFacedownCard, getModifiedAttack, getModifiedHitPoints)
+import Marvel.Minion.Types (getMinionFacedownCard, getModifiedAttack, getModifiedHitPoints)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Ref
 import Marvel.Scenario.Types (scenarioDiscard)
@@ -66,7 +61,7 @@ spec = describe "Ultron" do
         getModifiedAttack attrs >>= liftIO . (`shouldBe` 1)
         getModifiedHitPoints attrs >>= liftIO . (`shouldBe` 1)
         -- the card is no longer in the deck
-        let Just card = getMinionFacedownCard drone
+        let card = fromMaybe (error "Ultron fixture: a drone must retain its physical facedown card") (getMinionFacedownCard drone)
         liftIO $ map pcCardId (unDeck $ playerIdentityDeck $ toAttrs p) `shouldNotContain` [pcCardId card]
       -- and the game, environment and drone included, is saved and loaded as it is
       g <- getGame

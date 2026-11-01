@@ -1,7 +1,6 @@
 module Marvel.Aspect.ValkyriePackSpec (spec) where
 
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
-import Marvel.Deck (Deck (..))
 import Marvel.Hp (HP (..))
 import Marvel.Stats (Atk (..), Thw (..))
 import Marvel.SideScheme.Cards qualified as Schemes
@@ -497,7 +496,7 @@ spec = describe "Valkyrie pack main aspect cards" do
         pass
         sideSchemeThreat sid `shouldReturn` 1
 
-    for_ ["alter ego", "exhausted", "no resources", "no threat"] $ \condition ->
+    for_ [("alter ego" :: String), "exhausted", "no resources", "no threat"] $ \condition ->
       it ("is unavailable with " <> show condition) do
         tg <- testGame ["valkyrie"]
         let p = player1 tg
@@ -679,7 +678,7 @@ spec = describe "Valkyrie pack main aspect cards" do
         map allyId <$> alliesWith "25014" `shouldReturn` [allyIdOf throg]
         handOf p >>= (`shouldSatisfy` notElem throg)
         discardOf p >>= (`shouldSatisfy` elem money)
-        supportExhausted . head <$> supportsWith "25023" `shouldReturn` True
+        supportExhausted . testHead <$> supportsWith "25023" `shouldReturn` True
         offers (cardAbility bifrost 1) `shouldReturn` False
         deck <- unDeck . playerIdentityDeck <$> playerAttrs p
         deck `shouldSatisfy` notElem throg
@@ -703,7 +702,7 @@ spec = describe "Valkyrie pack main aspect cards" do
         choose "Knowhere's play response" (cardAbility knowhere 1)
         pass
         handOf p >>= (`shouldSatisfy` elem top)
-        supportExhausted . head <$> supportsWith "17022" `shouldReturn` True
+        supportExhausted . testHead <$> supportsWith "17022" `shouldReturn` True
 
     it "does not offer an unaffordable searched ally or play one for free" do
       tg <- testGame ["valkyrie"]
@@ -719,7 +718,7 @@ spec = describe "Valkyrie pack main aspect cards" do
         alliesWith "25014" `shouldReturn` []
         deck <- unDeck . playerIdentityDeck <$> playerAttrs p
         deck `shouldSatisfy` elem throg
-        supportExhausted . head <$> supportsWith "25023" `shouldReturn` True
+        supportExhausted . testHead <$> supportsWith "25023" `shouldReturn` True
 
     it "does not offer a unique ally already in play under another player's control" do
       tg <- testGame ["valkyrie", "spider-man"]

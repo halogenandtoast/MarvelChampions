@@ -55,7 +55,7 @@ spec = describe "actual resources spent" do
       confusedNow second `shouldReturn` False
       discardOf p >>= (`shouldSatisfy` elem genius)
 
-  for_ [([Mental, Mental], 2), ([Physical, Mental], 1)] \(spent, expected) ->
+  for_ [([Mental, Mental], 2 :: Int), ([Physical, Mental], 1)] \(spent, expected) ->
     it ("lets Eros choose the satisfying actual icon allocation " <> show spent) do
       tg <- testGame ["spider-man"]
       let p = player1 tg

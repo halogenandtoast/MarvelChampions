@@ -1,9 +1,8 @@
 module Marvel.Hero.DominoSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Deck
-import Marvel.Discard
 import Marvel.Domino
-import Marvel.Identity (currentIdentity, PlayerIdentitySide(..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Support.Types
 import Marvel.SideScheme.Cards qualified as Schemes
@@ -48,7 +47,7 @@ spec = describe "Domino" do
       choose "Domino's action" (identityAction p)
       choose "swap Jackpot" (isTargetChoice card)
       handOf p `shouldReturn` [top]
-      head . unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` card
+      testHead . unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` card
       discardOf p >>= (`shouldSatisfy` notElem top)
       offers (identityAction p) `shouldReturn` False
   it "does not offer the hero swap without a card in hand" do
@@ -69,7 +68,7 @@ spec = describe "Domino" do
       choose "Neena action" (identityAction p)
       choose "swap hand" (isTargetChoice hand)
       handOf p `shouldReturn` [top]
-      head <$> discardOf p `shouldReturn` hand
+      testHead <$> discardOf p `shouldReturn` hand
       offers (identityAction p) `shouldReturn` False
       changeForm p
       pass
@@ -94,7 +93,7 @@ spec = describe "Domino" do
       resolve [DiscardedCard $ PlayerCard card]
       choose "Pip" (cardAbility pip 1)
       choose "Jackpot" (isTargetChoice card)
-      head . unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` card
+      testHead . unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` card
       discardOf p >>= (`shouldSatisfy` notElem card)
       changeForm p
       pass

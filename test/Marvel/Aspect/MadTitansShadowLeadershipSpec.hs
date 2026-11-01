@@ -1,9 +1,8 @@
 module Marvel.Aspect.MadTitansShadowLeadershipSpec (spec) where
 
 import Marvel.Ally.Types qualified as Ally
-import Marvel.Card.Def (canonicalCardCode)
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity, getModifiedCost)
+import Marvel.Identity ( currentIdentity, getModifiedCost )
 import Marvel.Villain.Types qualified as V
 import TestImport
 

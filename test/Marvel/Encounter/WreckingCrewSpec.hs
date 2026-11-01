@@ -5,7 +5,6 @@ module Marvel.Encounter.WreckingCrewSpec (spec) where
 import Control.Monad ((<=<))
 import Data.List (sort)
 import Data.HashMap.Strict qualified as HashMap
-import Data.Aeson (Value (..))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Area
 import Marvel.Game.Public (publicGame)

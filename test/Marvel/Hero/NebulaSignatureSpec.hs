@@ -1,7 +1,6 @@
 module Marvel.Hero.NebulaSignatureSpec (spec) where
 
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
-import Marvel.Identity.Types (PlayerIdentity (..))
 import Marvel.Matchers
 import Marvel.Modifier
 import Marvel.Query
@@ -123,7 +122,7 @@ spec = describe "Nebula signature events" do
         (.playerIdentityTough) <$> playerAttrs p `shouldReturn` True
         hasUpgrade p technique `shouldReturn` True
         deck <- deckOf p
-        liftIO $ head deck `shouldBe` after
+        liftIO $ testHead deck `shouldBe` after
         discard <- discardOf p
         liftIO $ all (`elem` discard) [energy, intuition] `shouldBe` True
         liftIO $ technique `elem` discard `shouldBe` False
@@ -151,7 +150,7 @@ spec = describe "Nebula signature events" do
         hasUpgrade p first `shouldReturn` True
         hasUpgrade p second `shouldReturn` False
         deck <- deckOf p
-        liftIO $ head deck `shouldBe` second
+        liftIO $ testHead deck `shouldBe` second
 
     it "can discard a deck with no Technique, resetting it and dealing an encounter card" do
       tg <- testGame ["nebula"]

@@ -1,6 +1,5 @@
 module Marvel.Aspect.AngelPackSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Modifier

@@ -1,13 +1,10 @@
 module Marvel.Hero.PsylockeSignatureSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Damage
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Types qualified as Minion
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Types qualified as Upgrade
 import Marvel.Villain.Types (villainConfused)
 import TestImport
 

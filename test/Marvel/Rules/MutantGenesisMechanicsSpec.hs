@@ -1,6 +1,5 @@
 module Marvel.Rules.MutantGenesisMechanicsSpec (spec) where
 
-import Data.Aeson (Result (..), Value (Object), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Identity.Types qualified as Identity
 import Marvel.Message.Lifted qualified as Lifted

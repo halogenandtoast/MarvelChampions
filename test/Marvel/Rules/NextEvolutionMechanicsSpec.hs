@@ -1,15 +1,11 @@
 module Marvel.Rules.NextEvolutionMechanicsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Attack
-import Marvel.Ally.Cards qualified as Allies
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Types qualified as Minion
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Modifier
 import Marvel.Trait (Trait (Possessed))
-import Marvel.Window qualified as W
 import TestImport
 
 spec :: Spec
@@ -53,7 +49,7 @@ spec = describe "Next Evolution shared mechanics" do
   it "does not defeat attached Malice again after she heals and takes damage" do
     tg <- testGame ["spider-man"]
     inGame tg do
-      ally <- putIntoPlay (player1 tg) "01083"
+      _ally <- putIntoPlay (player1 tg) "01083"
       malice <- encounterCard Minions.ne40199
       resolve [PutEncounterCardIntoPlay (player1 tg) malice]
       resolve [MinionMessage (minionOf malice) $ MinionDamaged GameRef $ toDamage 1 FromAbility]

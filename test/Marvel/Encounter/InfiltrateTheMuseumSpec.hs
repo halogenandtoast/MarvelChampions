@@ -7,7 +7,6 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.EncounterSet (EncounterSet (GalacticArtifacts, MenagerieMedley))
-import Data.Aeson (Value (Array, Object))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGame)
 import Marvel.Minion.Cards qualified as Minions

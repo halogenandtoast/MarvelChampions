@@ -3,7 +3,6 @@ module Marvel.Aspect.PsylockePackSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types
 import Marvel.Deck
-import Marvel.Game (getPlayerVictoryDisplay)
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Query
@@ -274,7 +273,7 @@ spec = describe "Psylocke pack" do
       choose "swap hand card" (isTargetChoice hand)
       pass
       handOf p `shouldReturn` [top]
-      unDeck . playerIdentityDeck <$> playerAttrs p >>= ((`shouldBe` hand) . head)
+      unDeck . playerIdentityDeck <$> playerAttrs p >>= ((`shouldBe` hand) . testHead)
 
   it "Psi-Bow Attack deals four ranged damage without taking retaliate" do
     tg <- testGame ["psylocke"]

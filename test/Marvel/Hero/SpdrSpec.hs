@@ -73,6 +73,7 @@ blankWithEncounterCard who target = do
         , Obligation.obligationCardDef = Obligations.inheritedBurden
         , Obligation.obligationSurge = False
         , Obligation.obligationHeldCards = []
+        , Obligation.obligationSideScheme = Nothing
         , Obligation.obligationOwner = Just who
         }
   withGame_ $ entitiesL . obligationsL . at oid ?~ Obligation.Obligation (BlankingProbe attrs target)

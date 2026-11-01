@@ -1,7 +1,6 @@
 module Marvel.Campaign.SinisterMotivesSpec (spec) where
 
 import Data.HashSet qualified as HashSet
-import Data.List (foldl')
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Campaign
 import Marvel.Campaign.SinisterMotives (reputationScore)
@@ -140,7 +139,7 @@ spec = describe "Sinister Motives campaign runtime" do
       (deck, _) <- setEncounterDeck [Minions.hydraMercenary, Treacheries.advance, Treacheries.imTough] []
       before <- encounters (player2 tg)
       runNow [CampaignStep $ CampaignSetupThen "sinister:reputationRight"]
-      let minion = head deck
+      let minion = testHead deck
       choose "engage the only minion" (isTargetChoice minion)
       -- Finish its enter-play responses before the next player's search resolves.
       pass

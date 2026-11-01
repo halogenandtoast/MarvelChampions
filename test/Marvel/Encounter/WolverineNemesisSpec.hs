@@ -2,7 +2,6 @@ module Marvel.Encounter.WolverineNemesisSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as Schemes

@@ -225,7 +225,7 @@ spec = describe "Hulk" do
       let p = player1 tg
       inGame tg do
         [clap, strength, genius] <- asHulk p ["10005", "01090", "01089"]
-        putIntoPlay p "01063"
+        _ <- putIntoPlay p "01063"
         first <- addMinion p Minions.hydraMercenary
         second <- addMinion p Minions.hydraMercenary
         pass

@@ -1,7 +1,6 @@
 module Marvel.Hero.WarMachineSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.Side (Side (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Phase (Phase (..))
 import Marvel.Trait (HasTraits (getTraits), Trait (Aerial))

@@ -3,11 +3,9 @@ module Marvel.PublicSpec (spec) where
 import Control.Monad (replicateM_)
 import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
-import Data.Aeson (Result (..), fromJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
-import Marvel.Resource.Types (Resource (..))
 import System.Environment (lookupEnv)
 import TestImport
 

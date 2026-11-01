@@ -8,7 +8,6 @@ import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Query
 import TestImport
 
 settle :: GameAppT ()

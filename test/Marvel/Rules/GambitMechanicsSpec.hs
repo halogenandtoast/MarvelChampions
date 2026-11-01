@@ -2,14 +2,11 @@ module Marvel.Rules.GambitMechanicsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability (windowAbility)
-import Marvel.Question (runAbility)
 import Marvel.Ability.Types (AbilityType (ForcedInterrupt, ForcedResponse), HasAbilities (..))
 import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Matchers.Types
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Types (minionConfused)
-import Marvel.Damage (toDamage, Damage (damageOverkill), DamageSource (FromAbility, FromPlayerAttack))
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Modifier (HasModifiersFor)

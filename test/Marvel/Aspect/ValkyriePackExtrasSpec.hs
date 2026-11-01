@@ -3,14 +3,12 @@ module Marvel.Aspect.ValkyriePackExtrasSpec (spec) where
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability (windowAbility)
 import Marvel.Ability.Types (AbilityType (..), HasAbilities (..))
-import Marvel.Card.Side (Side (A))
 import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Matchers.Types hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier (Modifier (..), HasModifiersFor)
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.Status (statusLabel)
 import Marvel.Trait (Trait (Asgard, Avenger, Guardian))
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade (..))
 import Marvel.Window qualified as W
@@ -331,7 +329,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
         _ <- putInHand p "25026"
         offers (isPlay card) `shouldReturn` False
 
-    for_ ["alter ego", "no resources", "missing guardian", "exhausted guardian", "no threat"] $ \condition ->
+    for_ [("alter ego" :: String), "no resources", "missing guardian", "exhausted guardian", "no threat"] $ \condition ->
       it ("cannot play with " <> show condition) do
         tg <- testGame ["valkyrie"]
         let p = player1 tg
@@ -387,7 +385,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
           other = player2 tg
       inGame tg do
         training <- putIntoPlay p "25034"
-        supportUses . head <$> supportsWith "25034" `shouldReturn` 2
+        supportUses . testHead <$> supportsWith "25034" `shouldReturn` 2
         [chosen, otherLeadership, aggression, support] <- stackDiscard p ["01070", "03017", "25018", "25034"]
         [foreignEvent] <- stackDiscard other ["01070"]
         choose "use Leadership Training" (cardAbility training 1)
@@ -396,8 +394,8 @@ spec = describe "Valkyrie pack extra aspect cards" do
         offers (isTargetChoice foreignEvent) `shouldReturn` False
         choose "shuffle the chosen event" (isTargetChoice chosen)
         pass
-        supportUses . head <$> supportsWith "25034" `shouldReturn` 1
-        supportExhausted . head <$> supportsWith "25034" `shouldReturn` True
+        supportUses . testHead <$> supportsWith "25034" `shouldReturn` 1
+        supportExhausted . testHead <$> supportsWith "25034" `shouldReturn` True
         unDeck . playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` elem chosen)
         discardOf p >>= (`shouldSatisfy` (\cs -> otherLeadership `elem` cs && chosen `notElem` cs))
         discardOf other >>= (`shouldSatisfy` elem foreignEvent)
@@ -428,7 +426,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
         _ <- stackDiscard p ["01070"]
         changeForm p
         offers (cardAbility training 1) `shouldReturn` False
-        supportUses . head <$> supportsWith "25034" `shouldReturn` 2
+        supportUses . testHead <$> supportsWith "25034" `shouldReturn` 2
 
     it "cannot spend a counter without a Leadership event in its own discard" do
       tg <- testGame ["valkyrie", "spider-man"]
@@ -438,7 +436,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
         _ <- stackDiscard p ["25018", "25034"]
         _ <- stackDiscard (player2 tg) ["01070"]
         offers (cardAbility training 1) `shouldReturn` False
-        supportUses . head <$> supportsWith "25034" `shouldReturn` 2
+        supportUses . testHead <$> supportsWith "25034" `shouldReturn` 2
 
   describe "Anticipation" do
     it "discards itself to ready the hero in the engagement interrupt, before quickstrike" do
@@ -472,7 +470,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
         exhaustedNow p `shouldReturn` True
         map upgradeId <$> upgradesWith "25035" `shouldReturn` [upgradeIdOf anticipation]
 
-    for_ ["alter ego", "already ready", "cannot ready", "player effects cannot ready"] $ \condition ->
+    for_ [("alter ego" :: String), "already ready", "cannot ready", "player effects cannot ready"] $ \condition ->
       it ("is unavailable when " <> show condition) do
         tg <- testGame ["valkyrie"]
         let p = player1 tg
@@ -613,7 +611,7 @@ spec = describe "Valkyrie pack extra aspect cards" do
         _ <- putInHand p "25024"
         offers (isPlay card) `shouldReturn` False
 
-    for_ ["alter ego", "no resources", "missing guardian", "both ready", "ready Avenger", "ready Guardian", "both cannot ready"] $ \condition ->
+    for_ [("alter ego" :: String), "no resources", "missing guardian", "both ready", "ready Avenger", "ready Guardian", "both cannot ready"] $ \condition ->
       it ("cannot play with " <> show condition) do
         tg <- testGame ["valkyrie"]
         let p = player1 tg

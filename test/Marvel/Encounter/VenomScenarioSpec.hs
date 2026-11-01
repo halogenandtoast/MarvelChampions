@@ -12,7 +12,6 @@ import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
 import Marvel.Modifier
 import Marvel.SideScheme.Cards qualified as SideSchemes
-import Marvel.Status (StatusCard (..))
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 

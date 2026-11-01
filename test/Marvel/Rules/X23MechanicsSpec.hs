@@ -4,13 +4,11 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Vector qualified as Vector
 import Data.List (find, nub)
-import Marvel.Card.Def (cdKeywords)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Damage
 import Marvel.Matchers
 import Marvel.Query (selectAny)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Keyword (Keyword (Linked))
 import Marvel.Upgrade.Types qualified as Upgrade
 import Marvel.Window qualified as W

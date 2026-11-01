@@ -1,10 +1,8 @@
 module Marvel.Encounter.HulkNemesisSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as SideSchemes
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Card.Side (Side (A))
 import TestImport
 
 hulk :: IO TestGame

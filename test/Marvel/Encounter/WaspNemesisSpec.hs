@@ -2,7 +2,6 @@ module Marvel.Encounter.WaspNemesisSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.Side (Side (A))
 import Marvel.Hp (HP (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion

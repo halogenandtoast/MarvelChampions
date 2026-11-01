@@ -11,7 +11,6 @@ import Marvel.Matchers
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Modifier
 import Marvel.Query
-import Marvel.Payment (Payment (..))
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade)
 import TestImport
 

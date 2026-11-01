@@ -97,7 +97,7 @@ spec = describe "Rogue nemesis and Reavers modular" do
             [Treacheries.misled | zone == "discard"]
           aside <- encounterCard Treacheries.misled
           when (zone == "set aside") $ resolve [SetAside [EncounterCard aside]]
-          let expected = case zone of "deck" -> head deck; "discard" -> head discard; _ -> aside
+          let expected = case zone of "deck" -> testHead deck; "discard" -> testHead discard; _ -> aside
           card <- revealNow p Minions.rogueMystique
           settle
           getsGame (fmap (Minion.minionTough . toAttrs) . HashMap.lookup (minionOf card) . gameMinions) `shouldReturn` Just True
@@ -122,7 +122,7 @@ spec = describe "Rogue nemesis and Reavers modular" do
         scheme <- revealNow p Schemes.mystiquesManipulations
         settle
         resolve [SideSchemeMessage (sideSchemeOf scheme) $ SideSchemeThreatRemoved (IdentityRef q) 4]
-        playerDeckCards q >>= (`shouldSatisfy` any ((== ecCardId (head discarded)) . pcCardId))
+        playerDeckCards q >>= (`shouldSatisfy` any ((== ecCardId (testHead discarded)) . pcCardId))
         playerDeckCards p >>= (`shouldSatisfy` all ((/= "38027") . toCardCode))
 
     it "does not search the set-aside area" do
@@ -250,7 +250,7 @@ spec = describe "Rogue nemesis and Reavers modular" do
         minions <- minionsWith "38032"
         map Minion.minionEngagedIdentity minions `shouldBe` [q]
         getsGame (length . gameAttachments) `shouldReturn` 1
-        encounterDiscardNow >>= (`shouldSatisfy` elem (head deck))
+        encounterDiscardNow >>= (`shouldSatisfy` elem (testHead deck))
 
   describe "Cybernetic Enhancements" do
     it "adds one ATK, prevents damage, then discards only after the attached minion attacks" do

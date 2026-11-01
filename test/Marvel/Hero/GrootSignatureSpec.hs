@@ -1,6 +1,5 @@
 module Marvel.Hero.GrootSignatureSpec (spec) where
 
-import Marvel.Card.Side (Side (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Treachery.Cards qualified as Treacheries

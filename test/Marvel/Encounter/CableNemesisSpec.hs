@@ -1,34 +1,24 @@
 module Marvel.Encounter.CableNemesisSpec (spec) where
 
 import Data.Maybe (fromJust)
-import Marvel.GameValue
-import Marvel.Trait (Trait (..))
-import Marvel.MainScheme.Types (mainSchemeAccelerationTokens)
-import Marvel.Window qualified as W
-import Marvel.Scenario.Types (scenarioEncounterDeck)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
-import Marvel.Game (getPlayerVictoryDisplay)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Modifier
-import Marvel.Query
-import Marvel.Matchers
 import TestImport
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types (obligationSideScheme)
-import Marvel.Status
 
 
 asHero :: IdentityId -> GameAppT ()
 asHero p = changeForm p >> pass >> clearHand p
 
-cardAbility :: PlayerCard -> Natural -> Choice -> Bool
-cardAbility card n choice = isAbilityOfCard card choice && case choice of
+_cardAbility :: PlayerCard -> Natural -> Choice -> Bool
+_cardAbility card n choice = isAbilityOfCard card choice && case choice of
   UseAbility ab -> abilityIndex ab == n
   _ -> False
 

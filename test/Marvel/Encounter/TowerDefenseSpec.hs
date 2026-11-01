@@ -6,7 +6,6 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attack (Attack (..))
 import Marvel.Attachment.Cards qualified as AttachmentCards
 import Marvel.Attachment.Types (Attachment, Attrs (..))
-import Marvel.Environment.Cards qualified as EnvironmentCards
 import Marvel.Environment.Types (Environment, Attrs (..))
 import Marvel.Hp (unHp)
 import Marvel.Identity (isPlayable)
@@ -16,7 +15,6 @@ import Marvel.MainScheme.Types (getMainSchemeThreat)
 import Marvel.Matchers (VillainMatcher (ActiveVillain))
 import Marvel.Message.Lifted (villainNamed)
 import Marvel.Minion.Cards qualified as MinionCards
-import Marvel.Minion.Types (Minion, Attrs (..))
 import Marvel.Modifier (Modifier (KeywordModifier))
 import Marvel.Phase (Phase (PlayerPhase))
 import Marvel.Query (selectOne)

@@ -111,7 +111,7 @@ spec = describe "Basic" do
         firstAid <- putInHand p "01086"
         genius <- putInHand p "01089"
         offers (isPlay firstAid) `shouldReturn` False
-        putIntoPlay p "01083"
+        _ <- putIntoPlay p "01083"
         mb <- allyIn "01083"
         resolve [AllyMessage (allyId mb) (AllyDamaged (toSource p) (toDamage 2 FromAbility))]
         playWith firstAid [genius]
@@ -141,7 +141,7 @@ spec = describe "Basic" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01068"
+        _ <- putIntoPlay p "01068"
         vision <- allyIn "01068"
         genius <- putInHand p "01089"
         strength <- putInHand p "01090"
@@ -171,7 +171,7 @@ spec = describe "Basic" do
       let (p, q) = (player1 tg, player2 tg)
       inGame tg do
         clearHand p
-        putIntoPlay p "01091"
+        _ <- putIntoPlay p "01091"
         mansion2 <- putInHand p "01091"
         _ <- putInHand p "01088"
         _ <- putInHand p "01089"
@@ -189,7 +189,7 @@ spec = describe "Basic" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01092"
+        _ <- putIntoPlay p "01092"
         [heli] <- supportsWith "01092"
         haymaker <- putInHand p "01087"
         power <- putInHand p "01079"
@@ -214,7 +214,7 @@ spec = describe "Basic" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01093"
+        _ <- putIntoPlay p "01093"
         [tenacity] <- upgradesWith "01093"
         changeForm p
         villain <- getVillain
@@ -236,7 +236,7 @@ spec = describe "Basic" do
       tg <- testGame ["spider-man", "captain-marvel"]
       let (p, q) = (player1 tg, player2 tg)
       inGame tg do
-        putIntoPlay q "01067"
+        _ <- putIntoPlay q "01067"
         clearHand p
         maria <- putInHand p "01067"
         _ <- putInHand p "01088"

@@ -2,7 +2,6 @@ module Marvel.Hero.VisionSpec (spec, changeMass, massForm) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability (HasAbilities)
-import Marvel.Card.Side (Side (A, B))
 import Marvel.Ally.Runner qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.Hero.Runner qualified as Hero
@@ -13,7 +12,6 @@ import Marvel.Modifier (Modifier (..), HasModifiersFor (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types qualified as Obligation
-import Marvel.Query
 import Marvel.Trait (Trait (Aerial))
 import Marvel.Upgrade.Cards qualified as Upgrades
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade (..))
@@ -55,6 +53,7 @@ withModifiers p target modifiers = do
           , Obligation.obligationCardDef = Obligations.corruptedProgramming
           , Obligation.obligationSurge = False
           , Obligation.obligationHeldCards = []
+          , Obligation.obligationSideScheme = Nothing
           , Obligation.obligationOwner = Just p
           }
     withGame_ $ entitiesL . obligationsL . at oid ?~ Obligation.Obligation (BlankingProbe blanking target modifiers)
@@ -462,7 +461,7 @@ spec = describe "Vision" do
         handOf p >>= (`shouldSatisfy` elem discardAlly)
         discardOf p >>= (`shouldSatisfy` notElem discardAlly)
         alliesWith "26003" `shouldReturn` []
-        supportExhausted . head <$> supportsWith "26004" `shouldReturn` True
+        supportExhausted . testHead <$> supportsWith "26004" `shouldReturn` True
         offers (cardAbility home 1) `shouldReturn` False
 
     it "can find an Android ally in the deck even when its title conflicts with an identity in play" do
@@ -510,7 +509,7 @@ spec = describe "Vision" do
         pass
         deck <- unDeck . playerIdentityDeck <$> playerAttrs p
         deck `shouldMatchList` [one, two]
-        supportExhausted . head <$> supportsWith "26004" `shouldReturn` True
+        supportExhausted . testHead <$> supportsWith "26004" `shouldReturn` True
 
   describe "Solar Gem" do
     for_ [False, True] $ \hero ->
@@ -634,7 +633,7 @@ spec = describe "Vision" do
       tg <- vision
       let p = player1 tg
       inGame tg do
-        cape <- putIntoPlay p "26006"
+        _cape <- putIntoPlay p "26006"
         flipDirect
         pass
         getPlayer p >>= getModifiedKeywords >>= (`shouldSatisfy` elem (Retaliate 1))

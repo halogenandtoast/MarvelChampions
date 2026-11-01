@@ -1,17 +1,12 @@
 module Marvel.Aspect.SpiderHamPackSpec (spec) where
 
-import Marvel.Ally.Types qualified as Ally
-import Marvel.Ability (AbilityType (Response, Interrupt))
 import Marvel.Damage
 import Marvel.Ally.Cards qualified as Allies
-import Marvel.Game.Source (getModifiers)
-import Marvel.Hero.Types qualified as Hero
 import Marvel.Keyword (Keyword (Patrol))
 import Marvel.Matchers
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier
 import Marvel.Phase
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Trait
 import Data.HashSet qualified as HashSet

@@ -1,7 +1,6 @@
 module Marvel.Rules.YouSpec (spec) where
 
 import Data.List (findIndex)
-import Marvel.Card.Side (Side (A))
 import TestImport
 
 -- | "You" on a player card is the player who would play or trigger it (RR "You"), not

@@ -6,7 +6,6 @@ import Marvel.Criteria
 import Marvel.Cost.Types
 import Marvel.Matchers
 import Marvel.Message.Lifted qualified as Lifted
-import Marvel.Payment (Payment (..))
 import Marvel.Query
 import Marvel.Trait
 import Marvel.Window qualified as W

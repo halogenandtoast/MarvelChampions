@@ -2,7 +2,7 @@ module Marvel.Hero.QuicksilverSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Treachery.Cards qualified as Treacheries

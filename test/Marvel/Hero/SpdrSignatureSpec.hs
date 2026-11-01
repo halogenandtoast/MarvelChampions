@@ -126,7 +126,7 @@ spec = describe "SP//dr signature" do
         pass
         map toCardCode <$> handOf p >>= (`shouldSatisfy` elem "31010")
   describe "Aunt May & Uncle Ben" do
-    for_ [(False,2),(True,3)] $ \(alter,n) ->
+    for_ [(False,2 :: Int),(True,3)] $ \(alter,n) ->
       it ("discards " <> show n <> " cards in " <> if alter then "alter-ego" else "hero") do
         tg <- testGame ["spdr"]
         let p = player1 tg

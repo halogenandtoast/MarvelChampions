@@ -6,13 +6,11 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
 import Data.Text qualified as T
 import Test.Hspec qualified as Hspec
-import Marvel.Ability.Types (abilityIndex)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Modifier (Modifier (CannotTakeDamage))
 import Marvel.Query
-import Marvel.Upgrade.Cards qualified as Upgrades
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 

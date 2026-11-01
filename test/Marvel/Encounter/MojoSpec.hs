@@ -5,7 +5,6 @@ import Data.List (nub)
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.EncounterSet qualified as Set
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.Game.Source (getCharacterThreat)
 import Marvel.Matchers
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Minions

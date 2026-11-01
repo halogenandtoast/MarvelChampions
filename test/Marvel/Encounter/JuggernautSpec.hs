@@ -5,13 +5,9 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types hiding (AttachmentId)
 import Marvel.EncounterSet qualified as Set
-import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (currentIdentity, PlayerIdentitySide(..))
 import Marvel.Keyword
 import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
-import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Modifier
 import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Treachery.Cards qualified as Treacheries

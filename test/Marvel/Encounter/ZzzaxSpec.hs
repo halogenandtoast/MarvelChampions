@@ -4,11 +4,9 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types qualified as Ability
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
-import Marvel.Card.PlayerCard (printedResourcesFor)
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Minion.Minions.Zzzax (controlledEnergy, handEnergy)
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Phase
 import Marvel.Query

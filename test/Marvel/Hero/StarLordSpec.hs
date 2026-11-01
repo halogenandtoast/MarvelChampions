@@ -2,10 +2,9 @@ module Marvel.Hero.StarLordSpec (spec) where
 
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Hero.Runner (getModifiedThwart)
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers (AllyMatcher (..), IdentityMatcher (..))
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Payment.Types (Payment (NoPayment))
 import Marvel.Query (selectAny)
 import Marvel.Trait (Trait (Aerial, Guardian))
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -78,7 +77,7 @@ spec = describe "Star-Lord" do
       inGame tg do
         asHero p
         -- Maria Hill is not a Guardian printed
-        putIntoPlay p "01067"
+        _ <- putIntoPlay p "01067"
         maria <- allyIn "01067"
         blaze <- putInHand p "17015"
         energy <- putInHand p "01088"

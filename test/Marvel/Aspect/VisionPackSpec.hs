@@ -4,8 +4,6 @@ import Marvel.ActiveCost (allocationLabel)
 import Marvel.Ally.Runner qualified as Ally
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.SideScheme.Cards qualified as Schemes
-import Marvel.Matchers hiding (ExhaustedAlly, ExhaustedIdentity)
-import Marvel.Query
 import TestImport
 
 rhinoAttacks :: IdentityId -> GameAppT ()

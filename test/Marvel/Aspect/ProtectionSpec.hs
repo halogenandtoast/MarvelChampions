@@ -30,7 +30,7 @@ spec = describe "Protection" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01075"
+        _ <- putIntoPlay p "01075"
         widow <- allyIn "01075"
         genius <- putInHand p "01089"
         card <- encounterCard Cards.imTough
@@ -52,7 +52,7 @@ spec = describe "Protection" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01075"
+        _ <- putIntoPlay p "01075"
         _ <- putInHand p "01089"
         (_, [mercenary]) <- setEncounterDeck [Cards.advance] [Minions.hydraMercenary]
         runNow [SearchForAndRevealEncounterCard p (CardWithType MinionType)]
@@ -66,7 +66,7 @@ spec = describe "Protection" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01076"
+        _ <- putIntoPlay p "01076"
         luke <- allyIn "01076"
         luke.allyTough `shouldBe` True
         resolve [AllyMessage (allyId luke) (AllyDamaged (toSource p) (toDamage 3 FromAbility))]
@@ -163,7 +163,7 @@ spec = describe "Protection" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01080"
+        _ <- putIntoPlay p "01080"
         [team] <- supportsWith "01080"
         team.supportUses `shouldBe` 3
         offers (isAbilityOf (supportId team)) `shouldReturn` False
@@ -205,7 +205,7 @@ spec = describe "Protection" do
       let p = player1 tg
       inGame tg do
         clearHand p
-        putIntoPlay p "01082"
+        _ <- putIntoPlay p "01082"
         [indomitable] <- upgradesWith "01082"
         changeForm p
         toVillainAttack p

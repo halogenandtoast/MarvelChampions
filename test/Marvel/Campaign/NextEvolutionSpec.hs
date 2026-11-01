@@ -1,12 +1,9 @@
 module Marvel.Campaign.NextEvolutionSpec (spec) where
 
-import Data.List (foldl')
 import Marvel.Query
 import Marvel.Matchers
 import Marvel.Campaign
 import Marvel.Environment.Cards qualified as Environments
-import Marvel.EncounterCard (genEncounterCard)
-import Marvel.SideScheme.Cards qualified as Schemes
 import TestImport
 import Test.Hspec qualified as Hspec
 

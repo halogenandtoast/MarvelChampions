@@ -1,7 +1,6 @@
 module Marvel.Aspect.CyclopsAlliesSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types qualified as Ally
 import Marvel.Identity (getModifiedAllyLimit)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries

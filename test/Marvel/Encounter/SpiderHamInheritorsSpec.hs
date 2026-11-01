@@ -116,7 +116,7 @@ spec = describe "Spider-Ham Inheritors modular" do
         startHunt
         choose "engage Miles" (isTargetChoice other)
         settle
-        minionEngagedIdentity <$> minionAttrs (MinionId $ unCardId $ ecCardId $ head cards) `shouldReturn` other
+        minionEngagedIdentity <$> minionAttrs (MinionId $ unCardId $ ecCardId $ testHead cards) `shouldReturn` other
 
   describe "Inheritor auras" do
     for_ [("Brix", Minions.brix, Patrol), ("Daemos", Minions.daemos, Stalwart)
@@ -345,7 +345,7 @@ spec = describe "Spider-Ham Inheritors modular" do
         tg <- testGame ["spider-man"]
         let p = player1 tg
         inGame tg do
-          support <- putIntoPlay p "01092"
+          _support <- putIntoPlay p "01092"
           mid <- revealMinion p def
           mainSchemeThreatNow `shouldReturn` 0
           damageOf p `shouldReturn` 0

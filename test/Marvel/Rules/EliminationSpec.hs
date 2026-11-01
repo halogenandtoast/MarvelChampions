@@ -13,7 +13,7 @@ spec = describe "an eliminated player" do
     let p = player1 tg
         other = player2 tg
     inGame tg do
-      putIntoPlay p "01064"
+      _ <- putIntoPlay p "01064"
       minion <- addMinion p Minions.hydraMercenary
       dealt <- encounterCard Treacheries.advance
       runNow [IdentityMessage p (DealtEncounterCard dealt)]

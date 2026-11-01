@@ -2,9 +2,7 @@ module Marvel.Hero.MilesMoralesSignatureSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability (HasAbilities)
-import Marvel.Card.Side (Side (A, B))
 import Marvel.Keyword (Keyword (Steady))
-import Marvel.Matchers hiding (ExhaustedIdentity, ExhaustedAlly)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Modifier (Modifier (KeywordModifier), HasModifiersFor (..))
 import Marvel.Upgrade.Types (Upgrade (..), IsUpgrade (..))

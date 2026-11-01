@@ -1,6 +1,5 @@
 module Marvel.Rules.NovaMechanicsSpec (spec) where
 
-import Data.Aeson (Result (..), Value (Object), fromJSON, toJSON)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Damage
@@ -56,7 +55,7 @@ spec = describe "Nova engine mechanics" do
       hand <- handOf p
       length hand `shouldBe` 8
       hand `shouldSatisfy` elem held
-      hand `shouldSatisfy` elem (head drawn)
+      hand `shouldSatisfy` elem (testHead drawn)
       length (filter (not . cdDoesNotCountTowardHandSize . getCardDef) hand) `shouldBe` 6
 
   it "allows only the designated resource from a Civilian's hand to help another payer" do

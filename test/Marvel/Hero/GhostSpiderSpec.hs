@@ -1,8 +1,5 @@
 module Marvel.Hero.GhostSpiderSpec (spec, ghostSpider, asGhost, attackVillain, isReflexes) where
 
-import Data.HashMap.Strict qualified as HashMap
-import Marvel.Phase (Phase (..))
-import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
 ghostSpider :: IO TestGame

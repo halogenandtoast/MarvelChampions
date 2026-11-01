@@ -5,11 +5,8 @@ import Marvel.Phase (VillainPhaseStep (StepEnemiesActivate))
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Ally.Cards qualified as Allies
 import Marvel.Attachment.Cards qualified as Attachments
-import Marvel.Card.Side (Side (A))
-import Marvel.Environment.Cards qualified as Environments
 import Marvel.Keyword qualified as Keyword
 import Marvel.Obligation.Cards qualified as Obligations
-import Marvel.MainScheme.Cards qualified as MainSchemes
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Matchers
 import Marvel.Query
@@ -146,7 +143,7 @@ spec = describe "Mutant Genesis scenarios" do
     it "does not activate the first Acolyte when no other Acolyte is in play" do
       tg <- testGame ["spider-man"]
       inGame tg do
-        mid <- mainSchemeIdNow
+        _mid <- mainSchemeIdNow
         before <- mainSchemeThreatNow
         _ <- addMinion (player1 tg) Minions.mgSenyaka
         mainSchemeThreatNow `shouldReturn` before

@@ -5,7 +5,6 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Matchers
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Keyword (Keyword (Assault))
 import TestImport

@@ -1,15 +1,12 @@
 module Marvel.Encounter.MutantGenesisStateSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Card.PlayerCard.Types (encounterCardInPlayerDeck)
 import Marvel.Deck
-import Marvel.Hand
 import Marvel.Identity.Types
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.Treachery.Cards qualified as Treacheries
-import Marvel.Upgrade.Types qualified as Upgrade
 import TestImport
 
 stackShapeshifter :: IdentityId -> CardDef -> GameAppT PlayerCard

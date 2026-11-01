@@ -1,16 +1,14 @@
 module Marvel.Hero.X23Spec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Keyword (Keyword (Retaliate))
 import Marvel.Modifier (Modifier (KeywordModifier, CannotReady))
-import Marvel.Identity (currentIdentity, PlayerIdentitySide (..))
+import Marvel.Identity ( currentIdentity )
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Query
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Phase
-import Marvel.Window qualified as W
 import TestImport
 
 asHero :: IdentityId -> GameAppT ()

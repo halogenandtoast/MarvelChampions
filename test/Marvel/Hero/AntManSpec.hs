@@ -1,11 +1,10 @@
 module Marvel.Hero.AntManSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Marvel.Ally.Types (Attrs (allyCounters))
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Hero.Runner qualified as Hero
-import Marvel.Identity (PlayerIdentitySide (..), currentIdentity)
+import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Villain.Types (villainHp, villainStunned)
 import Marvel.Matchers (IdentityMatcher (IdentityCanChangeForm), identityMatches)

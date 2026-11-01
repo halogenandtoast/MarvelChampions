@@ -1,13 +1,10 @@
 module Marvel.Aspect.MilesMoralesPackSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Minion.Cards qualified as Minions
-import Marvel.Support.Cards qualified as Supports
-import Marvel.Villain.Types qualified as Villain
 import TestImport
 
-asHero :: IdentityId -> GameAppT ()
-asHero p = changeForm p >> pass >> clearHand p
+_asHero :: IdentityId -> GameAppT ()
+_asHero p = changeForm p >> pass >> clearHand p
 
 logistics :: IdentityId -> GameAppT ()
 logistics p = do
@@ -33,7 +30,7 @@ spec = describe "Miles Morales pack Justice cards" do
           first <- putIntoPlay p "01064"
           _ <- putIntoPlay other "01064"
           team <- case zone of
-            "deck" -> head <$> stackDeck p ["27045"]
+            "deck" -> testHead <$> stackDeck p ["27045"]
             "hand" -> putInHand p "27045"
             _ -> putInDiscard p "27045"
           monica <- putInHand p "27040"

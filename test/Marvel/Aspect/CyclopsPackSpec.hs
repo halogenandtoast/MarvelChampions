@@ -1,10 +1,7 @@
 module Marvel.Aspect.CyclopsPackSpec (spec) where
 
-import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Card
-import Marvel.Choice qualified as Choices
-import Marvel.Count
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Modifier
 import Marvel.Identity (getModifiedHp)
@@ -14,9 +11,7 @@ import Marvel.Minion.Cards qualified as Minions
 import Marvel.Minion.Types qualified as Minion
 import Marvel.Phase
 import Marvel.Query
-import Marvel.Status
 import Marvel.Trait qualified as Trait
-import Marvel.Window qualified as W
 import TestImport
 
 heroTable :: IO (TestGame, IdentityId)
