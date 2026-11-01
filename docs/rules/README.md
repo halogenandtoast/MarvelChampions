@@ -6,6 +6,7 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Age of Apocalypse rulebook (MC45) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc45_age_of_apocalypse_rulebook.pdf |
 | Deadpool Hero Pack rules insert (MC44) | 2 rules pages and poster art | https://images-cdn.fantasyflightgames.com/filer_public/8a/98/8a987c42-a835-4fa7-b0b7-11f466e0faa4/mc44_deadpool_rules_insert-web.pdf |
 | X-23 Hero Pack rules insert (MC43) | 2 pages (p.2 artwork) | https://images-cdn.fantasyflightgames.com/filer_public/32/e8/32e82755-7b86-4ba0-9201-aa32b52faaa8/mc43_x-23_rules_insert-web.pdf |
 | Psylocke Hero Pack rules insert (MC41) | 2 pages (p.2 blank) | https://images-cdn.fantasyflightgames.com/filer_public/b3/41/b341e3d0-01ef-471d-b0d3-657ae05757c6/mc41_psylocke_rules_insert-web.pdf |
@@ -54,6 +55,15 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 | File | Contents |
 |---|---|
+| [scenario-aoa-standard-iii.md](scenario-aoa-standard-iii.md) | Pursuit counters, nemesis Find, activation timing, and Drawing Near |
+| [campaign-age-of-apocalypse.md](campaign-age-of-apocalypse.md) | Missions, Overseers, campaign rewards, expert campaign, and the Professor victory condition |
+| [scenario-aoa-unus.md](scenario-aoa-unus.md) | Unus, Infinites, Dystopian Nightmare, and optional Gene Pool setup difficulty |
+| [scenario-aoa-four-horsemen.md](scenario-aoa-four-horsemen.md) | Ordered Horsemen, active counter, zero hit points, and Hounds |
+| [scenario-aoa-apocalypse.md](scenario-aoa-apocalypse.md) | Apocalypse's four stages, Prelates, Dark Riders, and side-scheme transformations |
+| [scenario-aoa-dark-beast.md](scenario-aoa-dark-beast.md) | Dark Beast and the three Setting modular sets |
+| [scenario-aoa-en-sabah-nur.md](scenario-aoa-en-sabah-nur.md) | Three-sided Apocalypse, Celestial Tech, and Clan Akkaba |
+| [hero-bishop.md](hero-bishop.md) | Bishop: attack damage response, resource payment, Sidekick, Suit Up errata and starter deck |
+| [hero-magik.md](hero-magik.md) | Magik: faceup deck, play permission, top-card timing and starter deck |
 | [hero-deadpool.md](hero-deadpool.md) | Deadpool: fifth aspect, Dreadpool setup, printed icons and metagame boards, starter deck and pending digital inputs |
 | [hero-x23.md](hero-x23.md) | X-23: Linked Specializations, Assault, damage costs, current FAQ and starter deck |
 | [hero-psylocke.md](hero-psylocke.md) | Psylocke: double-sided weapons, distinct attack targets, printed stats, starter deck and official rulings |
