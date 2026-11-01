@@ -25,7 +25,8 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard technoOrganicWings, SomeUpgradeCard containmentStrategy, SomeUpgradeCard soaringAcrobatics, SomeUpgradeCard eyesInTheSky, SomeUpgradeCard xForceRecruit
+  [ SomeUpgradeCard x23sClaws, SomeUpgradeCard adamantiumLacing, SomeUpgradeCard grimResolve, SomeUpgradeCard painTolerance, SomeUpgradeCard punctureWound, SomeUpgradeCard nowImMad, SomeUpgradeCard theDirectApproach, SomeUpgradeCard combatSpecialist, SomeUpgradeCard defenseSpecialist, SomeUpgradeCard frontLineSpecialist, SomeUpgradeCard surveillanceSpecialist
+  , SomeUpgradeCard technoOrganicWings, SomeUpgradeCard containmentStrategy, SomeUpgradeCard soaringAcrobatics, SomeUpgradeCard eyesInTheSky, SomeUpgradeCard xForceRecruit
   , SomeUpgradeCard psiKnife, SomeUpgradeCard psiKatana, SomeUpgradeCard martialArtsTraining, SomeUpgradeCard psionicTraining, SomeUpgradeCard weaponsTraining, SomeUpgradeCard floatLikeAButterfly, SomeUpgradeCard telepathy, SomeUpgradeCard telekinesis
   , SomeUpgradeCard sharpshooter
   , SomeUpgradeCard probabilityField

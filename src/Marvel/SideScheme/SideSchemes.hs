@@ -256,3 +256,9 @@ import Marvel.SideScheme.SideSchemes.InterdimensionalPlunder as X
 -- Angel
 import Marvel.SideScheme.SideSchemes.RenderMedicalAid as X
 import Marvel.SideScheme.SideSchemes.HookLineAndSinker as X
+
+-- X-23
+import Marvel.SideScheme.SideSchemes.KeepThemBusy as X
+import Marvel.SideScheme.SideSchemes.SpecializedTraining as X
+import Marvel.SideScheme.SideSchemes.InTheNameOfVengeance as X
+import Marvel.SideScheme.SideSchemes.RallyTheTroops as X

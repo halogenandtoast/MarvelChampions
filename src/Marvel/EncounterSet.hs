@@ -185,6 +185,7 @@ data EncounterSet
   | ShadowKingSet
   | GambitNemesisSet
   | ExodusSet
+  | X23Nemesis
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -269,6 +270,7 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "43001" -> X23Nemesis
   "42001" -> AngelNemesis
   "38001" -> RogueNemesisSet
   "37001" -> GambitNemesisSet

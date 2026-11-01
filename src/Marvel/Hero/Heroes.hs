@@ -111,3 +111,6 @@ import Marvel.Hero.Heroes.PsylockeHero as X
 -- Angel
 import Marvel.Hero.Heroes.AngelHero as X
 import Marvel.Hero.Heroes.ArchangelHero as X
+
+-- X-23
+import Marvel.Hero.Heroes.X23 as X

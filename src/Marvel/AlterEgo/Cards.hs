@@ -61,7 +61,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ warrenWorthingtonIII
+    [ lauraKinney
+  , warrenWorthingtonIII
   , betsyBraddock
   , cable40001b
   , neenaThurman
@@ -428,6 +429,41 @@ warrenWorthingtonIII :: CardDef
 warrenWorthingtonIII = CardDef
   { cdCardCode = "42001b"
   , cdName = "Warren Worthington III"
+  , cdCost = Nothing
+  , cdTraits = fromList [AnTrait.Mutant]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+lauraKinney :: CardDef
+lauraKinney = CardDef
+  { cdCardCode = "43001b"
+  , cdName = "Laura Kinney"
   , cdCost = Nothing
   , cdTraits = fromList [AnTrait.Mutant]
   , cdKeywords = fromList []

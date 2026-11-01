@@ -257,3 +257,6 @@ import Marvel.Minion.Minions.Chimera as X
 
 -- Angel
 import Marvel.Minion.Minions.Harpoon as X
+
+-- X-23
+import Marvel.Minion.Minions.LadyDeathstrikeX23 as X

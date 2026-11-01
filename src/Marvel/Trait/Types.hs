@@ -171,5 +171,6 @@ data Trait
   | XForce
   | Thief
   | Guild
+  | Specialization
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

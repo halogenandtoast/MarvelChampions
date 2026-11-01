@@ -101,7 +101,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ spearShot
+  [ hackNSlashX23
+  , spearShot
   , telekineticDragon
   , hood24017, hood24028, hood24029, hood24030, hood24031, hood24032, hood24036, hood24048, hood24050, hood24051, hood24052, hood24053, hood24054, hood24059, hood24069, hood24070
       , ne40154
@@ -2645,6 +2646,41 @@ spearShot = CardDef
   , cdBoostIcons = [AnBoost.Star]
   , cdEncounterSet = Just AnSet.AngelNemesis
   , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+hackNSlashX23 :: CardDef
+hackNSlashX23 = CardDef
+  { cdCardCode = "43033"
+  , cdName = "Hack 'n' Slash"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AnBoost.Star]
+  , cdEncounterSet = Just AnSet.X23Nemesis
+  , cdEncounterSetQuantity = Just 1
   , cdResponseWindow = Nothing
   , cdActionCriteria = Nothing
   , cdHazards = 0

@@ -520,3 +520,12 @@ import Marvel.Event.Events.AerialIntervention as X
 import Marvel.Event.Events.Taunt as X
 import Marvel.Event.Events.BombsAway as X
 import Marvel.Event.Events.FlyingFormation as X
+
+-- X-23
+import Marvel.Event.Events.AnimalInstinct as X
+import Marvel.Event.Events.ClawMastery as X
+import Marvel.Event.Events.RegenerativeLongevity as X
+import Marvel.Event.Events.SisterlyBond as X
+import Marvel.Event.Events.CriticalHit as X
+import Marvel.Event.Events.PredictablePloy as X
+import Marvel.Event.Events.AnticipatedAttack as X

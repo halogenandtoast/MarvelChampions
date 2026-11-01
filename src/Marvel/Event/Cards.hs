@@ -71,7 +71,8 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ adaptivePlumage, aerialAgility, metamorphosis, naturalFlight, razorDive, aerialIntervention, taunt, bombsAway, flyingFormation
+  [ animalInstinct, clawMastery, regenerativeLongevity, sisterlyBond, criticalHit, predictablePloy, anticipatedAttack
+  , adaptivePlumage, aerialAgility, metamorphosis, naturalFlight, razorDive, aerialIntervention, taunt, bombsAway, flyingFormation
   , flurryOfBlades, mentalDetection, psionicRedirect, telepathicSuggestion, upsideTheHead, directedForce, soaringHearts, psiBowAttack, psiFlailStrike
   , thePosse
   , teamInvestigation
@@ -1158,7 +1159,7 @@ teamUp a b = inPlay a <> inPlay b
   inPlay t = AnyCriteria [CharacterExists (IdentityCharacters $ IdentityWithTitle t <> HeroIdentity), AllyExists (AllyNamedAs t)]
 
 momentOfTriumph :: CardDef
-momentOfTriumph =
+momentOfTriumph = reprintedAs ["43017"] $
   (event "12030" "Moment of Triumph" 0 HeroResponse [] [Energy] Aggression)
     { cdResponseWindow = Just (EnemyDefeated After AnyEnemy (AttackFromPlayer You))
     }
@@ -3241,6 +3242,239 @@ flyingFormation = CardDef
   , cdEncounterSet = Nothing
   , cdEncounterSetQuantity = Nothing
   , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+animalInstinct :: CardDef
+animalInstinct = CardDef
+  { cdCardCode = "43004"
+  , cdName = "Animal Instinct"
+  , cdCost = Just 0
+  , cdTraits = fromList [AnTrait.Skill]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroInterrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.MakesBasicThwart AnWindow.When (AnMatch.IdentityWithTitle "X-23"))
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+clawMastery :: CardDef
+clawMastery = CardDef
+  { cdCardCode = "43005"
+  , cdName = "Claw Mastery"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Skill]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (AnCard.MaxPerRound 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+regenerativeLongevity :: CardDef
+regenerativeLongevity = CardDef
+  { cdCardCode = "43006"
+  , cdName = "Regenerative Longevity"
+  , cdCost = Just 1
+  , cdTraits = fromList [AnTrait.Superpower]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.AnyCriteria [AnCriteria.CharacterExists (AnMatch.IdentityCharacters AnMatch.You <> AnMatch.CharacterWithAnyDamage <> AnMatch.CharacterCanBeHealed), AnCriteria.CharacterExists (AnMatch.AllyCharacters (AnMatch.AllyWithTitle "Honey Badger") <> AnMatch.CharacterWithAnyDamage <> AnMatch.CharacterCanBeHealed)]
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+sisterlyBond :: CardDef
+sisterlyBond = CardDef
+  { cdCardCode = "43007"
+  , cdName = "Sisterly Bond"
+  , cdCost = Just 0
+  , cdTraits = fromList [AnTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroInterrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.WindowOneOf [AnWindow.AllyAttacked AnWindow.When (AnMatch.AllyWithTitle "Honey Badger") AnMatch.AnyEnemy, AnWindow.AllyThwarted AnWindow.When (AnMatch.AllyWithTitle "Honey Badger") AnMatch.AnyScheme])
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+criticalHit :: CardDef
+criticalHit = CardDef
+  { cdCardCode = "43016"
+  , cdName = "Critical Hit"
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroResponse
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Aggression
+  , cdCriteria = AnCriteria.VictoryDisplayHasSideScheme
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.IdentityAttackResolved AnMatch.You)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+predictablePloy :: CardDef
+predictablePloy = CardDef
+  { cdCardCode = "43038"
+  , cdName = "Predictable Ploy"
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroInterrupt
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Justice
+  , cdCriteria = AnCriteria.VictoryDisplayHasSideScheme
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.TreacheryRevealed AnWindow.When AnMatch.AnyTreachery AnWindow.RevealedFromEncounterDeck)
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+anticipatedAttack :: CardDef
+anticipatedAttack = CardDef
+  { cdCardCode = "43040"
+  , cdName = "Anticipated Attack"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Defense]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.EventType
+  , cdAbilityType = Just AnAbility.HeroInterrupt
+  , cdAbilitySubTypes = [AnAbility.Defense]
+  , cdUnique = False
+  , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.VictoryDisplayHasSideScheme
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Just (AnWindow.EnemyAttacksPlayerOrAlly AnWindow.When AnMatch.AnyEnemy AnMatch.AnyIdentity)
   , cdActionCriteria = Nothing
   , cdHazards = 0
   , cdAcceleration = 0

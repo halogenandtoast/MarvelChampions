@@ -101,7 +101,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ psylockeAngel, elixir, siryn, warpath, cannonball
+  [ honeyBadger, boomBoom, rictor, shatterstar
+  , psylockeAngel, elixir, siryn, warpath, cannonball
   , angelPsylocke, captainBritain, cypher, peteWisdom, dominoPsylocke
   , ne40079, ne40130
   , whiteFox
@@ -1834,6 +1835,140 @@ cannonball = CardDef
   , cdAspect = Just AnAspect.Neutral
   , cdCriteria = AnCriteria.NoCriteria
   , cdResources = [(AnCard.PrintedResource, AnResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+honeyBadger :: CardDef
+honeyBadger = CardDef
+  { cdCardCode = "43003"
+  , cdName = AnName.Name "Honey Badger" (Just "Gabby Kinney")
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.XMen]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+boomBoom :: CardDef
+boomBoom = CardDef
+  { cdCardCode = "43013"
+  , cdName = AnName.Name "Boom Boom" (Just "Tabitha Smith")
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Aggression
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+rictor :: CardDef
+rictor = CardDef
+  { cdCardCode = "43014"
+  , cdName = AnName.Name "Rictor" (Just "Julio Richter")
+  , cdCost = Just 3
+  , cdTraits = fromList [AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Aggression
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+shatterstar :: CardDef
+shatterstar = CardDef
+  { cdCardCode = "43015"
+  , cdName = AnName.Name "Shatterstar" (Just "Gaveedra Seven")
+  , cdCost = Just 4
+  , cdTraits = fromList [AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AnAspect.Aggression
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
   , cdBoostIcons = []
   , cdEncounterSet = Nothing
   , cdEncounterSetQuantity = Nothing

@@ -113,7 +113,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ harpoonsHarpoon
+      [ cybermods, criticalWound
+  , harpoonsHarpoon
   , psionicIllusion
   , hood24019, hood24020, hood24021, hood24022, hood24037, hood24038, hood24039, hood24040
       , ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173
@@ -2372,6 +2373,74 @@ harpoonsHarpoon = CardDef
   , cdResources = []
   , cdBoostIcons = [AnBoost.Boost, AnBoost.Boost]
   , cdEncounterSet = Just AnSet.AngelNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+cybermods :: CardDef
+cybermods = CardDef
+  { cdCardCode = "43031"
+  , cdName = "Cybermods"
+  , cdCost = Nothing
+  , cdTraits = fromList [AnTrait.Tech]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AnBoost.Boost, AnBoost.Boost]
+  , cdEncounterSet = Just AnSet.X23Nemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+criticalWound :: CardDef
+criticalWound = CardDef
+  { cdCardCode = "43032"
+  , cdName = "Critical Wound"
+  , cdCost = Nothing
+  , cdTraits = fromList [AnTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AnBoost.Boost, AnBoost.Boost]
+  , cdEncounterSet = Just AnSet.X23Nemesis
   , cdEncounterSetQuantity = Just 1
   , cdResponseWindow = Nothing
   , cdActionCriteria = Nothing

@@ -44,7 +44,11 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("42008", SomeCardEffect avianAnatomyEffect)
+    [ ("43002", SomeCardEffect x23sClawsEffect)
+    , ("43004", SomeCardEffect animalInstinctEffect)
+    , ("43005", SomeCardEffect clawMasteryEffect)
+    , ("43007", SomeCardEffect sisterlyBondEffect)
+    , ("42008", SomeCardEffect avianAnatomyEffect)
     , ("42004", SomeCardEffect aerialAgilityEffect)
     , ("42010", SomeCardEffect technoOrganicWingsEffect)
     , ("42016", SomeCardEffect tauntEffect)

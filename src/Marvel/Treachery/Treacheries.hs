@@ -266,3 +266,6 @@ import Marvel.Treachery.Treacheries.TelekineticDragon as X
 
 -- Angel
 import Marvel.Treachery.Treacheries.SpearShot as X
+
+-- X-23
+import Marvel.Treachery.Treacheries.HackNSlashX23 as X

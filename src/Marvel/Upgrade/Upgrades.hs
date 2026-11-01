@@ -386,3 +386,16 @@ import Marvel.Upgrade.Upgrades.ContainmentStrategy as X
 import Marvel.Upgrade.Upgrades.SoaringAcrobatics as X
 import Marvel.Upgrade.Upgrades.EyesInTheSky as X
 import Marvel.Upgrade.Upgrades.XForceRecruit as X
+
+-- X-23
+import Marvel.Upgrade.Upgrades.X23sClaws as X
+import Marvel.Upgrade.Upgrades.AdamantiumLacing as X
+import Marvel.Upgrade.Upgrades.GrimResolve as X
+import Marvel.Upgrade.Upgrades.PainTolerance as X
+import Marvel.Upgrade.Upgrades.PunctureWound as X
+import Marvel.Upgrade.Upgrades.NowImMad as X
+import Marvel.Upgrade.Upgrades.TheDirectApproach as X
+import Marvel.Upgrade.Upgrades.CombatSpecialist as X
+import Marvel.Upgrade.Upgrades.DefenseSpecialist as X
+import Marvel.Upgrade.Upgrades.FrontLineSpecialist as X
+import Marvel.Upgrade.Upgrades.SurveillanceSpecialist as X

@@ -185,3 +185,6 @@ import Marvel.Support.Supports.XBunker as X
 -- Angel
 import Marvel.Support.Supports.WorthingtonIndustries as X
 import Marvel.Support.Supports.AngelsAerie as X
+
+-- X-23
+import Marvel.Support.Supports.Sisterhood as X

@@ -308,3 +308,9 @@ import Marvel.Ally.Allies.Elixir as X
 import Marvel.Ally.Allies.Siryn as X
 import Marvel.Ally.Allies.Warpath as X
 import Marvel.Ally.Allies.Cannonball as X
+
+-- X-23
+import Marvel.Ally.Allies.HoneyBadger as X
+import Marvel.Ally.Allies.BoomBoom as X
+import Marvel.Ally.Allies.Rictor as X
+import Marvel.Ally.Allies.Shatterstar as X

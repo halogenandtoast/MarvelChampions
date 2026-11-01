@@ -60,7 +60,8 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ angelHero, archangelHero
+  [ x23
+  , angelHero, archangelHero
   , psylockeHero
   , dominoHero
   , cable40001a
@@ -502,6 +503,41 @@ archangelHero = CardDef
   , cdActionCriteria = Nothing
   , cdHazards = 0
   , cdAcceleration = 1
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+x23 :: CardDef
+x23 = CardDef
+  { cdCardCode = "43001a"
+  , cdName = "X-23"
+  , cdCost = Nothing
+  , cdTraits = fromList [AnTrait.XForce]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.HeroType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
   , cdAmplify = 0
   , cdLimit = Nothing
   , cdDeckLimit = Just 1

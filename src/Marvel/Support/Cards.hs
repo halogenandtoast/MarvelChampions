@@ -90,7 +90,8 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ worthingtonIndustries, angelsAerie
+  [ sisterhood
+  , worthingtonIndustries, angelsAerie
   , trainingRegimen, ipac, xBunker
   , ne40197
   , thePaintedLady
@@ -833,7 +834,7 @@ trainingRegimen = CardDef
   }
 
 ipac :: CardDef
-ipac = CardDef
+ipac = reprintedAs ["43025"] $ CardDef
   { cdCardCode = "41022", cdName = "IPAC", cdCost = Just 1
   , cdTraits = fromList [PsyTrait.Vehicle, PsyTrait.XForce], cdKeywords = fromList []
   , cdCardType = PsyCard.SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
@@ -848,7 +849,7 @@ ipac = CardDef
   }
 
 xBunker :: CardDef
-xBunker = CardDef
+xBunker = reprintedAs ["43026"] $ CardDef
   { cdCardCode = "41023", cdName = "X-Bunker", cdCost = Just 2
   , cdTraits = fromList [PsyTrait.Location, PsyTrait.XForce], cdKeywords = fromList []
   , cdCardType = PsyCard.SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
@@ -909,6 +910,41 @@ angelsAerie = CardDef
   , cdAbilitySubTypes = []
   , cdUnique = True
   , cdAspect = Just AnAspect.Protection
+  , cdCriteria = AnCriteria.NoCriteria
+  , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AnCost.NoCost
+  }
+
+-- X-23
+
+sisterhood :: CardDef
+sisterhood = CardDef
+  { cdCardCode = "43008"
+  , cdName = "Sisterhood"
+  , cdCost = Just 2
+  , cdTraits = fromList [AnTrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AnCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
   , cdCriteria = AnCriteria.NoCriteria
   , cdResources = [(AnCard.PrintedResource, AnResource.Mental)]
   , cdBoostIcons = []

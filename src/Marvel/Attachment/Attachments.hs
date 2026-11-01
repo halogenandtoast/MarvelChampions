@@ -200,3 +200,7 @@ import Marvel.Attachment.Attachments.PsionicIllusion as X
 
 -- Angel
 import Marvel.Attachment.Attachments.HarpoonsHarpoon as X
+
+-- X-23
+import Marvel.Attachment.Attachments.Cybermods as X
+import Marvel.Attachment.Attachments.CriticalWound as X

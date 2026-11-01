@@ -119,3 +119,6 @@ import Marvel.Obligation.Obligations.BodySwapped as X
 
 -- Angel
 import Marvel.Obligation.Obligations.ApocalypticInfluence as X
+
+-- X-23
+import Marvel.Obligation.Obligations.SelfIsolation as X
