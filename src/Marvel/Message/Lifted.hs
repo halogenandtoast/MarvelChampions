@@ -46,7 +46,7 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (AttacksAgainstGainKeyword, AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Modifier.Types (Modifier (OnlyIdentityCanDefend, AttacksCannotBeDefended, AttacksAgainstGainKeyword, AdditionalReadyCost, KeywordModifier, CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
 import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
@@ -817,9 +817,12 @@ enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
 
 -- | The enemy's attack is defended by the character.
 enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
-enemyDefendedBy enemy character = push case toEnemy enemy of
-  EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
-  EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
+enemyDefendedBy enemy character = do
+  modifiers <- getModifiers (enemyRef $ toEnemy enemy)
+  let allowed = AttacksCannotBeDefended `notElem` modifiers && all (\case OnlyIdentityCanDefend who -> character == IdentityCharacter who; _ -> True) modifiers
+  when allowed $ push case toEnemy enemy of
+    EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
+    EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
 
 enemyAttacks :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
 enemyAttacks enemy ident = push case toEnemy enemy of
@@ -939,6 +942,10 @@ dealBoost = push . DealBoost . toTarget
 
 revealBoostCard :: (ReverseQueue m, IsEnemy enemy) => EncounterCard -> enemy -> m ()
 revealBoostCard card = push . RevealBoostCard card . toEnemy
+
+-- | Turn the boost card faceup without resolving its boost ability.
+revealBoostCardWithoutAbility :: (ReverseQueue m, IsEnemy enemy) => EncounterCard -> enemy -> m ()
+revealBoostCardWithoutAbility card = push . RevealBoostCardWithoutAbility card . toEnemy
 
 clearBoosts :: (ReverseQueue m) => m ()
 clearBoosts = push ClearBoosts
@@ -2741,17 +2748,32 @@ attachObligationToSideScheme :: ReverseQueue m => ObligationId -> SideSchemeId -
 attachObligationToSideScheme oid sid = cardSpecific (ObligationRef oid) "cableAttachSideScheme" sid
 
 -- | Prevent damage to the enemy addressed by the imminent damage message.
-preventEnemyDamage :: HasQueue m => EnemyId -> Natural -> m ()
-preventEnemyDamage enemy n = replaceMatchingMessage prevent $ \case
-  VillainMessage vid (VillainDamaged _ _) -> enemy == EnemyVillainId vid
-  MinionMessage mid (MinionDamaged _ _) -> enemy == EnemyMinionId mid
-  _ -> False
+preventEnemyDamage :: ReverseQueue m => EnemyId -> Natural -> m ()
+preventEnemyDamage enemy n = do
+  pending <- withQueue $ \queue -> (queue, headMay
+    [(source, damage) | message <- concatMap queuedMessageLeaves queue,
+      Just (target, source, damage) <- [enemyDamageMessage message], target == enemy])
+  for_ pending $ \(source, damage) -> do
+    incoming <- incomingEnemyDamage enemy source damage
+    if damageAmount incoming <= n
+      then do
+        -- Prevention changes damage taken; a positive piercing attack still
+        -- discards tough before the damage it would deal is prevented.
+        when (damageAmount incoming > 0 && piercesTough damage) $
+          removeAllTough $ case enemy of
+            EnemyVillainId vid -> VillainCharacter vid
+            EnemyMinionId mid -> MinionCharacter mid
+        cancelEnemyDamage enemy
+      else replaceMatchingMessage prevent $ \case
+        VillainMessage vid (VillainDamaged _ _) -> enemy == EnemyVillainId vid
+        MinionMessage mid (MinionDamaged _ _) -> enemy == EnemyMinionId mid
+        _ -> False
  where
   prevent = \case
     VillainMessage vid (VillainDamaged source damage) ->
-      [VillainMessage vid (VillainDamaged source damage {damageAmount = damageAmount damage - n}) | damageAmount damage > n]
+      [VillainMessage vid (VillainDamaged source damage {damagePrevention = damagePrevention damage + n})]
     MinionMessage mid (MinionDamaged source damage) ->
-      [MinionMessage mid (MinionDamaged source damage {damageAmount = damageAmount damage - n}) | damageAmount damage > n]
+      [MinionMessage mid (MinionDamaged source damage {damagePrevention = damagePrevention damage + n})]
     msg -> [msg]
 
 

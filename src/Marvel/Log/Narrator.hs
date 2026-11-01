@@ -485,10 +485,8 @@ villainNarration vid = \case
       then whenRef (VillainRef vid) \t -> one $ toned Good $ mechanic [ikeyPart "log.takesNoDamage" ["target" ~> t]]
       else do
         -- what gets past a tough status card is reduced (Thanos's Armor)
-        modifiers <- getModifiers (VillainRef vid)
-        let reduced = damageAmount $ Villain.reducedDamage modifiers dmg
-        capped <- getsGame $ \g -> maybe reduced (\v -> minimum (reduced : [subtractNatural (Villain.villainDamage v) cap | MaximumSustainedDamage cap <- modifiers])) (lookup vid $ gameVillains g)
-        damaged (VillainRef vid) (tough && preventedByTough dmg) capped
+        incoming <- incomingEnemyDamage (EnemyVillainId vid) source dmg
+        damaged (VillainRef vid) (tough && preventedByTough dmg) (damageAmount incoming)
   VillainHealed n | n > 0 -> Just $ healedBy (VillainRef vid) n
   VillainDefeated -> Just $ whenRef (VillainRef vid) \v -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> v]]
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
@@ -523,11 +521,10 @@ minionNarration mid = \case
   MinionSchemesAgainst {} -> Nothing
   MinionSchemeAgainstEnded -> Nothing
   MinionSchemes -> Just $ schemes (MinionRef mid) =<< selectAny (EnemyWithId (EnemyMinionId mid) <> ConfusedEnemy)
-  MinionDamaged _ dmg | damageAmount dmg > 0 -> Just do
+  MinionDamaged source dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
-    modifiers <- getModifiers (MinionRef mid)
-    capped <- getsGame $ \g -> maybe (damageAmount dmg) (\m -> minimum (damageAmount dmg : [subtractNatural (Minion.minionDamageThisPhase $ toAttrs m) cap | MaximumDamagePerPhase cap <- modifiers])) (lookup mid $ gameMinions g)
-    damaged (MinionRef mid) (tough && preventedByTough dmg) capped
+    incoming <- incomingEnemyDamage (EnemyMinionId mid) source dmg
+    damaged (MinionRef mid) (tough && preventedByTough dmg) (damageAmount incoming)
   MinionHealed n | n > 0 -> Just $ healedBy (MinionRef mid) n
   MinionDefeated -> Nothing
   MinionLeavesPlay -> Just $ whenRef (MinionRef mid) \m -> one $ toned Good $ mechanic [ikeyPart "log.defeated" ["target" ~> m]]

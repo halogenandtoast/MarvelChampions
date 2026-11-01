@@ -476,6 +476,7 @@ resourceCostAdjustment attrs c mTarget = do
     ResourceCostReduction n -> negate (fromIntegral n)
     ResourceCostReductionForCard cid n | cid == pcCardId c -> negate (fromIntegral n)
     ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
+    ResourceCostReductionForHandCard matcher n | cardMatch matcher c, c `elem` unHand (playerIdentityHand $ toAttrs attrs) -> negate (fromIntegral n)
     AdditionalResourceCost matcher n | cardMatch matcher c -> fromIntegral n
     _ -> 0
   changeOn = \case

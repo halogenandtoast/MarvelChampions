@@ -1,11 +1,15 @@
 module Marvel.Damage where
 
 import Marvel.Prelude
+import Data.Aeson.KeyMap qualified as KeyMap
 
 import Marvel.Id
 
 data Damage = Damage
   { damageAmount :: Natural
+  , damagePrevention :: Natural
+  -- ^ prevention applied after incoming enemy damage modifiers and caps
+  , damageIndirect :: Bool
   , damageOverkill :: Bool
   , damageSource :: DamageSource
   , damageIgnoresTough :: Bool
@@ -16,7 +20,12 @@ data Damage = Damage
   -- ^ the attack it is ignores retaliate (RR, Ranged)
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass (ToJSON, Hashable)
+
+instance FromJSON Damage where
+  parseJSON = withObject "Damage" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ existing -> existing) "damagePrevention" (toJSON (0 :: Natural)) $
+    KeyMap.insertWith (\_ existing -> existing) "damageIndirect" (Bool False) o
 
 data DamageSource
   = FromPlayerAttack IdentityId
@@ -35,6 +44,8 @@ toDamage :: Natural -> DamageSource -> Damage
 toDamage n source =
   Damage
     { damageAmount = n
+    , damagePrevention = 0
+    , damageIndirect = False
     , damageOverkill = False
     , damageSource = source
     , damageIgnoresTough = False

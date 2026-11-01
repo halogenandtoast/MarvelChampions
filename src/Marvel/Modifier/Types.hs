@@ -14,7 +14,9 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = MinionAttackConsequentialDamageReduction Natural
+  = OnlyIdentityCanDefend IdentityId
+  | IgnoreBoostCards
+  | MinionAttackConsequentialDamageReduction Natural
   | BaseAttack Natural
   | AdditionalReadyCost Cost
   | BaseThwart Natural
@@ -105,6 +107,7 @@ data Modifier
     RedirectAccelerationTokens MainSchemeId
   | -- | the cost of the cards matching is reduced
     ResourceCostReductionFor CardMatcher Natural
+  | ResourceCostReductionForHandCard CardMatcher Natural
   | -- | the player cannot thwart: no basic thwart, and no thwart ability, for any card
     -- they control
     CannotThwart

@@ -368,7 +368,7 @@ runVillainMessage msg attrs = case msg of
     let reduced = reducedDamage modifiers dealt
         sustained = subtractNatural (fromIntegral $ unHp $ villainHp attrs) (fromIntegral $ unHp $ villainMaxHp attrs)
         room = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
-        damage = if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = room}
+        damage = if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = subtractNatural (damagePrevention dealt) room}
     -- none at all (The Red House), or none from a player card (Sanctuary)
     cannotTakeDamage <- (||) <$> cannotTakeDamageFrom (toRef attrs) source <*> (not <$> canDamageThroughAerialRestriction (toRef attrs) source dealt)
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
@@ -521,8 +521,12 @@ runVillainMessage msg attrs = case msg of
   VillainFlipBoostCards -> do
     for_ (villainBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
-      revealBoostCard card vid
-      countActivationBoostIcons attrs [card]
+      ignored <- elem IgnoreBoostCards <$> getModifiers attrs
+      if ignored
+        then revealBoostCardWithoutAbility card vid
+        else do
+          revealBoostCard card vid
+          countActivationBoostIcons attrs [card]
     villainStep vid VillainCheckAdditionalBoosts
     pure $ attrs & (boostCardsL .~ mempty)
   VillainActivationBonus n -> pure $ attrs & boostL +~ n

@@ -254,8 +254,12 @@ runMinionMessage msg attrs = case msg of
   MinionFlipBoostCards -> do
     for_ (minionBoostCards attrs) \card -> do
       checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
-      revealBoostCard card (minionId attrs)
-      countActivationBoostIcons attrs [card]
+      ignored <- elem IgnoreBoostCards <$> getModifiers attrs
+      if ignored
+        then revealBoostCardWithoutAbility card (minionId attrs)
+        else do
+          revealBoostCard card (minionId attrs)
+          countActivationBoostIcons attrs [card]
     unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
     pure $ attrs & boostCardsL .~ []
   MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n

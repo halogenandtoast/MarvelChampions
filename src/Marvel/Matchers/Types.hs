@@ -375,7 +375,8 @@ pattern CharacterWithAnyDamage <-
     CharacterWithAnyDamage = CharacterWithDamage (GreaterThan (Static 0))
 
 data CharacterMatcher
-  = CharacterWithDamage GameValueMatcher
+  = CharacterCanBeHealed
+  | CharacterWithDamage GameValueMatcher
   | DamageableCharacter
   | AnyCharacter
   | CharacterMatches [CharacterMatcher]

@@ -151,7 +151,7 @@ instance RunMessage (Attrs Hero) where
           checkWindows [W.Window W.After $ W.MadeBasicThwart ident]
           pure a
         Defended enemy -> do
-          forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+          forbidden <- any (\case OnlyIdentityCanDefend who -> who /= ident; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemy)
           unless forbidden do
             exhaust ident
             enemyDefendedBy enemy (IdentityCharacter ident)
@@ -161,7 +161,7 @@ instance RunMessage (Attrs Hero) where
         -- A card may declare the basic defender without exhausting it. Its DEF is
         -- applied once, after the same defense window as an ordinary basic defense.
         DefendedWithoutExhausting bonus enemy -> do
-          forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+          forbidden <- any (\case OnlyIdentityCanDefend who -> who /= ident; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemy)
           unless forbidden do
             enemyDefendedBy enemy (IdentityCharacter ident)
             checkWindows [W.Window W.When $ W.HeroDefends ident enemy, W.Window W.When $ W.MadeBasicDefense ident enemy]

@@ -40,6 +40,7 @@ data CardMatcher
   = AnyCard
   | CardWithAspect Aspect
   | CardWithResource Resource
+  | CardWithAbilityType AbilityType
   | CardWithType CardType
   | CardWithTrait Trait
   | CardMatchesAll [CardMatcher]
@@ -71,6 +72,7 @@ cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
 cardMatch matcher a = case matcher of
   AnyCard -> True
   CardWithAspect aspect -> cdAspect def == Just aspect
+  CardWithAbilityType ability -> cdAbilityType def == Just ability
   CardWithType cType -> cdCardType def == cType
   CardWithTrait trait -> trait `member` cdTraits def
   CardWithResource resource ->

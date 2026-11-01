@@ -37,7 +37,8 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
+  = CharacterTookIndirectDamage CharacterMatcher
+  | PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
   | MainSchemeWouldComplete SchemeMatcher
   | MakesRangedAttack WindowTiming IdentityMatcher
   | MakesKeywordAttack WindowTiming IdentityMatcher [Keyword]

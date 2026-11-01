@@ -2910,14 +2910,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- may another player defend instead; with none able, the attack is defended as any other
   DeclareDefenseWithout ident enemyId AllyIfAble [] -> do
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
-    own <- if forbidden then pure [] else selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
+    restricted <- any (\case OnlyIdentityCanDefend _ -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
+    own <- if forbidden || restricted then pure [] else selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
     if null own
       then declareDefenseWithout ident enemyId AnyDefense []
       else chooseOnePromptedAbout ident "$label.declareDefender" enemyId [pure (AllyDefend a enemyId) | a <- own]
     pure g
   DeclareDefenseWithout ident enemyId defensePriority declined -> do
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
-    allies <- if forbidden then pure [] else selectList UnexhaustedAlly
+    restrictions <- getModifiers (enemyRef enemyId)
+    let restricted = any (\case OnlyIdentityCanDefend _ -> True; _ -> False) restrictions
+    allies <- if forbidden || restricted then pure [] else selectList UnexhaustedAlly
     identities <- if forbidden then pure mempty else select $ UnexhaustedIdentity <> HeroIdentity <> IdentityCanDefend
     controllers <- for allies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
     let
@@ -4577,7 +4580,7 @@ gameSelectIdentity m = do
     IdentityCanDefend -> \identity -> do
       own <- notElem CannotDefend <$> getModifiers identity
       enemies <- selectList AttackingEnemy
-      forbidden <- anyM (fmap (elem AttacksCannotBeDefended) . getModifiers . enemyRef) enemies
+      forbidden <- anyM (fmap (any (\case OnlyIdentityCanDefend who -> who /= toId identity; AttacksCannotBeDefended -> True; _ -> False)) . getModifiers . enemyRef) enemies
       pure $ own && not forbidden
     IdentityCanChangeMassForm -> fmap (\ms -> CannotChangeForm `notElem` ms && CannotChangeMassForm `notElem` ms) . getModifiers
     IdentityCanRecover -> fmap (notElem CannotRecover) . getModifiers
@@ -4600,6 +4603,7 @@ gameSelectIdentity m = do
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
   CharacterWithId c -> HashSet.filter (== c) <$> gameSelectCharacter AnyCharacter
+  CharacterCanBeHealed -> fromList <$> (filterM (fmap (notElem CannotBeHealedByPlayerCards) . getModifiers . characterRef) . toList =<< gameSelectCharacter AnyCharacter)
   CharacterWithDamage gameValueMatcher -> do
     villains <-
       map VillainCharacter
@@ -6405,7 +6409,7 @@ incomingEnemyDamage enemy source original = case enemy of
         let reduced = Villain.reducedDamage modifiers original
             sustained = subtractNatural (fromIntegral $ unHp $ Villain.villainHp attrs) (fromIntegral $ unHp $ Villain.villainMaxHp attrs)
             n = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
-        pure reduced {damageAmount = n}
+        pure reduced {damageAmount = subtractNatural (damagePrevention original) n}
 
 
 

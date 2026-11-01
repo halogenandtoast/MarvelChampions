@@ -263,7 +263,7 @@ instance RunMessage (Attrs Ally) where
         when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyDefended enemyId -> do
-        forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
+        forbidden <- any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
         unless forbidden do
           exhaust ident
           enemyDefendedBy enemyId (AllyCharacter ident)

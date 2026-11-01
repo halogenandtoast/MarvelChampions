@@ -400,5 +400,5 @@ incomingMinionDamage attrs source originalDamage = do
       caps = [cap | attacking, AttackDamageCap cap <- modifiers]
       capped = minimum (reduced : caps)
       room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
-      damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
+      damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = subtractNatural (damagePrevention originalDamage) room}
   pure damage

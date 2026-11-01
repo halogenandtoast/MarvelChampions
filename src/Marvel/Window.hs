@@ -23,6 +23,10 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  CharacterTookIndirectDamage characterMatcher -> case windowType w of
+    IdentityTookDamage ident _ damage | windowTiming w == After, damageIndirect damage, damageAmount damage > 0 -> characterMatches characterMatcher (IdentityCharacter ident)
+    AllyTookDamage aid _ damage | windowTiming w == After, damageIndirect damage, damageAmount damage > 0 -> characterMatches characterMatcher (AllyCharacter aid)
+    _ -> pure False
   EnemyWouldBeDealtDamage matcher' -> case windowType w of
     EnemyDamageWouldBeDealt enemy _ damage | windowTiming w == When, damageAmount damage > 0 -> enemyMatches matcher' enemy
     _ -> pure False
@@ -148,10 +152,20 @@ windowMatches matcher w source = case matcher of
     AllyTakeDamageFrom aid source damage | windowTiming w == When, damageAmount damage > 0, damageSource damage == FromAttack, Just enemy <- sourceEnemy source ->
       (&&) <$> enemyMatches enemyMatcher enemy <*> characterMatches characterMatcher (AllyCharacter aid)
     _ -> pure False
-  CharacterWouldTakeAttackDamage characterMatcher -> case windowType w of
-    IdentityTakeDamage ident damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (IdentityCharacter ident)
-    AllyTakeDamage aid damage | damageAmount damage > 0 && damageSource damage `elem` [FromAttack, FromOverkill] -> characterMatches characterMatcher (AllyCharacter aid)
-    _ -> pure False
+  CharacterWouldTakeAttackDamage characterMatcher ->
+    let attackDamage damage = windowTiming w == When && damageAmount damage > 0 && case damageSource damage of
+          FromAttack -> True
+          FromOverkill -> True
+          FromPlayerAttack _ -> True
+          FromAllyAttack _ -> True
+          _ -> False
+     in case windowType w of
+       IdentityTakeDamage ident damage | attackDamage damage -> characterMatches characterMatcher (IdentityCharacter ident)
+       AllyTakeDamage aid damage | attackDamage damage -> characterMatches characterMatcher (AllyCharacter aid)
+       EnemyWouldBeDamaged enemy _ damage | attackDamage damage -> characterMatches characterMatcher $ case enemy of
+         EnemyVillainId vid -> VillainCharacter vid
+         EnemyMinionId mid -> MinionCharacter mid
+       _ -> pure False
   AllyWouldTakeDamageOf timing allyMatcher source -> case windowType w of
     AllyTakeDamage aid damage
       | windowTiming w == timing && damageAmount damage > 0 && source `elem` [damageSource damage, FromAnyDamageSource] -> allyMatches allyMatcher aid
