@@ -1,5 +1,6 @@
 module Marvel.Hero.Heroes (module X) where
 
+import Marvel.Hero.Heroes.DominoHero as X
 import Marvel.Hero.Heroes.BlackPanther as X
 import Marvel.Hero.Heroes.CaptainMarvel as X
 import Marvel.Hero.Heroes.DoctorStrange as X
@@ -98,3 +99,5 @@ import Marvel.Hero.Heroes.StormHero as X
 import Marvel.Hero.Heroes.GambitHero as X
 
 import Marvel.Hero.Heroes.RogueHero as X
+
+import Marvel.Hero.Heroes.Cable as X

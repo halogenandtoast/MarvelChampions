@@ -1,5 +1,23 @@
 module Marvel.Minion.Minions (module X) where
 
+import Marvel.Minion.Minions.NextEvolutionNeStryfe as X
+
+import Marvel.Minion.Minions.NextEvolutionNextEvolutionCampaign as X
+
+import Marvel.Minion.Minions.NextEvolutionNastyBoys as X
+
+import Marvel.Minion.Minions.NextEvolutionMutantSlayers as X
+
+import Marvel.Minion.Minions.NextEvolutionMutantInsurrection as X
+
+import Marvel.Minion.Minions.NextEvolutionMisterSinister as X
+
+import Marvel.Minion.Minions.NextEvolutionExtremeMeasures as X
+
+import Marvel.Minion.Minions.NextEvolutionBlackTomCassidy as X
+
+import Marvel.Minion.Minions.Prototype as X
+import Marvel.Minion.Minions.Topaz as X
 import Marvel.Minion.Minions.AdvancedUltronDrone as X
 import Marvel.Minion.Minions.ArmoredGuard as X
 import Marvel.Minion.Minions.Drone as X
@@ -229,3 +247,5 @@ import Marvel.Minion.Minions.Bonebreaker as X
 import Marvel.Minion.Minions.WadeCole as X
 
 import Marvel.Minion.Minions.MurrayReese as X
+
+import Marvel.Minion.Minions.Cable as X

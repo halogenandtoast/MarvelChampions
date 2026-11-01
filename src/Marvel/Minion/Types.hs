@@ -12,6 +12,7 @@ import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Matchers.Types (MinionMatcher (..))
 import Marvel.Question (Choice (RunAbility))
 import Marvel.Window.Types qualified as W
+import Marvel.Damage
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Entity
@@ -55,6 +56,8 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   toMinionAttrs :: a -> Attrs Minion
   default toMinionAttrs :: (Coercible a (Attrs Minion)) => a -> Attrs Minion
   toMinionAttrs = coerce
+  minionDisplayCounters :: a -> Natural
+  minionDisplayCounters _ = 0
   overMinionAttrs :: (Attrs Minion -> Attrs Minion) -> a -> a
   default overMinionAttrs :: (Coercible a (Attrs Minion)) => (Attrs Minion -> Attrs Minion) -> a -> a
   overMinionAttrs = coerce
@@ -105,6 +108,7 @@ instance Entity Minion where
     , minionDefensePriority :: DefensePriority
     , minionFacedownCard :: Maybe PlayerCard
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
+    , minionAttachedTo :: Maybe MinionId
     , minionActivationPlayer :: Maybe IdentityId
     , minionAttackTarget :: Maybe CharacterId
     -- ^ the character its coming attack is against, when not the player's identity
@@ -176,7 +180,10 @@ instance HasAbilities Minion where
     ]
 
 instance HasModifiersFor Minion where
-  getModifiersFor source target (Minion a) = getModifiersFor source target a
+  getModifiersFor source target (Minion a) = do
+    printed <- getModifiersFor source target a
+    let attrs = toMinionAttrs a
+    pure $ printed <> [modifier | target == toRef attrs, isJust (minionAttachedTo attrs), modifier <- [CannotActivate, CannotBeDefeated]]
 
 instance HasTraits Minion where
   getTraits m = (cdTraits (getCardDef m) <>) <$> getGainedTraits m
@@ -275,6 +282,7 @@ minion f cardDef sch atk hp =
             , minionAttachments = mempty
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
+            , minionAttachedTo = Nothing
             , minionActivationPlayer = Nothing
             , minionAttackTarget = Nothing
             , minionBoostCards = []
@@ -316,7 +324,7 @@ instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
-      [("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool
@@ -359,3 +367,32 @@ getModifiedScheme attrs = do
  where
   applyModifier (SchemeModifier n) = max 0 . (+ fromIntegral n)
   applyModifier _ = id
+
+incomingMinionDamage :: HasGame m => Attrs Minion -> Source -> Damage -> m Damage
+incomingMinionDamage attrs source originalDamage = do
+  modifiers <- getModifiers attrs
+  attackerTraits <- if any (\case AttackDamageReductionUnlessAttackerHasTrait _ _ -> True; _ -> False) modifiers
+    then case damageSource originalDamage of
+      FromPlayerAttack you -> getCharacterTraits (IdentityCharacter you)
+      FromAllyAttack ally -> getCharacterTraits (AllyCharacter ally)
+      _ -> pure mempty
+    else pure mempty
+  let adjusted = damageAmount originalDamage
+      attacking = case damageSource originalDamage of
+        FromPlayerAttack _ -> True
+        FromAllyAttack _ -> True
+        FromAttack -> True
+        _ -> False
+      taken = sum [n | DamageTakenModifier n <- modifiers]
+        + if attacking then sum [n | AttackDamageTakenModifier n <- modifiers] else 0
+      incoming = if adjusted == 0 then 0 else fromIntegral (max 0 (fromIntegral adjusted + taken))
+      reduction = if attacking then sum [n | AttackDamageReduction n <- modifiers] + sum [n | AttackDamageReductionUnlessAttackerHasTrait trait n <- modifiers, not (member trait attackerTraits)] else 0
+      reduced = subtractNatural reduction incoming
+      caps = [cap | attacking, AttackDamageCap cap <- modifiers]
+      capped = minimum (reduced : caps)
+      room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
+      damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
+  pure damage
+
+getMinionDisplayCounters :: Minion -> Natural
+getMinionDisplayCounters (Minion a) = minionDisplayCounters a

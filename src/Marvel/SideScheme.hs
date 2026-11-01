@@ -1,6 +1,32 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionOnTheRun
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNextEvolutionCampaign
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNastyBoys
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMutantSlayers
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMutantInsurrection
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMorlockSiege
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMisterSinister
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMilitaryGrade
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNeJuggernaut
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionHopeSummersSet
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionExtremeMeasures
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionBlackTomCassidy
+
 import Marvel.SideScheme.SideSchemes.MutantGenesisCampaign
 import Marvel.SideScheme.SideSchemes.TheHood qualified as Hood
 import Marvel.Prelude
@@ -25,7 +51,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard mystiquesManipulations, SomeSideSchemeCard theReavers, SomeSideSchemeCard theAssassinsGuild, SomeSideSchemeCard heraldOfAvalon
+  [ SomeSideSchemeCard ne40084, SomeSideSchemeCard ne40085, SomeSideSchemeCard ne40086, SomeSideSchemeCard ne40087, SomeSideSchemeCard ne40093, SomeSideSchemeCard ne40101, SomeSideSchemeCard ne40108, SomeSideSchemeCard ne40109, SomeSideSchemeCard ne40117, SomeSideSchemeCard ne40124, SomeSideSchemeCard ne40131, SomeSideSchemeCard ne40134, SomeSideSchemeCard ne40146, SomeSideSchemeCard ne40168a, SomeSideSchemeCard ne40168b, SomeSideSchemeCard ne40175, SomeSideSchemeCard ne40176, SomeSideSchemeCard ne40184, SomeSideSchemeCard ne40189, SomeSideSchemeCard ne40190a, SomeSideSchemeCard ne40191a, SomeSideSchemeCard ne40192a, SomeSideSchemeCard ne40193a, SomeSideSchemeCard ne40194a, SomeSideSchemeCard ne40195a, SomeSideSchemeCard ne40202, SomeSideSchemeCard notMyLuckyDay, SomeSideSchemeCard superpowerTraining, SomeSideSchemeCard takeOuttheGuards, SomeSideSchemeCard cable40006, SomeSideSchemeCard cable40018, SomeSideSchemeCard cable40019, SomeSideSchemeCard cable40020, SomeSideSchemeCard cable40027, SomeSideSchemeCard cable40033
+  , SomeSideSchemeCard mystiquesManipulations, SomeSideSchemeCard theReavers, SomeSideSchemeCard theAssassinsGuild, SomeSideSchemeCard heraldOfAvalon
   , SomeSideSchemeCard leaderOfTheMorlocks
   , SomeSideSchemeCard rulerOfTheAstralPlane
   , SomeSideSchemeCard geneticManipulation

@@ -59,6 +59,8 @@ instance Entity SideScheme where
     , sideSchemeCounters :: Natural
     -- ^ counters on it (Defensive Protocols' crash counters)
     , sideSchemeAccelerationTokens :: Natural
+    , sideSchemePlayerCard :: Maybe PlayerCard
+    , sideSchemeExhausted :: Bool
     -- ^ acceleration tokens on this scheme; they leave play with it
     }
     deriving stock (Show, Eq, Generic)
@@ -163,6 +165,8 @@ sideScheme f cardDef initialThreat =
             , sideSchemeDefeatedBy = Nothing
             , sideSchemeCounters = 0
             , sideSchemeAccelerationTokens = 0
+            , sideSchemePlayerCard = Nothing
+            , sideSchemeExhausted = False
             }
     }
 
@@ -179,22 +183,28 @@ instance HasCardDef (Attrs SideScheme) where
 
 instance IsCard (Attrs SideScheme) where
   toCard a =
-    EncounterCard $
+    maybe (EncounterCard $
       MkEncounterCard
         { ecCardId = CardId $ unSideSchemeId $ sideSchemeId a
         , ecCardDef = getCardDef a
-        }
+        }) PlayerCard (sideSchemePlayerCard a)
 
 -- | A side scheme saved before it could hold counters has none.
 instance FromJSON (Attrs SideScheme) where
   parseJSON = withObject "SideSchemeAttrs" \o ->
-    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0)])))
+    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0), ("sideSchemePlayerCard", Null), ("sideSchemeExhausted", Bool False)])))
 
 countersL :: Lens' (Attrs SideScheme) Natural
 countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
 
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "playerSideSchemeCard" (fromJSON -> Success card) | target == toRef attrs -> pure attrs {sideSchemePlayerCard = Just card}
+    CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> do
+      let remaining = subtractNatural n (sideSchemeThreat attrs)
+      when (sideSchemeThreat attrs > 0 && remaining == 0) $ defeatSideScheme (sideSchemeId attrs)
+      pure $ attrs & threatL .~ remaining
+    CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
     RemoveFromGame (CardIdRef cid) -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs)}
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
@@ -207,6 +217,10 @@ instance RunMessage (Attrs SideScheme) where
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
       modifiers <- getModifiers attrs
       case msg' of
+        ExhaustedSideScheme -> pure attrs {sideSchemeExhausted = True}
+        ReadiedSideScheme -> do
+          canReady <- notElem CannotReady <$> getModifiers attrs
+          pure attrs {sideSchemeExhausted = sideSchemeExhausted attrs && not canReady}
         SideSchemePlaceInitialThreat -> do
           n <- fromIntegral <$> fromGameValue (sideSchemeInitialThreat attrs)
           hinder <- sum <$> traverse fromGameValue [x | Hinder x <- toList $ cdKeywords $ getCardDef attrs]
@@ -231,7 +245,8 @@ instance RunMessage (Attrs SideScheme) where
     unlessBarred source body = do
       onlyBy <- (\ms -> [p | ThreatRemovableOnlyBy p <- ms]) <$> getModifiers attrs
       controller <- getSourceController source
-      if any (\p -> maybe False (/= p) controller) onlyBy then pure attrs else body
+      allowed <- canRemoveThreatFrom source (SchemeSideSchemeId $ sideSchemeId attrs)
+      if not allowed || any (\p -> maybe False (/= p) controller) onlyBy then pure attrs else body
     removed thwart source n = do
           heroRemovedLastThreat source (SchemeSideSchemeId $ sideSchemeId attrs) (sideSchemeThreat attrs) n
           modifiers <- getModifiers attrs

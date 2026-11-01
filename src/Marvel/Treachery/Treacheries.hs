@@ -1,5 +1,27 @@
 module Marvel.Treachery.Treacheries (module X) where
 
+import Marvel.Treachery.Treacheries.NextEvolutionFlightSet as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionTelepathySet as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionSuperStrengthSet as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionNeStryfe as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionOnTheRun as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionNextEvolutionCampaign as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionMutantSlayers as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionMorlockSiege as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionMisterSinister as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionNeJuggernaut as X
+
+import Marvel.Treachery.Treacheries.NextEvolutionBlackTomCassidy as X
+
 import Marvel.Treachery.Treacheries.Advance as X
 import Marvel.Treachery.Treacheries.AndroidEfficiency as X
 import Marvel.Treachery.Treacheries.Assault as X
@@ -236,3 +258,5 @@ import Marvel.Treachery.Treacheries.AssassinationAttempt as X
 import Marvel.Treachery.Treacheries.AcolyteFrenzy as X
 
 import Marvel.Treachery.Treacheries.Misled as X
+
+import Marvel.Treachery.Treacheries.Cable as X

@@ -19,7 +19,7 @@ import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
-import Marvel.Card.Def (cdKeywords)
+import Marvel.Card.Def (cdKeywords, cardMatch)
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -154,6 +154,7 @@ passesCriteria x a =
         member aid <$> select (SupportControlledBy $ IdentityWithId x)
       UpgradeRef aid ->
         member aid <$> select (UpgradeControlledBy $ IdentityWithId x)
+      ObligationRef _ -> (== Just x) <$> getSourceController (abilitySource a)
       _ -> error $ "Unhandled " <> show (abilitySource a)
     Criteria xs -> allM go xs
     AnyCriteria xs -> anyM go xs
@@ -168,6 +169,8 @@ passesCriteria x a =
     SupportExists m -> selectAny m
     CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents x (abilitySource a)
     ExtendedCardExists m -> selectAny m
+    EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
+    IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
     UpgradeExists m -> selectAny m
@@ -187,6 +190,7 @@ passesCriteria x a =
     HeldAllyPlayable sid -> heldAllyPlayable x sid
     CanFindTouched -> canFindTouched x
     MedLabCaptureAvailable -> medLabCaptureAvailable
+    VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget _ -> pure False
     PlayCardWithReductionHasTarget matcher amount ->
@@ -229,6 +233,8 @@ passesCardCriteria ident card = go
     -- the card itself, about to leave the hand, is not one of them
     CanPlayAttackEventWithClaws -> notNull <$> playableClawsEvents ident (toSource card)
     ExtendedCardExists m -> selectAny (NotCard card <> m)
+    EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
+    IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     UpgradeExists m -> selectAny m
     EnvironmentExists m -> selectAny m
     -- how it is paid for is checked as it is paid
@@ -241,6 +247,7 @@ passesCardCriteria ident card = go
     HeldAllyPlayable _ -> pure False
     CanFindTouched -> pure False
     MedLabCaptureAvailable -> pure False
+    VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
     PlayCardWithReductionHasTarget _ _ -> pure False

@@ -2,6 +2,24 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.NextEvolutionTelepathySet
+
+import Marvel.Attachment.Attachments.NextEvolutionSuperStrengthSet
+
+import Marvel.Attachment.Attachments.NextEvolutionNeStryfe
+
+import Marvel.Attachment.Attachments.NextEvolutionOnTheRun
+
+import Marvel.Attachment.Attachments.NextEvolutionMorlockSiege
+
+import Marvel.Attachment.Attachments.NextEvolutionMisterSinister
+
+import Marvel.Attachment.Attachments.NextEvolutionMilitaryGrade
+
+import Marvel.Attachment.Attachments.NextEvolutionNeJuggernaut
+
+import Marvel.Attachment.Attachments.NextEvolutionFlightSet
+
 import Marvel.Attachment.Attachments.MutantGenesisCampaign
 import Marvel.Attachment.Attachments.TheHood qualified as Hood
 import Marvel.Prelude
@@ -30,7 +48,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard cyberneticEnhancements, SomeAttachmentCard psionicShield
+      [ SomeAttachmentCard ne40082, SomeAttachmentCard ne40083, SomeAttachmentCard ne40090, SomeAttachmentCard ne40091, SomeAttachmentCard ne40092, SomeAttachmentCard ne40105a, SomeAttachmentCard ne40105b, SomeAttachmentCard ne40106, SomeAttachmentCard ne40107, SomeAttachmentCard ne40122a, SomeAttachmentCard ne40122b, SomeAttachmentCard ne40123, SomeAttachmentCard ne40144, SomeAttachmentCard ne40151, SomeAttachmentCard ne40152, SomeAttachmentCard ne40153, SomeAttachmentCard ne40155, SomeAttachmentCard ne40156, SomeAttachmentCard ne40157, SomeAttachmentCard ne40159, SomeAttachmentCard ne40169, SomeAttachmentCard ne40170, SomeAttachmentCard ne40171, SomeAttachmentCard ne40172, SomeAttachmentCard ne40173, SomeAttachmentCard superpowerFeedback, SomeAttachmentCard cable40034
+      , SomeAttachmentCard cyberneticEnhancements, SomeAttachmentCard psionicShield
   , SomeAttachmentCard switchblade
   , SomeAttachmentCard possessed
   , SomeAttachmentCard geneTherapy

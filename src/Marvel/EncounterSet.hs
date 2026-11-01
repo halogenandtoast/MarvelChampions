@@ -6,6 +6,26 @@ import Marvel.Card.Code
 
 data EncounterSet
   = Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
+  | NextEvolutionCampaign
+  | CableNemesis
+  | DominoNemesis
+  | DominoObligation
+  | MutantInsurrection
+  | ExtremeMeasures
+  | NeStryfe
+  | TelepathySet
+  | SuperStrengthSet
+  | FlightSet
+  | MisterSinister
+  | BlackTomCassidy
+  | HopeSummersSet
+  | NeJuggernaut
+  | NastyBoys
+  | OnTheRun
+  | MutantSlayers
+  | MilitaryGrade
+  | MorlockSiege
+  | NeMarauders
   | MutantGenesisCampaign
   | RogueNemesisSet
   | ReaversSet
@@ -168,7 +188,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ ExodusSet
+  [ MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
+  , ExodusSet
   , ShadowKingSet
   , BombScare
   , MastersOfEvil
@@ -287,6 +308,8 @@ getNemesisSet cardCode = case toBaseCardCode cardCode of
   "32030" -> ShadowcatNemesis
   "34001" -> PhoenixNemesis
   "35001" -> WolverineNemesis
+  "40001" -> CableNemesis
+  "40037" -> DominoNemesis
   cCode ->
     error $
       "No nemesis set for "

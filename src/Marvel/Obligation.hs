@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Obligation where
 
+import Marvel.Obligation.Obligations.NextEvolutionTelepathySet
+
 import Marvel.Obligation.Obligations.MutantGenesisCampaign
 import Marvel.Prelude
 
@@ -24,7 +26,8 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard deadlyTouch, SomeObligationCard guildBusiness
+  [ SomeObligationCard ne40160, SomeObligationCard ne40161, SomeObligationCard memoriesofArmageddon, SomeObligationCard cable40031
+  , SomeObligationCard deadlyTouch, SomeObligationCard guildBusiness
   , SomeObligationCard claustrophobia
   , SomeObligationCard lostVisor
   , SomeObligationCard pastDemons

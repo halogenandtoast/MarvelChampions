@@ -1,10 +1,11 @@
 module Marvel.Cost.Types where
 
 import Marvel.Prelude
+import Marvel.Status (StatusCard)
 
 import Data.List (nub)
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
-import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, SupportMatcher, UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, EnemyMatcher, SupportMatcher, UpgradeMatcher)
 import Marvel.Id (EnemyId)
 import Marvel.Ref
 import Marvel.Resource.Types
@@ -34,11 +35,14 @@ data Cost
   | DiscardCost Target
   | DiscardControlledCardCost CardMatcher
   | RemoveFromGameCost Target
+  | PutSideSchemeFromVictoryCost
   | DiscardHandCardsWithTotalCost CardMatcher Natural
   | ExactCountersCost Natural
   | DiscardToughCost Natural
+  | RemoveEnemyStatusCost EnemyId StatusCard
   | GiveEnemyToughCost EnemyId
   | GiveEnemyBoostCost EnemyId Natural
+  | EnemyAttacksCost EnemyId
   | -- | so many cards discarded at random from the payer's hand
     DiscardRandomHandCardsCost Natural
   | -- | discard matching cards at random from the payer's hand
@@ -72,6 +76,7 @@ data Cost
   | -- | discard as many cards from the top of the payer's deck as the damage they are
     -- about to take: "discard that many cards" (Shield Spell); not payable with fewer
     DiscardTopOfDeckForDamageCost
+  | DiscardTopOfDeckForSupportsCost
   | -- | exhaust at least so many allies the payer controls, and at most so many (any
     -- number for Nothing)
     ExhaustAlliesCost Natural (Maybe Natural)
@@ -90,6 +95,7 @@ data Cost
   | -- | exhaust between the given minimum and maximum number of ready cards the
     -- payer controls with this trait, including identities, allies, supports and upgrades
     ExhaustCardsWithTraitCost Trait Natural Natural
+  | ExhaustControlledCardsCost Natural
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
     DiscardEncounterCardsUntilMinionCost
@@ -109,6 +115,8 @@ data Cost
     TargetPrintedCost
   | -- | choose a hand card as a cost; it remains in hand but cannot pay resources
     ChosenHandCardCost
+  | ChooseEnemyCost EnemyMatcher
+  | DiscardMatchingHandCardCost CardMatcher
   | -- | choose a matching character without exhausting or spending that character
     ChooseCharacterWithTraitCost Trait CharacterMatcher
   | -- | nothing more is due, but the payer may go on spending resources: "for each
@@ -144,11 +152,14 @@ costResources ExhaustCost = []
 costResources (DiscardCost _) = []
 costResources (DiscardControlledCardCost _) = []
 costResources (RemoveFromGameCost _) = []
+costResources PutSideSchemeFromVictoryCost = []
 costResources (DiscardHandCardsWithTotalCost _ _) = []
 costResources (ExactCountersCost _) = []
 costResources (DiscardToughCost _) = []
 costResources (GiveEnemyToughCost _) = []
+costResources (RemoveEnemyStatusCost _ _) = []
 costResources (GiveEnemyBoostCost _ _) = []
+costResources (EnemyAttacksCost _) = []
 costResources (DiscardHandCardsCost _ _) = []
 costResources (DiscardRandomHandCardsCost _) = []
 costResources (DiscardRandomHandCardsMatchingCost _ _) = []
@@ -163,6 +174,7 @@ costResources (DiscardSupportCost _) = []
 costResources (DiscardAllyOrSupportCost _ _) = []
 costResources DiscardTopOfDeckCost = []
 costResources (DiscardTopOfDeckCardsCost _ _) = []
+costResources DiscardTopOfDeckForSupportsCost = []
 costResources DiscardTopOfDeckForDamageCost = []
 costResources (ExhaustAlliesCost _ _) = []
 costResources (ExhaustAlliesMatchingCost _ _) = []
@@ -171,6 +183,7 @@ costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources (ExhaustCharacterCost _) = []
 costResources (ExhaustCardsWithTraitCost _ _ _) = []
+costResources (ExhaustControlledCardsCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources RevealEncounterTreacheryCost = []
 costResources (ShuffleEncounterCardsIntoOwnDeckCost _) = []
@@ -180,6 +193,8 @@ costResources DealEncounterCardCost = []
 costResources DiscardTopEncounterCardCost = []
 costResources (LookAtTopEncounterCardsAndDiscardOneCost _) = []
 costResources TargetPrintedCost = []
+costResources (ChooseEnemyCost _) = []
+costResources (DiscardMatchingHandCardCost _) = []
 costResources ChosenHandCardCost = []
 costResources (ChooseCharacterWithTraitCost _ _) = []
 costResources MayOverpay = []

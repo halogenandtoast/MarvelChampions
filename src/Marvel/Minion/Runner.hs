@@ -60,28 +60,16 @@ runMinionMessage msg attrs = case msg of
     pure $ attrs & damageL %~ subtractNatural n
   MinionCheckHitPoints -> do
     hitPoints <- getModifiedHitPoints attrs
-    when (minionDamage attrs >= hitPoints) $ defeatMinion (minionId attrs)
+    blocked <- elem CannotBeDefeated <$> getModifiers attrs
+    when (not blocked && minionDamage attrs >= hitPoints) $ defeatMinion (minionId attrs)
     pure attrs
   MinionHealAllDamage -> do
     pure $ attrs & damageL .~ 0
   MinionDamaged source originalDamage -> do
     modifiers <- getModifiers attrs
-    let attacking = case damageSource originalDamage of
-          FromPlayerAttack _ -> True
-          FromAllyAttack _ -> True
-          FromAttack -> True
-          _ -> False
-        taken = sum [n | DamageTakenModifier n <- modifiers]
-          + if attacking then sum [n | AttackDamageTakenModifier n <- modifiers] else 0
-        incoming = if damageAmount originalDamage == 0 then 0 else fromIntegral (max 0 (fromIntegral (damageAmount originalDamage) + taken))
-        reduction = if attacking then sum [n | AttackDamageReduction n <- modifiers] else 0
-        reduced = subtractNatural reduction incoming
-        caps = [cap | attacking, AttackDamageCap cap <- modifiers]
-        capped = minimum (reduced : caps)
-        room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
-        damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = room}
+    damage <- incomingMinionDamage attrs source originalDamage
     hitPoints <- getModifiedHitPoints attrs
-    cannotTakeDamage <- elem CannotTakeDamage <$> getModifiers attrs
+    cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
     if
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers -> pure attrs
@@ -206,7 +194,7 @@ runMinionMessage msg attrs = case msg of
         -- the attack is its activation against the player, from start to end, whether
         -- the attack resolves or is cancelled (a stunned minion does not activate)
         checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
-        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        checkWindows [attackWindow W.Would ident]
         minionBeginsAttack (minionId attrs) ident
         minionEndsAttack (minionId attrs)
         whenM isVillainous clearBoosts
@@ -217,12 +205,12 @@ runMinionMessage msg attrs = case msg of
   MinionBeginAttack ident -> do
     attack' <- keepingGains (minionAttacking attrs) <$> newAttack ident
     villainous <- isVillainous
-    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    checkWindows [attackWindow W.When ident]
     when villainous $ dealBoost attrs
     declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
     when villainous $ minionStep (minionId attrs) MinionFlipBoostCards
     minionAttacked (minionId attrs)
-    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
+    checkWindows [attackWindow W.After ident]
     pure $
       attrs {minionAttackTarget = Nothing} & attackingL ?~ attack'
   -- onto the main scheme of its area, if there is one there (as between The Once and
@@ -269,6 +257,9 @@ runMinionMessage msg attrs = case msg of
  where
   isVillainous = elem Villainous <$> getModifiedKeywords attrs
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
+  attackWindow timing ident = W.Window timing $ case minionAttackTarget attrs of
+    Just (AllyCharacter aid) -> W.EnemyAttackAlly (toEnemyId attrs) aid ident
+    _ -> W.EnemyAttack (toEnemyId attrs) ident
   newAttack ident = do
     base <- getModifiedAttackSigned attrs
     keywords <- getModifiedKeywords attrs
@@ -277,6 +268,8 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
+      CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
+        pure attrs {minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
       RemoveFromGame (CardIdRef cid) -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs)}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do

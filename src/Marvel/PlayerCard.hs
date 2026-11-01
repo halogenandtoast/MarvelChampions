@@ -4,6 +4,7 @@ module Marvel.PlayerCard
   ) where
 
 import Marvel.Prelude
+import Data.HashMap.Strict qualified as HashMap
 
 import Marvel.Ally.Cards
 import Marvel.Card.Code
@@ -14,6 +15,7 @@ import Marvel.Obligation.Cards (playerDeckObligations)
 import Marvel.Resource.Cards
 import Marvel.Support.Cards
 import Marvel.Upgrade.Cards
+import Marvel.SideScheme.Cards qualified as SideSchemes
 
 lookupPlayerCard :: CardCode -> CardDef
 lookupPlayerCard code = case lookup code allPlayerCards of
@@ -23,3 +25,4 @@ lookupPlayerCard code = case lookup code allPlayerCards of
 allPlayerCards :: HashMap CardCode CardDef
 allPlayerCards =
   allAllies <> allEvents <> allSupports <> allUpgrades <> allResources <> playerDeckObligations
+    <> HashMap.filter ((== PlayerSideSchemeType) . cdCardType) SideSchemes.allSideSchemes

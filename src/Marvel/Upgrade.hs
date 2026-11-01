@@ -25,7 +25,13 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard touched, SomeUpgradeCard roguesJacket, SomeUpgradeCard judokaSkill, SomeUpgradeCard xGene, SomeUpgradeCard gambitsStaff, SomeUpgradeCard gambitsGuildArmor, SomeUpgradeCard operativeSkill
+  [ SomeUpgradeCard sharpshooter
+  , SomeUpgradeCard probabilityField
+  , SomeUpgradeCard luckyBreak
+  , SomeUpgradeCard luckyandGood
+  , SomeUpgradeCard dominosPistol
+  , SomeUpgradeCard cable40009, SomeUpgradeCard cable40010, SomeUpgradeCard cable40011, SomeUpgradeCard cable40012, SomeUpgradeCard cable40013, SomeUpgradeCard cable40023, SomeUpgradeCard cable40029
+  , SomeUpgradeCard touched, SomeUpgradeCard roguesJacket, SomeUpgradeCard judokaSkill, SomeUpgradeCard xGene, SomeUpgradeCard gambitsStaff, SomeUpgradeCard gambitsGuildArmor, SomeUpgradeCard operativeSkill
   , SomeUpgradeCard stormsCrown
   , SomeUpgradeCard stormsCape
   , SomeUpgradeCard leadershipSkill

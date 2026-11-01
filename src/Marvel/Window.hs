@@ -6,9 +6,12 @@ module Marvel.Window (
 import Marvel.Prelude
 
 import Marvel.Card.Def (sameCard)
+import Marvel.Card.PlayerCard.Types (pcCardId)
+import Marvel.Card.Id (HasCardId (toCardId))
 
 import Marvel.Attack (sourceEnemy)
 import Marvel.Card.Def (cardMatch)
+import Marvel.Status (StatusCard (ToughStatus))
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Id
@@ -18,6 +21,38 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  EnemyWouldBeDealtDamage matcher' -> case windowType w of
+    EnemyDamageWouldBeDealt enemy _ damage | windowTiming w == When, damageAmount damage > 0 -> enemyMatches matcher' enemy
+    _ -> pure False
+  EnemyWouldBeDealtDamageBy matcher' damageMatcher -> case windowType w of
+    EnemyDamageWouldBeDealt enemy from damage | windowTiming w == When, damageAmount damage > 0 ->
+      (&&) <$> enemyMatches matcher' enemy <*> damageMatchesFrom damageMatcher damage from
+    _ -> pure False
+  PlayerCardEntersPlay timing identityMatcher cardMatcher -> case windowType w of
+    PlayerCardEnteredPlay you card | timing == windowTiming w -> (&&) <$> identityMatches identityMatcher you <*> pure (cardMatch cardMatcher card)
+    _ -> pure False
+  HeroDefendedWithoutDamageAgainst timing identMatcher enemyMatcher -> case windowType w of
+    DefendedWithoutDamage ident enemy | windowTiming w == timing -> (&&) <$> identityMatches identMatcher ident <*> enemyMatches enemyMatcher enemy
+    _ -> pure False
+  EnemyWouldTakeDamage matcher' -> case windowType w of
+    EnemyWouldBeDamaged enemy _ damage | windowTiming w == When, damageAmount damage > 0 -> do
+      let character = case enemy of EnemyVillainId v -> VillainCharacter v; EnemyMinionId m -> MinionCharacter m
+      tough <- characterMatches (CharacterWithStatus ToughStatus) character
+      if tough && preventedByTough damage then pure False else enemyMatches matcher' enemy
+    _ -> pure False
+  MainSchemeWouldComplete matcher' -> case windowType w of
+    MainSchemeCompleting mid | windowTiming w == Would -> schemeMatches matcher' (SchemeMainSchemeId mid)
+    _ -> pure False
+  MakesRangedAttack timing matcher' -> case windowType w of
+    MakingRangedAttack you _ _ | windowTiming w == timing -> identityMatches matcher' you
+    _ -> pure False
+  CardsDiscardedBy identityMatcher -> case windowType w of
+    PlayerDiscardedFromEncounterDeck actor card | windowTiming w == After -> (&&) <$> identityMatches identityMatcher actor <*> discardResponseAvailable (toCardId card)
+    PlayerDiscardedFromDeck actor _ card | windowTiming w == After -> (&&) <$> identityMatches identityMatcher actor <*> discardResponseAvailable (pcCardId card)
+    _ -> pure False
+  CardsDiscardedFromPlayerDeck identityMatcher -> case windowType w of
+    DiscardedFromPlayerDeck ident cards | windowTiming w == After && not (null cards) -> allM (discardResponseAvailable . pcCardId) cards >>= \available -> if available then identityMatches identityMatcher ident else pure False
+    _ -> pure False
   ResourcesGeneratedBy identityMatcher -> case windowType w of
     GeneratedResources ident n | windowTiming w == After && n > 0 -> identityMatches identityMatcher ident
     _ -> pure False
@@ -29,6 +64,7 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   EnemyAttackedAnyTarget timing enemyMatcher -> case windowType w of
     EnemyAttack enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
+    EnemyAttackAlly enemy _ _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
     EnemyAttackOnEnemy enemy _ | windowTiming w == timing -> enemyMatches enemyMatcher enemy
     _ -> pure False
   CharacterDefeatedByEnemyAttack timing enemyMatcher -> case windowType w of
@@ -103,15 +139,25 @@ windowMatches matcher w source = case matcher of
               (identityMatches identityMatcher ident)
               (gameValueMatches gameValueMatcher (damageAmount damage))
       _ -> pure False
+  VillainWouldBeDefeatedMatching matcher' -> case windowType w of
+    VillainDefeatWouldOccur vid | windowTiming w == Would -> villainMatches matcher' vid
+    _ -> pure False
+  EnemyAttacksPlayerOrAlly timing enemyMatcher identityMatcher -> case windowType w of
+    EnemyAttack enemy ident | windowTiming w == timing ->
+      (&&) <$> enemyMatches enemyMatcher enemy <*> identityMatches identityMatcher ident
+    EnemyAttackAlly enemy _ ident | windowTiming w == timing ->
+      (&&) <$> enemyMatches enemyMatcher enemy <*> identityMatches identityMatcher ident
+    _ -> pure False
   EnemyWouldAttack enemyMatcher identityMatcher -> case windowType w of
     EnemyAttack enemyId ident
-      | windowTiming w == Would ->
-          liftA2
-            (&&)
-            (identityMatches identityMatcher ident)
-            (enemyMatches enemyMatcher enemyId)
+      | windowTiming w == Would -> do
+          stillIdentity <- enemyAttackTargetsIdentity enemyId ident
+          if not stillIdentity then pure False else
+            (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
     _ -> pure False
   EnemyAttacked timing enemyMatcher identityMatcher -> case windowType w of
+    EnemyAttackAlly enemyId _ ident | timing == After, windowTiming w == After ->
+      (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
     EnemyAttack enemyId ident
       | windowTiming w == timing ->
           liftA2

@@ -7,7 +7,7 @@ import Marvel.Prelude
 
 import Marvel.Card.Def (printedResources, getCardDef, cdCost, cdKeywords, cardMatch, CardMatcher (CardWithType), CardType (MinionType, SideSchemeType))
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate))
 import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
@@ -122,12 +122,13 @@ canAffordCost identityId source cost = do
         -- than spending hit points. Tough or a prevention effect cannot pay it.
         pure $ present && (n == 0 || not (tough || immune || reduced > 0))
       _ -> pure False
+    PutSideSchemeFromVictoryCost -> (> 0) <$> sideSchemesInVictoryDisplay
     RemoveFromGameCost target -> do
       present <- getsGame (maybe False (notElem Permanent . cdKeywords . getCardDef) . (\g -> cardInPlay g target))
-      canLeave <- notElem CannotLeavePlay <$> getModifiers target
+      canLeave <- (\mods -> not (any (`elem` mods) [CannotLeavePlay, CannotLeavePlayByCardAbilities])) <$> getModifiers target
       pure $ present && canLeave
     DiscardControlledCardCost matcher -> notNull <$> discardableControlledCardsMatching identityId matcher
-    DiscardCost target -> notElem CannotBeDiscarded <$> getModifiers target
+    DiscardCost target -> (\mods -> not (any (`elem` mods) [CannotBeDiscarded, CannotLeavePlayByCardAbilities])) <$> getModifiers target
     DiscardHandCardsWithTotalCost matcher n ->
       projectP PlayerIdentityHand ((>= n) . sum . map (fromIntegral . fromMaybe 0 . cdCost . getCardDef) . filter (\c -> notPlaying c && not (staysInHand c) && cardMatch matcher c) . unHand) identityId
     ExactCountersCost n -> (>= n) <$> getCountersOn source
@@ -135,7 +136,13 @@ canAffordCost identityId source cost = do
       tough <- project PlayerIdentityTough identityId
       extra <- project PlayerIdentityAdditionalTough identityId
       pure $ (if tough then 1 else 0) + extra >= n
+    RemoveEnemyStatusCost enemy status -> characterMatches (CharacterWithStatus status) (toCharacter enemy)
     GiveEnemyToughCost enemy -> not <$> characterMatches (CharacterWithStatus ToughStatus) (toCharacter enemy)
+    EnemyAttacksCost enemy -> do
+      stunned <- enemyMatches StunnedEnemy enemy
+      forbidden <- elem CannotActivate <$> getModifiers (enemyRef enemy)
+      present <- selectAny (EnemyWithId enemy)
+      pure $ present && not stunned && not forbidden
     GiveEnemyBoostCost _ _ -> pure True
     DiscardRandomHandCardsCost n ->
       projectP PlayerIdentityHand ((>= n) . fromIntegral . length . unHand) identityId
@@ -147,7 +154,7 @@ canAffordCost identityId source cost = do
     ExhaustUpgradeCost matcher -> selectAny (matcher <> UnexhaustedUpgrade <> upgradeControlledBy identityId)
     ReturnUpgradeToHandCost matcher -> selectAny (matcher <> upgradeControlledBy identityId)
     DiscardUpgradeCost matcher -> selectAny (matcher <> UpgradeThatCanBeDiscarded <> upgradeControlledBy identityId)
-    DiscardAllyCost matcher -> selectAny (matcher <> AllyControlledBy (IdentityWithId identityId))
+    DiscardAllyCost matcher -> selectAny (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId identityId))
     DiscardSupportCost matcher -> notNull <$> discardableSupports matcher
     DiscardAllyOrSupportCost allies supports -> do
       ownAllies <- filterM discardable =<< selectList (allies <> AllyControlledBy (IdentityWithId identityId))
@@ -156,10 +163,13 @@ canAffordCost identityId source cost = do
     DiscardTopOfDeckCost -> projectP PlayerIdentityDeck (not . null . unDeck) identityId
     -- "up to": as few as the deck holds, down to the least the cost asks
     DiscardTopOfDeckCardsCost lo _ -> projectP PlayerIdentityDeck ((>= lo) . fromIntegral . length . unDeck) identityId
+    DiscardTopOfDeckForSupportsCost -> do
+      supports <- selectList (SupportControlledBy $ IdentityWithId identityId)
+      projectP PlayerIdentityDeck ((>= length supports) . length . unDeck) identityId
     DiscardTopOfDeckForDamageCost -> do
       n <- pendingDamageAmount identityId
       projectP PlayerIdentityDeck ((>= n) . fromIntegral . length . unDeck) identityId
-    ReturnAllyToHandCost matcher -> selectAny (matcher <> AllyControlledBy (IdentityWithId identityId))
+    ReturnAllyToHandCost matcher -> selectAny (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId identityId))
     ExhaustAlliesWithTraitCost trait n _ ->
       (>= n) <$> selectListCount (AllyWithTrait trait <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
     ExhaustAlliesCost n _ ->
@@ -176,6 +186,7 @@ canAffordCost identityId source cost = do
         [ selectAny (IdentityWithId identityId <> UnexhaustedIdentity <> IdentityWithTrait t)
         , selectAny (UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId) <> AllyWithTrait t)
         ]
+    ExhaustControlledCardsCost n -> (>= n) . fromIntegral . length <$> readyControlledCardCandidates identityId
     ExhaustCardsWithTraitCost t lo hi ->
       if lo > hi then pure False else (>= lo) . fromIntegral . length <$> readyTraitCardCandidates identityId t
     DiscardEncounterCardsUntilMinionCost -> pure True
@@ -190,6 +201,8 @@ canAffordCost identityId source cost = do
     DiscardTopEncounterCardCost -> pure True
     LookAtTopEncounterCardsAndDiscardOneCost n -> (n > 0 &&) . notNull <$> getEncounterDeck
     TargetPrintedCost -> pure True
+    ChooseEnemyCost matcher -> selectAny matcher
+    DiscardMatchingHandCardCost matcher -> any (\c -> cardMatch matcher c && not (staysInHand c)) <$> projectMap PlayerIdentityHand unHand identityId
     ChosenHandCardCost -> pure True
     ChooseCharacterWithTraitCost t matcher -> notNull <$> chooseCharacterTraitCandidates t matcher
     MayOverpay -> pure True
@@ -259,9 +272,10 @@ canAffordCost identityId source cost = do
       pure $ others && distinctExhaustions slots
     Costs xs -> allM go xs
   flattenCost = concatMap (\case Costs cs -> flattenCost cs; c -> [c])
-  isTraitCardExhaustion = \case ExhaustCardsWithTraitCost _ _ _ -> True; ExhaustCharacterCost _ -> True; _ -> False
+  isTraitCardExhaustion = \case ExhaustCardsWithTraitCost _ _ _ -> True; ExhaustCharacterCost _ -> True; ExhaustControlledCardsCost _ -> True; _ -> False
   exhaustionSlots = \case
     ExhaustCharacterCost matcher -> pure . pure . map characterRef =<< readyCharacterCandidates identityId matcher
+    ExhaustControlledCardsCost n -> replicate (fromIntegral n) <$> readyControlledCardCandidates identityId
     ExhaustCardsWithTraitCost t lo _ -> replicate (fromIntegral lo) <$> readyTraitCardCandidates identityId t
     ExhaustCharacterWithTraitCost t -> do
       candidates <- readyTraitCardCandidates identityId t
@@ -283,7 +297,7 @@ canAffordCost identityId source cost = do
       _ -> IdentityRef identityId]]
     _ -> pure []
   notPlaying c = source /= CardIdRef (pcCardId c)
-  discardable target = notElem CannotBeDiscarded <$> getModifiers target
+  discardable target = (\mods -> not (any (`elem` mods) [CannotBeDiscarded, CannotLeavePlayByCardAbilities])) <$> getModifiers target
   discardableSupports matcher = filterM discardable =<< selectList (SupportMatches [matcher, SupportControlledBy (IdentityWithId identityId)])
   -- a card's ability used from its owner's hand (Pip the Troll) is not paid for with
   -- that card
@@ -326,6 +340,15 @@ chooseCharacterTraitCandidates trait matcher = selectList (CharacterWithTrait tr
 
 -- | The payer's ready cards of a trait, with each card represented by its own ref.
 -- A hero's traits are those of its face-up form, as for every other trait matcher.
+readyControlledCardCandidates :: HasGame m => IdentityId -> m [Target]
+readyControlledCardCandidates ident = do
+  identities <- selectList (IdentityWithId ident <> UnexhaustedIdentity)
+  allies <- selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
+  supports <- selectList (SupportMatches [UnexhaustedSupport, SupportControlledBy (IdentityWithId ident)])
+  upgrades <- selectList (UnexhaustedUpgrade <> upgradeControlledBy ident)
+  schemes <- getControlledPlayerSideSchemes ident True
+  pure $ map IdentityRef identities <> map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades <> map SideSchemeRef schemes
+
 readyTraitCardCandidates :: (HasGame m) => IdentityId -> Trait -> m [Target]
 readyTraitCardCandidates ident trait = do
   heroes <- selectList (IdentityWithId ident <> UnexhaustedIdentity <> IdentityWithTrait trait)

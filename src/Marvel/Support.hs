@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Support where
 
+import Marvel.Support.Supports.NextEvolutionNextEvolutionCampaign
+
 import Marvel.Support.Supports.MutantGenesisCampaign
 import Marvel.Prelude
 
@@ -27,7 +29,11 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard moiraMacTaggert, SomeSupportCard medLab, SomeSupportCard theThievesGuild, SomeSupportCard warRoom
+  [ SomeSupportCard ne40197
+  , SomeSupportCard thePaintedLady
+  , SomeSupportCard pipthePug
+  , SomeSupportCard cable40007, SomeSupportCard cable40008, SomeSupportCard cable40021, SomeSupportCard cable40022
+  , SomeSupportCard moiraMacTaggert, SomeSupportCard medLab, SomeSupportCard theThievesGuild, SomeSupportCard warRoom
   , SomeSupportCard clearSkies
   , SomeSupportCard hurricane
   , SomeSupportCard thunderstorm

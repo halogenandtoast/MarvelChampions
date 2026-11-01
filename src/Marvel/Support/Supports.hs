@@ -1,5 +1,9 @@
 module Marvel.Support.Supports (module X) where
 
+import Marvel.Support.Supports.NextEvolutionNextEvolutionCampaign as X
+
+import Marvel.Support.Supports.ThePaintedLady as X
+import Marvel.Support.Supports.PipthePug as X
 import Marvel.Support.Supports.AlphaFlightStation as X
 import Marvel.Support.Supports.AuntMay as X
 import Marvel.Support.Supports.AvengersMansion as X
@@ -167,3 +171,5 @@ import Marvel.Support.Supports.WarRoom as X
 import Marvel.Support.Supports.MoiraMacTaggert as X
 
 import Marvel.Support.Supports.MedLab as X
+
+import Marvel.Support.Supports.Cable as X

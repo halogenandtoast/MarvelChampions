@@ -4,7 +4,7 @@ import Marvel.Prelude
 
 import Marvel.Ability.Types hiding (Attack, Thwart)
 import Marvel.Ability.Types qualified as Ability
-import Marvel.Card.Def (CardDef (..))
+import Marvel.Card.Def (CardDef (..), printedResources)
 import Marvel.ActiveCost.Types
 import Marvel.Cost (getAbilityCost, canAffordCost)
 import Marvel.Cost.Types (Cost (NoCost))
@@ -197,9 +197,11 @@ resolveChoice ident = \case
         -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
         -- tough status card: 'Marvel.Villain.Types')
         targetModifiers <- getModifiers enemyAsRef
+        sourceDef <- getsGame (\g -> abilityCardDef g $ refocus source)
         let taken = case enemyAsRef of
               MinionRef _ -> 0 -- final target modifiers follow attack interrupts
               _ -> sum [n | DamageTakenModifier n <- targetModifiers]
+                + sum [n | DamageTakenFromPrintedResource resource n <- targetModifiers, maybe False (elem resource . printedResources) sourceDef]
                 + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
             targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
             attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
@@ -232,10 +234,6 @@ resolveChoice ident = \case
         -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
         -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
         -- "would take damage" does not answer it, though "when he is attacked" does
-        cannot <- case enemy of
-          EnemyVillainId vid -> (||) <$> cannotTakeDamageFrom (VillainRef vid) source <*> villainPreventsAttackDamage vid source damage
-          EnemyMinionId _ -> pure False
-        let windowDamage = if cannot then damage {damageAmount = 0} else damage
         ignored <- case (damageSource damage, enemy) of
           (FromPlayerAttack who, EnemyVillainId _) -> do
             mods <- getModifiers (IdentityRef who)
@@ -248,12 +246,13 @@ resolveChoice ident = \case
         let attackingWindow = case damageSource damage of
               FromPlayerAttack who | not begun -> [CheckWindows [Window When $ W.IdentityAttack who enemy]]
               _ -> []
-        pure $ ignored <> attackingWindow <>
+        let rangedWindow = case damageSource damage of
+              FromPlayerAttack who | damageRanged damage -> [CheckWindows [Window When $ W.MakingRangedAttack who source enemy]]
+              _ -> []
+        pure $ ignored <> attackingWindow <> rangedWindow <>
           ( case enemy of
               EnemyVillainId vid ->
-                [ CheckWindows [Window When $ W.DamagedVillain vid windowDamage, Window When $ W.VillainDamageFrom vid source windowDamage]
-                , VillainMessage vid $ VillainDamaged source damage
-                ]
+                [VillainMessage vid $ VillainDamaged source damage]
               EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
           )
             <> attacked
@@ -266,9 +265,10 @@ resolveChoice ident = \case
   RemoveThreat source n schemeMatcher -> do
     labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
     candidates <- selectList (schemeMatcher <> if labeled then SchemeWithoutThwartPrevention else AnyScheme)
+    eligible <- filterM (canRemoveThreatFrom source) candidates
     controller <- getSourceController source
     forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
-    let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) candidates else candidates
+    let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) eligible else eligible
         f target = ThwartScheme target source n
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x]]
   PlaceThreat _source n schemeMatcher -> do
@@ -279,7 +279,7 @@ resolveChoice ident = \case
     let f character = Heal character n
     pure [Ask ident $ ChooseOne [TargetLabel (characterRef x) [f x] | x <- characters]]
   ChooseDamage source damage enemyMatcher -> do
-    enemies <- selectList (enemyMatcher <> DamageableEnemy)
+    enemies <- filterM (canSourceDamageEnemy source) =<< selectList (enemyMatcher <> DamageableEnemy)
     let f target = DamageEnemy target source damage
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- enemies, let target = enemyRef x], ClearRemoved]
   Stun target source -> case target of
@@ -298,7 +298,7 @@ resolveChoice ident = \case
     _ -> error "can not confuse target"
   Recover -> do
     forbidden <- elem CannotRecover <$> getModifiers (IdentityRef ident)
-    pure $ if forbidden then [] else [CheckWindows [Window When $ W.UsedRecovery ident], IdentityMessage ident $ SideMessage Recovered, CheckWindows [Window After $ W.UsedRecovery ident]]
+    pure $ if forbidden then [] else [CheckWindows [Window When $ W.UsedRecovery ident], IdentityMessage ident $ SideMessage (RecoveredWithBonus 0), CheckWindows [Window After $ W.UsedRecovery ident]]
   Heal characterId n -> do
     forbidden <- elem CannotBeHealedByPlayerCards <$> getModifiers (characterRef characterId)
     pure $ if forbidden then [] else case characterId of
@@ -416,7 +416,12 @@ resolveThreatRemoval basic thwarting target source n' = do
       crises <- if IgnoresCrisis `elem` mods then selectList CrisisSideScheme else pure []
       pure [CheckWindows (map (Window After . W.IgnoredKeyword who) patrols <> map (Window After . W.IgnoredCrisis who) crises) | notNull patrols || notNull crises]
     _ -> pure []
-  pure (ignored <> continuation)
+  allowed <- case target of
+    MainSchemeRef sid -> canRemoveThreatFrom source (SchemeMainSchemeId sid)
+    SideSchemeRef sid -> canRemoveThreatFrom source (SchemeSideSchemeId sid)
+    SchemeRef sid -> canRemoveThreatFrom source sid
+    _ -> pure False
+  pure [message | allowed, message <- ignored <> continuation]
 
 sourceBonus :: (HasGame m) => Source -> (Modifier -> Maybe Natural) -> m Natural
 sourceBonus source f = sum . mapMaybe f <$> getModifiers source

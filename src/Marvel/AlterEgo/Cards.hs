@@ -1,5 +1,20 @@
 module Marvel.AlterEgo.Cards where
 
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
+import Marvel.Ability.Types qualified as NEAbility
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
 import Marvel.Prelude
 import Marvel.Matchers
 import Marvel.Resource
@@ -18,7 +33,8 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ annaMarie
+    [ cable40001b, neenaThurman
+    , annaMarie
   , ororoMunroe
   , logan
   , scottSummers
@@ -336,3 +352,23 @@ remyLeBeau = (alterEgo "37001b" "Remy LeBeau" [Mutant, Thief]) { cdUnique = True
 
 annaMarie :: CardDef
 annaMarie = (alterEgo "38001b" "Anna Marie" [Mutant]) { cdUnique = True }
+
+-- NeXt Evolution: Domino
+neenaThurman :: CardDef
+neenaThurman = CardDef
+  { cdCardCode = "40037b", cdName = "Neena Thurman", cdCost = Nothing
+  , cdTraits = fromList [NET.Mutant], cdKeywords = fromList []
+  , cdCardType = AlterEgoType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Nothing, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Cable
+
+cable40001b :: CardDef
+cable40001b = (alterEgo "40001b" "Nathan Summers" [NE.Mutant, NE.Soldier]) { cdUnique = True, cdDeckLimit = Just 1 }

@@ -1,5 +1,19 @@
 module Marvel.Hero.Cards where
 
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
 import Marvel.Prelude
 import Marvel.Matchers
 import Marvel.Resource
@@ -18,7 +32,8 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ gambitHero
+  [ dominoHero, cable40001a
+  , gambitHero
   , stormHero
   , wolverineHero
   , cyclopsHero
@@ -355,3 +370,24 @@ wolverineHero = (hero "35001a" "Wolverine" [XMen]) {cdUnique = True}
 
 gambitHero :: CardDef
 gambitHero = (hero "37001a" "Gambit" [Thief, XMen]) { cdUnique = True }
+
+
+-- NeXt Evolution: Cable
+
+cable40001a :: CardDef
+cable40001a = (hero "40001a" "Cable" [NE.Soldier, NE.XForce]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+-- NeXt Evolution: Domino
+dominoHero :: CardDef
+dominoHero = CardDef
+  { cdCardCode = "40037a", cdName = "Domino", cdCost = Nothing
+  , cdTraits = fromList [NET.Posse, NET.XForce], cdKeywords = fromList []
+  , cdCardType = HeroType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Nothing, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }

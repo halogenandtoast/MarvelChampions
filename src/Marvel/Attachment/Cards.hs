@@ -1,5 +1,38 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.Card.Def (ResourceRestriction (PrintedResource))
+
+import Marvel.Criteria (Criteria (NoCriteria))
+
+import Marvel.Resource.Types qualified as NEResource
+
+import Marvel.Boost qualified as NEBoost
+
+import Marvel.GameValue.Types qualified as NEValue
+
+import Marvel.EncounterSet qualified as NESet
+
+import Marvel.Keyword qualified as NEKeyword
+
+import Marvel.Trait qualified as NETrait
+
+import Marvel.Aspect qualified as NEAspect
+
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
+
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
@@ -40,7 +73,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ cyberneticEnhancements
+      [ ne40082, ne40083, ne40090, ne40091, ne40092, ne40105a, ne40105b, ne40106, ne40107, ne40122a, ne40122b, ne40123, ne40144, ne40151, ne40152, ne40153, ne40155, ne40156, ne40157, ne40159, ne40169, ne40170, ne40171, ne40172, ne40173, superpowerFeedback, cable40034
+      , cyberneticEnhancements
   , switchblade, possessed
   , deathFactor, adamantiumUpgrades
   , geneTherapy
@@ -1235,3 +1269,852 @@ psionicShield = attachment "37034" "Psionic Shield" [Psionic] [Boost, Boost] Exo
 
 cyberneticEnhancements :: CardDef
 cyberneticEnhancements = attachment "38035" "Cybernetic Enhancements" [Tech] [Boost, Boost] ReaversSet 2
+
+
+-- NeXt Evolution: Cable
+
+cable40034 :: CardDef
+cable40034 = (attachment "40034" "Telekinetic Force Field" [NE.Psionic] [NE.Boost, NE.Star] CableNemesis 1) { cdUnique = False, cdDeckLimit = Just 1 }
+
+-- NeXt Evolution: Domino
+superpowerFeedback :: CardDef
+superpowerFeedback = CardDef
+  { cdCardCode = "40069", cdName = "Superpower Feedback", cdCost = Nothing
+  , cdTraits = fromList [NET.Condition], cdKeywords = fromList []
+  , cdCardType = AttachmentType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [], cdBoostIcons = [NEB.Boost]
+  , cdEncounterSet = Just NES.DominoNemesis, cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Nothing, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution campaign and scenarios
+
+ne40082 :: CardDef
+ne40082 = CardDef
+  { cdCardCode = "40082"
+  , cdName = "Bolstered by Wrath"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Star]
+  , cdEncounterSet = Just NESet.MorlockSiege
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40083 :: CardDef
+ne40083 = CardDef
+  { cdCardCode = "40083"
+  , cdName = "Pushed to the Limit"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.MorlockSiege
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40090 :: CardDef
+ne40090 = CardDef
+  { cdCardCode = "40090"
+  , cdName = "Heavy Armament"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Weapon]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.MilitaryGrade
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40091 :: CardDef
+ne40091 = CardDef
+  { cdCardCode = "40091"
+  , cdName = "Titanium Exoskeleton"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Armor, NETrait.Tech]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.MilitaryGrade
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40092 :: CardDef
+ne40092 = CardDef
+  { cdCardCode = "40092"
+  , cdName = "Inhibitor Collar"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Tech]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost]
+  , cdEncounterSet = Just NESet.MilitaryGrade
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40105a :: CardDef
+ne40105a = CardDef
+  { cdCardCode = "40105a"
+  , cdName = "Hope's Captor"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Confident]
+  , cdKeywords = fromList [NEKeyword.Permanent]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.OnTheRun
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40105b :: CardDef
+ne40105b = CardDef
+  { cdCardCode = "40105b"
+  , cdName = "Hope's Captor"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Desperate]
+  , cdKeywords = fromList [NEKeyword.Permanent]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.OnTheRun
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40106 :: CardDef
+ne40106 = CardDef
+  { cdCardCode = "40106"
+  , cdName = "Hidden in the Clutter"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.OnTheRun
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40107 :: CardDef
+ne40107 = CardDef
+  { cdCardCode = "40107"
+  , cdName = "Favored Weapon"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Weapon]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.OnTheRun
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40122a :: CardDef
+ne40122a = CardDef
+  { cdCardCode = "40122a"
+  , cdName = "Juggernaut's Helmet"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Armor]
+  , cdKeywords = fromList [NEKeyword.Permanent]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.NeJuggernaut
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40122b :: CardDef
+ne40122b = CardDef
+  { cdCardCode = "40122b"
+  , cdName = "Juggernaut Exposed"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList [NEKeyword.Permanent]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.NeJuggernaut
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40123 :: CardDef
+ne40123 = CardDef
+  { cdCardCode = "40123"
+  , cdName = "Head of Steam"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeJuggernaut
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40144 :: CardDef
+ne40144 = CardDef
+  { cdCardCode = "40144"
+  , cdName = "Sinister Disguise"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.MisterSinister
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40151 :: CardDef
+ne40151 = CardDef
+  { cdCardCode = "40151"
+  , cdName = "Flight"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Superpower]
+  , cdKeywords = fromList [NEKeyword.Permanent, NEKeyword.Setup]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.FlightSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40152 :: CardDef
+ne40152 = CardDef
+  { cdCardCode = "40152"
+  , cdName = "Aerial Bombardment"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.FlightSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40153 :: CardDef
+ne40153 = CardDef
+  { cdCardCode = "40153"
+  , cdName = "Out of Reach"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.FlightSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+
+ne40155 :: CardDef
+ne40155 = CardDef
+  { cdCardCode = "40155"
+  , cdName = "Super Strength"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Superpower]
+  , cdKeywords = fromList [NEKeyword.Permanent, NEKeyword.Setup]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.SuperStrengthSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40156 :: CardDef
+ne40156 = CardDef
+  { cdCardCode = "40156"
+  , cdName = "Impervious"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.SuperStrengthSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40157 :: CardDef
+ne40157 = CardDef
+  { cdCardCode = "40157"
+  , cdName = "Thrown Object"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Item]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.SuperStrengthSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40159 :: CardDef
+ne40159 = CardDef
+  { cdCardCode = "40159"
+  , cdName = "Telepathy"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Superpower]
+  , cdKeywords = fromList [NEKeyword.Permanent, NEKeyword.Setup]
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.TelepathySet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40169 :: CardDef
+ne40169 = CardDef
+  { cdCardCode = "40169"
+  , cdName = "Mental Transferal"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition, NETrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeStryfe
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40170 :: CardDef
+ne40170 = CardDef
+  { cdCardCode = "40170"
+  , cdName = "Mind Alteration"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition, NETrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeStryfe
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40171 :: CardDef
+ne40171 = CardDef
+  { cdCardCode = "40171"
+  , cdName = "Mind Trap"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition, NETrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeStryfe
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40172 :: CardDef
+ne40172 = CardDef
+  { cdCardCode = "40172"
+  , cdName = "Psionic Amnesia"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition, NETrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeStryfe
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40173 :: CardDef
+ne40173 = CardDef
+  { cdCardCode = "40173"
+  , cdName = "Psychic Inertia"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Condition, NETrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AttachmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost]
+  , cdEncounterSet = Just NESet.NeStryfe
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

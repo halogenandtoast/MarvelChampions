@@ -6,6 +6,8 @@ import Marvel.Ref
 
 data SideSchemeMessage
   = RevealSideScheme
+  | ExhaustedSideScheme
+  | ReadiedSideScheme
   | DefeatSideScheme
   | SideSchemePlaceInitialThreat
   | SideSchemePlaceThreat Natural

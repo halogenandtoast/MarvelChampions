@@ -144,6 +144,7 @@ cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
     _ -> False
   -- the excess on to the villain, its "would take damage" window first when it opens
   dropOverkill = \case
+    message : rest | Just (_, _, damage) <- enemyDamageMessage (queuedMessage message), damageSource damage == FromOverkill -> rest
     CheckWindows windows : VillainMessage _ (VillainDamaged _ d) : rest
       | any (\case Window When (DamagedVillain _ other) -> damageSource other == FromOverkill; _ -> False) windows
       , damageSource d == FromOverkill -> rest
@@ -188,6 +189,7 @@ engageMinion minion ident =
 -- interrupt to making it.
 addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
 addToBasicPower ident n = replaceMatchingMessage raise \case
+  IdentityMessage ident' (SideMessage (RecoveredWithBonus _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicAttackOn _ _)) -> ident == ident'
   IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
@@ -196,6 +198,7 @@ addToBasicPower ident n = replaceMatchingMessage raise \case
   _ -> False
  where
   raise = \case
+    IdentityMessage i (SideMessage (RecoveredWithBonus x)) -> [IdentityMessage i (SideMessage (RecoveredWithBonus (x + n)))]
     IdentityMessage i (SideMessage (DefenseUsingAttackApplied x e)) -> [IdentityMessage i (SideMessage (DefenseUsingAttackApplied (x + n) e))]
     IdentityMessage i (SideMessage (DefenseApplied x e)) -> [IdentityMessage i (SideMessage (DefenseApplied (x + n) e))]
     IdentityMessage i (SideMessage (BasicAttack x)) -> [IdentityMessage i (SideMessage (BasicAttack (x + n)))]
@@ -316,6 +319,11 @@ data DefensePriority
 
 data Message
   = ResolveWhenDefeated Message
+  | PrepareEnemyDamageGroup [Message] Int
+  | TakeEnemyDamageGroup [Message] Int [Message]
+  | ResolveEnemyDamageGroup [Message] Int [Message]
+  | PrepareEnemyDamage Message
+  | ResolveEnemyDamage Message
   | StartGame
   | StartScenario
   | BeginPhase Phase
@@ -414,6 +422,7 @@ data Message
   | DealBoost Target
   | -- | The ally's interrupt has finished; perform its departure once, then respond.
     ResolveAllyLeavingPlay IdentityId AllyId CardDef Message
+  | PrepareAllyDepartureByDefeat AllyId Message
   | -- | Perform a minion departure only if no interrupt replaced it.
     ResolveMinionLeavingPlay MinionId Message
   | -- | Recalculate threat removal after the thwart interrupt resolves.
@@ -678,3 +687,64 @@ data Message
 data ReplaceKind = Swapped | Advanced
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
+
+
+-- | The actionable message behind an enemy-damage continuation. Queue edits see
+-- the original message, while the continuation retains which windows have run.
+queuedMessage :: Message -> Message
+queuedMessage = \case
+  PrepareEnemyDamage original -> queuedMessage original
+  ResolveEnemyDamage original -> queuedMessage original
+  original -> original
+
+-- | Preserve the continuation for modified damage, but run replacements of other
+-- kinds normally. Canceling the raw damage therefore cancels its continuation.
+rewrapQueuedMessages :: Message -> [Message] -> [Message]
+rewrapQueuedMessages wrapper = map $ case wrapper of
+  PrepareEnemyDamage _ -> wrap PrepareEnemyDamage
+  ResolveEnemyDamage _ -> wrap ResolveEnemyDamage
+  _ -> id
+ where
+  wrap constructor message = case enemyDamageMessage message of
+    Just _ -> constructor message
+    Nothing -> message
+
+enemyDamageMessage :: Message -> Maybe (EnemyId, Source, Damage)
+enemyDamageMessage = \case
+  VillainMessage vid (VillainDamaged source damage) -> Just (EnemyVillainId vid, source, damage)
+  MinionMessage mid (MinionDamaged source damage) -> Just (EnemyMinionId mid, source, damage)
+  _ -> Nothing
+
+
+
+
+-- | Focused child edits retain each enclosing message and the original order.
+-- A replacement may remove a child or insert several messages in its position.
+queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]
+queuedChildEdits message = case message of
+  PrepareAllyDepartureByDefeat _ departure ->
+    [(departure, map (\replacement -> if replacement == departure then message else replacement))]
+  PrepareEnemyDamageGroup messages cursor -> group PrepareEnemyDamageGroup messages cursor
+  TakeEnemyDamageGroup messages cursor deferred -> remaining False TakeEnemyDamageGroup messages cursor deferred
+  ResolveEnemyDamageGroup messages cursor deferred -> remaining True ResolveEnemyDamageGroup messages cursor deferred
+  Simultaneously messages ->
+    [(child, \replacement -> [simultaneously $ take index messages <> replacement <> drop (index + 1) messages]) | (index, child) <- zip [0..] messages]
+  _ -> []
+ where
+  remaining resolving constructor messages cursor deferred =
+    [(messages !! index, \replacement ->
+      if resolving && index == cursor && not (case replacement of [raw] -> isJust (enemyDamageMessage raw); _ -> False)
+        then replacement <> [TakeEnemyDamageGroup (take index messages <> drop (index + 1) messages) cursor deferred]
+        else [constructor (take index messages <> replacement <> drop (index + 1) messages) cursor deferred]) | index <- [cursor .. length messages - 1]]
+    <> [(child, \replacement -> [constructor messages cursor (take index deferred <> replacement <> drop (index + 1) deferred)]) | (index, child) <- zip [0..] deferred]
+  group constructor messages cursor =
+    let focus = cursor - 1
+        indices = [focus | focus >= 0, focus < length messages] <> [index | index <- [0 .. length messages - 1], index /= focus]
+     in [(messages !! index, \replacement ->
+          let next = if index < cursor then cursor + length replacement - 1 else cursor
+           in [constructor (take index messages <> replacement <> drop (index + 1) messages) next]) | index <- indices]
+
+queuedMessageLeaves :: Message -> [Message]
+queuedMessageLeaves message = case queuedChildEdits message of
+  [] -> [queuedMessage message]
+  children -> concatMap (queuedMessageLeaves . fst) children

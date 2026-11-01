@@ -53,6 +53,12 @@ def traits(s):
 
 
 def card(c, pack_order):
+    # MarvelCDB mislabels High Ground; its printed card is a treachery.
+    if c["code"] == "40154":
+        c = {**c, "type_code": "treachery", "type_name": "Treachery"}
+    # Printed A Good Workout adds damage to the same enemy.
+    if c["code"] == "40040":
+        c = {**c, "text": c.get("text", "").replace("1 additional damage to an enemy", "1 additional damage to that enemy")}
     t = c["type_code"]
     orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE else "portrait")
     out = {

@@ -265,7 +265,8 @@ data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text,
   deriving anyclass (ToJSON)
 
 data VillainView = VillainView
-  { bombCounters :: Natural
+  { counters :: Natural
+  , bombCounters :: Natural
   , id :: VillainId
   , code :: CardCode
   , name :: Text
@@ -291,13 +292,15 @@ data VillainView = VillainView
   deriving anyclass (ToJSON)
 
 data MinionView = MinionView
-  { bombCounters :: Natural
+  { counters :: Natural
+  , bombCounters :: Natural
   , toughCards :: Natural
   , id :: MinionId
   , code :: CardCode
   , name :: Text
   , heldCards :: [CardView]
   , facedownCards :: Int
+  , attachedToMinion :: Maybe MinionId
   , engagedWith :: IdentityId
   , hitPoints :: Natural
   , exhausted :: Bool
@@ -348,6 +351,7 @@ data SchemeView = SchemeView
   -- held cards
   , accelerationTokens :: Natural
   , glider :: Bool
+  , exhausted :: Bool
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -427,6 +431,7 @@ gameView :: (IdentityId -> Bool) -> Game -> GameAppT GameView
 gameView seesHand g = do
   players <- traverse playerView [p | pid <- gameSeats g, Just p <- [HashMap.lookup pid (gamePlayers g)]]
   villains <- traverse villainView (HashMap.elems $ gameVillains g)
+  schemes <- traverse sideSchemeView (HashMap.elems $ gameSideSchemes g)
   minions <- traverse minionView (HashMap.elems $ gameMinions g)
   uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g]
   mayLook <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
@@ -477,7 +482,7 @@ gameView seesHand g = do
       , players
       , villains
       , mainSchemes = map mainSchemeView (HashMap.elems $ gameMainSchemes g)
-      , sideSchemes = map sideSchemeView (HashMap.elems $ gameSideSchemes g)
+      , sideSchemes = schemes
       , minions
       , uncontrolledAllies
       , environments =
@@ -492,7 +497,7 @@ gameView seesHand g = do
       , encounterDeckTop = if mayLook then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
-      , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g)
+      , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g) <> map (cardView . PlayerCard) (gamePlayerVictoryDisplay g)
       , victoryCondition = scenario.scenarioVictoryCondition
       , collection = map cardView (gameCollection g)
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
@@ -611,7 +616,7 @@ gameView seesHand g = do
         , obligations =
             [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards)
             | a <- map toAttrs (HashMap.elems (gameObligations g))
-            , a.obligationOwner == Just (toId p)
+            , a.obligationOwner == Just (toId p), isNothing a.obligationSideScheme
             ]
         , weatherDeckSize = length <$> a.playerIdentityWeatherDeck
         , invocation =
@@ -665,7 +670,8 @@ gameView seesHand g = do
     infinite <- elem InfiniteHitPoints <$> getModifiers a
     pure
       VillainView
-        { bombCounters = sum [n | (EnemyVillainId vid,_,n) <- gameBombCounters g, vid == toId v]
+        { counters = a.villainCounters
+        , bombCounters = sum [n | (EnemyVillainId vid,_,n) <- gameBombCounters g, vid == toId v]
         , id = a.villainId
         , code = toCardCode a.villainCardDef
         , name = display (cdName a.villainCardDef)
@@ -692,13 +698,17 @@ gameView seesHand g = do
     sch <- Minion.getModifiedScheme a
     pure
       MinionView
-        { bombCounters = sum [n | (EnemyMinionId mid,_,n) <- gameBombCounters g, mid == a.minionId]
+        { counters = Minion.getMinionDisplayCounters m
+        , bombCounters = sum [n | (EnemyMinionId mid,_,n) <- gameBombCounters g, mid == a.minionId]
         , id = a.minionId
         , code = toCardCode a.minionCardDef
         , name = display (cdName a.minionCardDef)
         , heldCards = map (cardView . PlayerCard) a.minionHeldCards
         , facedownCards = length a.minionHeldTreacheries
-        , engagedWith = a.minionEngagedIdentity
+        , attachedToMinion = a.minionAttachedTo
+        , engagedWith = fromMaybe a.minionEngagedIdentity $ do
+            host <- a.minionAttachedTo
+            Minion.minionEngagedIdentity . toAttrs <$> HashMap.lookup host (gameMinions g)
         , hitPoints = hp
         , exhausted = a.minionExhausted
         , damage = a.minionDamage
@@ -722,10 +732,11 @@ gameView seesHand g = do
           _ -> False) (HashMap.elems $ gameQuestion g)
         face = if awaitingSetup then CardCode (unCardCode code <> "a") else code
         tokensHere = a.mainSchemeAccelerationTokens + maybe 0 areaAccelerationTokens (areaOfTarget g $ MainSchemeRef a.mainSchemeId)
-     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere a.mainSchemeHasGlider
-  sideSchemeView (s :: SideScheme) =
+     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere a.mainSchemeHasGlider False
+  sideSchemeView (s :: SideScheme) = do
+    modifiers <- getModifiers s
     let a = toAttrs s
-     in SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat (a.sideSchemeCrisis && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [] a.sideSchemeAccelerationTokens False
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)

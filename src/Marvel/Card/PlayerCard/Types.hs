@@ -39,7 +39,7 @@ encounterCardInPlayerDeck you card = MkPlayerCard (ecCardId card) (ecCardDef car
 playerZoneEncounterCard :: PlayerCard -> Maybe EncounterCard
 playerZoneEncounterCard card
   | isNothing (pcOwner card), isJust (pcController card)
-  , cdCardType (getCardDef card) `notElem` [AllyType, EventType, SupportType, UpgradeType, ResourceType] =
+  =
       Just $ MkEncounterCard (pcCardId card) (pcCardDef card)
   | otherwise = Nothing
 

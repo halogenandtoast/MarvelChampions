@@ -1,5 +1,37 @@
 module Marvel.Resource.Cards where
 
+import Marvel.Card.Def (ResourceRestriction (PrintedResource))
+
+import Marvel.Criteria (Criteria (NoCriteria))
+
+import Marvel.Resource.Types qualified as NEResource
+
+import Marvel.Boost qualified as NEBoost
+
+import Marvel.GameValue.Types qualified as NEValue
+
+import Marvel.EncounterSet qualified as NESet
+
+import Marvel.Keyword qualified as NEKeyword
+
+import Marvel.Trait qualified as NETrait
+
+import Marvel.Aspect qualified as NEAspect
+
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
 import Marvel.Matchers
 import Marvel.Boost
 import Marvel.Keyword
@@ -23,7 +55,11 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ concatMap
   toCardCodePairs
-  [ molecularAcceleration
+  [ ne40196
+  , diggingDeep
+  , jackpot
+  , cable40028
+  , molecularAcceleration
   , effectiveLeadership
   , energyAbsorption
   , vibranium
@@ -150,13 +186,13 @@ thePowerOfProtection = reprintedAs ["05016", "09017", "16015"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -270,3 +306,73 @@ effectiveLeadership = reprintedAs ["36021"] $ (resource "33018" "Effective Leade
 
 molecularAcceleration :: CardDef
 molecularAcceleration = (identityResource "37010" "Molecular Acceleration" [] [Energy, Physical]) { cdDeckLimit = Just 2 }
+
+-- NeXt Evolution: Cable
+
+cable40028 :: CardDef
+cable40028 = (basicResource "40028" "The Power of the Mind" [] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3, cdResources = [(NE.PrintedResource, NE.Mental), (NE.ResourceForCardsMatching (NE.CardWithTrait NE.Psionic), NE.Mental)] }
+
+-- NeXt Evolution: Domino
+jackpot :: CardDef
+jackpot = CardDef
+  { cdCardCode = "40043", cdName = "Jackpot!", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = ResourceType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Energy), (PrintedResource, NER.Physical), (PrintedResource, NER.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+diggingDeep :: CardDef
+diggingDeep = CardDef
+  { cdCardCode = "40060", cdName = "Digging Deep", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = ResourceType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just NEA.Neutral, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution campaign and scenarios
+
+ne40196 :: CardDef
+ne40196 = CardDef
+  { cdCardCode = "40196"
+  , cdName = "Pouches"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just NEAspect.Neutral
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild), (PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.NextEvolutionCampaign
+  , cdEncounterSetQuantity = Just 4
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

@@ -42,6 +42,9 @@ instance RunMessage (Attrs AlterEgo) where
         Recovered -> do
           heal ident =<< getModifiedRecovery a
           pure a
+        RecoveredWithBonus n -> do
+          heal ident . (+ n) =<< getModifiedRecovery a
+          pure a
         _ -> pure a
     _ -> pure a
 

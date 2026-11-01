@@ -45,7 +45,7 @@ cardsWhere inPack inSet = do
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
+packs = ["next_evol", "rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
 
 -- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
 -- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
@@ -128,6 +128,7 @@ encounterImplemented c = case c.cardType of
   "treachery" -> HashMap.member c.code allTreacheries
   "attachment" -> HashMap.member c.code allAttachments
   "side_scheme" -> HashMap.member c.code allSideSchemes
+  "player_side_scheme" -> HashMap.member c.code allPlayerCards
   -- a double-sided one by its sides, MarvelCDB keeping an older record of one side by
   -- the base code (Avengers Tower, 21100)
   "environment" -> any (`HashMap.member` allEnvironments) [c.code, CardCode (unCardCode c.code <> "a")]
@@ -166,6 +167,7 @@ packSpec = for_ packs \pack -> describe (show pack) do
           "support" -> HashMap.member c.code allSupports
           "upgrade" -> HashMap.member c.code allUpgrades
           "resource" -> HashMap.member c.code allPlayerCards
+          "player_side_scheme" -> HashMap.member c.code allPlayerCards
           "obligation" -> HashMap.member c.code allObligations
           _ -> True
     [(c.code, c.name) | c <- cards, not (implemented c)] `shouldBe` []

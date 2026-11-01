@@ -1,5 +1,38 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.Card.Def (ResourceRestriction (PrintedResource))
+
+import Marvel.Criteria (Criteria (NoCriteria))
+
+import Marvel.Resource.Types qualified as NEResource
+
+import Marvel.Boost qualified as NEBoost
+
+import Marvel.GameValue.Types qualified as NEValue
+
+import Marvel.EncounterSet qualified as NESet
+
+import Marvel.Keyword qualified as NEKeyword
+
+import Marvel.Trait qualified as NETrait
+
+import Marvel.Aspect qualified as NEAspect
+
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
+
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
@@ -37,7 +70,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ deadlyTouch
+    [ ne40160, ne40161, memoriesofArmageddon, cable40031
+    , deadlyTouch
   , claustrophobia
   , pastDemons
   , lostVisor
@@ -468,3 +502,92 @@ guildBusiness = (obligation "37025" "Guild Business" [Boost, Boost]) { cdHazards
 
 deadlyTouch :: CardDef
 deadlyTouch = obligation "38024" "Deadly Touch" [Boost, Boost]
+
+
+-- NeXt Evolution: Cable
+
+cable40031 :: CardDef
+cable40031 = (obligation "40031" "Technovirus Resurgence" [NE.Boost, NE.Boost]) { cdUnique = False, cdDeckLimit = Just 1 }
+
+-- NeXt Evolution: Domino
+memoriesofArmageddon :: CardDef
+memoriesofArmageddon = CardDef
+  { cdCardCode = "40065", cdName = "Memories of Armageddon", cdCost = Nothing
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = ObligationType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [], cdBoostIcons = [NEB.Boost, NEB.Boost]
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Nothing, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution campaign and scenarios
+
+ne40160 :: CardDef
+ne40160 = CardDef
+  { cdCardCode = "40160"
+  , cdName = "Manufactured Drama"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.TelepathySet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40161 :: CardDef
+ne40161 = CardDef
+  { cdCardCode = "40161"
+  , cdName = "Sowing Discord"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [NEBoost.Boost, NEBoost.Boost]
+  , cdEncounterSet = Just NESet.TelepathySet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

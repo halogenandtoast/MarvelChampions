@@ -1,6 +1,8 @@
 module Marvel.Game where
 
 import Marvel.Prelude
+import Marvel.Status (StatusCard)
+import Marvel.Card.Id (CardId)
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader (ReaderT)
@@ -197,6 +199,7 @@ getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAmplifyCount :: (HasGame m) => m Natural
 -- The Galaxy's Most Wanted
 getVictoryDisplay :: (HasGame m) => m [EncounterCard]
+getPlayerVictoryDisplay :: (HasGame m) => m [PlayerCard]
 getVictoryPoints :: (HasGame m) => m Int
 getCollection :: (HasGame m) => m [Card]
 getMilano :: (HasGame m) => m (Maybe SupportId)
@@ -352,3 +355,41 @@ getCharacterTraits :: (HasGame m) => CharacterId -> m (HashSet Trait)
 canPlayHeldAlly :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> PlayerCard -> m Bool
 heldAllyPlayable :: (HasGame m, MonadThrow m, HasQueue m) => IdentityId -> SupportId -> m Bool
 canCaptureDefeatedAlly :: HasGame m => PlayerCard -> m Bool
+
+discardResponseAvailable :: HasGame m => CardId -> m Bool
+
+
+characterThwartValue :: HasGame m => CharacterId -> m Natural
+canAttachPlayerUpgradeToAlly :: HasGame m => AllyId -> PlayerCard -> m Bool
+
+
+
+canPlayerRemoveThreatFrom :: HasGame m => IdentityId -> SchemeId -> m Bool
+canRemoveThreatFrom :: HasGame m => Source -> SchemeId -> m Bool
+canPlayerDamageEnemy :: HasGame m => IdentityId -> EnemyId -> m Bool
+
+
+incomingEnemyDamage :: HasGame m => EnemyId -> Source -> Damage -> m Damage
+
+canSourceDamageEnemy :: HasGame m => Source -> EnemyId -> m Bool
+
+enemyAttackTargetsIdentity :: HasGame m => EnemyId -> IdentityId -> m Bool
+getEnemyAttack :: HasGame m => EnemyId -> m (Maybe Attack)
+
+
+getEnemyRemainingHitPoints :: HasGame m => EnemyId -> m Natural
+getCharacterStatusCount :: HasGame m => CharacterId -> StatusCard -> m Natural
+
+
+canDamageThroughAerialRestriction :: HasGame m => Target -> Source -> Damage -> m Bool
+friendlyCharactersWithFewestRemainingHitPoints :: HasGame m => m [CharacterId]
+characterToughCount :: HasGame m => CharacterId -> m Natural
+
+
+getCharacterRemainingHitPoints :: HasGame m => CharacterId -> m Natural
+
+getControlledPlayerSideSchemes :: HasGame m => IdentityId -> Bool -> m [SideSchemeId]
+
+getIdentityAttackedAndThwartedThisPhase :: HasGame m => IdentityId -> m Bool
+
+schemeHasKeyword :: HasGame m => SchemeId -> Keyword -> m Bool

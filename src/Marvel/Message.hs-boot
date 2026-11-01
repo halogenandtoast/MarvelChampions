@@ -10,3 +10,11 @@ instance ToJSON Message
 instance FromJSON Message
 instance Show Message
 instance Eq Message
+
+
+queuedMessage :: Message -> Message
+rewrapQueuedMessages :: Message -> [Message] -> [Message]
+
+
+
+queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]

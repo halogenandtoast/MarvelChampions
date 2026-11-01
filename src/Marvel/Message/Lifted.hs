@@ -45,8 +45,8 @@ import Marvel.Game.Source
 import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis))
-import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates)
+import Marvel.Modifier.Types (Modifier (CannotBeDefeated, CannotChangeMassForm, CannotChangeEnergyForm, PlayersChooseTheVillain, CannotBeDiscarded, CannotLeavePlay, ThreatCannotBeRemoved, ThreatRemovableOnlyBy, IgnoresCrisis, ThwartWithAttack))
+import Marvel.Message as X hiding (cardSpecific, damageIdentity, engageMinion, enemyRetaliates, cancelVillainDefeat)
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted.Queue as X
 import Marvel.Phase (Phase, VillainPhaseStep)
@@ -56,7 +56,7 @@ import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
 import Marvel.Query (selectJust, selectList, selectOne)
-import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged))
+import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged, Assault))
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage, isQueued)
 import Marvel.Ref
 import Marvel.Resource.Types (Resource)
@@ -162,11 +162,11 @@ dealBoostAsEncounterCard target you = do
 -- [targeting enemy (dealDamage enemy attrs damage) | enemy <- enemies]@.
 
 chooseOne :: (ReverseQueue m) => IdentityId -> [m Choice] -> m ()
-chooseOne you choices = push . Ask you . ChooseOne =<< sequence choices
+chooseOne you choices = unless (null choices) $ push . Ask you . ChooseOne =<< sequence choices
 
 -- | Ask one of the choices, saying what is being asked.
 chooseOnePrompted :: (ReverseQueue m) => IdentityId -> Text -> [m Choice] -> m ()
-chooseOnePrompted you prompt choices = push . Ask you . prompted prompt . ChooseOne =<< sequence choices
+chooseOnePrompted you prompt choices = unless (null choices) $ push . Ask you . prompted prompt . ChooseOne =<< sequence choices
 
 -- | Ask one of the choices, saying what is being asked about which card.
 chooseOnePromptedAbout :: (ReverseQueue m, IsRef a) => IdentityId -> Text -> a -> [m Choice] -> m ()
@@ -269,6 +269,28 @@ chooseUpgrade you matcher = resolveAs you . ChooseUpgrade matcher . toTarget
 
 dealDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> source -> Damage -> m ()
 dealDamage enemy source = resolve . DamageEnemy (EnemyRef $ toEnemy enemy) (toSource source)
+
+-- | Increase only the ranged attack whose interrupt is being answered.
+addToRangedAttackDamage :: ReverseQueue m => IdentityId -> Natural -> m ()
+addToRangedAttackDamage you n = do
+  windows <- getCurrentWindows
+  for_ (headMay [(source, enemy) | Window _ (W.MakingRangedAttack who source enemy) <- windows, who == you]) $ \(source, enemy) -> do
+    let increase damage = damage {damageAmount = damageAmount damage + n}
+        matching = \case
+          VillainMessage vid (VillainDamaged from _) -> from == source && enemy == EnemyVillainId vid
+          MinionMessage mid (MinionDamaged from _) -> from == source && enemy == EnemyMinionId mid
+          _ -> False
+        raise = \case
+          VillainMessage vid (VillainDamaged from damage) -> [VillainMessage vid (VillainDamaged from $ increase damage)]
+          MinionMessage mid (MinionDamaged from damage) -> [MinionMessage mid (MinionDamaged from $ increase damage)]
+          msg -> [msg]
+    replaceMatchingMessage raise matching
+    replaceMatchingMessage (\case CheckWindows ws -> [CheckWindows $ map (\w -> w {W.windowType = case W.windowType w of
+                                              W.DamagedVillain vid damage | enemy == EnemyVillainId vid -> W.DamagedVillain vid $ increase damage
+                                              W.VillainDamageFrom vid from damage | enemy == EnemyVillainId vid && from == source -> W.VillainDamageFrom vid from $ increase damage
+                                              original -> original}) ws]; msg -> [msg]) $ \case
+      CheckWindows ws -> any (\w -> case W.windowType w of W.VillainDamageFrom vid from _ -> enemy == EnemyVillainId vid && from == source; _ -> False) ws
+      _ -> False
 
 -- | All characters take their damage before any after-damage responses.
 damageCharacters :: (ReverseQueue m, IsRef source) => source -> Damage -> [CharacterId] -> m ()
@@ -376,6 +398,11 @@ thwartEach source removed = do
   msgs <- concat <$> traverse (\(scheme, n) -> capture $ thwartScheme scheme source n) removed
   unless (null msgs) $ push (Simultaneously msgs)
 
+thwartEachAs :: (ReverseQueue m, IsScheme scheme, IsRef source) => IdentityId -> source -> [(scheme, Natural)] -> m ()
+thwartEachAs you source removed = do
+  msgs <- concat <$> traverse (\(scheme, n) -> capture $ thwartSchemeAs you scheme source n) removed
+  unless (null msgs) $ push (Simultaneously msgs)
+
 -- | A hero's or ally's basic thwart of the scheme.
 basicThwartOf :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()
 basicThwartOf scheme source = resolve . BasicThwartScheme (SchemeRef $ toScheme scheme) (toSource source)
@@ -415,8 +442,27 @@ prepareDividedThreat you source upTo n matcher = do
   push $ PrepareDividedThreat you source upTo n matcher
 
 -- | The hero's basic thwart divided among the thwartable schemes (Giant Wasp).
-basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> m ()
-basicThwartDivided you source n = push $ AssignDividedThreat you (toSource source) True False n SchemeYouCanThwart []
+basicThwartDivided :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> Natural -> m ()
+basicThwartDivided you source thw atk = do
+  schemes <- selectList (SchemeAHeroCanBasicThwart you)
+  choices <- for schemes $ \scheme -> do
+    assault <- schemeHasKeyword scheme Assault
+    withAttack <- elem ThwartWithAttack <$> getModifiers (schemeRef scheme)
+    -- The first allocation selects one shared stat pool. It is the same first
+    -- point the existing distributor asks for, rather than a separate target
+    -- designation that could receive none of the thwart.
+    let assign n = when (n > 0) $
+          push $ AssignDividedThreat you (toSource source) True False (n - 1) (SchemeAHeroCanBasicThwart you) [(scheme, 1)]
+    pure $ targeting (schemeRef scheme) $
+      if assault then assign atk else if withAttack && atk /= thw
+        then chooseOne you
+          [ labeled "$label.thwartWithThw" (assign thw)
+          , labeled "$label.thwartWithAtk" (assign atk)
+          ]
+        else assign thw
+  case choices of
+    [_] -> chooseOrRunOne you choices
+    _ -> chooseOnePrompted you "$label.assignDividedThreat" choices
 
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
@@ -438,10 +484,13 @@ placeThreatOnEach source n = resolve . PlaceThreat (toSource source) n
 
 -- | Incite X, as the card is revealed: X threat on the main scheme, each of them where
 -- there are two (Tower Defense, MTS rulebook p.10).
-incite :: (ReverseQueue m, HasCardDef card) => card -> m ()
-incite card = for_ [n | Incite n <- toList $ cdKeywords (getCardDef card)] \n -> do
-  schemes <- selectList EncounterMainScheme
-  for_ schemes (`placeThreat` n)
+incite :: (ReverseQueue m, HasCardDef card, IsRef card, IsCard card) => card -> m ()
+incite card = do
+  modifiers <- getModifiers card
+  let keywords = toList (cdKeywords $ getCardDef card) <> [k | KeywordModifier k <- modifiers]
+  for_ [n | Incite n <- keywords] $ \n -> do
+    schemes <- selectList EncounterMainScheme
+    for_ schemes (`placeThreat` n)
 
 -- * Status cards and counters
 
@@ -552,6 +601,11 @@ exhaust = push . exhausted
 -- | The ally's attack on the enemy, past the window before it.
 allyAttackLands :: (ReverseQueue m, IsEnemy enemy) => AllyId -> enemy -> Damage -> m ()
 allyAttackLands ally enemy = push . AllyMessage ally . AllyAttackLands (toEnemy enemy)
+
+-- | Preserve the actual discard or victory departure through defeat interrupts.
+allyLeavesByDefeat :: ReverseQueue m => AllyId -> Bool -> m ()
+allyLeavesByDefeat aid victory = push $ PrepareAllyDepartureByDefeat aid $
+  if victory then AddToVictoryDisplay (AllyRef aid) else RemoveFromPlay (AllyRef aid)
 
 defeatAlly :: (ReverseQueue m) => AllyId -> m ()
 defeatAlly ally = push $ AllyMessage ally AllyDefeated
@@ -728,7 +782,7 @@ wasAttacked :: (ReverseQueue m) => Attack -> m ()
 wasAttacked a = push case attackCharacter a of
   IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
   AllyCharacter ally -> AllyMessage ally (AllyWasAttacked a)
-  _ -> error "Invalid damage target"
+  character -> Msg.cardSpecific GameRef "enemyCharacterWasAttacked" a
 
 declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
 declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
@@ -2047,7 +2101,7 @@ pendingDamageSource :: (HasQueue m) => IdentityId -> m (Maybe Source)
 pendingDamageSource ident = withQueue \q -> (q, headMay [s | IdentityMessage i (IdentityDamaged s _) <- q, i == ident])
 
 pendingVillainDamageSource :: (HasQueue m) => VillainId -> m (Maybe Source)
-pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMessage who (VillainDamaged source _) <- q, who == vid])
+pendingVillainDamageSource vid = withQueue \q -> (q, headMay [source | VillainMessage who (VillainDamaged source _) <- concatMap queuedMessageLeaves q, who == vid])
 
 -- | The damage the identity is about to take ("when you would take damage"), as other
 -- interrupts have left it.
@@ -2305,7 +2359,7 @@ enemyDefeatUpgrades enemy = do
 resolveAllyAttackAgainstAll :: (ReverseQueue m) => AllyId -> [EnemyId] -> m ()
 resolveAllyAttackAgainstAll aid enemies = do
   original <- withQueue $ \queue -> (queue, headMay [enemy | AllyMessage who (AllyAttackLands enemy _) <- queue, who == aid])
-  for_ original $ \target -> checkWindows [Window When $ W.AllyAttack aid enemy | enemy <- enemies, enemy /= target]
+  for_ original $ \target -> cardSpecific GameRef "checkWindowsInCurrentOccurrence" [Window When $ W.AllyAttack aid enemy | enemy <- enemies, enemy /= target]
   replaceMatchingMessage replaceAttack \case
     AllyMessage who (AllyAttackLands _ _) -> who == aid
     _ -> False
@@ -2417,9 +2471,11 @@ preventEnemyAttackDamage enemy n = cardSpecific GameRef "mgPartialAttackPreventi
 
 -- | The source of the attack whose damage is waiting behind its interrupt window.
 currentPlayerAttackSource :: (ReverseQueue m) => IdentityId -> m (Maybe Source)
-currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attackSource q)
+currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attackSource $ concatMap queuedMessageLeaves q)
  where
   attackSource = \case
+    PrepareEnemyDamage original -> attackSource original
+    ResolveEnemyDamage original -> attackSource original
     VillainMessage _ (VillainDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
     MinionMessage _ (MinionDamaged source damage) | damageSource damage == FromPlayerAttack you -> [source]
     Simultaneously messages -> concatMap attackSource messages
@@ -2437,6 +2493,11 @@ modifyCurrentPlayerAttack you n keywords = do
   apply Ranged d = d {damageRanged = True}
   apply _ d = d
   change current = \case
+    PrepareEnemyDamageGroup messages cursor -> PrepareEnemyDamageGroup (map (change current) messages) cursor
+    TakeEnemyDamageGroup messages cursor deferred -> TakeEnemyDamageGroup (map (change current) messages) cursor deferred
+    ResolveEnemyDamageGroup messages cursor deferred -> ResolveEnemyDamageGroup (map (change current) messages) cursor deferred
+    PrepareEnemyDamage original -> PrepareEnemyDamage (change current original)
+    ResolveEnemyDamage original -> ResolveEnemyDamage (change current original)
     VillainMessage v (VillainDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> VillainMessage v (VillainDamaged source $ improve d)
     MinionMessage m (MinionDamaged source d) | source == current && damageSource d == FromPlayerAttack you -> MinionMessage m (MinionDamaged source $ improve d)
     Simultaneously messages -> Simultaneously (map (change current) messages)
@@ -2557,3 +2618,87 @@ attachAllyToMedLab sid card = do
   removeFromGame card
   cardSpecific GameRef "medLabRemoveCapturedCard" (pcCardId card)
   cardSpecific (SupportRef sid) "holdAlly" card
+-- * NeXt Evolution
+
+-- | Cancel a played event's effect, retaining its payment and normal disposal.
+cancelEventEffects :: HasQueue m => EventId -> m ()
+cancelEventEffects eid = cancelMatchingMessage $ \case
+  ResolveEventEffect _ (EventMessage event _) -> event == eid
+  _ -> False
+
+-- | The defeated scheme, already in its discard pile, enters the victory display.
+addDefeatedSideSchemeToVictoryDisplay :: ReverseQueue m => SideSchemeId -> m ()
+addDefeatedSideSchemeToVictoryDisplay = cardSpecific GameRef "cableDefeatedSchemeVictory"
+
+-- | Put the actual side-scheme card back into play, retaining its identity and owner.
+putVictorySideSchemeIntoPlay :: ReverseQueue m => IdentityId -> Card -> m ()
+putVictorySideSchemeIntoPlay you card = cardSpecific GameRef "cableVictorySchemeIntoPlay" (you, card)
+
+-- | Attach a legal upgrade from a discard pile, without playing or paying for it.
+putUpgradeOnAllyFromDiscard :: ReverseQueue m => IdentityId -> AllyId -> PlayerCard -> m ()
+putUpgradeOnAllyFromDiscard you aid card = cardSpecific GameRef "cableUpgradeFromDiscard" (you, aid, card)
+
+-- | The obligation attaches to its player side scheme, leaving with that scheme.
+attachObligationToSideScheme :: ReverseQueue m => ObligationId -> SideSchemeId -> m ()
+attachObligationToSideScheme oid sid = cardSpecific (ObligationRef oid) "cableAttachSideScheme" sid
+
+-- | Prevent damage to the enemy addressed by the imminent damage message.
+preventEnemyDamage :: HasQueue m => EnemyId -> Natural -> m ()
+preventEnemyDamage enemy n = replaceMatchingMessage prevent $ \case
+  VillainMessage vid (VillainDamaged _ _) -> enemy == EnemyVillainId vid
+  MinionMessage mid (MinionDamaged _ _) -> enemy == EnemyMinionId mid
+  _ -> False
+ where
+  prevent = \case
+    VillainMessage vid (VillainDamaged source damage) ->
+      [VillainMessage vid (VillainDamaged source damage {damageAmount = damageAmount damage - n}) | damageAmount damage > n]
+    MinionMessage mid (MinionDamaged source damage) ->
+      [MinionMessage mid (MinionDamaged source damage {damageAmount = damageAmount damage - n}) | damageAmount damage > n]
+    msg -> [msg]
+
+
+
+-- | Prevent the entire imminent instance, including damage reduced or capped already.
+cancelEnemyDamage :: HasQueue m => EnemyId -> m ()
+cancelEnemyDamage enemy = cancelMatchingMessage $ \case
+  VillainMessage vid (VillainDamaged _ _) -> enemy == EnemyVillainId vid
+  MinionMessage mid (MinionDamaged _ _) -> enemy == EnemyMinionId mid
+  _ -> False
+
+
+shuffleEncounterDiscardIntoDeck :: ReverseQueue m => m ()
+shuffleEncounterDiscardIntoDeck = push ShuffleEncounterDiscardIntoDeck
+
+cancelVillainDefeat :: ReverseQueue m => VillainId -> m ()
+cancelVillainDefeat vid = do
+  Msg.cancelVillainDefeat vid
+  cancelMatchingMessage $ \case
+    VillainMessage other (VillainResolveDefeat _ _) -> vid == other
+    VillainMessage other (VillainDefeatPending _) -> vid == other
+    _ -> False
+
+redirectEnemyAttackToAlly :: ReverseQueue m => EnemyId -> IdentityId -> AllyId -> m ()
+redirectEnemyAttackToAlly enemy _you aid = cardSpecific (enemyRef enemy) "neRedirectAttackToAlly" aid
+
+attachDefeatedMinionToAlly :: ReverseQueue m => MinionId -> AllyId -> m ()
+attachDefeatedMinionToAlly mid aid = cardSpecific GameRef "neAttachDefeatedMinion" (mid, aid)
+
+
+
+-- | Replace this attack activation, preserving which player the scheme is against.
+replaceVillainAttackWithScheme :: ReverseQueue m => VillainId -> m ()
+replaceVillainAttackWithScheme vid = do
+  you <- getBoostedPlayer (EnemyVillainId vid)
+  cancelEnemyActivation vid
+  villainStep vid VillainEndAttack
+  villainSchemesAgainst vid you
+
+-- | Discard every tough card, preserving the normal status-removal windows.
+removeAllTough :: (ReverseQueue m, IsCharacter character) => character -> m ()
+removeAllTough character = do
+  n <- characterToughCount (toCharacter character)
+  replicateM_ (fromIntegral n) $ removeStatus character ToughStatus
+
+-- | Redirect the existing attack without creating a second activation.
+redirectVillainAttackToCharacter :: ReverseQueue m => VillainId -> CharacterId -> m ()
+redirectVillainAttackToCharacter vid character = cardSpecific GameRef "redirectVillainAttackToCharacter" (vid, character)

@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlayByCardAbilities, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost))
 
 import Control.Monad.State
 import Data.List (partition, nub)
@@ -25,7 +25,7 @@ import Marvel.Hand
 import Marvel.Game.Source
 import Marvel.GameValue.Types (GameValue (Static))
 import Marvel.I18n (ikeyWith, intVar)
-import Marvel.Id (CharacterId (..), IdentityId, MinionId (..))
+import Marvel.Id (CharacterId (..), IdentityId, MinionId (..), SideSchemeId (..))
 import Marvel.Identity.Types
 import Marvel.Message.Lifted
 import Marvel.Payment
@@ -96,9 +96,13 @@ payCostPartAs contributing activeCost cost = do
       if (if tough then 1 else 0) + extra < n
         then abortPayment acid
         else replicateM_ (fromIntegral n) (removeStatus iid ToughStatus)
+    RemoveEnemyStatusCost enemy status -> removeStatus enemy status
     GiveEnemyToughCost enemy -> do
       tough <- characterMatches (CharacterWithStatus ToughStatus) (toCharacter enemy)
       if tough then abortPayment acid else enemyBecomesTough enemy
+    EnemyAttacksCost enemy -> do
+      enemyAttacks enemy iid
+      paid NoPayment
     GiveEnemyBoostCost enemy n -> replicateM_ (fromIntegral n) (dealBoost $ enemyRef enemy)
     DiscardRandomHandCardsCost n -> discardFrom iid RandomFromHand n
     DiscardRandomHandCardsMatchingCost n matcher -> do
@@ -154,6 +158,15 @@ payCostPartAs contributing activeCost cost = do
         paid ExhaustPayment
       ForCard _ -> exhaust iid >> paid ExhaustPayment
       _ -> error "Unhandled"
+    PutSideSchemeFromVictoryCost -> do
+      encounter <- map EncounterCard <$> getVictoryDisplay
+      player <- map PlayerCard <$> getPlayerVictoryDisplay
+      let schemes = [card | card <- encounter <> player, cdCardType (getCardDef card) `elem` [SideSchemeType, PlayerSideSchemeType]]
+      if null schemes then abortPayment acid else chooseOne iid
+        [targeting (CardIdRef $ toCardId card) $ do
+          putVictorySideSchemeIntoPlay iid card
+          paid $ TargetPayment $ SideSchemeRef $ SideSchemeId $ unCardId $ toCardId card
+        | card <- schemes]
     RemoveFromGameCost target -> do
       removeFromGame target
       paid (DiscardPayment target)
@@ -188,7 +201,7 @@ payCostPartAs contributing activeCost cost = do
       upgrades <- selectList (matcher <> UnexhaustedUpgrade <> upgradeControlledBy iid)
       oneOf upgrades \u -> exhaust u >> paid ExhaustPayment
     ReturnAllyToHandCost matcher -> do
-      allies <- selectList (matcher <> AllyControlledBy (IdentityWithId iid))
+      allies <- selectList (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId iid))
       oneOf allies returnToHand
     ReturnUpgradeToHandCost matcher -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid)
@@ -201,7 +214,7 @@ payCostPartAs contributing activeCost cost = do
         discardUpgrade u
         paid (DiscardPayment $ toTarget u)
     DiscardAllyCost matcher -> do
-      allies <- selectList (matcher <> AllyControlledBy (IdentityWithId iid))
+      allies <- selectList (matcher <> AllyThatCanLeavePlay <> AllyControlledBy (IdentityWithId iid))
       oneOf allies \aid -> do
         card <- getsGame $ \g -> cardInPlay g (AllyRef aid)
         for_ card (paid . DiscardedAllyPayment)
@@ -232,10 +245,29 @@ payCostPartAs contributing activeCost cost = do
         [ labeled (countLabel "discardTopOfDeck" k) (when (k > 0) $ discardFromDeck iid k (ActiveCostRef acid))
         | k <- [lo .. min hi inDeck]
         ]
+    DiscardTopOfDeckForSupportsCost -> do
+      n <- fromIntegral . length <$> selectList (SupportControlledBy $ IdentityWithId iid)
+      when (n > 0) $ discardFromDeck iid n (ActiveCostRef acid)
     DiscardTopOfDeckForDamageCost -> do
       n <- pendingDamageAmount iid
       when (n > 0) $ discardFromDeck iid n (ActiveCostRef acid)
     -- one at a time, until the player is done or has exhausted as many as it allows
+    ExhaustControlledCardsCost n -> do
+      cards <- readyControlledCardCandidates iid
+      if length cards < fromIntegral n
+        then abortPayment acid
+        else when (n > 0) $ chooseOne iid
+          [targeting target do
+             case target of
+               IdentityRef p -> exhaust p
+               AllyRef a -> exhaust a
+               SupportRef s -> exhaust s
+               UpgradeRef u -> exhaust u
+               SideSchemeRef s -> sideSchemeStep s ExhaustedSideScheme
+               _ -> pure ()
+             paid (ExhaustedCardPayment target)
+             payCost acid (ExhaustControlledCardsCost (n - 1))
+          | target <- cards]
     ExhaustCardsWithTraitCost trait lo hi -> do
       cards <- readyTraitCardCandidates iid trait
       if length cards < fromIntegral lo
@@ -355,6 +387,13 @@ payCostPartAs contributing activeCost cost = do
           ]
     -- added to the resources as the card was played
     TargetPrintedCost -> pure ()
+    ChooseEnemyCost matcher -> do
+      enemies <- selectList matcher
+      if null enemies then abortPayment acid else chooseOne iid [targeting (enemyRef enemy) (paid $ TargetPayment $ enemyRef enemy) | enemy <- enemies]
+    DiscardMatchingHandCardCost matcher -> do
+      hand <- projectMap PlayerIdentityHand unHand iid
+      let candidates = filter (\c -> cardMatch matcher c && not (staysInHand c)) hand
+      if null candidates then abortPayment acid else chooseOne iid [targeting c (discardCard c >> paid (DiscardHandCardPayment $ PlayerCard c)) | c <- candidates]
     ChosenHandCardCost -> pure ()
     ChooseCharacterWithTraitCost trait matcher -> do
       characters <- validCharacterChoices activeCost trait matcher
@@ -377,7 +416,7 @@ payCostPartAs contributing activeCost cost = do
   payingFor payer = case activeCostTarget activeCost of
     ForTreachery -> chooseOnePrompted payer "$label.pay"
     _ -> chooseOnePromptedAbout payer "$label.pay" (activeCostSource activeCost)
-  discardable target = notElem CannotBeDiscarded <$> getModifiers target
+  discardable target = (\mods -> not (any (`elem` mods) [CannotBeDiscarded, CannotLeavePlayByCardAbilities])) <$> getModifiers target
   oneOf :: (ReverseQueue n, IsRef a) => [a] -> (a -> n ()) -> n ()
   oneOf xs f = case xs of
     [x] -> f x

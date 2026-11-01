@@ -24,6 +24,14 @@ instance ToJSON AllyMatcher
 instance FromJSON AllyMatcher
 instance Hashable AllyMatcher
 
+data EnemyMatcher
+
+instance Show EnemyMatcher
+instance Eq EnemyMatcher
+instance ToJSON EnemyMatcher
+instance FromJSON EnemyMatcher
+instance Hashable EnemyMatcher
+
 data CharacterMatcher
 
 instance Show CharacterMatcher

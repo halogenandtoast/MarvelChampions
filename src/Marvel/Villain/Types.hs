@@ -112,6 +112,7 @@ instance Entity Villain where
   data Attrs Villain = VillainAttrs
     { villainId :: VillainId
     , villainCardDef :: CardDef
+    , villainCounters :: Natural
     , villainHp :: HP Int
     , villainStartingHp :: HP GameValue
     , villainMaxHp :: HP Int
@@ -145,6 +146,7 @@ instance Entity Villain where
   data Field Villain :: Type -> Type where
     VillainId :: Field Villain VillainId
     VillainCardDef :: Field Villain CardDef
+    VillainCounters :: Field Villain Natural
     VillainHp :: Field Villain (HP Int)
     VillainStartingHp :: Field Villain (HP GameValue)
     VillainMaxHp :: Field Villain (HP Int)
@@ -164,6 +166,7 @@ instance Entity Villain where
      in case fld of
           VillainId -> villainId
           VillainCardDef -> villainCardDef
+          VillainCounters -> villainCounters
           VillainHp -> villainHp
           VillainStartingHp -> villainStartingHp
           VillainMaxHp -> villainMaxHp
@@ -219,6 +222,7 @@ villain f cardDef sch atk startingHp =
             , villainCardDef = cardDef
             , villainStartingHp = startingHp
             , villainMaxHp = HP 1
+            , villainCounters = 0
             , villainHp = HP 1
             , villainScheme = sch
             , villainAttack = atk
@@ -341,7 +345,7 @@ runVillainMessage msg attrs = case msg of
     let remaining = unHp (villainHp attrs) + n
     modifiers <- getModifiers attrs
     let unbeaten = InfiniteHitPoints `elem` modifiers || CannotBeDefeated `elem` modifiers
-    when (remaining <= 0 && not unbeaten) $ villainStep vid VillainWouldBeDefeated
+    when (remaining <= 0 && not unbeaten) $ villainStep vid (VillainDefeatPending Nothing)
     pure $ attrs & hpL .~ HP (max 0 remaining) & maxHpL %~ HP . max 0 . (+ n) . unHp
   VillainHealed n -> do
     pure $
@@ -365,7 +369,7 @@ runVillainMessage msg attrs = case msg of
         room = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
         damage = if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = room}
     -- none at all (The Red House), or none from a player card (Sanctuary)
-    cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
+    cannotTakeDamage <- (||) <$> cannotTakeDamageFrom (toRef attrs) source <*> (not <$> canDamageThroughAerialRestriction (toRef attrs) source dealt)
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
         infinite = InfiniteHitPoints `elem` modifiers
         -- "cannot be defeated" (Tower Defense): the damage is dealt, to 0 hit points, but
@@ -391,11 +395,7 @@ runVillainMessage msg attrs = case msg of
             hero <- heroAttackBy damage source
             for_ hero \ident ->
               when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
-            attached <- enemyDefeatUpgrades (toEnemyId attrs)
-            checkWindows [W.Window W.When $ W.DefeatedVillain vid damage source excess, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
-            villainStep vid VillainWouldBeDefeated
-            -- a stage defeated is the villain defeated: "after you attack and defeat an enemy"
-            checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+            villainStep vid (VillainDefeatPending $ Just (source, damage, excess))
         pure $
           attrs
             & toughL %~ (&& not (piercesTough dealt))
@@ -409,6 +409,20 @@ runVillainMessage msg attrs = case msg of
   VillainDefeated -> do
     resolveVillainDefeat vid
     pure attrs
+  VillainDefeatPending details -> do
+    checkWindows [W.Window W.Would $ W.VillainDefeatWouldOccur vid]
+    villainStep vid (VillainResolveDefeat (toCardCode $ getCardDef attrs) details)
+    pure attrs
+  VillainResolveDefeat original details | original == toCardCode (getCardDef attrs) -> do
+    for_ details $ \(source, damage, excess) -> do
+      attached <- enemyDefeatUpgrades (toEnemyId attrs)
+      checkWindows [W.Window W.When $ W.DefeatedVillain vid damage source excess, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+    villainStep vid VillainWouldBeDefeated
+    for_ details $ \(source, damage, excess) -> do
+      attached <- enemyDefeatUpgrades (toEnemyId attrs)
+      checkWindows [W.Window W.After $ W.DefeatedVillain vid damage source excess, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+    pure attrs
+  VillainResolveDefeat _ _ -> pure attrs
   VillainWouldBeDefeated -> attrs <$ defeatVillain vid
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   VillainPreventAttackDamage source -> pure attrs {villainPreventedAttack = Just source}
@@ -431,14 +445,14 @@ runVillainMessage msg attrs = case msg of
     -- against the player it was said to be against, or the active player
     player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
     -- the scheme is his activation against the player whose alter-ego activates him
-    checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
+    when (isNothing $ villainAttacking attrs) $ checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
     checkWindows [W.Window W.When $ W.Schemed vid]
     modifiers <- getModifiers attrs
     unless (SchemesWithoutBoost `elem` modifiers) dealActivationBoost
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainSchemed
     clearBoosts
-    checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
+    when (isNothing $ villainAttacking attrs) $ checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
@@ -525,7 +539,7 @@ runVillainMessage msg attrs = case msg of
       else do
         -- the attack is his activation against the player, from start to end
         checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) ident]
-        checkWindows [W.Window W.Would $ W.EnemyAttack (toEnemyId attrs) ident]
+        checkWindows [attackWindow W.Would ident]
         villainStep vid (VillainSetAttackAdditionalBoostCards $ villainPendingAttackBoostCards attrs)
         villainStep vid begin
         villainStep vid VillainEndAttack
@@ -541,7 +555,7 @@ runVillainMessage msg attrs = case msg of
     -- got for itself
     attack' <- (attackDamageL +~ villainBoost attrs) . keepingGains (villainAttacking attrs) <$> newAttack ident
     modifiers <- getModifiers attrs
-    checkWindows [W.Window W.When $ W.EnemyAttack (toEnemyId attrs) ident]
+    checkWindows [attackWindow W.When ident]
     when boosted do
       dealActivationBoost
       unless (NoActivationBoostCard `elem` modifiers) $
@@ -549,12 +563,15 @@ runVillainMessage msg attrs = case msg of
     declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked
-    checkWindows [W.Window W.After $ W.EnemyAttack (toEnemyId attrs) ident]
+    checkWindows [attackWindow W.After ident]
     pure $
       attrs {villainAttackTarget = Nothing, villainAttackAdditionalBoostCards = 0} & attackingL ?~ attack'
   dealActivationBoost = do
     modifiers <- getModifiers attrs
     unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
+  attackWindow timing ident = W.Window timing $ case villainAttackTarget attrs of
+    Just (AllyCharacter aid) -> W.EnemyAttackAlly (toEnemyId attrs) aid ident
+    _ -> W.EnemyAttack (toEnemyId attrs) ident
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
   newAttack ident = do
     base <- getModifiedAttackSigned attrs
@@ -563,6 +580,10 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
+      pure attrs {villainAttackTarget = Just (AllyCharacter aid), villainAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (villainAttacking attrs)}
+    PlaceCounters target n | target == toRef attrs -> pure attrs {villainCounters = villainCounters attrs + n}
+    RemoveCounters target n | target == toRef attrs -> pure attrs {villainCounters = subtractNatural n (villainCounters attrs)}
     GiveStatus (VillainRef vid) s | vid == villainId attrs -> statusUnlessStalwart attrs s
     RemoveStatus (VillainRef vid) StunnedStatus | vid == villainId attrs, villainAdditionalStun attrs -> pure attrs {villainAdditionalStun = False}
     RemoveStatus (VillainRef vid) ConfusedStatus | vid == villainId attrs, villainAdditionalConfuse attrs -> pure attrs {villainAdditionalConfuse = False}
@@ -634,7 +655,7 @@ flipVillainTo newVillain attrs = overVillainAttrs (keepDial attrs) $ advanceVill
 -- | The hit point dial, stage and tough status card of the villain card replaced, kept
 -- by the one replacing it (a flip, a swap).
 keepDial :: Attrs Villain -> Attrs Villain -> Attrs Villain
-keepDial attrs a = a & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
+keepDial attrs a = a {villainCounters = villainCounters attrs} & (hpL .~ villainHp attrs) & (maxHpL .~ villainMaxHp attrs) & (stageL .~ villainStage attrs) & (toughL .~ villainTough attrs)
 
 -- | The damage less what reduces "any amount of damage" the villain would take (Thanos's
 -- Armor), once a tough status card has had its say.
@@ -687,6 +708,7 @@ versionBEnters attrs
 instance FromJSON (Attrs Villain) where
   parseJSON = withObject "VillainAttrs" $ \o ->
     genericParseJSON defaultOptions $ Object $
+      KeyMap.insertWith (\_ old -> old) "villainCounters" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainSchemeRemoval" (toJSON (Nothing :: Maybe (IdentityId, Source))) $
       KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackAdditionalBoostCards" (toJSON (0 :: Natural)) $

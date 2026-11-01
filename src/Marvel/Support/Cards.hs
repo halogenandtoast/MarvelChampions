@@ -1,5 +1,37 @@
 module Marvel.Support.Cards where
 
+import Marvel.Card.Def (ResourceRestriction (PrintedResource))
+
+import Marvel.Criteria (Criteria (NoCriteria))
+
+import Marvel.Resource.Types qualified as NEResource
+
+import Marvel.Boost qualified as NEBoost
+
+import Marvel.GameValue.Types qualified as NEValue
+
+import Marvel.EncounterSet qualified as NESet
+
+import Marvel.Keyword qualified as NEKeyword
+
+import Marvel.Trait qualified as NETrait
+
+import Marvel.Aspect qualified as NEAspect
+
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
@@ -30,7 +62,11 @@ import Marvel.Keyword (Keyword (Permanent, Setup))
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ moiraMacTaggert, medLab
+  [ ne40197
+  , thePaintedLady
+  , pipthePug
+  , cable40007, cable40008, cable40021, cable40022
+  , moiraMacTaggert, medLab
   , theThievesGuild, warRoom
   , clearSkies, hurricane, thunderstorm, blizzard, ororosGarden, uncannyXMen, hangarBay
   , logansCabin, weaponX, commandCenter
@@ -669,3 +705,82 @@ moiraMacTaggert = (basicSupport "38018" "Moira MacTaggert" 2 [Persona] [Mental])
 
 medLab :: CardDef
 medLab = (support "38028" "Med Lab" 1 [Location] [Mental] Leadership) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3 }
+
+-- NeXt Evolution: Cable
+
+cable40007 :: CardDef
+cable40007 = (identitySupport "40007" "Graymalkin" 2 [NE.Location] [NE.Energy]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40008 :: CardDef
+cable40008 = (identitySupport "40008" "Professor" 1 [NE.Persona, NE.Tech] [NE.Mental]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40021 :: CardDef
+cable40021 = (support "40021" "E.V.A." 0 [NE.Vehicle] [NE.Wild] NE.Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40022 :: CardDef
+cable40022 = (support "40022" "Uncanny X-Force" 2 [NE.Team] [NE.Energy] NE.Leadership) { cdUnique = False, cdDeckLimit = Just 3 , cdLimit = Just (MaxTraitPerPlayerUnderAnyControl NE.Team 1) }
+
+-- NeXt Evolution: Domino
+pipthePug :: CardDef
+pipthePug = CardDef
+  { cdCardCode = "40044", cdName = "Pip the Pug", cdCost = Just 1
+  , cdTraits = fromList [NET.Creature], cdKeywords = fromList []
+  , cdCardType = SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+thePaintedLady :: CardDef
+thePaintedLady = CardDef
+  { cdCardCode = "40045", cdName = "The Painted Lady", cdCost = Just 1
+  , cdTraits = fromList [NET.Vehicle], cdKeywords = fromList []
+  , cdCardType = SupportType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution campaign and scenarios
+
+ne40197 :: CardDef
+ne40197 = CardDef
+  { cdCardCode = "40197"
+  , cdName = "Safehouse"
+  , cdCost = Just 4
+  , cdTraits = fromList [NETrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.NextEvolutionCampaign
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

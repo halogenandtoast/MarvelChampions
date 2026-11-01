@@ -10,6 +10,7 @@ data Keyword
   = Teamwork Trait
   | Temporary
   | Alliance
+  | Assault
   | Guard
   | Toughness
   | Quickstrike

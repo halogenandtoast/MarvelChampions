@@ -10,7 +10,9 @@ import Marvel.Payment.Types
 import Marvel.Ref
 
 data AllyMessage
-  = ExhaustedAlly
+  = AllyDefeatedByDamage
+  | AllyLeavePlayByDefeat
+  | ExhaustedAlly
   | ReadiedAlly
   | -- | another player takes control of it, in their play area (Odin following the
     -- first player)
@@ -37,6 +39,7 @@ data AllyMessage
   | AllyThwarted
   | -- | the thwart done: its consequential damage, as the ally is then
     AllyThwartConsequential
+  | AllyThwartConsequentialOn SchemeId
   | AllyWasAttacked Attack
   | -- | retaliate's damage to the enemy that attacked it
     AllyRetaliates EnemyId Natural

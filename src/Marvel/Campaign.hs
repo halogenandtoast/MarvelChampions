@@ -66,6 +66,7 @@ data CampaignLog = CampaignLog
   , titan :: TitanLog
   -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
   , mutantGenesis :: MutantGenesisLog
+  , nextEvolution :: NextEvolutionLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
   }
@@ -183,6 +184,50 @@ instance FromJSON SinisterLog where
 noSinisterLog :: SinisterLog
 noSinisterLog = SinisterLog [] 0 [] [] Nothing [] Nothing
 
+-- | Chosen fronts retain the scenario number so a lost game can retry its choice.
+-- Earned environments are recorded only at victory. Cards granted by their actions
+-- are temporary additions to the current game.
+data NextEvolutionLog = NextEvolutionLog
+  { chosenSchemes :: [(Int, CardCode)]
+  , earnedEnvironments :: [CardCode]
+  , maraudersDefeated :: [CardCode]
+  , morlocksSaved :: Natural
+  , hopeDamage :: [(Int, Natural)]
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass ToJSON
+
+instance FromJSON NextEvolutionLog where
+  parseJSON = withObject "NextEvolutionLog" \o ->
+    NextEvolutionLog <$> o .:? "chosenSchemes" .!= []
+      <*> o .:? "earnedEnvironments" .!= []
+      <*> o .:? "maraudersDefeated" .!= []
+      <*> o .:? "morlocksSaved" .!= 0
+      <*> o .:? "hopeDamage" .!= []
+  omittedField = Just noNextEvolutionLog
+
+noNextEvolutionLog :: NextEvolutionLog
+noNextEvolutionLog = NextEvolutionLog [] [] [] 0 []
+
+nextEvolutionSchemes :: [(CardCode, CardCode, CardCode)]
+nextEvolutionSchemes =
+  [("40190a", "40190b", "40199"), ("40191a", "40191b", "40201")
+  ,("40192a", "40192b", "40203"), ("40193a", "40193b", "40200")
+  ,("40194a", "40194b", "40198"), ("40195a", "40195b", "40202")]
+
+-- | A loss keeps the current scenario's chosen side scheme, but earns no reward.
+-- It must be chosen again on replay even if its reverse was earned in the lost game.
+retainNextEvolutionRetryChoice :: Campaign -> Campaign -> Campaign
+retainNextEvolutionRetryChoice previous current
+  | previous.kind == NextEvolution, current.kind == NextEvolution
+  , previous.completed == current.completed =
+      let n = scenarioNumber previous
+          choices = filter ((== n) . fst) current.campaignLog.nextEvolution.chosenSchemes
+       in previous {campaignLog = previous.campaignLog
+            {nextEvolution = previous.campaignLog.nextEvolution
+              {chosenSchemes = filter ((/= n) . fst) previous.campaignLog.nextEvolution.chosenSchemes <> choices}}}
+  | otherwise = previous
+
 -- | The four team roles, fixed and distinct for a Mutant Genesis campaign.
 data MutantRole = Brawler | Commander | Defender | Peacekeeper
   deriving stock (Show, Eq, Generic, Enum, Bounded)
@@ -229,7 +274,7 @@ mutantRoleAspects = \case
   Peacekeeper -> [Justice, Leadership]
 
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -305,6 +350,11 @@ data CampaignRecord
   | RecordWakingNightmare Natural
   | RecordLastOnesStanding [CardCode]
   | RecordFinalReputation
+  | RecordNextEvolutionScheme Int CardCode
+  | RecordNextEvolutionEnvironment CardCode
+  | RecordNextEvolutionMarauders [CardCode]
+  | RecordNextEvolutionMorlocks Natural
+  | RecordNextEvolutionHopeDamage Int Natural
   | RecordMutantRole CardCode MutantRole
   | RecordMutantSchemeDefeated CardCode
   | RecordFuturePast [CardCode] [CardCode]
@@ -342,6 +392,7 @@ campaignScenarios = \case
   MadTitansShadow -> madTitansShadow
   SinisterMotives -> sinisterMotives
   MutantGenesis -> ["32060", "32084", "32109", "32121a", "32138"]
+  NextEvolution -> ["40077", "40103", "40118", "40136", "40163"]
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -402,6 +453,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , nextEvolution = noNextEvolutionLog
           , mutantGenesis = noMutantGenesisLog {mutantPlayers = [MutantPlayer (toHeroCardCode i) Nothing | kind == MutantGenesis, i <- identities]}
           , sinister = noSinisterLog {sinisterPlayers = [SinisterPlayer (toHeroCardCode i) Nothing Nothing Nothing | kind == SinisterMotives, i <- identities]}
           }
@@ -492,6 +544,11 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
 recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordNextEvolutionScheme n code -> ne \l -> l {chosenSchemes = filter ((/= n) . fst) l.chosenSchemes <> [(n, code)]}
+  RecordNextEvolutionEnvironment code -> ne \l -> l {earnedEnvironments = nub (l.earnedEnvironments <> [code])}
+  RecordNextEvolutionMarauders codes -> ne \l -> l {maraudersDefeated = codes}
+  RecordNextEvolutionMorlocks n -> ne \l -> l {morlocksSaved = n}
+  RecordNextEvolutionHopeDamage n damage -> ne \l -> l {hopeDamage = filter ((/= n) . fst) l.hopeDamage <> [(n, damage)]}
   RecordMutantRole ident r -> mutant \l -> l {mutantPlayers = [if p.identity == toHeroCardCode ident then p {role = Just r} else p | p <- l.mutantPlayers]}
   RecordMutantSchemeDefeated code -> mutant \l -> l {defeatedSchemes = nub (l.defeatedSchemes <> [code])}
   RecordFuturePast active removed -> mutant \l -> l {futurePastActive = active, futurePastRemoved = nub (l.futurePastRemoved <> removed)}
@@ -554,6 +611,7 @@ recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis =
   RecordFinalReputation -> sinisterL \s -> s {finalReputation = Just s.reputation}
  where
   logged f = c {campaignLog = f c.campaignLog}
+  ne f = logged \l -> l {nextEvolution = f l.nextEvolution}
   sinisterL f = logged \l -> l {sinister = f l.sinister}
   sinisterP ident f = sinisterL \s -> s {sinisterPlayers = [if p.identity == toHeroCardCode ident then f p else p | p <- s.sinisterPlayers]}
   galaxyL f = logged \l -> l {galaxy = f l.galaxy}

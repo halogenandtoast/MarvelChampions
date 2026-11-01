@@ -60,6 +60,7 @@ instance RunMessage PsychicKickerEffect where
         AllyAttackLands enemy _ -> whenM (not <$> selectAny (EnemyWithId enemy)) $ disableEffect (effectId attrs)
         AllyAttackConsequential -> disableEffect (effectId attrs)
         AllyThwartConsequential -> disableEffect (effectId attrs)
+        AllyThwartConsequentialOn _ -> disableEffect (effectId attrs)
         AllyAttacked -> whenM (characterMatches (CharacterWithStatus StunnedStatus) $ AllyCharacter aid) $ disableEffect (effectId attrs)
         AllyThwarted -> whenM (characterMatches (CharacterWithStatus ConfusedStatus) $ AllyCharacter aid) $ disableEffect (effectId attrs)
         _ -> pure ()

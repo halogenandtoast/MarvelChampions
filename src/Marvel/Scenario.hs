@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.NextEvolution
+
 import Data.HashSet qualified as HashSet
 import Data.List (nub, sortOn)
 import Marvel.Query (selectOne, selectList)
@@ -63,7 +65,8 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard mgSabretoothScenario
+    [ SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
+    , SomeScenarioCard mgSabretoothScenario
     , SomeScenarioCard mgProjectWideawakeScenario
     , SomeScenarioCard mgMasterMoldScenario
     , SomeScenarioCard mgMansionAttackScenario
@@ -136,7 +139,8 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("32060", [EncounterSet.Brotherhood, EncounterSet.Mystique])
+    [ ("40077", [EncounterSet.MilitaryGrade, EncounterSet.MutantSlayers]), ("40103", [EncounterSet.MilitaryGrade, EncounterSet.NastyBoys]), ("40118", [EncounterSet.BlackTomCassidy]), ("40136", [EncounterSet.NastyBoys]), ("40163", [EncounterSet.ExtremeMeasures, EncounterSet.MutantInsurrection])
+    , ("32060", [EncounterSet.Brotherhood, EncounterSet.Mystique])
     , ("32084", [EncounterSet.Sentinels])
     , ("32109", [EncounterSet.ZeroTolerance])
     , ("32121a", [EncounterSet.Mystique])

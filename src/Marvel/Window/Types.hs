@@ -35,7 +35,12 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = -- | A named identity ability (the index on that identity), not an ability on
+  = PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
+  | MainSchemeWouldComplete SchemeMatcher
+  | MakesRangedAttack WindowTiming IdentityMatcher
+  | CardsDiscardedFromPlayerDeck IdentityMatcher
+  | CardsDiscardedBy IdentityMatcher
+  | -- | A named identity ability (the index on that identity), not an ability on
     -- another card controlled by its player.
     UsesAbility WindowTiming IdentityMatcher Natural
   | AllyEntersPlay WindowTiming AllyMatcher
@@ -53,11 +58,16 @@ data WindowMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
   | AllyWouldTakeDamageOf WindowTiming AllyMatcher DamageSource
+  | EnemyWouldBeDealtDamage EnemyMatcher
+  | EnemyWouldBeDealtDamageBy EnemyMatcher DamageMatcher
+  | EnemyWouldTakeDamage EnemyMatcher
   | CharacterWouldTakeAttackDamage CharacterMatcher
   | -- | an ally matching would take damage exactly equal to its remaining hit points
     AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
   | -- | after a player matching's hero thwarts and removes all threat from a scheme
     HeroThwartsAllThreat IdentityMatcher
+  | VillainWouldBeDefeatedMatching VillainMatcher
+  | EnemyAttacksPlayerOrAlly WindowTiming EnemyMatcher IdentityMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
@@ -106,6 +116,7 @@ data WindowMatcher
   | -- | a player matching makes a basic attack against an enemy matching, its target chosen
     MakesBasicAttackAgainst WindowTiming IdentityMatcher EnemyMatcher
   | SideSchemeDefeated WindowTiming SideSchemeMatcher
+  | HeroDefendedWithoutDamageAgainst WindowTiming IdentityMatcher EnemyMatcher
   | HeroDefended WindowTiming IdentityMatcher EnemyMatcher
   | MakesBasicDefense WindowTiming IdentityMatcher EnemyMatcher
   | -- | revealed from the encounter deck, by any player
@@ -229,6 +240,8 @@ data WindowType
   | PlayedSupport SupportId
   | IdentityTakeDamage IdentityId Damage
   | IdentityTakeDamageFrom IdentityId Source Damage
+  | EnemyDamageWouldBeDealt EnemyId Source Damage
+  | EnemyWouldBeDamaged EnemyId Source Damage
   | AllyTakeDamage AllyId Damage
   | -- | the player's hero thwarted the scheme, removing all its threat
     ThwartedAllThreat IdentityId SchemeId
@@ -252,6 +265,8 @@ data WindowType
   | PhaseBegan Phase
   | -- | the enemy took this damage, from this source: none a tough status card prevented
     EnemyTookDamageFrom EnemyId Damage Source
+  | VillainDefeatWouldOccur VillainId
+  | EnemyAttackAlly EnemyId AllyId IdentityId
   | EnemyAttack EnemyId IdentityId
   | EnemyAttackOnEnemy EnemyId EnemyId
   | -- | the damage an enemy's attack dealt the character
@@ -276,6 +291,12 @@ data WindowType
   | IgnoredKeyword IdentityId MinionId
   | IgnoredCrisis IdentityId SideSchemeId
   | MadeBasicAttack IdentityId
+  | DiscardedFromPlayerDeck IdentityId [PlayerCard]
+  | PlayerDiscardedFromDeck IdentityId IdentityId PlayerCard
+  | PlayerDiscardedFromEncounterDeck IdentityId EncounterCard
+  | PlayerCardEnteredPlay IdentityId PlayerCard
+  | MainSchemeCompleting MainSchemeId
+  | MakingRangedAttack IdentityId Source EnemyId
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId
   | -- | the side scheme has been defeated, by the player, and by what removed its last

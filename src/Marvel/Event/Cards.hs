@@ -1,5 +1,19 @@
 module Marvel.Event.Cards where
 
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
 import Marvel.Keyword
 import Marvel.Boost
 import Marvel.EncounterSet
@@ -29,7 +43,13 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ goinRogue, southernCross, energyTransfer, bulletproofBelle, superpowerAdaptation, notToday
+  [ thePosse
+  , teamInvestigation
+  , rightPlaceRightTime
+  , luckBeaLady
+  , aGoodWorkout
+  , cable40002, cable40003, cable40004, cable40005, cable40017, cable40026
+  , goinRogue, southernCross, energyTransfer, bulletproofBelle, superpowerAdaptation, notToday
   , chargedCard, royalFlush, naturalAgility, creoleCharmer, breakingAndEntering, beautyAndTheThief, mutantEducation, xMenInstruction
   , weatherGoddess, torrentialRain, lightningBolt, flashFreeze, blastOfWind, toMeMyXMen
   , berserkerBarrage, sliceAndDice, lungingStrike, trackByScent, regenerativeHealing, outtaMyWay, precisionStrike, fastballSpecial
@@ -2370,7 +2390,7 @@ swingingWebPig = (identityEvent "30007" "Swinging Web Pig" 3 HeroAction [Cartoon
   }
 
 evenTheOdds :: CardDef
-evenTheOdds = (event "30014" "Even the Odds" 2 HeroAction [Thwart] [Energy] Justice)
+evenTheOdds = reprintedAs ["40052"] $ (event "30014" "Even the Odds" 2 HeroAction [Thwart] [Energy] Justice)
   { cdDeckLimit = Just 3
   , cdUnique = False
   , cdAbilitySubTypes = [Ability.Thwart]
@@ -2674,3 +2694,98 @@ superpowerAdaptation = (identityEvent "38009" "Superpower Adaptation" 0 HeroActi
 
 notToday :: CardDef
 notToday = (event "38016" "Not Today!" 1 HeroInterrupt [Defense] [Mental] Protection) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (HeroDefended When You AnyEnemy) }
+
+-- NeXt Evolution: Cable
+
+cable40002 :: CardDef
+cable40002 = (identityEvent "40002" "Bodyslide" 0 NEAbility.Action [] [NE.Energy]) { cdUnique = False, cdDeckLimit = Just 1 }
+
+cable40003 :: CardDef
+cable40003 = (identityEvent "40003" "Mind Scan" 2 NEAbility.HeroAction [NE.Psionic, NE.Superpower, NE.Thwart] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3 , cdAbilitySubTypes = [NEAbility.Thwart] }
+
+cable40004 :: CardDef
+cable40004 = (identityEvent "40004" "Precognition" 0 NEAbility.HeroAction [NE.Psionic, NE.Superpower] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 1 }
+
+cable40005 :: CardDef
+cable40005 = (identityEvent "40005" "Telekinetic Blast" 3 NEAbility.HeroAction [NE.Attack, NE.Psionic, NE.Superpower] [NE.Energy]) { cdUnique = False, cdDeckLimit = Just 2 , cdAbilitySubTypes = [NEAbility.Attack] }
+
+cable40017 :: CardDef
+cable40017 = (event "40017" "Mission Planning" 2 NEAbility.HeroAction [] [NE.Mental] NE.Leadership) { cdUnique = False, cdDeckLimit = Just 3 , cdCriteria = VictoryDisplayHasSideScheme }
+
+cable40026 :: CardDef
+cable40026 = (basicEvent "40026" "Frenemies" 1 NEAbility.HeroAction [NE.Thwart] [NE.Wild]) { cdUnique = False, cdDeckLimit = Just 1 , cdAbilitySubTypes = [NEAbility.Thwart] , cdTeamUp = Just ("Cable", "Deadpool") , cdCriteria = teamUp "Cable" "Deadpool" <> SchemeExists (SchemeWithThreat (GreaterThan (Static 0))) }
+
+-- NeXt Evolution: Domino
+aGoodWorkout :: CardDef
+aGoodWorkout = CardDef
+  { cdCardCode = "40040", cdName = "A Good Workout", cdCost = Just 2
+  , cdTraits = fromList [NET.Attack, NET.Superpower], cdKeywords = fromList []
+  , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = [NEAbility.Attack]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+luckBeaLady :: CardDef
+luckBeaLady = CardDef
+  { cdCardCode = "40041", cdName = "Luck Be a Lady", cdCost = Just 1
+  , cdTraits = fromList [NET.Superpower], cdKeywords = fromList []
+  , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+rightPlaceRightTime :: CardDef
+rightPlaceRightTime = CardDef
+  { cdCardCode = "40042", cdName = "Right Place, Right Time", cdCost = Just 2
+  , cdTraits = fromList [NET.Superpower, NET.Thwart], cdKeywords = fromList []
+  , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = [NEAbility.Thwart]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+teamInvestigation :: CardDef
+teamInvestigation = CardDef
+  { cdCardCode = "40053", cdName = "Team Investigation", cdCost = Just 2
+  , cdTraits = fromList [], cdKeywords = fromList []
+  , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just NEA.Justice, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+thePosse :: CardDef
+thePosse = CardDef
+  { cdCardCode = "40058", cdName = "The Posse", cdCost = Just 2
+  , cdTraits = fromList [NET.Posse], cdKeywords = fromList []
+  , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just NEA.Neutral, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }

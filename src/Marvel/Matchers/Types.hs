@@ -3,6 +3,7 @@
 module Marvel.Matchers.Types where
 
 import Marvel.Prelude
+import Marvel.Card.Id (CardId)
 
 import Marvel.Ability.Types
 import {-# SOURCE #-} Marvel.Card.Def
@@ -105,6 +106,8 @@ data AllyMatcher
   | AllyWithAttackAtLeast Natural
   | -- | allowed to be readied by a player-card effect (exhaustion checked separately)
     AllyCanReady
+  | AllyThatCanLeavePlay
+  | AllyThatWouldBeDiscardedByDefeat
   | -- | its title or its subtitle the name: a named character (RR Team-Up)
     AllyNamedAs Text
   | -- | with exactly so many hit points remaining
@@ -188,6 +191,7 @@ instance Semigroup UpgradeMatcher where
   UpgradeMatches xs <> y = UpgradeMatches $ xs <> [y]
   x <> y = UpgradeMatches [x, y]
 
+-- | Predicates for selecting enemies, also used when choosing an ability's cost.
 data EnemyMatcher
   = AnyEnemy
   | EnemyWithId EnemyId
@@ -203,6 +207,7 @@ data EnemyMatcher
   | EnemyCanTakeDamageFrom Source
   | DamageableEnemy
   | EnemyIs CardDef
+  | EnemyWithTitle Text
   | NotEnemy EnemyMatcher
   | UndefendedEnemy
   | EnemyWithUpgrade UpgradeMatcher
@@ -418,6 +423,8 @@ data ExtendedCardMatcher
     PlayableIgnoringCostBy IdentityMatcher ExtendedCardMatcher
   | BasicCardMatches CardMatcher
   | InSetAsideOf IdentityMatcher ExtendedCardMatcher
+  | InDeckOf IdentityMatcher ExtendedCardMatcher
+  | CardWithId CardId
   | InDiscardOf IdentityMatcher ExtendedCardMatcher
   | TopmostCardInDiscardOf IdentityMatcher CardMatcher
   | ExtendedCardMatches [ExtendedCardMatcher]
@@ -476,6 +483,7 @@ data SourceMatcher
   | SourceIs Source
   | -- | the identity itself: its basic powers and its own card's abilities
     SourceIsIdentity IdentityMatcher
+  | SourceIsHero IdentityMatcher
   | SourceIsAlly AllyMatcher
   | -- | an event a player matching played
     EventPlayedBy IdentityMatcher

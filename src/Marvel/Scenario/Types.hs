@@ -495,6 +495,8 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- as it empties (the refill after each message)
     DiscardTopOfEncounterDeck n mTarget -> do
       let (discarded, deck') = splitAt (fromIntegral n) scenarioEncounterDeck
+      actor <- getYou
+      for_ discarded $ \card -> checkWindows [W.Window W.After $ W.PlayerDiscardedFromEncounterDeck actor card]
       for_ mTarget \target -> withDiscarded target FromEncounterDeck (EncounterCard <$> discarded)
       pure $ attrs & encounterDeckL .~ deck' & discardL %~ (reverse discarded <>)
     -- out of play, from wherever in the decks it was

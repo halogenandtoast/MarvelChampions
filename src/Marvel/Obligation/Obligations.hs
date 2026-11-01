@@ -1,5 +1,8 @@
 module Marvel.Obligation.Obligations (module X) where
 
+import Marvel.Obligation.Obligations.NextEvolutionTelepathySet as X
+
+import Marvel.Obligation.Obligations.MemoriesofArmageddon as X
 import Marvel.Obligation.Obligations.AffairsOfState as X
 import Marvel.Obligation.Obligations.BusinessProblems as X
 import Marvel.Obligation.Obligations.EvictionNotice as X
@@ -107,3 +110,5 @@ import Marvel.Obligation.Obligations.Claustrophobia as X
 import Marvel.Obligation.Obligations.GuildBusiness as X
 
 import Marvel.Obligation.Obligations.DeadlyTouch as X
+
+import Marvel.Obligation.Obligations.Cable as X

@@ -2,6 +2,22 @@
 
 module Marvel.Minion where
 
+import Marvel.Minion.Minions.NextEvolutionNeStryfe
+
+import Marvel.Minion.Minions.NextEvolutionNextEvolutionCampaign
+
+import Marvel.Minion.Minions.NextEvolutionNastyBoys
+
+import Marvel.Minion.Minions.NextEvolutionMutantSlayers
+
+import Marvel.Minion.Minions.NextEvolutionMutantInsurrection
+
+import Marvel.Minion.Minions.NextEvolutionMisterSinister
+
+import Marvel.Minion.Minions.NextEvolutionExtremeMeasures
+
+import Marvel.Minion.Minions.NextEvolutionBlackTomCassidy
+
 import Marvel.Minion.Minions.TheHood qualified as Hood
 import Marvel.Prelude
 
@@ -32,7 +48,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard rogueMystique, SomeMinionCard donaldPierce, SomeMinionCard skullbuster, SomeMinionCard bonebreaker, SomeMinionCard wadeCole, SomeMinionCard murrayReese, SomeMinionCard belladonna, SomeMinionCard guildAssassin, SomeMinionCard exodus
+      [ SomeMinionCard ne40094, SomeMinionCard ne40095, SomeMinionCard ne40096, SomeMinionCard ne40097, SomeMinionCard ne40098, SomeMinionCard ne40099, SomeMinionCard ne40100, SomeMinionCard ne40112, SomeMinionCard ne40113, SomeMinionCard ne40114, SomeMinionCard ne40115, SomeMinionCard ne40116, SomeMinionCard ne40132, SomeMinionCard ne40133, SomeMinionCard ne40145, SomeMinionCard ne40174, SomeMinionCard ne40180, SomeMinionCard ne40181, SomeMinionCard ne40182, SomeMinionCard ne40183, SomeMinionCard ne40185, SomeMinionCard ne40186, SomeMinionCard ne40187, SomeMinionCard ne40188, SomeMinionCard ne40198, SomeMinionCard ne40199, SomeMinionCard ne40200, SomeMinionCard ne40201, SomeMinionCard prototype, SomeMinionCard topaz, SomeMinionCard cable40032
+      , SomeMinionCard rogueMystique, SomeMinionCard donaldPierce, SomeMinionCard skullbuster, SomeMinionCard bonebreaker, SomeMinionCard wadeCole, SomeMinionCard murrayReese, SomeMinionCard belladonna, SomeMinionCard guildAssassin, SomeMinionCard exodus
   , SomeMinionCard callisto
   , SomeMinionCard theShadowKing
   , SomeMinionCard misterSinister

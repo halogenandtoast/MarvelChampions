@@ -155,7 +155,8 @@ instance IsRef (Attrs Ally) where
 getModifiedAttack :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
-  pure $ fromInteger $ max 0 (toInteger (unAtk $ allyAttack attrs) + sum (map change modifiers))
+  let base = fromMaybe (unAtk $ allyAttack attrs) (headMay [n | BaseAttack n <- modifiers])
+  pure $ fromInteger $ max 0 (toInteger base + sum (map change modifiers))
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
@@ -189,7 +190,7 @@ getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
   pure $ subtractNatural (sum [n | ThwartPenalty n <- modifiers]) $
-    unThw (allyThwart attrs) + sum [n | ThwartModifier n <- modifiers]
+    fromMaybe (unThw $ allyThwart attrs) (headMay [n | BaseThwart n <- modifiers]) + sum [n | ThwartModifier n <- modifiers]
 
 instance IsCard (Attrs Ally) where
   toCard a | Just card <- allyOriginalCard a = card

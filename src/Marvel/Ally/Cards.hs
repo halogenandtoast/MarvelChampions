@@ -1,5 +1,40 @@
 module Marvel.Ally.Cards where
 
+import Marvel.Card.Def (ResourceRestriction (PrintedResource))
+
+import Marvel.Criteria (Criteria (NoCriteria))
+
+import Marvel.Cost.Types (Cost (NoCost))
+
+import Marvel.Resource.Types qualified as NEResource
+
+import Marvel.Boost qualified as NEBoost
+
+import Marvel.GameValue.Types qualified as NEValue
+
+import Marvel.EncounterSet qualified as NESet
+
+import Marvel.Keyword qualified as NEKeyword
+
+import Marvel.Trait qualified as NETrait
+
+import Marvel.Aspect qualified as NEAspect
+
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
+
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
@@ -33,7 +68,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ gambitRogue, iceman, karma, armor
+  [ ne40079, ne40130, whiteFox, atlasBear, wolfsbane, feral, outlaw, diamondback, cable40014, cable40015, cable40016, cable40024, cable40025, cable40204
+  , gambitRogue, iceman, karma, armor
   , rogueGambit, bishop, dazzler
   , havok, mirage, gentle, pixie, forge
   , jubilee, psylocke, sunfire, longshot
@@ -1307,3 +1343,182 @@ karma = (ally "38011" ("Karma" <:> "Xi'an Coy Manh") 4 [Psionic, XMen] [Energy] 
 
 armor :: CardDef
 armor = (ally "38012" ("Armor" <:> "Hisako Ichiki") 2 [XMen] [Physical] Protection) { cdUnique = True, cdDeckLimit = Just 1, cdKeywords = fromList [Toughness], cdCriteria = SelfMatches (IdentityWithTrait XMen) }
+
+
+-- NeXt Evolution: Cable
+
+cable40014 :: CardDef
+cable40014 = (ally "40014" "Caliban" 3 [NE.Psionic, NE.XForce] [NE.Mental] NE.Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40015 :: CardDef
+cable40015 = (ally "40015" ("Fantomex" <:> "Charlie Cluster-7") 4 [NE.Psionic, NE.XForce] [NE.Energy] NE.Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40016 :: CardDef
+cable40016 = (ally "40016" ("Sunspot" <:> "Bobby Da Costa") 3 [NE.Aerial, NE.XForce] [NE.Energy] NE.Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40024 :: CardDef
+cable40024 = (basicAlly "40024" ("Deadpool" <:> "Wade Wilson") 3 [NE.Mercenary, NE.XForce] [NE.Wild]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40025 :: CardDef
+cable40025 = (basicAlly "40025" ("Deathlok" <:> "Unit L17") 4 [NE.Cyborg, NE.XForce] [NE.Physical]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40204 :: CardDef
+cable40204 = (basicAlly "40204" "Hope Summers" 4 [NE.XForce] [NE.Mental]) { cdUnique = True, cdDeckLimit = Just 1 }
+
+-- NeXt Evolution: Domino
+diamondback :: CardDef
+diamondback = CardDef
+  { cdCardCode = "40038", cdName = "Diamondback" <:> "Rachel Leighton", cdCost = Just 2
+  , cdTraits = fromList [NET.Posse], cdKeywords = fromList []
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+outlaw :: CardDef
+outlaw = CardDef
+  { cdCardCode = "40039", cdName = "Outlaw" <:> "Inez Temple", cdCost = Just 3
+  , cdTraits = fromList [NET.Outlaw, NET.Posse], cdKeywords = fromList [NEK.Toughness]
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+feral :: CardDef
+feral = CardDef
+  { cdCardCode = "40050", cdName = "Feral" <:> "Maria Callasantos", cdCost = Just 4
+  , cdTraits = fromList [NET.XForce], cdKeywords = fromList []
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just NEA.Justice, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+wolfsbane :: CardDef
+wolfsbane = CardDef
+  { cdCardCode = "40051", cdName = "Wolfsbane" <:> "Rahne Sinclair", cdCost = Just 3
+  , cdTraits = fromList [NET.XForce], cdKeywords = fromList []
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just NEA.Justice, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Physical)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+atlasBear :: CardDef
+atlasBear = CardDef
+  { cdCardCode = "40056", cdName = "Atlas Bear" <:> "Shoon'kwa", cdCost = Just 3
+  , cdTraits = fromList [NET.Posse, NET.Wakanda], cdKeywords = fromList []
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just NEA.Neutral, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Mental)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+whiteFox :: CardDef
+whiteFox = CardDef
+  { cdCardCode = "40057", cdName = "White Fox" <:> "Ami Han", cdCost = Just 3
+  , cdTraits = fromList [NET.Posse], cdKeywords = fromList []
+  , cdCardType = AllyType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = True, cdAspect = Just NEA.Neutral, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution campaign and scenarios
+
+ne40079 :: CardDef
+ne40079 = CardDef
+  { cdCardCode = "40079"
+  , cdName = "Morlock"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Morlock, NETrait.Mutant]
+  , cdKeywords = fromList [NEKeyword.Victory (-1)]
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.MorlockSiege
+  , cdEncounterSetQuantity = Just 4
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+ne40130 :: CardDef
+ne40130 = CardDef
+  { cdCardCode = "40130"
+  , cdName = "Hope Summers"
+  , cdCost = Nothing
+  , cdTraits = fromList [NETrait.Psionic, NETrait.XForce, NETrait.XMen]
+  , cdKeywords = fromList [NEKeyword.Setup]
+  , cdCardType = AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NEResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just NESet.HopeSummersSet
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdAbilityCost = NoCost
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }

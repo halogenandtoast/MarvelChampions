@@ -1,5 +1,6 @@
 module Marvel.AlterEgo.AlterEgos (module X) where
 
+import Marvel.AlterEgo.AlterEgos.NeenaThurman as X
 import Marvel.AlterEgo.AlterEgos.CarolDanvers as X
 import Marvel.AlterEgo.AlterEgos.JenniferWalters as X
 import Marvel.AlterEgo.AlterEgos.PeterParker as X
@@ -96,3 +97,5 @@ import Marvel.AlterEgo.AlterEgos.OroroMunroe as X
 import Marvel.AlterEgo.AlterEgos.RemyLeBeau as X
 
 import Marvel.AlterEgo.AlterEgos.AnnaMarie as X
+
+import Marvel.AlterEgo.AlterEgos.Cable as X

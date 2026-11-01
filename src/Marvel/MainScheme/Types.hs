@@ -195,6 +195,12 @@ instance IsCard (Attrs MainScheme) where
 
 instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "resolveThreatPlacement" (fromJSON -> Success n) | target == toRef attrs -> do
+      threshold <- getThreshold attrs
+      when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
+      pure $ attrs & threatL +~ n
+    CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL %~ subtractNatural n
+    CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
     RemoveFromGame (CardIdRef cid) -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs)}
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
       locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
@@ -207,8 +213,9 @@ instance RunMessage (Attrs MainScheme) where
           pure $ attrs & threatL .~ n
         MainSchemePlaceThreat n -> do
           threshold <- getThreshold attrs
-          when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)
-          pure $ attrs & threatL +~ n
+          when (mainSchemeThreat attrs + n >= threshold) $ checkWindows [W.Window W.Would $ W.MainSchemeCompleting ident]
+          cardSpecific attrs "resolveThreatPlacement" n
+          pure attrs
         -- a scheme threat cannot be removed from ("Take What Is Mine")
         MainSchemeBasicThwarted _ _ | locked -> pure attrs
         MainSchemeThwarted _ _ | locked -> pure attrs
@@ -222,6 +229,7 @@ instance RunMessage (Attrs MainScheme) where
         -- "player cards cannot remove threat from the main scheme" while a crisis icon is
         -- in play (RR Crisis Icon); a thwart is already kept off it
         MainSchemeThreatRemoved source n -> do
+          allowed <- canRemoveThreatFrom source (SchemeMainSchemeId $ mainSchemeId attrs)
           crisis <- hasCrisisInYourArea
           let playerCard = case source of
                 IdentityRef _ -> True
@@ -236,7 +244,7 @@ instance RunMessage (Attrs MainScheme) where
             AllyRef _ -> pure False
             _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
           restricted <- isRestrictedMainScheme (mainSchemeId attrs)
-          if crisis && restricted && playerCard && not (ownIgnores || controllerIgnores)
+          if not allowed || (crisis && restricted && playerCard && not (ownIgnores || controllerIgnores))
             then pure attrs else do
               heroRemovedLastThreat source (SchemeMainSchemeId ident) (mainSchemeThreat attrs) n
               pure $ attrs & threatL %~ subtractNatural n
@@ -266,11 +274,12 @@ instance RunMessage (Attrs MainScheme) where
       cardSpecific attrs "resolveThwart" (source, n)
       pure attrs
     unlessPatrolled basic source body = do
+      allowed <- canRemoveThreatFrom source (SchemeMainSchemeId $ mainSchemeId attrs)
       patrolled <- maybe (pure False) isPatrolled =<< getSourceController source
       modifiers <- getModifiers source
       let ignores = IgnoresPatrol `elem` modifiers || (basic && BasicThwartIgnoresPatrol `elem` modifiers)
       restricted <- isRestrictedMainScheme (mainSchemeId attrs)
-      if patrolled && restricted && not ignores then pure attrs else body
+      if not allowed || (patrolled && restricted && not ignores) then pure attrs else body
 
 -- | The threat that advances it: printed, and as modified (Under Surveillance).
 getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural

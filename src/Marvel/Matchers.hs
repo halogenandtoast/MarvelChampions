@@ -122,6 +122,9 @@ heroAttackBy damage source = case damageSource damage of
 sourceMatches :: (HasGame m) => SourceMatcher -> Source -> m Bool
 sourceMatches matcher source = case matcher of
   AnySource -> pure True
+  SourceIsHero matcher' -> do
+    controller <- getHeroSourceController source
+    maybe (pure False) (identityMatches $ matcher' <> HeroIdentity) controller
   SourceIs expected -> pure $ expected == source
   SourceIsIdentity m | IdentityRef ident <- source -> identityMatches m ident
   SourceIsAlly AnyAlly | AllyRef _ <- source -> pure True

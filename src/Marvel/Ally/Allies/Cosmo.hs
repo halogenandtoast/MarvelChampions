@@ -92,6 +92,7 @@ instance RunMessage Cosmo where
     done = \case
       AllyAttackConsequential -> True
       AllyThwartConsequential -> True
+      AllyThwartConsequentialOn _ -> True
       _ -> False
 
 -- | The card types a deck's top card can be.

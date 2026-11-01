@@ -33,6 +33,8 @@ data Criteria
   | CharacterExists CharacterMatcher
   | SelfMatches IdentityMatcher
   | ExtendedCardExists ExtendedCardMatcher
+  | EncounterDiscardHas CardMatcher
+  | IdentityAttackedAndThwartedThisPhase IdentityMatcher
   | Never
   | Criteria [Criteria]
   | -- | any one of them
@@ -54,6 +56,7 @@ data Criteria
     ForAnyPlayer
   | -- | there is a card in The Collection (Infiltrate the Museum)
     CollectionHasCards
+  | VictoryDisplayHasSideScheme
   | -- | another card remains playable after this card exhausts the identity
     CardPlayAfterExhaustingHasTarget Natural
   | PlayCardWithReductionHasTarget CardMatcher Natural

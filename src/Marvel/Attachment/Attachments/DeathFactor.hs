@@ -43,7 +43,10 @@ instance RunMessage DeathFactor where
       for_ (attachmentIdentity attrs) (\you -> damageIdentity you attrs $ toDamage 1 FromAbility)
       pure e
     RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
-      for_ (attachmentIdentity attrs) \you -> cancelMatchingMessage (== IdentityMessage you (SideMessage Recovered))
+      for_ (attachmentIdentity attrs) \you -> cancelMatchingMessage \case
+        IdentityMessage ident (SideMessage Recovered) -> ident == you
+        IdentityMessage ident (SideMessage (RecoveredWithBonus _)) -> ident == you
+        _ -> False
       removeFromPlay attrs
       pure e
     _ -> DeathFactor <$> runMessage msg attrs

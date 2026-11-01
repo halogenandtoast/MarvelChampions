@@ -30,7 +30,7 @@ newtype Regroup = Regroup (Attrs Support)
 -- instead of discarding it. Forced Interrupt: When the round ends, discard this card.
 instance HasAbilities Regroup where
   getAbilities a@(Regroup attrs) =
-    [ limitedWindowAbility a 1 (W.AllyDefeatedByAttack W.When AnyAlly) Interrupt OwnsThis NoCost $
+    [ limitedWindowAbility a 1 (W.AllyDefeatedByAttack W.When AllyThatWouldBeDiscardedByDefeat) Interrupt OwnsThis NoCost $
         runAbility a 1
     , windowAbility a 2 W.RoundEnds ForcedInterrupt NoCost $ DiscardTarget (toRef attrs)
     ]

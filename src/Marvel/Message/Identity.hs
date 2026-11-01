@@ -111,6 +111,7 @@ data IdentityMessage
 
 data SideMessage
   = Recovered
+  | RecoveredWithBonus Natural
   | Attacked
   | Thwarted
   | Defended EnemyId

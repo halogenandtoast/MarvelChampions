@@ -3,7 +3,13 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Marauder
+  = Possessed
+  | Posse
+  | NastyBoy
+  | MutantLiberationFront
+  | Desperate
+  | Confident
+  | Marauder
   | Acolyte
   | Hellfire
   | Magnetic

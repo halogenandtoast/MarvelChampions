@@ -1,5 +1,15 @@
 module Marvel.MainScheme.MainSchemes (module X) where
 
+import Marvel.MainScheme.MainSchemes.NextEvolutionNeStryfe as X
+
+import Marvel.MainScheme.MainSchemes.NextEvolutionOnTheRun as X
+
+import Marvel.MainScheme.MainSchemes.NextEvolutionMorlockSiege as X
+
+import Marvel.MainScheme.MainSchemes.NextEvolutionMisterSinister as X
+
+import Marvel.MainScheme.MainSchemes.NextEvolutionNeJuggernaut as X
+
 import Marvel.MainScheme.MainSchemes.AssaultOnNorad as X
 import Marvel.MainScheme.MainSchemes.CountdownToOblivion as X
 import Marvel.MainScheme.MainSchemes.SecretRendezvous as X

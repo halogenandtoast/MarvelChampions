@@ -9,12 +9,13 @@ import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Cost.Types
+import Marvel.Card.Def
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Hero.Types as X
-import Marvel.Keyword (Keyword (Overkill, Piercing))
+import Marvel.Keyword (Keyword (Overkill, Piercing, Assault))
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -134,8 +135,9 @@ instance RunMessage (Attrs Hero) where
           -- a scheme thwarted with ATK instead of THW, as The Red House allows
           choices <- for schemes \scheme -> do
             withAttack <- elem ThwartWithAttack <$> getModifiers (schemeTarget scheme)
+            assault <- schemeHasKeyword scheme Assault
             pure $ targeting (schemeTarget scheme) $
-              if withAttack && atk /= thw
+              if assault then basicThwartOf scheme a atk else if withAttack && atk /= thw
                 then
                   chooseOne ident
                     [ labeled "$label.thwartWithThw" (basicThwartOf scheme a thw)
@@ -144,7 +146,7 @@ instance RunMessage (Attrs Hero) where
                 else basicThwartOf scheme a thw
           -- threat that may be divided among schemes, each of them thwarted
           divides <- elem DividesBasicThwart <$> getModifiers a
-          let divided = [labeled "$label.divideThreat" (basicThwartDivided ident a thw) | divides, length schemes > 1]
+          let divided = [labeled "$label.divideThreat" (basicThwartDivided ident a thw atk) | divides, length schemes > 1]
           chooseOnePrompted ident "$label.chooseSchemeToThwart" (choices <> divided)
           checkWindows [W.Window W.After $ W.MadeBasicThwart ident]
           pure a

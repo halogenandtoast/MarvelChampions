@@ -1,5 +1,34 @@
 module Marvel.SideScheme.SideSchemes (module X) where
 
+import Marvel.SideScheme.SideSchemes.NextEvolutionNeStryfe as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionOnTheRun as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNextEvolutionCampaign as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNastyBoys as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMutantSlayers as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMutantInsurrection as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMorlockSiege as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMisterSinister as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionMilitaryGrade as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionNeJuggernaut as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionHopeSummersSet as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionExtremeMeasures as X
+
+import Marvel.SideScheme.SideSchemes.NextEvolutionBlackTomCassidy as X
+
+import Marvel.SideScheme.SideSchemes.NotMyLuckyDay as X
+import Marvel.SideScheme.SideSchemes.SuperpowerTraining as X
+import Marvel.SideScheme.SideSchemes.TakeOuttheGuards as X
 import Marvel.SideScheme.SideSchemes.BombScare as X
 import Marvel.SideScheme.SideSchemes.BreakinAndTakin as X
 import Marvel.SideScheme.SideSchemes.CrowdControl as X
@@ -215,3 +244,5 @@ import Marvel.SideScheme.SideSchemes.HeraldOfAvalon as X
 import Marvel.SideScheme.SideSchemes.MystiquesManipulations as X
 
 import Marvel.SideScheme.SideSchemes.TheReavers as X
+
+import Marvel.SideScheme.SideSchemes.Cable as X

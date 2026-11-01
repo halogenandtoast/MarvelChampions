@@ -28,7 +28,7 @@ import Marvel.Campaign (Campaign (..), CampaignLog (..), campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
-import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesisCampaign, TheMarket))
+import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesisCampaign, NextEvolutionCampaign, TheMarket))
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity (PlayerIdentity)
@@ -89,6 +89,7 @@ deckBuildingError d
   | not (aspectsBalanced d) = Just "error.unbalancedAspects"
   | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
   | toBaseCardCode d.hero == CardCode "33001" && not cyclopsAspects = Just "error.cyclopsAspects"
+  | toBaseCardCode d.hero == CardCode "40001" && not cableAspects = Just "error.cableAspects"
   | not withinCopyLimits = Just "error.deckCopyLimit"
   | not teamUpIdentity = Just "error.teamUpIdentity"
   | otherwise = Nothing
@@ -99,6 +100,10 @@ deckBuildingError d
     [] -> all (cyclopsCardAllowed Nothing) includedDefs
     [chosen] | chosen `elem` ["aggression", "justice", "leadership", "protection"] ->
       all (cyclopsCardAllowed $ Just chosen) includedDefs
+    _ -> False
+  cableAspects = case map T.toLower d.aspects of
+    [] -> length (nub [a | def <- includedDefs, cdCardType def /= PlayerSideSchemeType, Just a <- [cdAspect def], a /= Neutral]) <= 1
+    [chosen] -> all (\def -> cdCardType def == PlayerSideSchemeType || case cdAspect def of Nothing -> True; Just Neutral -> True; Just aspect -> T.toLower (tshow aspect) == chosen) includedDefs
     _ -> False
   includedDefs = [def | (def, n) <- defs, n > 0]
   cyclopsCardAllowed chosen def = case cdAspect def of
@@ -192,7 +197,7 @@ directed to add them to a deck by the Campaign Instructions" (rulebook p.4), whi
 campaign does as it deals each game, never in a deck brought to the table.
 -}
 campaignOnlyCardsIn :: DeckList -> [CardCode]
-campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def `elem` [Just MadTitansShadowCampaign, Just MutantGenesisCampaign]]
+campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def `elem` [Just MadTitansShadowCampaign, Just MutantGenesisCampaign, Just NextEvolutionCampaign]]
 
 -- | The titles of heroes that more than one of the decks bring: each hero is unique.
 sharedHeroes :: [DeckList] -> [Text]
@@ -280,6 +285,8 @@ starterDecks =
   , ("storm", DeckList "36001a" ["leadership"] $ tally ["36006", "36007", "36008", "36009", "36009", "36009", "36010", "36010", "36010", "36011", "36011", "36012", "36012", "36013", "36013", "36014", "36015", "36016", "36017", "36018", "36018", "36018", "36019", "36019", "36019", "36020", "36020", "36020", "36021", "36021", "36022", "36023", "36024", "36025", "36026", "36026", "36026", "36027", "36028", "36029"])
   , ("gambit", DeckList "37001a" ["justice"] $ tally ["37002", "37003", "37004", "37005", "37006", "37006", "37006", "37007", "37007", "37008", "37008", "37009", "37009", "37010", "37010", "37011", "37012", "37013", "37013", "37013", "37014", "37014", "37014", "37015", "37015", "37015", "37016", "37016", "37017", "37018", "37019", "37020", "37020", "37020", "37021", "37021", "37021", "37022", "37023", "37024"])
   , ("rogue", DeckList "38001a" ["protection"] $ tally ["38002", "38003", "38004", "38005", "38005", "38005", "38006", "38006", "38006", "38007", "38007", "38008", "38008", "38009", "38009", "38009", "38010", "38011", "38012", "38013", "38013", "38013", "38014", "38014", "38014", "38015", "38015", "38015", "38016", "38016", "38016", "38017", "38017", "38018", "38019", "38019", "38019", "38020", "38021", "38022", "38023"])
+  , ("cable", DeckList "40001a" ["leadership"] $ tally ["40002", "40003", "40003", "40003", "40004", "40005", "40005", "40006", "40007", "40008", "40009", "40010", "40011", "40012", "40013", "40014", "40015", "40016", "40017", "40017", "40017", "40018", "40019", "40020", "40021", "40022", "40022", "40022", "40023", "40024", "40025", "40026", "40027", "40028", "40028", "40028", "40029", "40030", "40030", "40030"])
+  , ("domino", DeckList "40037a" ["justice"] $ tally ["40038", "40039", "40040", "40040", "40041", "40042", "40042", "40043", "40044", "40045", "40046", "40046", "40047", "40048", "40049", "40050", "40051", "40052", "40052", "40052", "40053", "40053", "40053", "40054", "40055", "40055", "40055", "40056", "40057", "40058", "40059", "40060", "40060", "40060", "40061", "40062", "40063", "40064", "40064", "40064"])
   ]
  where
   starter code aspect cs = DeckList code [aspect] (tally (cs <> basics))

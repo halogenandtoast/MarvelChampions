@@ -1,5 +1,24 @@
 module Marvel.Attachment.Attachments (module X) where
 
+import Marvel.Attachment.Attachments.NextEvolutionTelepathySet as X
+
+import Marvel.Attachment.Attachments.NextEvolutionSuperStrengthSet as X
+
+import Marvel.Attachment.Attachments.NextEvolutionNeStryfe as X
+
+import Marvel.Attachment.Attachments.NextEvolutionOnTheRun as X
+
+import Marvel.Attachment.Attachments.NextEvolutionMorlockSiege as X
+
+import Marvel.Attachment.Attachments.NextEvolutionMisterSinister as X
+
+import Marvel.Attachment.Attachments.NextEvolutionMilitaryGrade as X
+
+import Marvel.Attachment.Attachments.NextEvolutionNeJuggernaut as X
+
+import Marvel.Attachment.Attachments.NextEvolutionFlightSet as X
+
+import Marvel.Attachment.Attachments.SuperpowerFeedback as X
 import Marvel.Attachment.Attachments.ArmoredRhinoSuit as X
 import Marvel.Attachment.Attachments.BiomechanicalUpgrades as X
 import Marvel.Attachment.Attachments.Charge as X
@@ -171,3 +190,5 @@ import Marvel.Attachment.Attachments.Possessed as X
 import Marvel.Attachment.Attachments.PsionicShield as X
 
 import Marvel.Attachment.Attachments.CyberneticEnhancements as X
+
+import Marvel.Attachment.Attachments.Cable as X

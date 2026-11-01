@@ -4,6 +4,7 @@
 module Marvel.Message.Lifted.Queue (
   QueueT,
   runQueueT,
+  captureQueueT,
   ReverseQueue (..),
 ) where
 
@@ -52,3 +53,13 @@ instance (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => ReverseQueue (Q
     held <- liftIO $ newIORef []
     local (const held) body
     liftIO $ readIORef held
+
+-- | Hold a handler's follow-up messages while preserving its returned state.
+-- Simultaneous damage applies each instance before the next taken-damage window,
+-- but its after windows and defeat continuations wait until the entire group lands.
+captureQueueT :: HasQueue m => QueueT m a -> m (a, [Message])
+captureQueueT (QueueT body) = do
+  held <- liftIO $ newIORef []
+  result <- runReaderT body held
+  messages <- liftIO $ readIORef held
+  pure (result, messages)

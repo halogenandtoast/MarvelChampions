@@ -1,5 +1,15 @@
 module Marvel.Ally.Allies (module X) where
 
+import Marvel.Ally.Allies.NextEvolutionMorlockSiege as X
+
+import Marvel.Ally.Allies.NextEvolutionHopeSummersSet as X
+
+import Marvel.Ally.Allies.WhiteFox as X
+import Marvel.Ally.Allies.AtlasBear as X
+import Marvel.Ally.Allies.Wolfsbane as X
+import Marvel.Ally.Allies.Feral as X
+import Marvel.Ally.Allies.Outlaw as X
+import Marvel.Ally.Allies.Diamondback as X
 import Marvel.Ally.Allies.BlackCatFeliciaHardy as X
 import Marvel.Ally.Allies.BlackWidowNatashaRomanoff as X
 import Marvel.Ally.Allies.DaredevilMattMurdock as X
@@ -277,3 +287,5 @@ import Marvel.Ally.Allies.Iceman as X
 import Marvel.Ally.Allies.Karma as X
 
 import Marvel.Ally.Allies.Armor as X
+
+import Marvel.Ally.Allies.Cable as X

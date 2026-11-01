@@ -2,6 +2,7 @@ module Marvel.Obligation.Types where
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Card
 import Marvel.Entity
@@ -55,11 +56,12 @@ instance Entity Obligation where
     , obligationSurge :: Bool
     , obligationHeldCards :: [PlayerCard]
     -- ^ player cards facedown under it, discarded with it
+    , obligationSideScheme :: Maybe SideSchemeId
     , obligationOwner :: Maybe IdentityId
     -- ^ the player whose play area it is in
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (ToJSON)
   data Field Obligation :: Type -> Type where
     ObligationId :: Field Obligation ObligationId
     ObligationCardDef :: Field Obligation CardDef
@@ -123,6 +125,7 @@ obligation f cardDef =
             , obligationCardDef = cardDef
             , obligationSurge = False
             , obligationHeldCards = []
+            , obligationSideScheme = Nothing
             , obligationOwner = Nothing
             }
     }
@@ -141,8 +144,16 @@ instance IsCard (Attrs Obligation) where
 instance HasCardDef (Attrs Obligation) where
   getCardDef = obligationCardDef
 
+instance FromJSON (Attrs Obligation) where
+  parseJSON = withObject "ObligationAttrs" $ \o ->
+    genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ old -> old) "obligationSideScheme" Null o)
+
 instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "cableAttachSideScheme" (fromJSON -> Success sid) | target == toRef attrs -> pure attrs {obligationSideScheme = Just sid}
+    AddToVictoryDisplay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
+    RemoveFromPlay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
+    RemoveFromGame (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
     RemoveFromGame (CardIdRef cid) -> pure attrs {obligationHeldCards = filter ((/= cid) . pcCardId) (obligationHeldCards attrs)}
     ObligationMessage ident msg' | ident == obligationId attrs -> case msg' of
       ObligationOwnedBy identityId -> pure attrs {obligationOwner = Just identityId}

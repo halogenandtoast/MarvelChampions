@@ -1,5 +1,10 @@
 module Marvel.Upgrade.Upgrades (module X) where
 
+import Marvel.Upgrade.Upgrades.Sharpshooter as X
+import Marvel.Upgrade.Upgrades.ProbabilityField as X
+import Marvel.Upgrade.Upgrades.LuckyBreak as X
+import Marvel.Upgrade.Upgrades.LuckyandGood as X
+import Marvel.Upgrade.Upgrades.DominosPistol as X
 import Marvel.Upgrade.Upgrades.ArcReactor as X
 import Marvel.Upgrade.Upgrades.ArmoredVest as X
 import Marvel.Upgrade.Upgrades.CaptainMarvelsHelmet as X
@@ -357,3 +362,5 @@ import Marvel.Upgrade.Upgrades.RoguesJacket as X
 import Marvel.Upgrade.Upgrades.JudokaSkill as X
 
 import Marvel.Upgrade.Upgrades.XGene as X
+
+import Marvel.Upgrade.Upgrades.Cable as X

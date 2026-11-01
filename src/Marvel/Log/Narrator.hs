@@ -55,6 +55,19 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  PrepareAllyDepartureByDefeat _ _ -> Nothing
+  PrepareEnemyDamageGroup _ _ -> Nothing
+  TakeEnemyDamageGroup _ _ _ -> Nothing
+  ResolveEnemyDamageGroup messages cursor _ -> case messages !! cursor of
+    VillainMessage vid inner -> villainNarration vid inner
+    MinionMessage mid inner -> minionNarration mid inner
+    message -> narrationFor message
+  PrepareEnemyDamage _ -> Nothing
+  ResolveEnemyDamage (VillainMessage vid inner) -> villainNarration vid inner
+  ResolveEnemyDamage (MinionMessage mid inner) -> minionNarration mid inner
+  ResolveEnemyDamage _ -> Nothing
+  VillainMessage _ (VillainDamaged _ _) -> Nothing
+  MinionMessage _ (MinionDamaged _ _) -> Nothing
   RemoveFromPlayAfterWindow {} -> Nothing
   AllocatedPayment {} -> Nothing
   SpentWithResources {} -> Nothing
@@ -342,6 +355,11 @@ campaignNarration = \case
   RecordOsbornTech code -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> [card code]]]
   RecordWakingNightmare n -> Just $ one $ notice [ikeyPart "log.campaign.wakingNightmare" ["count" ~> n]]
   RecordLastOnesStanding codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordNextEvolutionScheme _ code -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> [card code]]]
+  RecordNextEvolutionEnvironment code -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> [card code]]]
+  RecordNextEvolutionMarauders codes -> Just $ one $ notice [ikeyPart "log.campaign.recorded" ["what" ~> map card codes]]
+  RecordNextEvolutionMorlocks n -> Just $ one $ notice [ikeyPart "log.campaign.morlocksSaved" ["count" ~> n]]
+  RecordNextEvolutionHopeDamage scenario n -> Just $ one $ notice [ikeyPart "log.campaign.hopeDamage" ["count" ~> n, "scenario" ~> scenario]]
   RecordFinalReputation -> Just $ one $ notice [ikeyPart "log.campaign.finalReputation" []]
   _ -> Nothing
  where
@@ -394,6 +412,7 @@ identityNarration ident = \case
   SideMessage Attacked -> Just $ simplyPlayer "log.basicAttack"
   SideMessage Thwarted -> Just $ simplyPlayer "log.basicThwart"
   SideMessage Recovered -> Just $ simplyPlayer "log.recovers"
+  SideMessage (RecoveredWithBonus _) -> Just $ simplyPlayer "log.recovers"
   SideMessage (DefendedWithoutExhausting _ enemy) -> identityNarration ident (SideMessage $ Defended enemy)
   SideMessage (DefenseUsingAttackApplied {}) -> Nothing
   SideMessage (Defended enemy) -> Just $ whenRef (EnemyRef enemy) \e -> do
@@ -439,6 +458,8 @@ identityNarration ident = \case
 
 villainNarration :: (HasGame m) => VillainId -> VillainMessage -> Maybe (m [LogEntry])
 villainNarration vid = \case
+  VillainDefeatPending _ -> Nothing
+  VillainResolveDefeat _ _ -> Nothing
   -- told as each gets under way, so one an ability replaces (Norman Osborn's attack, Green
   -- Goblin's scheme) is told as what it is replaced with; a stun or confusion as it is spent
   VillainAttacks ident -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> StunnedEnemy)) $ activation (VillainRef vid) ident "log.attacks" True
@@ -540,6 +561,8 @@ allyNarration aid = \case
     tough <- getsGame $ maybe False ((.allyTough) . toAttrs) . lookup aid . gameAllies
     damaged (AllyRef aid) (tough && preventedByTough dmg) (damageAmount dmg)
   AllyHealed n | n > 0 -> Just $ healedBy (AllyRef aid) n
+  AllyDefeatedByDamage -> allyNarration aid AllyDefeated
+  AllyLeavePlayByDefeat -> Nothing
   AllyDefeatedByAttack _ -> allyNarration aid AllyDefeated
   AllyDefeated -> Just $ whenRef (AllyRef aid) \a -> one $ toned Bad $ mechanic [ikeyPart "log.defeated" ["target" ~> a]]
   AllyStunned -> Just $ simply "log.stunned" (AllyRef aid)
@@ -562,6 +585,8 @@ schemeNarration target = \case
 
 sideSchemeNarration :: (HasGame m) => SideSchemeId -> SideSchemeMessage -> Maybe (m [LogEntry])
 sideSchemeNarration sid = \case
+  ExhaustedSideScheme -> Just $ simply "log.exhausted" (SideSchemeRef sid)
+  ReadiedSideScheme -> Just $ simply "log.readied" (SideSchemeRef sid)
   SideSchemePlaceAccelerationToken -> Just $ counted "log.accelerationPlaced" (SideSchemeRef sid) 1
   RevealSideScheme -> Just $ simply "log.sideSchemeRevealed" (SideSchemeRef sid)
   SideSchemePlaceThreat n | n > 0 -> Just $ threat (SideSchemeRef sid) "log.threatPlaced" n Bad

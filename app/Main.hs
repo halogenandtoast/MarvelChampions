@@ -672,7 +672,10 @@ postStartR gid = do
 deal :: MarvelGameId -> MarvelGame -> NonEmpty (Text, DeckList) -> Handler ()
 deal gid row players = do
   setup <- decodeOrFail "scenario" row.marvelGameScenario
-  campaign <- traverse (decodeOrFail "campaign") row.marvelGameCampaign
+  initialCampaign <- traverse (decodeOrFail "campaign") row.marvelGameCampaign
+  let campaign = case (initialCampaign, fromJSON row.marvelGameCurrentData) of
+        (Just previous, Success (current :: Game)) -> Just $ maybe previous (retainNextEvolutionRetryChoice previous) (gameCampaign current)
+        _ -> initialCampaign
   ((g, queue, gen), said) <- either (sendResponseStatus status400) pure =<< liftIO . startGame setup campaign players =<< liftIO randomIO
   now <- liftIO getCurrentTime
   (row', entries) <- runDB do
@@ -988,8 +991,8 @@ campaignNow row = do
       Success (game' :: Game) -> case gameState game' of
         -- unless the log has been written in since, as cards are bought from The Market
         Finished Won -> pure (maybe stored (\won -> if stored.completed >= won.completed then stored else won) (gameCampaign game'), Nothing)
-        Finished Lost -> pure (maybe stored (\c -> if c.lost then c else stored) (gameCampaign game'), Nothing)
-        _ -> pure (stored, Just gid)
+        Finished Lost -> pure (maybe stored (\c -> if c.lost then c else retainNextEvolutionRetryChoice stored c) (gameCampaign game'), Nothing)
+        _ -> pure (maybe stored (retainNextEvolutionRetryChoice stored) (gameCampaign game'), Just gid)
       Error _ -> pure (stored, Just gid)
 
 campaignView :: Entity MarvelCampaign -> Handler CampaignView
@@ -1212,6 +1215,8 @@ dealCampaignGame cid = do
   seats <- campaignSeats cid row
   when (length seats < row.marvelCampaignSeats) $ sendResponseStatus status409 (ikey "error.notAllSeatsTaken")
   for_ seats \(_, _, d) -> do
+    when (c.kind == NextEvolution && any ((== "40204") . fst) d.cards) $
+      sendResponseStatus status400 (ikeyWith "error.campaignOnlyCards" [textVar "cards" "40204"])
     let short = campaignDeckShortBy c d
     when (short > 0) $
       sendResponseStatus status409 (ikeyWith "error.campaignDeckTooSmall" [textVar "hero" (heroName d.hero), textVar "count" (tshow short)])

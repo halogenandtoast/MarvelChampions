@@ -2,6 +2,7 @@ module Marvel.Message.Villain where
 
 import Marvel.Prelude
 
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.EncounterCard
 import Marvel.Damage
 import Marvel.Id
@@ -9,7 +10,9 @@ import Marvel.Keyword (Keyword)
 import Marvel.Ref
 
 data VillainMessage
-  = SetVillainHp
+  = VillainDefeatPending (Maybe (Source, Damage, Natural))
+  | VillainResolveDefeat CardCode (Maybe (Source, Damage, Natural))
+  | SetVillainHp
   | VillainDamaged Source Damage
   | VillainStunned Source
   | VillainConfused Source

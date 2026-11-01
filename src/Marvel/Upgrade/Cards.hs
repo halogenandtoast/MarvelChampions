@@ -1,5 +1,19 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Boost qualified as NEB
+import Marvel.EncounterSet qualified as NES
+import Marvel.Aspect qualified as NEA
+import Marvel.Resource.Types qualified as NER
+import Marvel.Keyword qualified as NEK
+import Marvel.Trait qualified as NET
+import Marvel.Trait qualified as NE
+import Marvel.Resource qualified as NE
+import Marvel.Keyword qualified as NE
+import Marvel.Boost qualified as NE
+import Marvel.Aspect qualified as NE
+import Marvel.Card.Def qualified as NE
+import Marvel.Ability.Types qualified as NEAbility
+
 import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.Trait qualified as MGTrait
@@ -38,7 +52,13 @@ import Marvel.Trait
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap
   toCardCodePairs
-  [ touched, roguesJacket, judokaSkill, xGene
+  [ sharpshooter
+  , probabilityField
+  , luckyBreak
+  , luckyandGood
+  , dominosPistol
+  , cable40009, cable40010, cable40011, cable40012, cable40013, cable40023, cable40029
+  , touched, roguesJacket, judokaSkill, xGene
   , gambitsStaff, gambitsGuildArmor, operativeSkill
   , stormsCrown, stormsCape, leadershipSkill
   , wolverinesClaws, adamantiumSkeleton, berserkerFrenzy, iGotBetter, warriorSkill
@@ -1089,7 +1109,7 @@ shoulderCannon :: CardDef
 shoulderCannon = deckLimited 1 $ identityUpgrade "23007" "Shoulder Cannon" 2 [Tech, Weapon] [Energy]
 
 sidearm :: CardDef
-sidearm = deckLimited 3 $ (basicUpgrade "23035" "Sidearm" 1 [Weapon] [Physical])
+sidearm = reprintedAs ["40030"] $ deckLimited 3 $ (basicUpgrade "23035" "Sidearm" 1 [Weapon] [Physical])
     { cdLimit = Just (MaxPerAlly 1)
     }
 
@@ -1478,7 +1498,7 @@ organicWebbing = (identityUpgrade "30011" "Organic Webbing" 2 [Cartoon, Superpow
   }
 
 overwatch :: CardDef
-overwatch = (upgrade "30019" "Overwatch" 0 [] [Physical] Justice)
+overwatch = reprintedAs ["40055"] $ (upgrade "30019" "Overwatch" 0 [] [Physical] Justice)
   { cdDeckLimit = Just 3
   , cdUnique = False
   , cdLimit = Just (MaxPerScheme 1)
@@ -1811,3 +1831,101 @@ judokaSkill = (upgrade "38014" "Judoka Skill" 2 [Skill] [Physical] Protection) {
 
 xGene :: CardDef
 xGene = (basicUpgrade "38019" "X-Gene" 1 [] [Wild]) { cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdCriteria = SelfMatches (IdentityWithTrait Mutant) }
+
+-- NeXt Evolution: Cable
+
+cable40009 :: CardDef
+cable40009 = (identityUpgrade "40009" "Askani'son" 1 [NE.Title] [NE.Wild]) { cdUnique = True, cdDeckLimit = Just 1 , cdAbilitySubTypes = [NEAbility.Thwart] }
+
+cable40010 :: CardDef
+cable40010 = (identityUpgrade "40010" "Forced Amnesia" 1 [NE.Psionic, NE.Superpower] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 1 }
+
+cable40011 :: CardDef
+cable40011 = (identityUpgrade "40011" "Plasma Rifle" 2 [NE.Tech, NE.Weapon] [NE.Physical]) { cdUnique = False, cdDeckLimit = Just 1, cdKeywords = fromList [NE.Restricted] , cdAbilitySubTypes = [NEAbility.Attack] }
+
+cable40012 :: CardDef
+cable40012 = (identityUpgrade "40012" "Telekinetic Force Field" 2 [NE.Psionic, NE.Superpower] [NE.Physical]) { cdUnique = False, cdDeckLimit = Just 1 , cdCriteria = InHeroForm }
+
+cable40013 :: CardDef
+cable40013 = (identityUpgrade "40013" "Temporal Leap" 2 [NE.Tactic] [NE.Physical]) { cdUnique = False, cdDeckLimit = Just 1 }
+
+cable40023 :: CardDef
+cable40023 = (upgrade "40023" "Mission Leader" 2 [NE.Title] [NE.Physical] NE.Leadership) { cdUnique = True, cdDeckLimit = Just 1 }
+
+cable40029 :: CardDef
+cable40029 = (basicUpgrade "40029" "Psimitar" 2 [NE.Psionic, NE.Weapon] [NE.Energy]) { cdUnique = True, cdDeckLimit = Just 1, cdKeywords = fromList [NE.Restricted] , cdAbilitySubTypes = [NEAbility.Attack] }
+
+-- NeXt Evolution: Domino
+dominosPistol :: CardDef
+dominosPistol = CardDef
+  { cdCardCode = "40046", cdName = "Domino's Pistol", cdCost = Just 2
+  , cdTraits = fromList [NET.Weapon], cdKeywords = fromList [NEK.Restricted]
+  , cdCardType = UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = [NEAbility.Attack]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 2, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+luckyandGood :: CardDef
+luckyandGood = CardDef
+  { cdCardCode = "40047", cdName = "Lucky and Good", cdCost = Just 1
+  , cdTraits = fromList [NET.Superpower], cdKeywords = fromList []
+  , cdCardType = UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = [NEAbility.Defense]
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+luckyBreak :: CardDef
+luckyBreak = CardDef
+  { cdCardCode = "40048", cdName = "Lucky Break", cdCost = Just 0
+  , cdTraits = fromList [NET.Superpower], cdKeywords = fromList []
+  , cdCardType = UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+probabilityField :: CardDef
+probabilityField = CardDef
+  { cdCardCode = "40049", cdName = "Probability Field", cdCost = Just 2
+  , cdTraits = fromList [NET.Superpower], cdKeywords = fromList []
+  , cdCardType = UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Nothing, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Wild)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Nothing, cdDeckLimit = Just 1, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }
+
+-- NeXt Evolution: Domino
+sharpshooter :: CardDef
+sharpshooter = CardDef
+  { cdCardCode = "40064", cdName = "Sharpshooter", cdCost = Just 2
+  , cdTraits = fromList [NET.Skill], cdKeywords = fromList []
+  , cdCardType = UpgradeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
+  , cdUnique = False, cdAspect = Just NEA.Neutral, cdCriteria = NoCriteria
+  , cdResources = [(PrintedResource, NER.Energy)], cdBoostIcons = []
+  , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdLimit = Just (MaxPerPlayer 1), cdDeckLimit = Just 3, cdTeamUp = Nothing
+  , cdAlternateCardCodes = [], cdPlayableFromDiscard = False, cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False, cdCanPayForOthersWithTrait = Nothing, cdAbilityCost = NoCost
+  }

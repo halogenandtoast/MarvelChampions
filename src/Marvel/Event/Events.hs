@@ -1,5 +1,10 @@
 module Marvel.Event.Events (module X) where
 
+import Marvel.Event.Events.ThePosse as X
+import Marvel.Event.Events.TeamInvestigation as X
+import Marvel.Event.Events.RightPlaceRightTime as X
+import Marvel.Event.Events.LuckBeaLady as X
+import Marvel.Event.Events.AGoodWorkout as X
 import Marvel.Event.Events.AncestralKnowledge as X
 import Marvel.Event.Events.Backflip as X
 import Marvel.Event.Events.ChaseThemDown as X
@@ -483,3 +488,5 @@ import Marvel.Event.Events.BulletproofBelle as X
 import Marvel.Event.Events.SuperpowerAdaptation as X
 
 import Marvel.Event.Events.NotToday as X
+
+import Marvel.Event.Events.Cable as X

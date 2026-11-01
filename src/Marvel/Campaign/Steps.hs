@@ -14,6 +14,7 @@ import Marvel.Campaign.GalaxysMostWanted (runGalaxyStep)
 import Marvel.Campaign.MadTitansShadow (runTitanStep)
 import Marvel.Campaign.SinisterMotives (runSinisterStep)
 import Marvel.Campaign.MutantGenesis (runMutantGenesisStep)
+import Marvel.Campaign.NextEvolution (runNextEvolutionStep)
 import Marvel.Card
 import Marvel.Deck
 import Marvel.EncounterCard (allEncounterCards, genEncounterCard)
@@ -36,6 +37,7 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case c.kind of
  MadTitansShadow -> runTitanStep c step
  SinisterMotives -> runSinisterStep c step
  MutantGenesis -> runMutantGenesisStep c step
+ NextEvolution -> runNextEvolutionStep c step
  RiseOfRedSkull -> case step of
   CampaignChoices -> do
     players <- getPlayers

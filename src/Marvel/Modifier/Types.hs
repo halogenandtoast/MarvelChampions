@@ -8,13 +8,19 @@ import Marvel.Id (EnemyId, CharacterId)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
-import Marvel.Id (IdentityId, MainSchemeId)
+import Marvel.Id (IdentityId, MainSchemeId, SchemeId)
 import Marvel.Resource.Types (Resource)
 import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = TakesFirstPlayerPhaseTurn
+  = BaseAttack Natural
+  | BaseThwart Natural
+  | DamageTakenFromPrintedResource Resource Int
+  | AmplifyIconModifier Natural
+  | TakesFirstPlayerPhaseTurn
+  | OnlyAerialOrRangedAttacksCanDamage
+  | AttacksIgnoreRetaliate
   | AttackWithThwart
   | AttackConsequentialDamageReduction Natural
   | AttacksAgainstGainKeyword Keyword
@@ -35,6 +41,7 @@ data Modifier
   | MaximumSustainedDamage Natural
   | MaximumDamagePerPhase Natural
   | NoAttackConsequentialDamage
+  | SideSchemeThwartConsequentialReduction Natural
   | NoThwartConsequentialDamage
   | CanLookAtTopOfEncounterDeck
   | PrintedResourcesAs Resource
@@ -53,7 +60,10 @@ data Modifier
   | AttacksCannotBeDefended
   | ReplaceHeroAttackWithDiscardAndStun Target
   | CannotAttackEnemy EnemyId
+  | CannotThwartScheme SchemeId
+  | CardsEnterPlayExhausted CardMatcher
   | CannotBeDiscarded
+  | CannotLeavePlayByCardAbilities
   | DefenseModifier Natural
   | AllyLimitModifier Natural
   | -- | on an identity: it can control this many more restricted upgrades (Venom)
@@ -130,6 +140,7 @@ data Modifier
   | -- | on a side scheme: only this player's cards remove threat from it, and no one
     -- else may thwart it (Sibling Rivalry)
     ThreatRemovableOnlyBy IdentityId
+  | ThreatRemovableOnlyByCharacter CharacterId
   | -- | a scheme threat cannot be removed from
     ThreatCannotBeRemoved
   | -- | a scheme threat cannot be removed from by thwarting (Held Hostage)
@@ -179,12 +190,17 @@ data Modifier
     DividesBasicThwart
   | -- | on an enemy: the damage it takes from each attack is reduced
     AttackDamageReduction Natural
+  | AttackDamageReductionUnlessAttackerHasTrait Trait Natural
   | -- | on an enemy: it takes no more than this much damage from a single attack
     -- (Cutthroat Ambition), after any reduction
     AttackDamageCap Natural
   | CannotBeCanceled
   | AccelerationIconModifier Natural
   | HazardIconModifier Natural
+  | CanOnlyRemoveThreatFrom SchemeId
+  | CannotRemoveThreatFrom SchemeId
+  | CanOnlyDamageEngagedEnemies
+  | CannotDamageEnemiesEngagedWith IdentityId
   | CannotThwartSideSchemes
   | CrisisIcon
   | AdditionalThwartCost Cost

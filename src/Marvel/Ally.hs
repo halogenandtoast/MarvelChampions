@@ -1,8 +1,13 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Ally
+
+
   ( module Marvel.Ally
   , module X
   ) where
+
+import Marvel.Ally.Allies.NextEvolutionMorlockSiege
+import Marvel.Ally.Allies.NextEvolutionHopeSummersSet
 
 import Marvel.Ally.Allies.MutantGenesisCampaign
 import Marvel.Prelude
@@ -34,7 +39,8 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard gambitRogue, SomeAllyCard iceman, SomeAllyCard karma, SomeAllyCard armor, SomeAllyCard rogueGambit, SomeAllyCard bishop, SomeAllyCard dazzler
+  [ SomeAllyCard ne40079, SomeAllyCard ne40130, SomeAllyCard whiteFox, SomeAllyCard atlasBear, SomeAllyCard wolfsbane, SomeAllyCard feral, SomeAllyCard outlaw, SomeAllyCard diamondback, SomeAllyCard cable40014, SomeAllyCard cable40015, SomeAllyCard cable40016, SomeAllyCard cable40024, SomeAllyCard cable40025, SomeAllyCard cable40204
+  , SomeAllyCard gambitRogue, SomeAllyCard iceman, SomeAllyCard karma, SomeAllyCard armor, SomeAllyCard rogueGambit, SomeAllyCard bishop, SomeAllyCard dazzler
   , SomeAllyCard havok
   , SomeAllyCard mirage
   , SomeAllyCard gentle

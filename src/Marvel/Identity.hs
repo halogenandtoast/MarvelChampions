@@ -370,7 +370,7 @@ isPlayableWith ignoringCost attrs c = do
       && not forbidden
       && (isNothing (cdResponseWindow def) || isJust (cdActionCriteria def))
       -- only these are played: not a resource, nor an obligation held in hand (System Shock)
-      && (cdCardType def `elem` [AllyType, EventType, SupportType, UpgradeType])
+      && (cdCardType def `elem` [AllyType, EventType, SupportType, UpgradeType, PlayerSideSchemeType])
  where
   ident = toId attrs
   def = getCardDef c
@@ -468,7 +468,9 @@ resourceCostAdjustment :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe T
 resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
-  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, sum (map change modifiers <> map changeOn onTarget))
+  soldier <- if toCardCode c == "40023" then selectAny (IdentityWithId (toId attrs) <> IdentityWithTrait Soldier) else pure False
+  let intrinsic = if soldier then -1 else 0
+  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic + sum (map change modifiers <> map changeOn onTarget))
  where
   change = \case
     ResourceCostReduction n -> negate (fromIntegral n)
@@ -878,6 +880,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               & deckL
                 .~ Deck deck
     ReadyCards -> do
+      schemes <- getControlledPlayerSideSchemes playerIdentityId False
+      for_ schemes (\sid -> sideSchemeStep sid ReadiedSideScheme)
       for_ (HashSet.toList playerIdentityAllies) readyByGame
       for_ (HashSet.toList playerIdentitySupports) ready
       for_ (HashSet.toList playerIdentityUpgrades) ready
@@ -1113,6 +1117,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
         discarded <- discardPlayerDeckEncounters playerIdentityId cards
+        actor <- getYou
+        for_ discarded $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
         for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discarded
         pure $
           PlayerIdentity $
@@ -1185,7 +1191,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             else if attackIndirect attack'
             then dealIndirectAttackDamage playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
             else damageCharacter playerIdentityId (attackSource attack') (attackDamageTo attack' damage)
-      unless (attackRanged attack') $
+      ignoresRetaliate <- elem AttacksIgnoreRetaliate <$> getModifiers (attackSource attack')
+      unless (attackRanged attack' || ignoresRetaliate) $
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when (playerIdentityDefended || attackDefended attack') $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage
@@ -1311,13 +1318,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             -- is not empty meanwhile
             pure $ PlayerIdentity $ attrs & deckL .~ Deck deck' & \a -> a {playerIdentitySearching = True}
     -- the cards stay where they are while searched; the deck is shuffled after
-    Search (SearchIdentityDeckAndDiscardPile iid) cardMatcher SearchDrawOne ShuffleBackIn
+    Search (SearchIdentityDeckAndDiscardPile iid) cardMatcher searchOption ShuffleBackIn
       | iid == playerIdentityId -> do
           let found = filter (cardMatch cardMatcher) (unDeck playerIdentityDeck <> unDiscard playerIdentityDiscard)
           focusing (PlayerCard <$> found) $
             chooseOne playerIdentityId $
               [labeled "$label.noMatchingCardsFound" (pure ()) | null found]
-                <> [targeting c (addToHand playerIdentityId c) | c <- found]
+                <> [targeting c (case searchOption of SearchDrawOne -> addToHand playerIdentityId c; SearchTarget target -> searchFoundCards target [PlayerCard c]) | c <- found]
           shuffleDeck playerIdentityId
           pure pid
     FinishedSearching -> pure $ PlayerIdentity attrs {playerIdentitySearching = False}
@@ -1326,6 +1333,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         (missed, rest) = break (cardMatch matcher) (unDeck playerIdentityDeck)
         found = take 1 rest
       discarded <- discardPlayerDeckEncounters playerIdentityId (missed <> found)
+      actor <- getYou
+      for_ discarded $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
       for_ [c | c <- found, isNothing (playerZoneEncounterCard c)] \c -> withDiscardedMatch target FromDeck (PlayerCard c)
       pure $
         PlayerIdentity $
@@ -1402,6 +1411,14 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific (IdentityRef ident) "swapHandWithDeckTop" (fromJSON -> Success card)
+      | ident == playerIdentityId attrs, card `elem` unHand (playerIdentityHand attrs)
+      , top : rest <- unDeck (playerIdentityDeck attrs) -> pure $ PlayerIdentity attrs
+          {playerIdentityHand = Hand (map (\c -> if c == card then top else c) (unHand $ playerIdentityHand attrs)), playerIdentityDeck = Deck (card : rest)}
+    CardSpecific (IdentityRef ident) "swapHandWithDiscardTop" (fromJSON -> Success card)
+      | ident == playerIdentityId attrs, card `elem` unHand (playerIdentityHand attrs)
+      , top : rest <- unDiscard (playerIdentityDiscard attrs) -> pure $ PlayerIdentity attrs
+          {playerIdentityHand = Hand (map (\c -> if c == card then top else c) (unHand $ playerIdentityHand attrs)), playerIdentityDiscard = Discard (card : rest)}
     CardSpecific (IdentityRef ident) "discardToughForPiercing" (fromJSON -> Success (source :: Source, damage :: Damage)) | ident == playerIdentityId attrs -> do
       immune <- cannotTakeDamageFrom (IdentityRef ident) source
       let count = if playerIdentityTough attrs && not immune then 1 + playerIdentityAdditionalTough attrs else 0
