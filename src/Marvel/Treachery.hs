@@ -2,6 +2,7 @@
 module Marvel.Treachery where
 
 import Marvel.KreeFanatic qualified as KF
+import Marvel.CampaignPlayers.NemesisTreacheries qualified as CN
 
 import Marvel.Treachery.Treacheries.AgentsOfShield qualified as AosEncounter
 
@@ -80,7 +81,8 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe
+  [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
+  , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe
   , SomeTreacheryCard wm58028, SomeTreacheryCard wm58029, SomeTreacheryCard hc59040
   , SomeTreacheryCard TT.tt55023, SomeTreacheryCard TT.tt55024, SomeTreacheryCard TT.tt55025, SomeTreacheryCard TT.tt55026, SomeTreacheryCard TT.tt55049, SomeTreacheryCard TT.tt55050, SomeTreacheryCard TT.tt55051
   , SomeTreacheryCard AosEncounter.aos50076, SomeTreacheryCard AosEncounter.aos50077, SomeTreacheryCard AosEncounter.aos50078, SomeTreacheryCard AosEncounter.aos50079, SomeTreacheryCard AosEncounter.aos50082, SomeTreacheryCard AosEncounter.aos50096, SomeTreacheryCard AosEncounter.aos50097, SomeTreacheryCard AosEncounter.aos50102, SomeTreacheryCard AosEncounter.aos50123, SomeTreacheryCard AosEncounter.aos50124, SomeTreacheryCard AosEncounter.aos50128, SomeTreacheryCard AosEncounter.aos50137, SomeTreacheryCard AosEncounter.aos50138, SomeTreacheryCard AosEncounter.aos50141, SomeTreacheryCard AosEncounter.aos50142, SomeTreacheryCard AosEncounter.aos50147, SomeTreacheryCard AosEncounter.aos50151, SomeTreacheryCard AosEncounter.aos50155, SomeTreacheryCard AosEncounter.aos50160, SomeTreacheryCard AosEncounter.aos50163, SomeTreacheryCard AosEncounter.aos50164, SomeTreacheryCard AosEncounter.aos50175, SomeTreacheryCard AosEncounter.aos50176, SomeTreacheryCard AosEncounter.aos50177, SomeTreacheryCard AosEncounter.aos50184a, SomeTreacheryCard AosEncounter.aos50184b, SomeTreacheryCard AosEncounter.aos50184c

@@ -1,5 +1,6 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.CampaignPlayers.EncounterCards qualified as CN
 import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
 import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
@@ -198,7 +199,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ judgeJuryExecutioner
+  [ CN.enc56025, CN.enc56056, CN.enc60034, CN.enc60062
+  , judgeJuryExecutioner
   , CampaignPlayers.fne60012, CampaignPlayers.fne60024
   , WM.wm58027, HC.hc59028, HC.hc59038, HC.hc59041, HC.hc59045
   , JL.jl61007, JL.jl61020, JL.jl61028, JL.jl61029, JL.jl61032, JL.jl61039, JL.jl62030

@@ -34,21 +34,22 @@ import Marvel.Status
 import Marvel.Trait qualified as T
 import Marvel.Window qualified as W
 import Marvel.CampaignPlayers.Cards qualified as Cards
+import Marvel.CampaignPlayers.EncounterCards qualified as Encounter
 import Marvel.CampaignPlayers.Helpers
 import Marvel.FalconWinter.Helpers (nextCardReduction)
 import Marvel.AlterEgo.Runner
 
 cw56001b :: AlterEgoCard CampaignAlterEgo
-cw56001b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.cw56001b (HP $ Static 10) (HandSize 6) (Rec 3) []
+cw56001b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.cw56001b (HP $ Static 10) (HandSize 6) (Rec 3) [Encounter.enc56023]
 
 cw56029b :: AlterEgoCard CampaignAlterEgo
-cw56029b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.cw56029b (HP $ Static 13) (HandSize 5) (Rec 4) []
+cw56029b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.cw56029b (HP $ Static 13) (HandSize 5) (Rec 4) [Encounter.enc56054]
 
 fne60001b :: AlterEgoCard CampaignAlterEgo
-fne60001b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.fne60001b (HP $ Static 10) (HandSize 6) (Rec 3) []
+fne60001b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.fne60001b (HP $ Static 10) (HandSize 6) (Rec 3) [Encounter.enc60032]
 
 fne60037b :: AlterEgoCard CampaignAlterEgo
-fne60037b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.fne60037b (HP $ Static 9) (HandSize 6) (Rec 3) []
+fne60037b = alterEgo (\attrs -> CampaignAlterEgo attrs [] Nothing) Cards.fne60037b (HP $ Static 9) (HandSize 6) (Rec 3) [Encounter.enc60060]
 
 data CampaignAlterEgo = CampaignAlterEgo
   { campaignAlterEgoAttrs :: Attrs AlterEgo

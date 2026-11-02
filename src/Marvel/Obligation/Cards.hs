@@ -1,5 +1,6 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.CampaignPlayers.EncounterCards qualified as CN
 import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
@@ -181,7 +182,8 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ WM.wm58025, HC.hc59004, HC.hc59035
+    [ CN.enc56023, CN.enc56054, CN.enc60032, CN.enc60060
+  , WM.wm58025, HC.hc59004, HC.hc59035
   , JL.jl61030, JL.jl61033a, JL.jl61033b, JL.jl61033c, JL.jl62028
   , aos50134, aos50179
   , FalconWinter.fw53029, FalconWinter.fw54027

@@ -2,6 +2,7 @@
 module Marvel.SideScheme where
 
 import Marvel.KreeFanatic qualified as KF
+import Marvel.CampaignPlayers.NemesisSchemes qualified as CN
 
 import Marvel.SideScheme.SideSchemes.JessicaLuke qualified as JL
 import Marvel.SideScheme.SideSchemes.AgentsOfShield qualified as AosEncounter
@@ -93,7 +94,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
-  [ SomeSideSchemeCard KF.judgeJuryExecutioner
+  [ SomeSideSchemeCard CN.cn56025, SomeSideSchemeCard CN.cn56056, SomeSideSchemeCard CN.cn60034, SomeSideSchemeCard CN.cn60062
+  , SomeSideSchemeCard KF.judgeJuryExecutioner
   , SomeSideSchemeCard fne60012, SomeSideSchemeCard fne60024
   , SomeSideSchemeCard wm58027, SomeSideSchemeCard hc59028, SomeSideSchemeCard hc59038, SomeSideSchemeCard hc59041, SomeSideSchemeCard hc59045
   , SomeSideSchemeCard JL.jl61007, SomeSideSchemeCard JL.jl61020, SomeSideSchemeCard JL.jl61028, SomeSideSchemeCard JL.jl61029, SomeSideSchemeCard JL.jl61032, SomeSideSchemeCard JL.jl61039, SomeSideSchemeCard JL.jl62030

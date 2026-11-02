@@ -250,6 +250,7 @@ data Modifier
   | CanOnlyRemoveThreatFrom SchemeId
   | CannotRemoveThreatFrom SchemeId
   | CanOnlyDamageEngagedEnemies
+  | CannotBeDamagedByIdentity IdentityId
   | CannotDamageEnemiesEngagedWith IdentityId
   | CannotThwartSideSchemes
   | CrisisIcon

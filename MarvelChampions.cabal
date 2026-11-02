@@ -546,7 +546,12 @@ library
       Marvel.Campaign.SinisterMotives
       Marvel.Campaign.Steps
       Marvel.CampaignPlayers.Cards
+      Marvel.CampaignPlayers.EncounterCards
       Marvel.CampaignPlayers.Helpers
+      Marvel.CampaignPlayers.NemesisAttachments
+      Marvel.CampaignPlayers.NemesisSchemes
+      Marvel.CampaignPlayers.NemesisTreacheries
+      Marvel.CampaignPlayers.Obligations
       Marvel.Card
       Marvel.Card.AttachmentHeroAbilities
       Marvel.Card.Builder
@@ -1320,6 +1325,7 @@ library
       Marvel.Minion.Minions.Butler
       Marvel.Minion.Minions.Cable
       Marvel.Minion.Minions.Callisto
+      Marvel.Minion.Minions.CampaignPlayersNemesis
       Marvel.Minion.Minions.ChildrenOfThanos
       Marvel.Minion.Minions.Chimera
       Marvel.Minion.Minions.ChitauriSoldier
@@ -2871,6 +2877,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.BlackWidowNemesisSpec
       Marvel.Encounter.BrotherhoodOfBadoonSpec
       Marvel.Encounter.CableNemesisSpec
+      Marvel.Encounter.CampaignNemesisSpec
       Marvel.Encounter.CaptainAmericaNemesisSpec
       Marvel.Encounter.CountsSpec
       Marvel.Encounter.CyclopsNemesisSpec

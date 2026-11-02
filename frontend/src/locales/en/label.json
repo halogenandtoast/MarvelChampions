@@ -692,5 +692,9 @@
   "shapeChanger": "Shape-Changer",
   "superhumanSenses": "Superhuman Senses",
   "undercoverWork": "Undercover Work",
-  "watchAndLearn": "Watch and Learn"
+  "watchAndLearn": "Watch and Learn",
+  "cnBullseyeAttacks": "Bullseye attacks you",
+  "cnExhaustRemoveObligation": "Exhaust your alter-ego to remove this obligation",
+  "cnActivateMinions": "Each minion engaged with you activates",
+  "cnDiscardShapeshifts": "Discard each Shapeshift upgrade you control"
 }

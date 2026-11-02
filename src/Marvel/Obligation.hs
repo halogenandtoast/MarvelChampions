@@ -14,6 +14,7 @@ import Marvel.Obligation.Obligations.NextEvolutionTelepathySet
 import Marvel.Obligation.Obligations.Mojo
 import Marvel.Obligation.Obligations.MojoGenres
 import Marvel.Obligation.Obligations.MutantGenesisCampaign
+import Marvel.CampaignPlayers.Obligations qualified as CN
 import Marvel.Prelude
 
 import Marvel.Card
@@ -36,7 +37,8 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard wm58025, SomeObligationCard hc59004, SomeObligationCard hc59035
+  [ SomeObligationCard CN.cn56023, SomeObligationCard CN.cn56054, SomeObligationCard CN.cn60032, SomeObligationCard CN.cn60060
+  , SomeObligationCard wm58025, SomeObligationCard hc59004, SomeObligationCard hc59035
   , SomeObligationCard JL.jl61030, SomeObligationCard JL.jl61033a, SomeObligationCard JL.jl61033b, SomeObligationCard JL.jl61033c, SomeObligationCard JL.jl62028
   , SomeObligationCard AosEncounter.aos50134, SomeObligationCard AosEncounter.aos50179
   , SomeObligationCard fw53029, SomeObligationCard fw54027

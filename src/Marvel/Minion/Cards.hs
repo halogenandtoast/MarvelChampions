@@ -1,5 +1,6 @@
 module Marvel.Minion.Cards where
 
+import Marvel.CampaignPlayers.EncounterCards qualified as CN
 import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
@@ -203,7 +204,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ ronanKreeFanatic
+      [ CN.enc56024, CN.enc56027, CN.enc56028, CN.enc56055, CN.enc60033, CN.enc60061, CN.enc60063
+  , ronanKreeFanatic
   , WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
   , JL.jl61031, JL.jl62029, JL.jl62032, JL.jl62033
   , TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059

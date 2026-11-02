@@ -5414,7 +5414,9 @@ cannotTakeDamageFrom target source = do
   restricted <- sourceRestrictedFromEnemy source target
   modifiers <- getModifiers target
   attackingCharacter <- sourceAttackCharacter source
+  identitySource <- getHeroSourceController source
   if
+    | any (\case CannotBeDamagedByIdentity you -> identitySource == Just you; _ -> False) modifiers -> pure True
     | any (\case DamageOnlyFromCharacterAttacks allowed -> attackingCharacter /= Just allowed; _ -> False) modifiers -> pure True
     | missionRestricted || restricted -> pure True
     | CannotTakeDamage `elem` modifiers -> pure True

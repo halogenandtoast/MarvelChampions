@@ -200,3 +200,5 @@ Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasy
 | Luke Cage | [Rules and rulings](hero-luke-cage.md) |
 | Civil War player cards | [Rules and scope](player-civil-war.md) |
 | Fear No Evil player cards | [Rules and scope](player-fear-no-evil.md) |
+
+- [Civil War and Fear No Evil nemeses](encounter-civil-war-fear-no-evil-nemeses.md): Tigra, Hulkling, Daredevil and Echo obligations and nemesis interactions.
