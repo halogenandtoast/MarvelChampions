@@ -1340,7 +1340,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
               & toughL %~ (&& not (piercesTough damage))
               & \a -> a {playerIdentityAttackDamageTaken = playerIdentityAttackDamageTaken + if fromAttack then damageAmount damage else 0, playerIdentityAdditionalTough = if piercesTough damage then 0 else playerIdentityAdditionalTough}
     IdentityDefeated -> do
-      players <- getAllPlayers
+      players <- getPlayers
       let
         ps = take 1 . drop 1 $ dropWhile (/= playerIdentityId) (cycle players)
       -- the cards they control leave play, and the encounter cards dealt to them are

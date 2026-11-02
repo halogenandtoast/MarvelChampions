@@ -1901,6 +1901,28 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- what the Campaign Instructions do with the starting hands
     when (isJust gameCampaign) $ campaignStep (CampaignSetupThen "startingHands")
     pure $ g {gameState = InProgress}
+  CardSpecific GameRef "cwAdvancePhase" _ | Just c <- gameCompetition -> do
+    let phase = CW.competitivePhase c
+        registration = CW.teamOutcome c CW.Registration
+        resistance = CW.teamOutcome c CW.Resistance
+        result = case (registration,resistance) of
+          (Just CW.EnemyLeaderDefeated,Just CW.EnemyLeaderDefeated) -> Just CompetitiveDraw
+          (Just CW.EnemyLeaderDefeated,_) -> Just RegistrationWon
+          (_,Just CW.EnemyLeaderDefeated) -> Just ResistanceWon
+          (Just _,Just _) -> Just BothTeamsLost
+          (Just _,Nothing) -> Just ResistanceWon
+          (Nothing,Just _) -> Just RegistrationWon
+          _ -> Nothing
+        equalPhases = phase `elem` [CW.ResistancePlayerPhase,CW.ResistanceVillainPhase]
+    case if equalPhases then result else Nothing of
+      Just finished -> gameOver finished >> pure g
+      Nothing -> do
+        let next = fromMaybe CW.RegistrationPlayerPhase (CW.nextTeamPhase phase)
+            first = CW.teamFirstPlayer c (CW.phaseTeam next)
+        if isNothing (CW.nextTeamPhase phase) then endRound else beginPhase (CW.ordinaryPhase next)
+        pure g {gameCompetition = Just c {CW.competitivePhase = next},gameActivePlayer = first}
+  CardSpecific GameRef "cwFinishBoard" (fromJSON -> Success (team,outcome)) | Just c <- gameCompetition ->
+    pure g {gameCompetition = Just $ CW.recordTeamOutcome team outcome c}
   CardSpecific GameRef "cwSetFirstPlayer" (fromJSON -> Success (team,you)) | Just c <- gameCompetition -> do
     let own = filter (`elem` CW.teamPlayers c team) gamePlayerOrder
         rotated = case break (== you) own of (before,after@(_:_)) -> after <> before; _ -> own
@@ -2451,18 +2473,27 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
      in case target of
       IdentityRef iid -> do
         transferMojoThreat (IdentityCharacter iid)
-        when (length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
+        when (isNothing gameCompetition && length (g ^. entitiesL . playersL) <= 1) (gameOver Lost)
         -- the last player of an area defeated, with players left in others
         area <- getAreaOf iid
-        when (length (g ^. entitiesL . playersL) > 1 && all (== iid) (areaPlayers area)) $
+        when (isNothing gameCompetition && length (g ^. entitiesL . playersL) > 1 && all (== iid) (areaPlayers area)) $
           push (AreaDefeated $ areaId area)
-        let order = filter (/= iid) gamePlayerOrder
+        let competition' = flip fmap gameCompetition $ \c -> case CW.playerTeam c iid of
+              Nothing -> c
+              Just team ->
+                let survivors = filter (\p -> p /= iid && p `elem` CW.teamPlayers c team) gamePlayerOrder
+                 in case survivors of
+                      [] -> CW.recordTeamOutcome team CW.AllHeroesDefeated c
+                      first : _ | CW.teamFirstPlayer c team == iid -> CW.setTeamFirstPlayer team first c
+                      _ -> c
+            order = filter (/= iid) gamePlayerOrder
             -- whoever is left takes over from an eliminated active player
             next = case break (== iid) gamePlayerOrder of
               (before, _ : after) -> headMay (after <> before)
               _ -> headMay order
         pure $
           g
+            & (\table -> table {gameCompetition = competition'})
             & (entitiesL . playersL %~ deleteMap iid)
             & (removedEntitiesL . playersL %~ maybe id (insertMap iid) (lookup iid $ gamePlayers g))
             & (activeCostL %~ filter ((/= iid) . activeCostIdentityId))
@@ -4182,8 +4213,8 @@ instance RunMessage Game where
     modifiers <- getModifiers GameRef
     if SkipNextVillainPhase `elem` modifiers then runQueueT do
       for_ (HashMap.elems $ gameEffects g) $ \effect ->
-        when (SkipNextVillainPhase `elem` Effect.effectModifiers (toAttrs effect)) (disableEffect $ toId effect)
-      endRound
+        when (modifierProviderAllowed g GameRef (toTarget $ toAttrs effect) && SkipNextVillainPhase `elem` Effect.effectModifiers (toAttrs effect)) (disableEffect $ toId effect)
+      if isJust (gameCompetition g) then cardSpecific GameRef "cwAdvancePhase" () else endRound
       pure g
     else dispatchGameMessage msg g
   -- Forced actions finish before scenario cleanup, hand refill or phase windows.
@@ -4191,7 +4222,7 @@ instance RunMessage Game where
     pending <- concatMapM (\you -> map (you,) <$> getAbilitiesForMatching you (\ab ->
       if abilityType ab /= Ability.ForcedAction then pure False else do
         meets <- passesCriteria you ab
-        if meets then canAffordCost you (abilitySource ab) (abilityCost ab) else pure False)) =<< getAllPlayers
+        if meets then canAffordCost you (abilitySource ab) (abilityCost ab) else pure False)) =<< getPhasePlayers
     case pending of
       [] -> dispatchGameMessage msg g
       (you, _) : _ -> runQueueT $ do
@@ -5652,7 +5683,7 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
-            Just (Ask ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
+            Just (Ask ident asked) | not (HashMap.member ident $ gamePlayers g), not (competitiveReplyChoice g ident asked) -> go (n + 1)
             Just (IdentityMessage ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
             Just (Ask ident asked) -> do
               patrolled <- isPatrolled ident
@@ -5669,6 +5700,16 @@ runGameMessagesWith before = go (0 :: Int)
               before other
               withGameM $ runMessage other
               go (n + 1)
+  competitiveReplyChoice g ident question = case gameCompetition g of
+    Nothing -> False
+    Just c -> ident `elem` [CW.teamFirstPlayer c CW.Registration,CW.teamFirstPlayer c CW.Resistance] && enemyChoice question
+   where
+    enemyChoice = \case
+      QuestionLabel "$label.cwEnemyTeamChooses" _ _ -> True
+      QuestionLabel _ _ q -> enemyChoice q
+      Searched _ q -> enemyChoice q
+      Read _ q -> enemyChoice q
+      _ -> False
   isFinished g = case gameState g of
     Finished _ -> True
     _ -> False

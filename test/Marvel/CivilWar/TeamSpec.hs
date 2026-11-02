@@ -106,6 +106,63 @@ spec = describe "Civil War team boundaries" do
       asYou resistance (selectJust FirstPlayer) `shouldReturn` resistance
       asYou resistance getPlayers `shouldReturn` drop 2 (seats tg)
 
+  it "finishes registration's player phase before resistance begins its turns" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- addSecondBoard tg
+      endTurn
+      competition <- getCompetition
+      liftIO $ fmap CW.competitivePhase competition `shouldBe` Just CW.ResistancePlayerPhase
+      getActivePlayerId `shouldReturn` player2 tg
+      getPhasePlayers `shouldReturn` [player2 tg]
+      offers (== EndTurn) `shouldReturn` True
+
+  it "plays both villain phases before starting registration's next round" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- addSecondBoard tg
+      roundBefore <- getsGame gameRound
+      endTurn
+      endTurn
+      toFirstTurn
+      competition <- getCompetition
+      liftIO $ fmap CW.competitivePhase competition `shouldBe` Just CW.RegistrationPlayerPhase
+      getActivePlayerId `shouldReturn` player1 tg
+      getsGame gameRound `shouldReturn` (roundBefore + 1)
+
+  it "keeps an eliminated team's board separate during the reply" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      second <- addSecondBoard tg
+      resolve [IdentityMessage (player2 tg) IdentityDefeated]
+      competition <- getCompetition
+      liftIO $ fmap (\c -> CW.teamOutcome c CW.Resistance) competition `shouldBe` Just (Just CW.AllHeroesDefeated)
+      getsGame gameState `shouldReturn` InProgress
+      getActiveVillainIn (CW.teamArea CW.Resistance) `shouldReturn` Just second
+      getActiveVillainIn (CW.teamArea CW.Registration) >>= liftIO . (`shouldSatisfy` (/= Just second))
+      (length <$> getAreas) `shouldReturn` 2
+
+  it "allows an eliminated first player to make required enemy-team choices" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      resolve [IdentityMessage (player2 tg) IdentityDefeated]
+      withGame_ $ questionL .~ mempty
+      push $ Ask (player2 tg) $ QuestionLabel "$label.cwEnemyTeamChooses" Nothing $ ChooseOne [Label "$label.done" []]
+      runGameMessages
+      question <- openQuestion
+      liftIO $ fmap fst question `shouldBe` Just (player2 tg)
+
+  it "gives resistance its reply before resolving a registration victory" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      resolve [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Registration,CW.EnemyLeaderDefeated)]
+      endTurn
+      getsGame gameState `shouldReturn` InProgress
+      getPhasePlayers `shouldReturn` [player2 tg]
+      resolve [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Resistance,CW.EnemyLeaderDefeated)]
+      endTurn
+      getsGame gameState `shouldReturn` Finished CompetitiveDraw
+
   it "passes only the active team's first-player token" do
     tg <- competitive ["spider-man","she-hulk","captain-marvel","iron-man"]
     inGame tg do

@@ -463,7 +463,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     PlaceInCollection (EncounterCard card) -> pure $ leaves card attrs
     AttachEncounterCard card _ -> pure $ leaves card attrs
     BeginPhase PlayerPhase -> do
-      players <- getAllPlayers
+      players <- getPhasePlayers
       priority <- filterM (fmap (elem TakesFirstPlayerPhaseTurn) . getModifiers) players
       let turns = priority <> filter (`notElem` priority) players
       for_ turns \p -> do
@@ -472,20 +472,25 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       endPhase PlayerPhase
       pure attrs
     EndPhase PlayerPhase -> do
-      players <- getAllPlayers
+      players <- getPhasePlayers
       for_ players \ident -> do
         setActivePlayer ident
         identityStep ident DiscardCards
         identityStep ident DrawOrDiscardToHandLimit
       for_ players (`identityStep` ReadyCards)
       for_ (take 1 players) setActivePlayer
-      beginPhase VillainPhase
+      competitive <- getCompetition
+      if isJust competitive then cardSpecific GameRef "cwAdvancePhase" () else beginPhase VillainPhase
+      pure attrs
+    EndPhase VillainPhase -> do
+      competitive <- getCompetition
+      when (isJust competitive) $ cardSpecific GameRef "cwAdvancePhase" ()
       pure attrs
     -- in each area its active villain activates against its players, and its hazard
     -- icons deal its players more encounter cards
     BeginPhase VillainPhase -> do
-      players <- getAllPlayers
-      areas <- getAreas
+      players <- getPhasePlayers
+      areas <- getPhaseAreas
       hazards <- for areas \area -> do
         here <- filterM (fmap ((== areaId area) . areaId) . getAreaOf) players
         n <- fromIntegral <$> getHazardCountIn (areaId area)
@@ -502,11 +507,12 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       revealDealtEncounterCards
       passFirstPlayer
       endPhase VillainPhase
-      endRound
+      competitive <- getCompetition
+      unless (isJust competitive) endRound
       pure attrs
     -- each player in turn reveals the cards dealt them, until none remain
     RevealDealtEncounterCards -> do
-      players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getAllPlayers
+      players <- filterM (fmap notNull . project PlayerIdentityEncounterCards) =<< getPhasePlayers
       unless (null players) do
         for_ players \p -> do
           setActivePlayer p
