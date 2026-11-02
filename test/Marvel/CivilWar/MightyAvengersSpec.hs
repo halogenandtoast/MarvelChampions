@@ -131,3 +131,60 @@ spec = describe "Civil War Mighty Avengers minions" do
       card <- encounterCard C.cw56076
       resolve [RevealEncounterCard you card]
       playerIdentityEncounterCards <$> playerAttrs you `shouldReturn` [next]
+
+
+  it "Doc Samson confuses the player on reveal" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      _ <- addMinion (player1 tg) C.cw56078
+      identityMatches ConfusedIdentity (player1 tg) `shouldReturn` True
+
+  it "Doc Samson places two threat instead when the player was already confused" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      resolve [IdentityMessage you IdentityConfused]
+      before <- mainSchemeThreat
+      _ <- addMinion you C.cw56078
+      mainSchemeThreat `shouldReturn` (before + 2)
+      identityMatches ConfusedIdentity you `shouldReturn` True
+
+  it "Hellcat stuns an alter-ego without initiating Quickstrike" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- addMinion you C.cw56079
+      identityMatches StunnedIdentity you `shouldReturn` True
+      damageOf you `shouldReturn` 0
+
+  it "Hellcat deals two indirect damage to a player who was already stunned" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      resolve [IdentityMessage you IdentityStunned]
+      _ <- addMinion you C.cw56079
+      damageOf you `shouldReturn` 2
+      identityMatches StunnedIdentity you `shouldReturn` True
+
+  for_ [(C.cw56078,IdentityConfused,ConfusedIdentity),(C.cw56079,IdentityStunned,StunnedIdentity)] $ \(def,status,matcher) ->
+    it (show (toCardCode def) <> " only gives its status as a boost, including when the status already exists") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        vid <- withLeader "57040"
+        resolve [IdentityMessage you status]
+        _ <- stackEncounterDeck [def]
+        before <- mainSchemeThreat
+        resolve [VillainMessage vid VillainSchemes]
+        mainSchemeThreat `shouldReturn` (before + 1)
+        damageOf you `shouldReturn` 0
+        identityMatches matcher you `shouldReturn` True
+
+  it "Hellcat uses Quickstrike against a hero before its revealed stun" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- addMinion you C.cw56079
+      damageOf you `shouldReturn` 2
+      identityMatches StunnedIdentity you `shouldReturn` True

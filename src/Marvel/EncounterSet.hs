@@ -312,6 +312,7 @@ modularSets :: [EncounterSet]
 modularSets =
   [ KreeFanatic
   , CwMightyAvengers
+  , CwTheInitiative
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

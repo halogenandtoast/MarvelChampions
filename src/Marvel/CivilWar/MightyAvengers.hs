@@ -25,7 +25,7 @@ newtype MightyAvenger = MightyAvenger (Attrs Minion)
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 definitions :: [CardDef]
-definitions = [C.cw56073,C.cw56074,C.cw56075]
+definitions = [C.cw56073,C.cw56074,C.cw56075,C.cw56078,C.cw56079]
 
 minions :: [MinionCard MightyAvenger]
 minions = map make definitions
@@ -36,14 +36,24 @@ minions = map make definitions
 instance RunMessage MightyAvenger where
   runMessage msg e@(MightyAvenger a) = runQueueT $ case msg of
     MinionMessage mid (RevealMinion you) | mid == minionId a -> e <$ revealed you
-    Boost (RevealedAsBoost target enemy) | isTarget a target -> e <$ (getBoostedPlayer enemy >>= revealed)
+    Boost (RevealedAsBoost target enemy) | isTarget a target -> e <$ (getBoostedPlayer enemy >>= boosted)
     _ -> MightyAvenger <$> runMessage msg a
    where
     revealed you = case toCardCode a of
       "56073" -> enemyLeaderFor you >>= traverse_ enemyBecomesTough
       "56074" -> placeThreatOnEach a 1 EncounterMainScheme
       "56075" -> damageIdentity you a (toDamage 1 FromAbility)
+      "56078" -> do
+        already <- identityMatches ConfusedIdentity you
+        if already then placeThreatOnEach a 2 EncounterMainScheme else confuseIdentity you
+      "56079" -> do
+        already <- identityMatches StunnedIdentity you
+        if already then dealIndirectDamage you a 2 else stunIdentity you
       _ -> pure ()
+    boosted you = case toCardCode a of
+      "56078" -> confuseIdentity you
+      "56079" -> stunIdentity you
+      _ -> revealed you
 
 newtype SharedAvengerKeywords = SharedAvengerKeywords (Attrs SideScheme)
   deriving anyclass IsSideScheme
