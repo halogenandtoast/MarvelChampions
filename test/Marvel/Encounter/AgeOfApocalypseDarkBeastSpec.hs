@@ -71,6 +71,37 @@ blankSetting = do
 
 spec :: Spec
 spec = describe "Age of Apocalypse Dark Beast" do
+  for_ [Environments.theSavageLand, Environments.genosha, Environments.blueAreaOfTheMoon] \def ->
+    it ("waits for a click before resolving " <> show (toCardCode def) <> "'s Special") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let p = player1 tg
+        setting p def
+        Just (eid, _) <- currentSetting
+        beforeThreat <- mainSchemeThreatNow
+        beforeDamage <- damageOf p
+        beforeDiscard <- discardOf p
+        waiting <- openQuestion
+        withGame_ $ questionL .~ mempty
+        msgs <- L.runQueueT $ L.capture $ resolveSettingSpecial p
+        pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+        runGameMessages
+        mainSchemeThreatNow `shouldReturn` beforeThreat
+        damageOf p `shouldReturn` beforeDamage
+        discardOf p `shouldReturn` beforeDiscard
+        openQuestion >>= \case
+          Just (ident, QuestionLabel "$label.resolveSpecial" (Just target) q) -> do
+            liftIO $ target `shouldBe` EnvironmentRef eid
+            liftIO $ choicesOf q `shouldSatisfy` any (isTargetChoice $ EnvironmentRef eid)
+            answerQuestion ident 0
+          _ -> error "expected the Setting's Special prompt"
+        pass
+        case toCardCode def of
+          "45127" -> length <$> discardOf p `shouldReturn` length beforeDiscard + 3
+          "45133" -> mainSchemeThreatNow `shouldReturn` beforeThreat + 1
+          "45139" -> damageOf p `shouldReturn` beforeDamage + 1
+          _ -> error "unexpected Setting"
+
   for_ [(Normal, "45118"), (Expert, "45119")] \(mode, code) ->
     it ("sets up the correct villain, one random Setting and two unused settings in " <> show mode) do
       tg <- darkBeast mode

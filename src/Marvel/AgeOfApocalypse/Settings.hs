@@ -31,11 +31,11 @@ resolveSettingSpecialFor you target = do
     Just (eid, _) -> not <$> isBlanked eid
     Nothing -> pure False
   case setting of
-    Just (_, def) | active, toCardCode def == "45127" -> discardFromDeck you 3 target
-    Just (eid, def) | active, toCardCode def == "45133" -> do
+    Just (eid, def) | active, toCardCode def == "45127" -> specialAbility you eid $ discardFromDeck you 3 target
+    Just (eid, def) | active, toCardCode def == "45133" -> specialAbility you eid do
       placeThreatOnEach eid 1 MainScheme
       withDiscarded target FromDeck []
-    Just (eid, def) | active, toCardCode def == "45139" -> do
+    Just (eid, def) | active, toCardCode def == "45139" -> specialAbility you eid do
       damageIdentity you eid (toDamage 1 FromAbility)
       withDiscarded target FromDeck []
     _ -> withDiscarded target FromDeck []
