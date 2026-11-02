@@ -6,6 +6,11 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Agents of S.H.I.E.L.D. rulebook (MC50) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc50_rulebook-web.pdf |
+| Black Panther (Shuri) rulesheet (MC51) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc51_rulesheet-web.pdf |
+| Silk rulesheet (MC52) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc52_rulesheet-web.pdf |
+| Falcon rulesheet (MC53) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc53_rulesheet-web.pdf |
+| Winter Soldier rulesheet (MC54) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc54_rulesheet-web.pdf |
 | Magneto Hero Pack rules insert (MC49) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/84/33/8433f555-b1bc-4b23-a022-86120417b018/mc49_magneto_rules_insert.pdf |
 | Nightcrawler Hero Pack rules insert (MC48) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/e3/7b/e37bce25-fb98-4d80-91cd-64f13284972c/mc48_nightcrawler_rules_insert.pdf |
 | Jubilee Hero Pack rules insert (MC47) | 2 pages | https://images-cdn.fantasyflightgames.com/filer_public/68/7e/687e6308-1160-42c6-bade-3469b6b53d11/mc47_jubilee_rules_insert-web.pdf |
@@ -167,3 +172,14 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 - Not transcribed: the RR index (pp.2–3; it only maps terms to pages, and "See" redirects are already glossary
   entries), card illustrations, and the anatomy pages' card images (the anatomy keys and callouts are in
   `appendices.md`).
+
+## Agents of S.H.I.E.L.D. and hero packs 51–54
+
+- [hero-maria-hill.md](hero-maria-hill.md)
+- [hero-nick-fury.md](hero-nick-fury.md)
+- [campaign-agents-of-shield.md](campaign-agents-of-shield.md)
+- [scenario-shield-agents.md](scenario-shield-agents.md)
+- [hero-black-panther-shuri.md](hero-black-panther-shuri.md)
+- [hero-silk.md](hero-silk.md)
+- [hero-falcon.md](hero-falcon.md)
+- [hero-winter-soldier.md](hero-winter-soldier.md)
