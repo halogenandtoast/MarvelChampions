@@ -868,6 +868,15 @@ villainAttacksCharacter vid you target = do
     villainStep vid (VillainAttacksCharacter you $ toCharacter target)
     setActivePlayer previous
 
+-- | An explicit character attack without dealing a new boost card for it.
+villainAttacksCharacterWithoutBoost :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> m ()
+villainAttacksCharacterWithoutBoost vid you target = do
+  previous <- getActivePlayerId
+  enemyActivationAfterCurrent vid do
+    setActivePlayer you
+    cardSpecific vid "attackCharacterWithoutBoost" (you,toCharacter target)
+    setActivePlayer previous
+
 -- | The explicit character attack also gains the listed keywords as it begins.
 villainAttacksCharacterGaining :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> [Keyword] -> m ()
 villainAttacksCharacterGaining vid you target keywords = do

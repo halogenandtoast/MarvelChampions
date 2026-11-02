@@ -10,6 +10,7 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Runner
+import Marvel.Treachery.Types
 
 newtype Bullseye = Bullseye (Attrs Minion)
   deriving anyclass (IsMinion,HasModifiersFor,HasAbilities)
@@ -55,3 +56,27 @@ instance RunMessage Venom where
         Nothing -> minionActivatesAgainst mid you
       pure e
     _ -> Venom <$> runMessage msg a
+
+
+newtype ExcessiveForce = ExcessiveForce (Attrs Treachery)
+  deriving anyclass IsTreachery
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+
+excessiveForce :: TreacheryCard ExcessiveForce
+excessiveForce = treachery ExcessiveForce C.cw56090
+
+instance RunMessage ExcessiveForce where
+  runMessage msg e@(ExcessiveForce a) = runQueueT $ case msg of
+    TreacheryMessage tid (RevealTreachery you) | tid == treacheryId a -> do
+      minions <- asYou you (selectList AnyMinion)
+      if null minions then gainSurge a else placeThreatOnEach a (fromIntegral $ length minions) EncounterMainScheme
+      pure e
+    Boost (RevealedAsBoost target enemy) | isTarget a target -> do
+      you <- getBoostedPlayer enemy
+      attacker <- enemyLeaderFor you
+      defender <- friendlyLeaderFor you
+      for_ [(vid,leader) | Just vid <- [attacker],Just leader <- [defender]] $ \(vid,leader) -> do
+        first <- firstPlayerAtLeader vid
+        villainAttacksCharacterWithoutBoost vid first leader
+      pure e
+    _ -> ExcessiveForce <$> runMessage msg a

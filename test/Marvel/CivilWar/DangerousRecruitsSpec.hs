@@ -175,3 +175,86 @@ spec = describe "Civil War Dangerous Recruits" do
       identityMatches ConfusedIdentity engaged `shouldReturn` False
       asYou opponent getEncounterDeck `shouldReturn` otherBefore
       getActivePlayerId `shouldReturn` first
+
+  it "Excessive Force places one threat for each minion on the revealing player's board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- addSecondBoard tg
+      _ <- addMinion (player1 tg) M.hydraMercenary
+      _ <- addMinion (player1 tg) M.hydraSoldier
+      _ <- addMinion (player2 tg) M.hydraMercenary
+      before <- mainSchemeThreat
+      card <- encounterCard C.cw56090
+      resolve [RevealEncounterCard (player1 tg) card]
+      mainSchemeThreat `shouldReturn` (before + 2)
+
+  it "Excessive Force surges when the board has no minions" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      [next] <- stackEncounterDeck [M.hydraSoldier]
+      before <- mainSchemeThreat
+      card <- encounterCard C.cw56090
+      resolve [RevealEncounterCard (player1 tg) card]
+      mainSchemeThreat `shouldReturn` before
+      playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` [next]
+
+  it "Excessive Force's boost adds a leader attack after the current activation without drawing another boost" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      attacker <- withLeader "57040"
+      defender <- addSecondBoard tg
+      before <- leaderHp defender
+      [_,next] <- stackEncounterDeck [C.cw56090,M.hydraSoldier]
+      resolve [VillainMessage attacker VillainSchemes]
+      mainSchemeThreat `shouldReturn` 1
+      leaderHp defender `shouldReturn` (before - 1)
+      deck <- getEncounterDeck
+      headMay deck `shouldBe` Just next
+      damageOf you `shouldReturn` 0
+      changeForm you
+      resolve [VillainMessage attacker $ VillainAttacks you]
+      damageOf you `shouldReturn` 2
+      leaderHp defender `shouldReturn` (before - 1)
+
+
+  it "Excessive Force's boost has no friendly-leader target in cooperative play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57040"
+      [_,next] <- stackEncounterDeck [C.cw56090,M.hydraSoldier]
+      resolve [VillainMessage vid VillainSchemes]
+      mainSchemeThreat `shouldReturn` 1
+      damageOf you `shouldReturn` 0
+      headMay <$> getEncounterDeck `shouldReturn` Just next
+
+  it "a scheduled attack does not consume Superhuman Strength after its target has left play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57001"
+      strength <- encounterCard C.cw57007
+      resolve [RevealEncounterCard you strength]
+      mid <- addMinion you M.hydraMercenary
+      messages <- L.runQueueT $ L.capture $ do
+        L.dealDamage mid you (toDamage 10 FromAbility)
+        L.villainAttacksCharacterWithoutBoost vid you (MinionCharacter mid)
+      resolve messages
+      minionDamageOf mid `shouldReturn` Nothing
+      getAttachedCharacter (attachmentIdOf strength) `shouldReturn` Just (VillainCharacter vid)
+
+  it "Excessive Force resolves a leader attack's boost after that team's first player has been eliminated" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      defender <- withLeader "57040"
+      attacker <- addSecondBoard tg
+      resolve [SetActivePlayer q,ReplaceVillain attacker "57040" Swapped,VillainMessage attacker SetVillainHp,SetActivePlayer p]
+      resolve [IdentityMessage q IdentityDefeated]
+      _ <- stackEncounterDeck [C.cw56090,M.hydraSoldier]
+      before <- leaderHp defender
+      attack <- L.runQueueT $ L.capture $ L.villainAttacksCharacter attacker q (VillainCharacter defender)
+      resolve attack
+      leaderHp defender `shouldReturn` (before - 2)

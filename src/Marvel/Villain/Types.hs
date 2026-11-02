@@ -625,6 +625,16 @@ instance RunMessage (Attrs Villain) where
     CardSpecific target "fwReplaceBoost" (fromJSON -> Success (old, replacement)) | isTarget attrs target ->
       pure attrs {villainBoostCards = map (\card -> if card == old then replacement else card) (villainBoostCards attrs)}
     CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {villainSchemeReplacesAttack = flag}
+    CardSpecific target "attackCharacterWithoutBoost" (fromJSON -> Success (you,character)) | target == toRef attrs -> do
+      modifiers <- getModifiers attrs
+      targetModifiers <- getModifiers (characterRef character)
+      targetHp <- getCharacterRemainingHitPoints character
+      let alive = unHp (villainHp attrs) > 0 || CannotBeDefeated `elem` modifiers
+          targetAlive = targetHp > 0 || CannotBeDefeated `elem` targetModifiers
+      if alive && targetAlive && CannotActivate `notElem` modifiers then do
+        villainStep (villainId attrs) (VillainAttacksWithoutBoost you)
+        pure attrs {villainAttackTarget = Just character}
+      else pure attrs
     CardSpecific target "schemeWithoutBoost" (fromJSON -> Success flag) | target == toRef attrs ->
       pure attrs {villainSchemeWithoutBoost = flag}
     CardSpecific target "additionalActivationBoost" (fromJSON -> Success n) | target == toRef attrs ->
