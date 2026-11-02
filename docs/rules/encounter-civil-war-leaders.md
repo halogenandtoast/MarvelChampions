@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, and six leader side schemes across Civil War and Synthezoid Smackdown. Scenario registration remains pending main schemes, modular sets, and complete scenario setup.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twelve main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending the other eight main-scheme faces, modular sets, and complete scenario setup.
 
 ## Leaders and combat
 
@@ -42,6 +42,12 @@ Self-propelled Glide uses named references to Spider-Woman and Finesse and offer
 
 Legal Practice prevents heroes and allies from removing its threat. After changing form in alter-ego, a player may exhaust their identity to remove three threat. An alter-ego thwart event is also legal. Just Passing Through confuses the player who defeated it, stunning instead if the confusion attempt adds no status card.
 
+## Main schemes
+
+The first-stage schemes start at zero threat for a solo board and gain hinder 2 per player for larger teams. All first stages have a seven-per-player target; the implemented second stages have a nine-per-player target. Cut Off Support and Open Rebellion place threat before a treachery resolves, with a separate once-per-phase allowance for each player. Homeland Security and Rallying Call give minions Guard. Enforce the Law and Going Underground give the enemy leader Steady; a single stun permits an attack, two cancel it and are both removed.
+
+Public Outrage and Protect Secret Identities discard three cards from each player's own deck in the shared window after the threat step. No Going Back and Expose Overreach make allies enter exhausted. Secret Avengers and Mighty Avengers increase the enemy leader's actual ATK by one for a defended attack and two for an undefended attack, ending with the attack. A completed final stage loses a cooperative game; a competitive stage records its board's result for the opponent's reply.
+
 ## Rules checked
 
 The local v1.8 entries for Target, Interrupt, Replacement Effect, Damage, Tough, and Retaliate govern these interactions. Searches for newer card-specific rulings found no exception to the defensive or targeting rules above.
@@ -56,4 +62,4 @@ The official [Rules Reference update](https://www.fantasyflightgames.com/mission
 
 ## Verification
 
-The full unit run passes 8,128 examples. The focused Civil War run passes 205 examples, including the additional Iron Man setup-deck regression. Coverage includes resource costs, every leader attachment and treachery, side-scheme defeat effects, actual threat prevention, attack attribution, saved defense choices, cross-board responses after elimination, and independent encounter-deck searches.
+The full unit run for the shared threat window and public threat values passes 8,132 examples. The focused Civil War run including the twelve main-scheme faces passes 241 examples. Coverage includes resource costs, every leader attachment and treachery, side-scheme defeat effects, actual threat prevention, attack attribution, saved defense choices, cross-board responses after elimination, and independent encounter-deck searches.

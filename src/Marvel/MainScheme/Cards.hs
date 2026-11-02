@@ -4,6 +4,7 @@ module Marvel.MainScheme.Cards where
 
 
 
+import Marvel.CivilWar.MainSchemes qualified as CW
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 
 import Marvel.TricksterTakeover.Cards qualified as TT
@@ -51,7 +52,7 @@ import Marvel.Name
 
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
-  fromList $ map (toFst toCardCode)
+  fromList $ map (toFst toCardCode) $ CW.civilWarMainSchemeDefinitions <>
     [ TT.tt55004a, TT.tt55004b, TT.tt55005a, TT.tt55005b, TT.tt55028a, TT.tt55028b, TT.tt55033a, TT.tt55033b
   , aos50067b, aos50087b, aos50088b, aos50089b, aos50104b, aos50130b, aos50167b, aos50168b, aos50169b
   , huntingGeneTraitors, theHorsemenOfApocalypse, theAgeOfApocalypse, darkBeastsBogusJourney, enSabahNursPyramid, theRiseOfApocalypse
