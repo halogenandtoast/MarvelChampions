@@ -199,6 +199,7 @@ narrationFor = \case
   CardSpecific (UpgradeRef uid) "flipPsiEnergy" _ -> Just do
     locked <- elem CannotFlipPsiEnergy <$> getModifiers (UpgradeRef uid)
     if locked then pure [] else simply "log.flips" (UpgradeRef uid)
+  CardSpecific (AttachmentRef aid) "cwFlipMass" _ -> Just $ simply "log.flips" (AttachmentRef aid)
   CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \_form ->
     getSourceController (UpgradeRef uid) >>= \case
       Just p -> do

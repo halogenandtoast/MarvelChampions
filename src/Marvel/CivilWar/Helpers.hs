@@ -106,3 +106,10 @@ leaderOfFamily family = do
   enemies <- concatMapM (selectList . EnemyIs)
     [def | def <- C.civilWarDefinitions, cdCardType def == VillainType, cdEncounterSet def == Just family]
   pure $ headMay [vid | EnemyVillainId vid <- enemies]
+
+-- | Both faces keep the same attachment identity, host, and counters.
+flipLeaderMassForm :: ReverseQueue m => EnemyId -> m ()
+flipLeaderMassForm enemy = do
+  forms <- concatMapM (\def -> selectList $ AttachmentMatches
+    [AttachmentOnEnemy enemy,AttachmentIs def]) [C.cw57046a,C.cw57046b]
+  traverse_ (\aid -> cardSpecific aid "cwFlipMass" ()) forms

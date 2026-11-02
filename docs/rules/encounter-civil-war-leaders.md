@@ -28,6 +28,12 @@ Competitive attachment searches stay on the current board unless they explicitly
 
 The focused Civil War suite passes 98 examples, including eleven Iron Man equipment and setup cases.
 
+## Additional leader equipment
+
+Captain Marvel's Helmet, Captain America's Helmet, Super-Soldier Serum, Focused Rage, Solar Gem, Vision's Cape, and Density Control are implemented. Helmet removal requires three resources of the same type. Vision's removable equipment flips the existing mass-form attachment, preserving its identity and host. Density Control changes the form before the activation and remains attached if the requested form is already showing. Mass-form flips are narrated in the game log.
+
+The focused suite now passes 113 examples. The fifteen additional cases cover equipment costs and removal, boosts, Serum overkill, Focused Rage's scheme activation, and Density Control's attack, scheme, and unchanged-form branches. Cosmic Flight, Contaminant Immunity, and Mass Increase require further defensive timing support and remain separate work.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.

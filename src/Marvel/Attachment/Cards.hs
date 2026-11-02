@@ -157,7 +157,7 @@ import Marvel.Trait qualified as Trait
 
 allAttachments :: HashMap CardCode CardDef
 allAttachments =
-  fromList $ [(toCardCode def,def) | def <- [CWDefs.cw56098,CWDefs.cw56143,CWDefs.cw56174,CWDefs.cw57007,CWDefs.cw57046a,CWDefs.cw57046b,CWDefs.cw56065,CWDefs.cw56066,CWDefs.cw56067,CWDefs.cw56068,CWDefs.cw56069]] <>
+  fromList $ [(toCardCode def,def) | def <- [CWDefs.cw56098,CWDefs.cw56143,CWDefs.cw56174,CWDefs.cw57007,CWDefs.cw57046a,CWDefs.cw57046b,CWDefs.cw56065,CWDefs.cw56066,CWDefs.cw56067,CWDefs.cw56068,CWDefs.cw56069,CWDefs.cw56099,CWDefs.cw56144,CWDefs.cw56145,CWDefs.cw57008,CWDefs.cw57047,CWDefs.cw57048,CWDefs.cw57050]] <>
     map
       (toFst toCardCode)
       [ CN.enc56026, CN.enc56057, CN.enc60035
