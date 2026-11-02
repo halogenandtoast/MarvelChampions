@@ -2,6 +2,7 @@
 
 module Marvel.Effect where
 
+import Marvel.KreeFanatic (bringTheHammerDownEffect)
 import Marvel.CampaignPlayers.Helpers (campaignStickEffect, campaignBasicKeywordEffect)
 import Marvel.CampaignPlayers.Helpers (campaignNextEventEffect)
 import Marvel.Event.Events.SneakAttack ()
@@ -54,7 +55,8 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("56005", SomeCardEffect campaignBasicKeywordEffect)
+    [ ("90004", SomeCardEffect bringTheHammerDownEffect)
+    , ("56005", SomeCardEffect campaignBasicKeywordEffect)
     , ("58020", SomeCardEffect wmUnifiedStrikeEffect)
     , ("58033", SomeCardEffect wmDisarmingDefenseEffect)
     , ("59014", SomeCardEffect hcGoldenMaceEffect)

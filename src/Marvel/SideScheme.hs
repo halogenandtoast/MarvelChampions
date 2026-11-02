@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.KreeFanatic qualified as KF
+
 import Marvel.SideScheme.SideSchemes.JessicaLuke qualified as JL
 import Marvel.SideScheme.SideSchemes.AgentsOfShield qualified as AosEncounter
 
@@ -91,7 +93,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
-  [ SomeSideSchemeCard fne60012, SomeSideSchemeCard fne60024
+  [ SomeSideSchemeCard KF.judgeJuryExecutioner
+  , SomeSideSchemeCard fne60012, SomeSideSchemeCard fne60024
   , SomeSideSchemeCard wm58027, SomeSideSchemeCard hc59028, SomeSideSchemeCard hc59038, SomeSideSchemeCard hc59041, SomeSideSchemeCard hc59045
   , SomeSideSchemeCard JL.jl61007, SomeSideSchemeCard JL.jl61020, SomeSideSchemeCard JL.jl61028, SomeSideSchemeCard JL.jl61029, SomeSideSchemeCard JL.jl61032, SomeSideSchemeCard JL.jl61039, SomeSideSchemeCard JL.jl62030
   , SomeSideSchemeCard TT.tt55006, SomeSideSchemeCard TT.tt55021, SomeSideSchemeCard TT.tt55022, SomeSideSchemeCard TT.tt55045, SomeSideSchemeCard TT.tt55046, SomeSideSchemeCard TT.tt55047, SomeSideSchemeCard TT.tt55048, SomeSideSchemeCard TT.tt55060, SomeSideSchemeCard TT.tt55061

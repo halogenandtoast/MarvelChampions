@@ -203,7 +203,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
+      [ ronanKreeFanatic
+  , WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
   , JL.jl61031, JL.jl62029, JL.jl62032, JL.jl62033
   , TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
   , aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
@@ -5096,3 +5097,6 @@ aos50172 = AosEncounter.aos50172
 
 aos50178 :: CardDef
 aos50178 = AosEncounter.aos50178
+
+ronanKreeFanatic :: CardDef
+ronanKreeFanatic = (minion "90001" "Ronan the Accuser" [AccuserCorps, Elite, Kree] [Star] KreeFanatic 1) {cdUnique = True, cdKeywords = fromList [Toughness]}

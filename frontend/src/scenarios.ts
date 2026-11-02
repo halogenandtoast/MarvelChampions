@@ -16,6 +16,7 @@ const setCode = (set: string) => SET_CODES[set] ?? set.replace(/(?<!^)([A-Z])/g,
 // The scenario's named recommendations remain the server's printed setup contents.
 const RULEBOOK_ROOT = 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/'
 const MODULAR_RULEBOOKS: Record<string, string> = {
+  ron: 'https://images-cdn.fantasyflightgames.com/filer_public/12/42/1242eccb-60ab-4a30-a099-a76f702cdbb5/ronan_modular_set.pdf',
   tt: `${RULEBOOK_ROOT}mc55_rulebook-web.pdf`,
   aoa: `${RULEBOOK_ROOT}mc45_age_of_apocalypse_rulebook.pdf`,
   mojo: `${RULEBOOK_ROOT}mc39_mojomania_rules_insert-compressed.pdf`,

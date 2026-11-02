@@ -2,6 +2,8 @@
 
 module Marvel.Minion where
 
+import Marvel.KreeFanatic qualified as KF
+
 import Marvel.Minion.Minions.JessicaLuke qualified as JL
 import Marvel.Minion.Minions.AgentsOfShield qualified as AosEncounter
 
@@ -79,7 +81,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard wm58026, SomeMinionCard hc59036, SomeMinionCard hc59037, SomeMinionCard hc59042, SomeMinionCard hc59043, SomeMinionCard hc59044
+      [ SomeMinionCard KF.ronanKreeFanatic
+  , SomeMinionCard wm58026, SomeMinionCard hc59036, SomeMinionCard hc59037, SomeMinionCard hc59042, SomeMinionCard hc59043, SomeMinionCard hc59044
   , SomeMinionCard JL.jl61031, SomeMinionCard JL.jl62029, SomeMinionCard JL.jl62032, SomeMinionCard JL.jl62033
   , SomeMinionCard TT.tt55017, SomeMinionCard TT.tt55018, SomeMinionCard TT.tt55019, SomeMinionCard TT.tt55020, SomeMinionCard TT.tt55037, SomeMinionCard TT.tt55038, SomeMinionCard TT.tt55039, SomeMinionCard TT.tt55040, SomeMinionCard TT.tt55041, SomeMinionCard TT.tt55042, SomeMinionCard TT.tt55043, SomeMinionCard TT.tt55044, SomeMinionCard TT.tt55056, SomeMinionCard TT.tt55057, SomeMinionCard TT.tt55058, SomeMinionCard TT.tt55059
   , SomeMinionCard AosEncounter.aosControlledMinion

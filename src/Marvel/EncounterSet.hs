@@ -5,7 +5,8 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = TigraNemesis
+  = KreeFanatic
+  | TigraNemesis
   | HulklingNemesis
   | DaredevilNemesis
   | EchoNemesis
@@ -274,7 +275,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ AllVersusAllSet
+  [ KreeFanatic
+  , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme
   , AosGravitationalPull, AosHardSound, AosPaleLittleSpider, AosPowerOfTheAtom, AosSupersonic, AosTheLeaper

@@ -151,7 +151,8 @@
       "sm": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "next_evol": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "aoa": "Use the required encounter sets and the recommended modular sets shown, or replace modular sets to customize the scenario. Standard III may replace the core Standard set.",
-      "tt": "Each scenario uses one modular encounter set. Trickster Magic is recommended. God of Lies uses Single Group Mode."
+      "tt": "Each scenario uses one modular encounter set. Trickster Magic is recommended. God of Lies uses Single Group Mode.",
+      "ron": "Kree Fanatic is a seven-card modular encounter set. Use it in place of a scenario’s recommended modular set."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",

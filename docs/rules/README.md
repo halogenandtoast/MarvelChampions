@@ -62,6 +62,8 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 ## Files
 
+Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasyflightgames.com/filer_public/12/42/1242eccb-60ab-4a30-a099-a76f702cdbb5/ronan_modular_set.pdf).
+
 | File | Contents |
 |---|---|
 | [hero-iceman.md](hero-iceman.md) | Iceman: Frostbite supply, activation timing, Sauron, published rulings and starter deck |
@@ -102,6 +104,7 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 | [appendices.md](appendices.md) | RR Overview, Appendix I (deck customization), III (card anatomy), VI (game environments) |
 | [faq-errata.md](faq-errata.md) | RR Appendix IV (FAQ) and V (errata), by product and card number |
 | [learn-to-play.md](learn-to-play.md) | Learn to Play specifics not in the RR: components, anatomy positions, tutorial setup, nemesis sets, starter decks, core scenarios (Rhino/Klaw/Ultron) with standard/expert/modular sets, LTP vs RR differences |
+| [scenario-kree-fanatic.md](scenario-kree-fanatic.md) | Print-and-play Ronan, per-player hit points, engagement timing and boost effects |
 | [scenario-green-goblin.md](scenario-green-goblin.md) | Green Goblin pack: Risky Business (Norman Osborn / Green Goblin flipping, Criminal Enterprise / State of Madness, infamy and madness counters), Mutagen Formula (Goblin minion boost timing); scenario card text |
 | [scenario-wrecking-crew.md](scenario-wrecking-crew.md) | Wrecking Crew pack, Breakout: four villains, the active villain, per-villain encounter decks and signature side schemes, setup, winning, expert/extreme difficulty; scenario card text |
 | [campaign-rise-of-red-skull.md](campaign-rise-of-red-skull.md) | Rise of Red Skull: keywords as printed, campaign mode, campaign log, per-scenario setup/victory steps (Crossbones … Red Skull), Experimental Weapons deck, side-scheme deck, expert campaign (persistent damage, obligations in player decks); campaign card text (Hydra Campaign upgrades, Captive allies, expert obligations) |

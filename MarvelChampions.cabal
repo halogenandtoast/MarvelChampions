@@ -1189,6 +1189,7 @@ library
       Marvel.JessicaJones.Helpers
       Marvel.Jubilee.Cards
       Marvel.Keyword
+      Marvel.KreeFanatic
       Marvel.Log
       Marvel.Log.Entry
       Marvel.Log.Narrator
@@ -2901,6 +2902,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.JuggernautSpec
       Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
+      Marvel.Encounter.KreeFanaticSpec
       Marvel.Encounter.LokiSpec
       Marvel.Encounter.LongshotEncounterSpec
       Marvel.Encounter.MadTitansShadowCampaignSpec

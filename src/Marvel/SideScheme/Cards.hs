@@ -198,7 +198,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ CampaignPlayers.fne60012, CampaignPlayers.fne60024
+  [ judgeJuryExecutioner
+  , CampaignPlayers.fne60012, CampaignPlayers.fne60024
   , WM.wm58027, HC.hc59028, HC.hc59038, HC.hc59041, HC.hc59045
   , JL.jl61007, JL.jl61020, JL.jl61028, JL.jl61029, JL.jl61032, JL.jl61039, JL.jl62030
   , TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
@@ -4614,3 +4615,6 @@ aos50174 = AosEncounter.aos50174
 
 aos50180 :: CardDef
 aos50180 = AosEncounter.aos50180
+
+judgeJuryExecutioner :: CardDef
+judgeJuryExecutioner = (sideScheme "90002" "Judge, Jury, Executioner" [Star] KreeFanatic 1) {cdAcceleration = 1}

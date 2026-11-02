@@ -158,7 +158,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ HC.hc59002, HC.hc59003, HC.hc59039
+      [ theAccused
+  , HC.hc59002, HC.hc59003, HC.hc59039
   , JL.jl62031
   , TT.tt55007a, TT.tt55007b, TT.tt55008a, TT.tt55008b, TT.tt55009a, TT.tt55009b, TT.tt55010a, TT.tt55010b, TT.tt55011a, TT.tt55011b, TT.tt55012, TT.tt55013, TT.tt55014, TT.tt55015, TT.tt55016, TT.tt55034a, TT.tt55034b, TT.tt55035, TT.tt55036, TT.tt55062
   , aos50068, aos50069, aos50070, aos50071, aos50092, aos50114, aos50115, aos50116, aos50117, aos50118, aos50119, aos50132, aos50144, aos50145, aos50149, aos50153, aos50157, aos50158, aos50170, aos50171, aos50181b, aos50182b, aos50183b
@@ -3355,3 +3356,6 @@ aos50182b = AosEncounter.aos50182b
 
 aos50183b :: CardDef
 aos50183b = AosEncounter.aos50183b
+
+theAccused :: CardDef
+theAccused = attachment "90003" "The Accused" [Condition] [Star] KreeFanatic 1
