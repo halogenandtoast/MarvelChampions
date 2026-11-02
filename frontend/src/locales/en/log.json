@@ -22,7 +22,11 @@
   },
   "gameOver": {
     "won": "The heroes win",
-    "lost": "The villain wins"
+    "lost": "The villain wins",
+    "registrationWon": "Registration wins.",
+    "resistanceWon": "Resistance wins.",
+    "draw": "The game is a tie.",
+    "bothTeamsLost": "Both teams lose."
   },
   "plays": "{player} plays {card}",
   "usesAbility": "{player} uses {card}",

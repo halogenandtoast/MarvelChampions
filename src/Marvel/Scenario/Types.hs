@@ -1,5 +1,6 @@
 module Marvel.Scenario.Types where
 
+import Marvel.CivilWar.Types (CompetitionSetup)
 import Marvel.Trait qualified as MojoTrait
 import Marvel.Prelude
 import Marvel.AgeOfApocalypse.MissionTypes
@@ -48,6 +49,9 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsScenar
   default toScenarioAttrs :: (Coercible a (Attrs Scenario)) => a -> Attrs Scenario
   toScenarioAttrs = coerce
 
+  scenarioCompetitionSetup :: a -> Maybe CompetitionSetup
+  scenarioCompetitionSetup _ = Nothing
+
   overScenarioAttrs :: (Attrs Scenario -> Attrs Scenario) -> a -> a
   default overScenarioAttrs :: Coercible a (Attrs Scenario) => (Attrs Scenario -> Attrs Scenario) -> a -> a
   overScenarioAttrs f = coerce . f . coerce
@@ -80,13 +84,51 @@ instance RunMessage Scenario where
 
 -- | How a scenario is to be played: the villain's, with which modular sets and at which
 -- difficulty. Expert adds the expert set and starts the villain a stage later.
-data ScenarioSetup = ScenarioSetup
-  { scenarioCode :: CardCode
-  , modulars :: [EncounterSet]
-  , difficulty :: Difficulty
-  }
+data ScenarioSetup
+  = ScenarioSetup
+      { scenarioCode :: CardCode
+      , modulars :: [EncounterSet]
+      , difficulty :: Difficulty
+      }
+  | CivilWarScenarioSetup
+      { scenarioCode :: CardCode
+      , modulars :: [EncounterSet]
+      , difficulty :: Difficulty
+      , civilWarMainSchemes :: [CardCode]
+      , civilWarCompetition :: Maybe CompetitionSetup
+      }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+
+-- Keep the existing flat setup JSON, including older saved tables. Civil War's
+-- additional settings are optional and do not change other scenarios' format.
+instance ToJSON ScenarioSetup where
+  toJSON setup = object $
+    ["scenarioCode" .= setup.scenarioCode, "modulars" .= setup.modulars, "difficulty" .= setup.difficulty]
+    <> case setup of
+      ScenarioSetup {} -> []
+      CivilWarScenarioSetup {civilWarMainSchemes, civilWarCompetition} ->
+        ["mainSchemes" .= civilWarMainSchemes, "competition" .= civilWarCompetition]
+
+instance FromJSON ScenarioSetup where
+  parseJSON = withObject "ScenarioSetup" $ \o -> do
+    code <- o .: "scenarioCode"
+    sets <- o .: "modulars"
+    mode <- o .: "difficulty"
+    schemes <- o .:? "mainSchemes" .!= []
+    competitive <- o .:? "competition"
+    pure $ if null schemes && isNothing competitive then ScenarioSetup code sets mode
+      else CivilWarScenarioSetup code sets mode schemes competitive
+
+setupCompetition :: ScenarioSetup -> Maybe CompetitionSetup
+setupCompetition ScenarioSetup {} = Nothing
+setupCompetition CivilWarScenarioSetup {civilWarCompetition} = civilWarCompetition
+
+setupMainSchemes :: ScenarioSetup -> [CardCode]
+setupMainSchemes ScenarioSetup {} = []
+setupMainSchemes CivilWarScenarioSetup {civilWarMainSchemes} = civilWarMainSchemes
+
+getCompetitionSetup :: Scenario -> Maybe CompetitionSetup
+getCompetitionSetup (Scenario a) = scenarioCompetitionSetup a
 
 data ScenarioCard a = ScenarioCard
   { scenarioCardCode :: CardCode

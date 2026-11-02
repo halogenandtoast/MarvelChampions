@@ -696,5 +696,9 @@
   "cnBullseyeAttacks": "Bullseye attacks you",
   "cnExhaustRemoveObligation": "Exhaust your alter-ego to remove this obligation",
   "cnActivateMinions": "Each minion engaged with you activates",
-  "cnDiscardShapeshifts": "Discard each Shapeshift upgrade you control"
+  "cnDiscardShapeshifts": "Discard each Shapeshift upgrade you control",
+  "cwEnemyTeamChooses": "The opposing team chooses",
+  "cwCooperativeEnemyChoice": "Choose as the enemy team using the Grim Rule",
+  "cwChooseRegistrationFirstPlayer": "Choose the Registration first player",
+  "cwChooseResistanceFirstPlayer": "Choose the Resistance first player"
 }

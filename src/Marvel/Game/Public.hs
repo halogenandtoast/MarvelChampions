@@ -27,6 +27,7 @@ import Marvel.Cost.Types (Cost (..), costResources, printedResourceRequirements)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Area
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo ()
@@ -127,6 +128,7 @@ data GameView = GameView
   -- ^ what is being paid for, while it is
   , areas :: [AreaView]
   -- ^ the game areas, by the ids of what is in each; a game of one area has one
+  , competition :: Maybe CompetitionView
   , viewerArea :: Maybe AreaId
   -- ^ the area of the first seat whose hand the viewer sees
   , trickster :: Maybe TricksterState
@@ -135,6 +137,42 @@ data GameView = GameView
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
+
+-- | Public team state, including eliminated teammates who may still make an
+-- opponent's scenario choice during the other team's reply phase.
+data CompetitionView = CompetitionView
+  { phase :: CW.TeamPhase
+  , teams :: [TeamView]
+  , replyPending :: Bool
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+data TeamView = TeamView
+  { team :: CW.Team
+  , area :: AreaId
+  , roster :: [TeamMemberView]
+  , firstPlayer :: IdentityId
+  , leader :: Maybe VillainId
+  , enemyLeader :: Maybe VillainId
+  , outcome :: Maybe CW.TeamOutcome
+  , advancedMainScheme :: Bool
+  , minionsAndSideSchemes :: Int
+  , mainThreat :: Natural
+  , remainingHeroHitPoints :: Natural
+  , leaderAttachments :: Int
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+data TeamMemberView = TeamMemberView
+  { id :: IdentityId
+  , name :: Text
+  , code :: CardCode
+  , eliminated :: Bool
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
 
 -- | Which campaign the game is a scenario of, and which of its scenarios.
 data CampaignInfo = CampaignInfo
@@ -554,10 +592,11 @@ gameView seesHand g = do
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
       , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g)) + sum [(toAttrs scheme).mainSchemeAccelerationTokens | scheme <- HashMap.elems (gameMainSchemes g)]
       , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
-      , question = HashMap.mapWithKey questionView (gameQuestion g)
+      , question = HashMap.mapWithKey visibleQuestion (gameQuestion g)
       , questionVersion = gameQuestionVersion g
       , activeCost
       , areas = map areaView (gameAreas g)
+      , competition = competitiveView players <$> gameCompetition g
       , viewerArea = headMay [aid | pid <- gameSeats g, seesHand pid, Just aid <- [areaId <$> areaOfTarget g (IdentityRef pid)]]
       , trickster = scenarioTrickster $ toAttrs $ gameScenario g
   , campaign =
@@ -572,6 +611,44 @@ gameView seesHand g = do
  where
   scenario = toAttrs (gameScenario g)
   villainName v = display . cdName . getCardDef <$> (HashMap.lookup v (gameVillains g) <|> HashMap.lookup v (g ^. removedEntitiesL . villainsL))
+  competitiveView (playerViews :: [PlayerView]) c = CompetitionView
+    { phase = CW.competitivePhase c
+    , teams = map (teamView playerViews c) [CW.Registration,CW.Resistance]
+    , replyPending = (isJust (CW.competitiveRegistrationOutcome c) || isJust (CW.competitiveResistanceOutcome c)) && case gameState g of Finished _ -> False; _ -> True
+    }
+  teamView (playerViews :: [PlayerView]) c team =
+    let aid = CW.teamArea team
+        here target = (areaId <$> areaOfTarget g target) == Just aid
+        ids = CW.teamPlayers c team
+        secondScheme = headMay $ drop 1 $ CW.teamScenarioMainSchemes $ CW.scenarioForTeam (CW.competitiveSetup c) (CW.otherTeam team)
+        schemes = [scheme | scheme <- HashMap.elems (gameMainSchemes g), here (MainSchemeRef $ toId scheme)]
+        enemy = activeVillainIn g aid
+        attachments = [attachment | attachment <- HashMap.elems (gameAttachments g), isJust enemy, (toAttrs attachment).attachmentEnemy == (EnemyVillainId <$> enemy)]
+        highTechSuits = [u | u <- HashMap.elems (gameUpgrades g), isJust enemy, toCardCode (getCardDef u) == "56131", (toAttrs u).upgradeAttachedEnemy == (EnemyVillainId <$> enemy)]
+        rosterMember pid = do
+          p <- HashMap.lookup pid (gamePlayers g) <|> HashMap.lookup pid (entitiesPlayers $ gameRemovedEntities g)
+          pure $ TeamMemberView pid (toAttrs p).playerIdentityName (toCardCode p) (not $ HashMap.member pid $ gamePlayers g)
+     in TeamView
+       { team
+       , area = aid
+       , roster = mapMaybe rosterMember ids
+       , firstPlayer = CW.teamFirstPlayer c team
+       , leader = activeVillainIn g (CW.teamArea $ CW.otherTeam team)
+       , enemyLeader = enemy
+       , outcome = CW.teamOutcome c team
+       , advancedMainScheme = any ((== secondScheme) . Just . toCardCode . getCardDef) schemes
+       , minionsAndSideSchemes = length [mid | mid <- HashMap.keys (gameMinions g), here $ MinionRef mid] + length [sid | sid <- HashMap.keys (gameSideSchemes g), here $ SideSchemeRef sid]
+       , mainThreat = sum $ map MainScheme.getMainSchemeThreat schemes
+       , remainingHeroHitPoints = sum [subtractNatural p.damage p.hitPoints | p <- playerViews, p.id `elem` ids]
+       , leaderAttachments = length attachments + length highTechSuits
+       }
+
+  visibleQuestion asked question =
+    let view = questionView asked question
+     in if isJust (gameCompetition g) && not (seesHand asked)
+          then view {choices = [], searched = []}
+          else view
+
   areaView a =
     let aid = areaId a
         here t = (areaId <$> areaOfTarget g t) == Just aid
@@ -589,7 +666,7 @@ gameView seesHand g = do
           , mainSchemes = [idText k | k <- HashMap.keys (gameMainSchemes g), here (MainSchemeRef k)]
           , sideSchemes = [idText k | k <- HashMap.keys (gameSideSchemes g), here (SideSchemeRef k)]
           -- an environment is in every area (RR FAQ, The Once and Future Kang)
-          , environments = map idText (HashMap.keys (gameEnvironments g))
+          , environments = [idText eid | eid <- HashMap.keys (gameEnvironments g), isNothing (gameCompetition g) || here (EnvironmentRef eid)]
           , decks =
               concat [deckView "villain" (villainName v) (VillainDeckKey v) | v <- villainsHere]
                 -- a defeated villain's deck and discard pile, kept for his cards still in

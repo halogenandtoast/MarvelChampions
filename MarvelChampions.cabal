@@ -566,6 +566,9 @@ library
       Marvel.Card.WhenDefeated
       Marvel.Card.WhenRevealed
       Marvel.Choice
+      Marvel.CivilWar.Cards
+      Marvel.CivilWar.Helpers
+      Marvel.CivilWar.Types
       Marvel.Cost
       Marvel.Cost.Types
       Marvel.Count
@@ -2859,6 +2862,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.NextEvolutionSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
+      Marvel.CivilWar.TeamSpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec
       Marvel.Encounter.AgentsOfShieldBlackWidowSpec

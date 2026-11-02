@@ -25,6 +25,7 @@ import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
 import Marvel.Area (Area (..), DeckKey (InfinityStoneDeckKey), Pile (..))
 import Marvel.Card
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.EncounterCard (allEncounterCards)
 import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Damage
@@ -89,7 +90,9 @@ narrationFor = \case
   AccelerateMainScheme -> Just $ one $ structure [ikeyPart "log.step.placeThreat" []]
   VillainPhaseStep step -> Just $ one $ structure [ikeyPart (villainPhaseStepKey step) []]
   PassFirstPlayer -> Just do
-    order <- getsGame gamePlayerOrder
+    order <- getsGame $ \g -> case gameCompetition g of
+      Nothing -> gamePlayerOrder g
+      Just c -> filter (`elem` CW.teamPlayers c (CW.phaseTeam $ CW.competitivePhase c)) (gamePlayerOrder g)
     case drop 1 order <> take 1 order of
       next : _ -> do
         who <- playerRef' next
@@ -114,6 +117,10 @@ narrationFor = \case
     pure [structure [ikeyPart (campaignStepKey step) []] | told]
   RecordInCampaignLog r -> campaignNarration r
   GameOver Lost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.lost" []]
+  GameOver RegistrationWon -> Just $ one $ structure [ikeyPart "log.gameOver.registrationWon" []]
+  GameOver ResistanceWon -> Just $ one $ structure [ikeyPart "log.gameOver.resistanceWon" []]
+  GameOver CompetitiveDraw -> Just $ one $ structure [ikeyPart "log.gameOver.draw" []]
+  GameOver BothTeamsLost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.bothTeamsLost" []]
   -- * What the players do
   IdentityMessage ident msg -> identityNarration ident msg
   PutTopEncounterCardInPlayerDeck ident -> Just do

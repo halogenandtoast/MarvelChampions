@@ -5,7 +5,42 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = KreeFanatic
+  = CwAtlanteans
+  | CwCapeKiller
+  | CwCaptainAmerica
+  | CwCaptainMarvel
+  | CwCloakAndDaggerModular
+  | CwDangerousRecruits
+  | CwDeadlyDuo
+  | CwDefenders
+  | CwHellsKitchen
+  | CwHeroesForHire
+  | CwIronMan
+  | CwMariaHillModular
+  | CwMartialLaw
+  | CwMightyAvengers
+  | CwMoonKnightModular
+  | CwNamorModular
+  | CwNewAvengers
+  | CwPaladin
+  | CwRegistration
+  | CwResistance
+  | CwRoyalGuard
+  | CwScarletTwins
+  | CwSecretAvengers
+  | CwSheHulk
+  | CwShieldOps
+  | CwSpiderManModular
+  | CwSpiderWoman
+  | CwStandardPvp
+  | CwSynthezoidRegistration
+  | CwSynthezoidResistance
+  | CwTaskmasterModular
+  | CwTheInitiative
+  | CwThunderboltsModular
+  | CwVision
+  | CwYoungAvengers
+  | KreeFanatic
   | TigraNemesis
   | HulklingNemesis
   | DaredevilNemesis

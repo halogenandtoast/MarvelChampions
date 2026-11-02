@@ -1,5 +1,6 @@
 module Marvel.Game where
 
+import Marvel.CivilWar.Types (Competition)
 import Marvel.Prelude
 import Marvel.AgeOfApocalypse.MissionTypes (MissionState)
 import Marvel.Aspect (Aspect)
@@ -68,6 +69,9 @@ instance (HasGame m) => Projection m PlayerIdentity
 
 getPlayers :: (HasGame m) => m [IdentityId]
 getAllPlayers :: (HasGame m) => m [IdentityId]
+getCompetition :: HasGame m => m (Maybe Competition)
+getPhasePlayers :: HasGame m => m [IdentityId]
+getPhaseAreas :: HasGame m => m [Area]
 getActivePlayerId :: (HasGame m) => m IdentityId
 getYou :: (HasGame m) => m IdentityId
 asYou :: (HasGame m) => IdentityId -> ReaderT Game m a -> m a

@@ -4,6 +4,7 @@
 module Marvel.Game where
 
 
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.CampaignPlayers.Helpers qualified as CampaignPlayerHelpers
 import Marvel.CampaignPlayers.Helpers (echoReplayCards, echoReservedReplay)
 import Marvel.EncounterSet qualified as EncounterSet
@@ -134,7 +135,7 @@ import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Scenario ()
-import Marvel.Scenario.Types (Attrs (..), Scenario (..), overScenarioAttrs, deckKeys, getScenarioDifficulty, pileL)
+import Marvel.Scenario.Types (getCompetitionSetup, Attrs (..), Scenario (..), overScenarioAttrs, deckKeys, getScenarioDifficulty, pileL)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards, sideSchemeAccelerationTokens, sideSchemeCounters), SideScheme, getSideSchemeThreat, isCrisis)
@@ -231,6 +232,7 @@ data SimultaneousMinionAttackGroup = SimultaneousMinionAttackGroup
 data Game = Game
   { gamePrintedPlayerCounts :: [(Target, Int)]
   , gamePlayerCountContext :: Maybe Int
+  , gameCompetition :: Maybe CW.Competition
   , gamePhase :: Phase
   , gameState :: GameState
   , -- players in player order
@@ -403,15 +405,17 @@ resolveCardCostValues players = go
   go other = other
 
 instance FromJSON Game where
-  parseJSON = withObject "Game" $ \o ->
+  parseJSON = withObject "Game" $ \o -> do
+    competitive <- o .:? "competition"
     let count key = case KeyMap.lookup key o of Just (Array xs) -> length xs; _ -> 0
-        players = max 1 $ max (count "seats") (count "playerOrder")
-     in
+        players = maybe (max 1 $ max (count "seats") (count "playerOrder")) (length . CW.competitiveRegistrationPlayers) competitive
+
     -- Saves from before phase limits were tracked have no phase history.
     genericParseJSON (aesonOptions $ Just "game") $
       resolveCardCostValues players $
       Object
-        ( KeyMap.insertWith (\_ existing -> existing) "printedPlayerCounts" (toJSON ([] :: [Value]))
+        ( KeyMap.insertWith (\_ existing -> existing) "competition" Null
+            . KeyMap.insertWith (\_ existing -> existing) "printedPlayerCounts" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playerCountContext" Null
             . KeyMap.insertWith (\_ existing -> existing) "shieldLog" (toJSON Campaign.noShieldLog)
             . KeyMap.insertWith (\_ existing -> existing) "missionPlayDestination" Null
@@ -519,7 +523,7 @@ getPlayers :: (HasGame m) => m [IdentityId]
 getPlayers = do
   you <- getYou
   getsGame \g -> case gameAreas g of
-    _ : _ : _ | not (gameAllAreas g) ->
+    _ : _ : _ | not (gameAllAreas g) || isJust (gameCompetition g) ->
       let here = areaId <$> areaOfTarget g (IdentityRef you)
        in filter (\p -> (areaId <$> areaOfTarget g (IdentityRef p)) == here) (gamePlayerOrder g)
     _ -> gamePlayerOrder g
@@ -529,14 +533,44 @@ getAllPlayers :: (HasGame m) => m [IdentityId]
 getAllPlayers = getsGame gamePlayerOrder
 
 getActivePlayerId :: (HasGame m) => m IdentityId
-getActivePlayerId = toId <$> getActivePlayer
+getActivePlayerId = do
+  competitive <- getCompetition
+  if isJust competitive then getsGame gameActivePlayer else toId <$> getActivePlayer
 
 getPlayerCount :: (HasGame m) => m Int
-getPlayerCount = length <$> getsGame gamePlayerOrder
+getPlayerCount = do
+  competitive <- getCompetition
+  length <$> if isJust competitive then getPlayers else getAllPlayers
 
 -- | The players who started the scenario, the eliminated among them (RR Per Player Icon).
 getStartingPlayerCount :: (HasGame m) => m Int
-getStartingPlayerCount = getsGame \g -> fromMaybe (max (length $ gameSeats g) (length $ gamePlayerOrder g)) (gamePlayerCountContext g)
+getStartingPlayerCount = getsGame startingPlayerCountIn
+
+startingPlayerCountIn :: Game -> Int
+startingPlayerCountIn g = fromMaybe
+  (maybe (max (length $ gameSeats g) (length $ gamePlayerOrder g)) (length . CW.competitiveRegistrationPlayers) (gameCompetition g))
+  (gamePlayerCountContext g)
+
+getCompetition :: HasGame m => m (Maybe CW.Competition)
+getCompetition = getsGame gameCompetition
+
+-- | The players acting in this phase; eliminated players and a finished team's
+-- board do not take more turns while the other side has its reply.
+getPhasePlayers :: HasGame m => m [IdentityId]
+getPhasePlayers = do
+  competitive <- getCompetition
+  case competitive of
+    Nothing -> getAllPlayers
+    Just c | isJust (CW.teamOutcome c $ CW.phaseTeam $ CW.competitivePhase c) -> pure []
+    Just c -> getsGame $ filter (`elem` CW.teamPlayers c (CW.phaseTeam $ CW.competitivePhase c)) . gamePlayerOrder
+
+getPhaseAreas :: HasGame m => m [Area]
+getPhaseAreas = do
+  competitive <- getCompetition
+  areas <- getAreas
+  pure $ case competitive of
+    Nothing -> areas
+    Just c -> filter ((== CW.teamArea (CW.phaseTeam $ CW.competitivePhase c)) . areaId) areas
 
 -- | Resolve printed values for physical cards using the original table size.
 -- Registry definitions remain reusable across games with different player counts.
@@ -566,7 +600,8 @@ getPlayerCardCatalogue = do
 getUniqueTitlesInPlay :: (HasGame m) => m [(Text, [Text])]
 getUniqueTitlesInPlay = do
   players <- map snd <$> (getUniqueCardsIn . areaId =<< getYourArea)
-  encounter <- getsGame (map snd . uniqueEncounterCardsInPlay)
+  competitive <- getCompetition
+  encounter <- if isJust competitive then pure [] else getsGame (map snd . uniqueEncounterCardsInPlay)
   exempt <- getUniqueExemptTitles
   pure $ filter ((`notElem` exempt) . fst) (players <> encounter)
 
@@ -597,10 +632,14 @@ matchesUniqueInPlay ident self def
   | not (cdUnique def) = pure False
   | otherwise = do
       players <- getUniqueCardsIn . areaId =<< getAreaOf ident
-      encounter <- getsGame uniqueEncounterCardsInPlay
+      competitive <- getCompetition
+      aid <- areaId <$> getAreaOf ident
+      encounter <- getsGame $ \g -> filter (\(target,_) -> isNothing competitive || (areaId <$> areaOfTarget g target) == Just aid) $ uniqueEncounterCardsInPlay g
       exempt <- getUniqueExemptTitles
       let named = (title (cdName def), maybe [] pure (subtitle (cdName def)))
-      pure $ fst named `notElem` exempt && any (uniqueMatch named . snd) [x | x@(t, _) <- players <> encounter, t /= self]
+          playerCard = cdCardType def `elem` [HeroType,AlterEgoType,AllyType,SupportType,UpgradeType,EventType,ResourceType,PlayerSideSchemeType]
+          candidates = if isNothing competitive then players <> encounter else if playerCard then players else encounter
+      pure $ fst named `notElem` exempt && any (uniqueMatch named . snd) [x | x@(t, _) <- candidates, t /= self]
 
 -- | The unique cards in play in the area, by title and its other names: the players'
 -- allies, supports and upgrades, and their identities.
@@ -627,6 +666,12 @@ getUniqueCardsIn aid = getsGame \g ->
       <> unique [(SupportRef k, supportCardDef (toAttrs s)) | (k, s) <- HashMap.toList (gameSupports g)]
       <> unique [(UpgradeRef k, getCardDef u) | (k, u) <- HashMap.toList (gameUpgrades g)]
       <> concatMap identity (HashMap.toList $ gamePlayers g)
+      <> [ (VillainRef vid, named $ cdName $ getCardDef leader)
+         | isJust (gameCompetition g)
+         , let opponent = if aid == CW.teamArea CW.Registration then CW.teamArea CW.Resistance else CW.teamArea CW.Registration
+         , Just vid <- [activeVillainIn g opponent]
+         , Just leader <- [lookup vid $ gameVillains g]
+         ]
 
 -- | Who "you" is: the player 'asYou' names, or else the active player.
 getYou :: (HasGame m) => m IdentityId
@@ -655,6 +700,7 @@ getAreas = getsGame gameAreas
 -- the first.
 areaOfTarget :: Game -> Target -> Maybe Area
 areaOfTarget g = \case
+  IdentityRef i | Just c <- gameCompetition g, Just team <- CW.playerTeam c i -> listing ((== CW.teamArea team) . areaId)
   IdentityRef i -> listing (elem i . areaPlayers)
   VillainRef v -> listing (elem v . areaVillains)
   EnemyRef (EnemyVillainId v) -> areaOfTarget g (VillainRef v)
@@ -671,7 +717,29 @@ areaOfTarget g = \case
   MinionRef m -> player . getMinionEngagedIdentity =<< lookup m (gameMinions g)
   AllyRef a -> player . getAllyController =<< lookup a (gameAllies g)
   SupportRef s -> player . getSupportController =<< lookup s (gameSupports g)
-  UpgradeRef u -> player . getUpgradeController =<< lookup u (gameUpgrades g)
+  UpgradeRef u -> lookup u (gameUpgrades g) >>= \upgrade ->
+    let attrs = toAttrs upgrade
+        host = if isNothing (gameCompetition g) then Nothing else
+          (EnemyRef <$> upgradeAttachedEnemy attrs)
+            <|> (AllyRef <$> upgradeAttachedAlly attrs)
+            <|> (IdentityRef <$> Upgrade.upgradeAttachedIdentity attrs)
+            <|> (SideSchemeRef <$> upgradeAttachedSideScheme attrs)
+            <|> (MainSchemeRef <$> upgradeAttachedMainScheme attrs)
+     in maybe (player $ getUpgradeController upgrade) (areaOfTarget g) host
+  EventRef eid -> player . eventController . toAttrs =<< lookup eid (gameEvents g)
+  CardIdRef cid | isJust (gameCompetition g) ->
+    (player . fst =<< (handCard g cid <|> pendingPaymentCard g cid)) <|> headMay (gameAreas g)
+  EffectRef eid | Just competition <- gameCompetition g ->
+    let recorded = (\aid -> listing ((== aid) . areaId)) <$> Data.List.lookup (EffectRef eid) (CW.competitiveEffectAreas competition)
+        sourceArea = do
+          effect <- lookup eid (gameEffects g)
+          let attrs = toAttrs effect
+          case Effect.effectMatcher attrs of
+            SourceEntity source | source /= GameRef -> areaOfTarget g (refocus source)
+            MainSchemeEntity sid -> areaOfTarget g (MainSchemeRef sid)
+            _ -> join recorded <|> areaOfTarget g (refocus $ Effect.effectSource attrs)
+     in sourceArea <|> join recorded
+
   -- an obligation is in its player's play area, an attachment where what it is on is
   ObligationRef o -> player =<< Obligation.obligationOwner . toAttrs =<< lookup o (gameObligations g)
   AttachmentRef a -> lookup a (gameAttachments g) >>= \x ->
@@ -1820,14 +1888,27 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- Appendix II, step 3): its Campaign Instructions put cards into play for them (The
     -- Mad Titan's Shadow's Cosmo and Black Swan)
     when (isJust gameCampaign) chooseFirstPlayer
+    for_ gameCompetition $ \c -> for_ [CW.Registration,CW.Resistance] $ \team -> do
+      let members = filter (`elem` CW.teamPlayers c team) gamePlayerOrder
+          prompt = if team == CW.Registration then "$label.cwChooseRegistrationFirstPlayer" else "$label.cwChooseResistanceFirstPlayer"
+      when (length members > 1) $ chooseOnePrompted (CW.teamFirstPlayer c team) prompt
+        [targeting member (cardSpecific GameRef "cwSetFirstPlayer" (team,member)) | member <- members]
     startScenario
     when (isJust gameCampaign) $ campaignStep CampaignSetup
     cardSpecific GameRef "setupPoolAspect" ()
     setupPlayers
-    unless (isJust gameCampaign) chooseFirstPlayer
+    unless (isJust gameCampaign || isJust gameCompetition) chooseFirstPlayer
     -- what the Campaign Instructions do with the starting hands
     when (isJust gameCampaign) $ campaignStep (CampaignSetupThen "startingHands")
     pure $ g {gameState = InProgress}
+  CardSpecific GameRef "cwSetFirstPlayer" (fromJSON -> Success (team,you)) | Just c <- gameCompetition -> do
+    let own = filter (`elem` CW.teamPlayers c team) gamePlayerOrder
+        rotated = case break (== you) own of (before,after@(_:_)) -> after <> before; _ -> own
+        orderFor side = if side == team then rotated else filter (`elem` CW.teamPlayers c side) gamePlayerOrder
+    if you `notElem` own then pure g else pure g
+      {gameCompetition = Just $ CW.setTeamFirstPlayer team you c
+      ,gamePlayerOrder = orderFor CW.Registration <> orderFor CW.Resistance
+      ,gameActivePlayer = if team == CW.Registration then you else gameActivePlayer}
   CardSpecific GameRef "aoaRevealFoundEncounter" (fromJSON -> Success (you, card)) -> do
     let scenario = toAttrs (g.gameScenario)
         source | card `elem` scenarioDiscard scenario = W.RevealedFromDiscardPile
@@ -2014,10 +2095,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ modifyMissionInGame (\m -> m {missionDiscount = False}) $ (g & atEndOfPhaseL .~ []) {gameBombCounters = if ending == PlayerPhase then [] else g.gameBombCounters}
   -- the first player token goes to the next player, who takes the first turn of the round
   PassFirstPlayer -> do
-    let order = case gamePlayerOrder of
-          [] -> []
-          (p : ps) -> ps <> [p]
-    pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
+    let rotate [] = []
+        rotate (p : ps) = ps <> [p]
+    case gameCompetition of
+      Nothing -> do
+        let order = rotate gamePlayerOrder
+        pure $ g & playerOrderL .~ order & activePlayerL .~ fromMaybe gameActivePlayer (headMay order)
+      Just c -> do
+        let team = CW.phaseTeam $ CW.competitivePhase c
+            own = filter (`elem` CW.teamPlayers c team) gamePlayerOrder
+            rotated = rotate own
+            orderFor side = if side == team then rotated else filter (`elem` CW.teamPlayers c side) gamePlayerOrder
+            first = fromMaybe (CW.teamFirstPlayer c team) (headMay rotated)
+        pure g {gamePlayerOrder = orderFor CW.Registration <> orderFor CW.Resistance
+               ,gameActivePlayer = first, gameCompetition = Just $ CW.setTeamFirstPlayer team first c}
   -- faceup into The Collection: a card in play leaves play for it, by way of
   -- 'RemoveFromPlay' ('discardFromPlay' sends it on); a card out of play is taken from
   -- where it is by what holds it (a deck, a hand, a discard pile)
@@ -3848,27 +3939,45 @@ abilityInWindow window a =
  where
   source = abilitySource a
 
+runCompetitiveEntityMessage :: (RunMessage a, HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Target -> Message -> a -> m a
+runCompetitiveEntityMessage target msg entity = do
+  g <- getGame
+  let phaseBroadcast = case msg of
+        BeginPhase _ -> True
+        AccelerateMainScheme -> True
+        VillainPhaseStep _ -> True
+        PassFirstPlayer -> True
+        _ -> False
+      permitted = case gameCompetition g of
+        Nothing -> True
+        Just c -> not phaseBroadcast ||
+          (isNothing (CW.teamOutcome c $ CW.phaseTeam $ CW.competitivePhase c) && location c == Just (CW.teamArea $ CW.phaseTeam $ CW.competitivePhase c))
+      location c = case (target,msg) of
+        (EffectRef _, BeginPhase _) -> Data.List.lookup target (CW.competitiveEffectAreas c) <|> (areaId <$> areaOfTarget g target)
+        _ -> areaId <$> areaOfTarget g target
+  if permitted then runMessage msg entity else pure entity
+
 instance RunMessage Entities where
   runMessage msg entities =
-    traverseOf (playersL . each) (\p -> asYou (toId p) $ runMessage msg p) entities
+    traverseOf (playersL . each) (\p -> asYou (toId p) $ runCompetitiveEntityMessage (IdentityRef $ toId p) msg p) entities
       >>= traverseOf (alliesL . each) (\a -> asYou (getAllyController a) do
         mission <- getsGame (\g -> missionAlly g $ toRef a)
         if mission then do
           attrs <- runMessage msg (toAttrs a)
           pure $ Ally.Ally (MissionAlly attrs)
-        else runMessage msg a)
-      >>= traverseOf (supportsL . each) (\a -> asYou (getSupportController a) $ runMessage msg a)
-      >>= traverseOf (upgradesL . each) (\a -> asYou (getUpgradeController a) $ runMessage msg a)
-      >>= traverseOf (treacheriesL . each) (runMessage msg)
-      >>= traverseOf (obligationsL . each) (runMessage msg)
-      >>= traverseOf (villainsL . each) (runMessage msg)
-      >>= traverseOf (eventsL . each) (\a -> asYou (eventController $ toAttrs a) $ runMessage msg a)
-      >>= traverseOf (effectsL . each) (runMessage msg)
-      >>= traverseOf (attachmentsL . each) (runMessage msg)
-      >>= traverseOf (minionsL . each) (runMessage msg)
-      >>= traverseOf (sideSchemesL . each) (\scheme -> asPrintedPlayerCount (toTarget scheme) $ runMessage msg scheme)
-      >>= traverseOf (mainSchemesL . each) (runMessage msg)
-      >>= traverseOf (environmentsL . each) (runMessage msg)
+        else runCompetitiveEntityMessage (AllyRef $ toId a) msg a)
+      >>= traverseOf (supportsL . each) (\a -> asYou (getSupportController a) $ runCompetitiveEntityMessage (SupportRef $ toId a) msg a)
+      >>= traverseOf (upgradesL . each) (\a -> asYou (getUpgradeController a) $ runCompetitiveEntityMessage (UpgradeRef $ toId a) msg a)
+      >>= traverseOf (treacheriesL . each) (\entity -> runCompetitiveEntityMessage (TreacheryRef $ toId entity) msg entity)
+      >>= traverseOf (obligationsL . each) (\entity -> runCompetitiveEntityMessage (ObligationRef $ toId entity) msg entity)
+      >>= traverseOf (villainsL . each) (\entity -> runCompetitiveEntityMessage (VillainRef $ toId entity) msg entity)
+      >>= traverseOf (eventsL . each) (\a -> asYou (eventController $ toAttrs a) $ runCompetitiveEntityMessage (EventRef $ toId a) msg a)
+      >>= traverseOf (effectsL . each) (\entity -> runCompetitiveEntityMessage (EffectRef $ toId entity) msg entity)
+      >>= traverseOf (attachmentsL . each) (\entity -> runCompetitiveEntityMessage (AttachmentRef $ toId entity) msg entity)
+      >>= traverseOf (minionsL . each) (\entity -> runCompetitiveEntityMessage (MinionRef $ toId entity) msg entity)
+      >>= traverseOf (sideSchemesL . each) (\scheme -> asPrintedPlayerCount (toTarget scheme) $ runCompetitiveEntityMessage (SideSchemeRef $ toId scheme) msg scheme)
+      >>= traverseOf (mainSchemesL . each) (\entity -> runCompetitiveEntityMessage (MainSchemeRef $ toId entity) msg entity)
+      >>= traverseOf (environmentsL . each) (\entity -> runCompetitiveEntityMessage (EnvironmentRef $ toId entity) msg entity)
 
 -- | Cancel only the reveal abilities: the card still enters its ordinary zone.
 -- RR1.8 treats incite and surge as When Revealed abilities too.
@@ -4511,7 +4620,8 @@ dispatchGameMessage original g
 
 dispatchGameMessageCore :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 dispatchGameMessageCore msg g = do
-  after <- dispatchGameMessageCoreBody msg g
+  changed <- dispatchGameMessageCoreBody msg g
+  let after = rememberCompetitiveEffects g changed
   case msg of
     AddToVictoryDisplay _ -> do
       let beforeIds = map ecCardId (gameVictoryDisplay g) <> map pcCardId (gamePlayerVictoryDisplay g)
@@ -4520,10 +4630,21 @@ dispatchGameMessageCore msg g = do
     _ -> pure ()
   pure after
 
+rememberCompetitiveEffects :: Game -> Game -> Game
+rememberCompetitiveEffects before after = case gameCompetition after of
+  Nothing -> after
+  Just competition ->
+    let you = fromMaybe (gameActivePlayer before) (gameYou before)
+        aid = maybe defaultAreaId areaId $ areaOfTarget before (IdentityRef you)
+        added = [(EffectRef eid,aid) | eid <- HashMap.keys (gameEffects after), not (HashMap.member eid $ gameEffects before)]
+        present = HashMap.keys (gameEffects after)
+        kept = [(target,area) | (target@(EffectRef eid),area) <- CW.competitiveEffectAreas competition, eid `elem` present]
+     in after {gameCompetition = Just competition {CW.competitiveEffectAreas = added <> kept}}
+
 dispatchGameMessageCoreBody :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 dispatchGameMessageCoreBody (PutCardIntoPlay _ card _ _ _) g | not (playerCardEntryAllowedIn g card) = pure g
 dispatchGameMessageCoreBody original g =
-  let normalized = resolveMessageCardCosts (max (length $ gameSeats g) (length $ gamePlayerOrder g)) original
+  let normalized = resolveMessageCardCosts (startingPlayerCountIn g) original
       msg = case normalized of
         CheckWindows windows ->
           let completions =
@@ -4712,6 +4833,7 @@ newGame player scenario =
   Game
     { gamePrintedPlayerCounts = []
     , gamePlayerCountContext = Nothing
+    , gameCompetition = Nothing
     , gamePhase = PlayerPhase
     , gameState = Unstarted
     , gamePlayerOrder = [toId player]
@@ -4991,9 +5113,14 @@ getCardsOwnedBy ident = getsGame \g ->
 
 -- | A game with a seat for each player, in the order given.
 newTable :: Scenario -> NonEmpty PlayerIdentity -> Game
-newTable scenario (player :| others) = foldl' seat (newGame (normalizePlayer player) normalizedScenario) (map normalizePlayer others)
+newTable scenario (player :| others) = competitiveTable $ foldl' seat (newGame (normalizePlayer player) normalizedScenario) (map normalizePlayer others)
  where
-  players = 1 + length others
+  players = if isJust (getCompetitionSetup scenario) then (1 + length others) `div` 2 else 1 + length others
+  competitiveTable table = case getCompetitionSetup scenario of
+    Nothing -> table
+    Just setup -> case CW.newCompetition setup (gameSeats table) of
+      Nothing -> error "Competitive games require two or four players"
+      Just c -> table {gameCompetition = Just c, gameAreas = [newArea (CW.teamArea team) (CW.teamPlayers c team) | team <- [CW.Registration,CW.Resistance]]}
   physical c = c {pcCardDef = resolvePlayerCountCost players $ pcCardDef c}
   normalizePlayer (PlayerIdentity attrs) = PlayerIdentity attrs
     { playerIdentityDeck = Deck $ map physical $ unDeck $ playerIdentityDeck attrs
@@ -5432,7 +5559,7 @@ getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
 -- reject irrelevant ability types/windows before asking for that expensive work.
 getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
 getAbilitiesForMatching ident matches = do
-  candidates <- getsGame \g -> filter (\a -> not (isMissionTarget g $ refocus $ abilitySource a) && maybe True (== ident) (abilityController g a) && unhelped g a
+  candidates <- getsGame \g -> filter (\a -> not (isMissionTarget g $ refocus $ abilitySource a) && maybe True (== ident) (abilityController g a) && unhelped g a && competitiveAbilityAllowed g ident a
     && (abilitySubType a /= Just Ability.Defense || not (isDefendingOtherSimultaneousAttack ident g))) (getAbilities g)
   permitted <- canResolvePlayerCardAbilities ident
   snapshot <- getGame
@@ -5461,10 +5588,29 @@ getAbilitiesForMatching ident matches = do
     Just _ -> maybe True (== ident) (cardController g a)
     Nothing -> True
 
+competitiveAbilityAllowed :: Game -> IdentityId -> Ability -> Bool
+competitiveAbilityAllowed g you ability
+  | Nothing <- gameCompetition g = True
+  | Just c <- gameCompetition g
+  , any phaseWindow (concat $ take 1 $ gameWindows g)
+  , CW.playerTeam c you /= Just (CW.phaseTeam $ CW.competitivePhase c) = False
+  | otherwise = local source || maybe False (local . IdentityRef) (cardController g ability)
+ where
+  source = refocus $ abilitySource ability
+  here = areaId <$> areaOfTarget g (IdentityRef you)
+  local target = (areaId <$> areaOfTarget g target) == here
+  phaseWindow (W.Window _ event) = case event of
+    W.PhaseBegan _ -> True
+    W.PhaseEnded _ -> True
+    _ -> False
+
 -- | Whether the card's printed text box is treated as blank (Tech Theft). Only the cards
 -- that can blank another are asked, so a blanked card's own modifiers are not needed.
 isBlanked :: (HasGame m, IsRef a) => a -> m Bool
-isBlanked a = do
+isBlanked a = inElementArea a $ isBlankedInContext a
+
+isBlankedInContext :: (HasGame m, IsRef a) => a -> m Bool
+isBlankedInContext a = do
   g <- getGame
   -- a facedown upgrade has no text in play (Spectrum's energy forms)
   let facedown = case toTarget a of
@@ -5477,15 +5623,15 @@ isBlanked a = do
   let uncontrolled = case toTarget a of { AllyRef aid -> aid `elem` g.gameUncontrolledAllies; _ -> False }
   if protected then pure False else (missionAlly g (toTarget a) ||) . (attackBlanksTarget g (toTarget a) ||) . (uncontrolled ||) . (facedown ||) . elem Blank . mconcat
     <$> sequence
-      [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameSideSchemes g)
+      [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameSideSchemes g)
       -- Effect modifiers are stored explicitly; match only effects that can blank.
       , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a))
-          (filter (elem Blank . Effect.effectModifiers . toAttrs) $ filter (missionProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameEffects g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameAttachments g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameUpgrades g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameEnvironments g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameVillains g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (missionProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameObligations g)
+          (filter (elem Blank . Effect.effectModifiers . toAttrs) $ filter (modifierProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameEffects g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameAttachments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameUpgrades g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameEnvironments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameVillains g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameObligations g)
       ]
 
 -- | Run messages until the queue empties or someone has to answer a question, saying
@@ -5796,7 +5942,8 @@ gameSelectIdentity m = do
       mods <- getModifiers identity
       pure $ CannotChangeForm `notElem` mods && (if isHero identity then CannotChangeToAlterEgoForm `notElem` mods else CannotChangeToHeroForm `notElem` mods)
     FirstPlayer -> \a -> do
-      ps <- getAllPlayers
+      competitive <- getCompetition
+      ps <- if isJust competitive then getPlayers else getAllPlayers
       pure $ case ps of
         fp : _ -> toId a == fp
         _ -> False
@@ -6061,8 +6208,18 @@ gameSelectAlly m = do
     AllyWithUpgrade u -> \ally ->
       selectAny $ u <> UpgradeOneOf (map UpgradeWithId . toList . allyUpgrades $ toAttrs ally)
 
+inCompetitiveAreaOnly :: HasGame m => (a -> Target) -> [a] -> m [a]
+inCompetitiveAreaOnly target values = do
+  competitive <- getCompetition
+  if isNothing competitive then pure values else inYourAreaOnly target values
+
 gameSelectSupport :: (HasGame m) => SupportMatcher -> m (HashSet SupportId)
-gameSelectSupport = \case
+gameSelectSupport matcher = do
+  found <- gameSelectSupportUnscoped matcher
+  fromList <$> inCompetitiveAreaOnly SupportRef (HashSet.toList found)
+
+gameSelectSupportUnscoped :: HasGame m => SupportMatcher -> m (HashSet SupportId)
+gameSelectSupportUnscoped = \case
   UnexhaustedSupport -> do
     supports <- HashMap.elems <$> getsGame gameSupports
     pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) supports
@@ -6095,7 +6252,7 @@ gameSelectSupport = \case
 
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do
-  upgrades <- HashMap.elems <$> getsGame gameUpgrades
+  upgrades <- inCompetitiveAreaOnly (UpgradeRef . toId) . HashMap.elems =<< getsGame gameUpgrades
   result <- filterM (matchFilter m) upgrades
   pure $ HashSet.fromList $ map toId result
  where
@@ -6167,7 +6324,7 @@ gameSelectAttachment m = do
 gameSelectEnvironment ::
   (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
 gameSelectEnvironment m = do
-  environments <- HashMap.elems <$> getsGame gameEnvironments
+  environments <- inCompetitiveAreaOnly (EnvironmentRef . toId) . HashMap.elems =<< getsGame gameEnvironments
   pure . HashSet.fromList . map toId $ filter matches environments
  where
   matches e = case m of
@@ -6855,11 +7012,24 @@ refreshTraits g = blank {gameGainedTraits = GainedTraits (Just $ go (0 :: Int) n
     | n > 20 = error "the traits characters gain do not settle"
     | otherwise = let next = grant known in if next == known then known else go (n + 1) next
 
+inElementArea :: (HasGame m, IsRef a) => a -> ReaderT Game m b -> m b
+inElementArea target body = do
+  g <- getGame
+  let current = fromMaybe (gameActivePlayer g) (gameYou g)
+      here = areaId <$> areaOfTarget g (if toTarget target == GameRef then IdentityRef current else toTarget target)
+      same you = (areaId <$> areaOfTarget g (IdentityRef you)) == here
+      context = if isNothing (gameCompetition g) || same current then current
+        else fromMaybe current $ find same (gamePlayerOrder g <> gameSeats g)
+  runReaderT body g {gameYou = Just context}
+
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
-getModifiers a = withDepthGuard 2 $ do
+getModifiers a = inElementArea a $ getModifiersInContext a
+
+getModifiersInContext :: (HasGame m, IsRef a) => a -> m [Modifier]
+getModifiersInContext a = withDepthGuard 2 $ do
   snapshot <- getGame
   let allowed :: IsRef provider => provider -> Bool
-      allowed provider = missionProviderAllowed snapshot (toTarget a) (toTarget provider)
+      allowed provider = modifierProviderAllowed snapshot (toTarget a) (toTarget provider)
   effects <- filter (allowed . toAttrs) . HashMap.elems <$> getsGame gameEffects
   -- a card whose text box is blank gives no modifiers
   upgrades <- filterM (fmap not . isBlanked) . filter allowed . HashMap.elems =<< getsGame gameUpgrades
@@ -8222,6 +8392,16 @@ canResolveSettingSpecial you = AoaSettings.currentSetting >>= \case
 
 -- The mission area's immunity includes continuous card effects. Attached upgrades
 -- may modify their host; mission cards may affect their explicitly named area.
+-- | Ordinary continuous effects cannot reach across the table. An upgrade on
+-- the other leader, or an effect explicitly attached to that leader, lives with
+-- its host and can modify that host normally.
+modifierProviderAllowed :: Game -> Target -> Target -> Bool
+modifierProviderAllowed g target provider = missionProviderAllowed g target provider &&
+  (isNothing (gameCompetition g) || location target == location provider)
+ where
+  location GameRef = areaId <$> areaOfTarget g (IdentityRef $ fromMaybe (gameActivePlayer g) (gameYou g))
+  location ref = areaId <$> areaOfTarget g ref
+
 missionProviderAllowed :: Game -> Target -> Target -> Bool
 missionProviderAllowed g target provider
   | not (isMissionTarget g target) = True

@@ -229,5 +229,6 @@ data Trait
   | Dance
   | Sense
   | Police
+  | YoungAvenger
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

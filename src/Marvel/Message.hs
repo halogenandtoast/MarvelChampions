@@ -362,6 +362,10 @@ cardSpecific a key v = CardSpecific (toTarget a) key (toJSON v)
 data FinishedStatus
   = Won
   | Lost
+  | RegistrationWon
+  | ResistanceWon
+  | CompetitiveDraw
+  | BothTeamsLost
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 

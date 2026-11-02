@@ -6,6 +6,7 @@ module Marvel.Matchers (
   module Marvel.Matchers.Types,
 ) where
 
+import Control.Monad.Reader (ReaderT, runReaderT)
 import Marvel.Prelude
 
 import Marvel.Boost
@@ -19,34 +20,41 @@ import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Ref (Ref (AllyRef, EventRef, IdentityRef), Source, refocus)
 
+-- Explicit references can reach a named card across the table. Broad matchers
+-- such as "an enemy" or "a player" remain local in competitive games.
+matchingArea :: HasGame m => Bool -> ReaderT Game m a -> m a
+matchingArea explicit body = do
+  competitive <- getCompetition
+  if explicit || isNothing competitive then inAnyArea body else getGame >>= runReaderT body
+
 identityMatches :: (HasGame m) => IdentityMatcher -> IdentityId -> m Bool
-identityMatches matcher ident = member ident <$> inAnyArea (gameSelectIdentity matcher)
+identityMatches matcher ident = member ident <$> matchingArea (case matcher of IdentityWithId _ -> True; _ -> False) (gameSelectIdentity matcher)
 
 allyMatches :: (HasGame m) => AllyMatcher -> AllyId -> m Bool
-allyMatches matcher ident = member ident <$> inAnyArea (gameSelectAlly matcher)
+allyMatches matcher ident = member ident <$> matchingArea (case matcher of AllyWithId _ -> True; _ -> False) (gameSelectAlly matcher)
 
 upgradeMatches :: (HasGame m) => UpgradeMatcher -> UpgradeId -> m Bool
-upgradeMatches matcher ident = member ident <$> inAnyArea (gameSelectUpgrade matcher)
+upgradeMatches matcher ident = member ident <$> matchingArea (case matcher of UpgradeWithId _ -> True; _ -> False) (gameSelectUpgrade matcher)
 
 enemyMatches :: (HasGame m) => EnemyMatcher -> EnemyId -> m Bool
-enemyMatches matcher ident = member ident <$> inAnyArea (gameSelectEnemy matcher)
+enemyMatches matcher ident = member ident <$> matchingArea (case matcher of EnemyWithId _ -> True; _ -> False) (gameSelectEnemy matcher)
 
 villainMatches :: (HasGame m) => VillainMatcher -> VillainId -> m Bool
-villainMatches matcher ident = member ident <$> inAnyArea (gameSelectVillain matcher)
+villainMatches matcher ident = member ident <$> matchingArea (case matcher of VillainWithId _ -> True; _ -> False) (gameSelectVillain matcher)
 
 treacheryMatches ::
   (HasGame m) => TreacheryMatcher -> TreacheryId -> m Bool
-treacheryMatches matcher ident = member ident <$> inAnyArea (gameSelectTreachery matcher)
+treacheryMatches matcher ident = member ident <$> matchingArea False (gameSelectTreachery matcher)
 
 schemeMatches :: (HasGame m) => SchemeMatcher -> SchemeId -> m Bool
-schemeMatches matcher ident = member ident <$> inAnyArea (gameSelectScheme matcher)
+schemeMatches matcher ident = member ident <$> matchingArea (case matcher of SchemeWithId _ -> True; _ -> False) (gameSelectScheme matcher)
 
 sideSchemeMatches ::
   (HasGame m) => SideSchemeMatcher -> SideSchemeId -> m Bool
-sideSchemeMatches matcher ident = member ident <$> inAnyArea (gameSelectSideScheme matcher)
+sideSchemeMatches matcher ident = member ident <$> matchingArea (case matcher of SideSchemeWithId _ -> True; _ -> False) (gameSelectSideScheme matcher)
 
 minionMatches :: (HasGame m) => MinionMatcher -> MinionId -> m Bool
-minionMatches matcher ident = member ident <$> inAnyArea (gameSelectMinion matcher)
+minionMatches matcher ident = member ident <$> matchingArea (case matcher of MinionWithId _ -> True; _ -> False) (gameSelectMinion matcher)
 
 gameValueMatches :: (HasGame m) => GameValueMatcher -> Natural -> m Bool
 gameValueMatches matcher n = case matcher of
