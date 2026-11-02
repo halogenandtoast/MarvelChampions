@@ -1,5 +1,7 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -170,7 +172,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ map
   (toFst toCardCode)
-  [ nc48020, nc48028, nc48033
+  [ TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
+  , nc48020, nc48028, nc48033
   , Jubilee.jubilee47003, Jubilee.jubilee47016, Jubilee.jubilee47025, Jubilee.jubilee47031, Jubilee.jubilee47032, Jubilee.jubilee47033
   , keepUpThePressure
   , playingWithFire

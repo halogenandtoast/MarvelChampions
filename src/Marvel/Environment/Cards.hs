@@ -2,6 +2,8 @@ module Marvel.Environment.Cards where
 
 
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -61,7 +63,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
+  [ TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
+  , pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
   , hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063
       , ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
   , mojo39003a, mojo39003b, mojo39004a, mojo39004b, mojo39026a, mojo39026b, mojo39035, mojo39041, mojo39047, mojo39053, mojo39060, mojo39066

@@ -1,5 +1,7 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -147,7 +149,8 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ nc48029
+      [ TT.tt55007a, TT.tt55007b, TT.tt55008a, TT.tt55008b, TT.tt55009a, TT.tt55009b, TT.tt55010a, TT.tt55010b, TT.tt55011a, TT.tt55011b, TT.tt55012, TT.tt55013, TT.tt55014, TT.tt55015, TT.tt55016, TT.tt55034a, TT.tt55034b, TT.tt55035, TT.tt55036, TT.tt55062
+  , nc48029
   , pyrosFlamethrower
   , lifeDrain
   , Jubilee.jubilee47026, Jubilee.jubilee47027

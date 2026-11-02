@@ -2,6 +2,8 @@
 
 module Marvel.Environment where
 
+import Marvel.Environment.Environments.TricksterTakeover qualified as TT
+
 import Marvel.Environment.Environments.AgeOfApocalypseStandardIII
 
 import Marvel.Environment.Environments.AgeOfApocalypseSavageLand
@@ -73,7 +75,8 @@ withEnvironmentCardCode cCode f = case lookup cCode allEnvironments of
 allEnvironments :: HashMap CardCode SomeEnvironmentCard
 allEnvironments =
   fromList $ map (toFst someEnvironmentCardCode)
-    [ SomeEnvironmentCard pursuedByThePastFront, SomeEnvironmentCard pursuedByThePastBack, SomeEnvironmentCard theSavageLand, SomeEnvironmentCard genosha, SomeEnvironmentCard blueAreaOfTheMoon
+    [ SomeEnvironmentCard TT.tt55052, SomeEnvironmentCard TT.tt55053, SomeEnvironmentCard TT.tt55054, SomeEnvironmentCard TT.tt55055
+  , SomeEnvironmentCard pursuedByThePastFront, SomeEnvironmentCard pursuedByThePastBack, SomeEnvironmentCard theSavageLand, SomeEnvironmentCard genosha, SomeEnvironmentCard blueAreaOfTheMoon
   , SomeEnvironmentCard HoodPack.hood24049, SomeEnvironmentCard HoodPack.hood24049b, SomeEnvironmentCard HoodPack.hood24049a, SomeEnvironmentCard HoodPack.hood24060, SomeEnvironmentCard HoodPack.hood24061, SomeEnvironmentCard HoodPack.hood24062, SomeEnvironmentCard HoodPack.hood24063
   , SomeEnvironmentCard ne40081a, SomeEnvironmentCard ne40081b, SomeEnvironmentCard ne40190b, SomeEnvironmentCard ne40191b, SomeEnvironmentCard ne40192b, SomeEnvironmentCard ne40193b, SomeEnvironmentCard ne40194b, SomeEnvironmentCard ne40195b
   , SomeEnvironmentCard mojo39003a, SomeEnvironmentCard mojo39003b, SomeEnvironmentCard mojo39004a, SomeEnvironmentCard mojo39004b, SomeEnvironmentCard mojo39026a, SomeEnvironmentCard mojo39026b, SomeEnvironmentCard mojo39035, SomeEnvironmentCard mojo39041, SomeEnvironmentCard mojo39047, SomeEnvironmentCard mojo39053, SomeEnvironmentCard mojo39060, SomeEnvironmentCard mojo39066

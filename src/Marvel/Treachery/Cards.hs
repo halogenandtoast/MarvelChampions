@@ -1,5 +1,7 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -161,7 +163,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ nc48030, nc48038
+  [ TT.tt55023, TT.tt55024, TT.tt55025, TT.tt55026, TT.tt55049, TT.tt55050, TT.tt55051
+  , nc48030, nc48038
   , burnIceman
   , theEyeOfSauron
   , Jubilee.jubilee47034

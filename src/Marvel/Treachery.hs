@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.Treachery.Treacheries.TricksterTakeover qualified as TT
+
 import Marvel.Treachery.Treacheries.AgeOfApocalypseUnus
 
 import Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII
@@ -74,7 +76,8 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard nc48030, SomeTreacheryCard nc48038
+  [ SomeTreacheryCard TT.tt55023, SomeTreacheryCard TT.tt55024, SomeTreacheryCard TT.tt55025, SomeTreacheryCard TT.tt55026, SomeTreacheryCard TT.tt55049, SomeTreacheryCard TT.tt55050, SomeTreacheryCard TT.tt55051
+  , SomeTreacheryCard nc48030, SomeTreacheryCard nc48038
   , SomeTreacheryCard theEyeOfSauron
   , SomeTreacheryCard burnIceman
   , SomeTreacheryCard elaborateTrap

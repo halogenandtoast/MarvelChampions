@@ -171,5 +171,7 @@
   "changesWeather": "{player} changes the weather to {card}.",
   "resolvesWeatherSpecial": "{player} resolves the Special ability on {card}.",
   "exhausted": "{target} exhausts.",
-  "readied": "{target} readies."
+  "readied": "{target} readies.",
+  "ttLokiDamage": "Shatter the illusion deals {count} damage to Loki, God of Lies.",
+  "ttWorldsThreat": "Place 1 threat on Worlds Collide."
 }

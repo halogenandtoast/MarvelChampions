@@ -116,7 +116,8 @@
     "Special": "Special",
     "Basic": "Basic power",
     "Setup": "Setup",
-    "WhenRevealed": "When revealed"
+    "WhenRevealed": "When revealed",
+    "ForcedAction": "Forced action"
   },
   "choices": {
     "ability": "Use",

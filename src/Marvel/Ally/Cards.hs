@@ -1,5 +1,7 @@
 module Marvel.Ally.Cards where
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -164,7 +166,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ nc48002, nc48012, nc48013, nc48021
+  [ TT.tt55063, TT.tt55064, TT.tt55065, TT.tt55066
+  , nc48002, nc48012, nc48013, nc48021
   , Jubilee.jubilee47002, Jubilee.jubilee47011, Jubilee.jubilee47012, Jubilee.jubilee47018
   , snowClone
   , sharkGirl

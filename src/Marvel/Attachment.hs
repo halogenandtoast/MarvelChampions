@@ -2,6 +2,8 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.TricksterTakeover qualified as TT
+
 import Marvel.Attachment.Attachments.AgeOfApocalypseUnus
 
 import Marvel.Attachment.Attachments.AgeOfApocalypseHounds
@@ -71,7 +73,8 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard nc48029
+      [ SomeAttachmentCard TT.tt55007a, SomeAttachmentCard TT.tt55007b, SomeAttachmentCard TT.tt55008a, SomeAttachmentCard TT.tt55008b, SomeAttachmentCard TT.tt55009a, SomeAttachmentCard TT.tt55009b, SomeAttachmentCard TT.tt55010a, SomeAttachmentCard TT.tt55010b, SomeAttachmentCard TT.tt55011a, SomeAttachmentCard TT.tt55011b, SomeAttachmentCard TT.tt55012, SomeAttachmentCard TT.tt55013, SomeAttachmentCard TT.tt55014, SomeAttachmentCard TT.tt55015, SomeAttachmentCard TT.tt55016, SomeAttachmentCard TT.tt55034a, SomeAttachmentCard TT.tt55034b, SomeAttachmentCard TT.tt55035, SomeAttachmentCard TT.tt55036, SomeAttachmentCard TT.tt55062
+  , SomeAttachmentCard nc48029
   , SomeAttachmentCard lifeDrain
   , SomeAttachmentCard pyrosFlamethrower
   , SomeAttachmentCard jubilee47026, SomeAttachmentCard jubilee47027

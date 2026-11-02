@@ -2,6 +2,8 @@
 
 module Marvel.Minion where
 
+import Marvel.Minion.Minions.TricksterTakeover qualified as TT
+
 import Marvel.Minion.Minions.AgeOfApocalypseUnus
 
 import Marvel.Minion.Minions.AgeOfApocalypseSavageLand
@@ -74,7 +76,8 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard nc48027, SomeMinionCard nc48034, SomeMinionCard nc48035, SomeMinionCard nc48036, SomeMinionCard nc48037
+      [ SomeMinionCard TT.tt55017, SomeMinionCard TT.tt55018, SomeMinionCard TT.tt55019, SomeMinionCard TT.tt55020, SomeMinionCard TT.tt55037, SomeMinionCard TT.tt55038, SomeMinionCard TT.tt55039, SomeMinionCard TT.tt55040, SomeMinionCard TT.tt55041, SomeMinionCard TT.tt55042, SomeMinionCard TT.tt55043, SomeMinionCard TT.tt55044, SomeMinionCard TT.tt55056, SomeMinionCard TT.tt55057, SomeMinionCard TT.tt55058, SomeMinionCard TT.tt55059
+  , SomeMinionCard nc48027, SomeMinionCard nc48034, SomeMinionCard nc48035, SomeMinionCard nc48036, SomeMinionCard nc48037
   , SomeMinionCard jubilee47024, SomeMinionCard jubilee47030
   , SomeMinionCard sauron
   , SomeMinionCard pyroIceman

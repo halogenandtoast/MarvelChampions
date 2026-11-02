@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.TricksterTakeover
+
 import Marvel.Scenario.AgeOfApocalypseDarkBeast
 import Marvel.Scenario.AgeOfApocalypseEnSabahNur
 import Marvel.Scenario.AgeOfApocalypseApocalypse
@@ -66,6 +68,8 @@ allScenarios = fromList $ map
   (toFst someScenarioCardCode)
     [ SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
     , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
+    , SomeScenarioCard enchantressScenario
+    , SomeScenarioCard godOfLiesScenario
     , SomeScenarioCard mojoScenario
     , SomeScenarioCard mojoMagogScenario
     , SomeScenarioCard mojoSpiralScenario
@@ -142,7 +146,8 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("45118", [EncounterSet.AoaDystopianNightmare])
+    [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
+  , ("45118", [EncounterSet.AoaDystopianNightmare])
     , ("45184a", [EncounterSet.AoaCelestialTech, EncounterSet.AoaClanAkkaba])
     , ("45101b", [EncounterSet.AoaDarkRiders, EncounterSet.AoaInfinites])
     , ("45081a", [EncounterSet.AoaDystopianNightmare, EncounterSet.AoaHounds])

@@ -7,6 +7,8 @@ module Marvel.Ally
   , module X
   ) where
 
+import Marvel.Ally.Allies.TricksterTakeover qualified as TT
+
 import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign
 import Marvel.Ally.Allies.NextEvolutionMorlockSiege
 import Marvel.Ally.Allies.NextEvolutionHopeSummersSet
@@ -43,7 +45,8 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard nc48002, SomeAllyCard nc48012, SomeAllyCard nc48013, SomeAllyCard nc48021
+  [ SomeAllyCard TT.tt55063, SomeAllyCard TT.tt55064, SomeAllyCard TT.tt55065, SomeAllyCard TT.tt55066
+  , SomeAllyCard nc48002, SomeAllyCard nc48012, SomeAllyCard nc48013, SomeAllyCard nc48021
   , SomeAllyCard jubilee47002, SomeAllyCard jubilee47011, SomeAllyCard jubilee47012, SomeAllyCard jubilee47018
   , SomeAllyCard beak
   , SomeAllyCard shadowcatIceman

@@ -181,6 +181,10 @@ narrationFor = \case
         who <- playerRef' p
         one $ action [ikeyPart "log.changesToEnergyForm" ["player" ~> who, "form" ~> form]]
       Nothing -> pure []
+  CardSpecific GameRef "ttLokiDamage" (fromJSON -> Success (n :: Natural)) -> Just $
+    one $ mechanic [ikeyPart "log.ttLokiDamage" ["count" ~> n]]
+  CardSpecific GameRef "ttWorldsThreat" _ -> Just $
+    one $ mechanic [ikeyPart "log.ttWorldsThreat" []]
   CardSpecific (UpgradeRef uid) "flipPsiEnergy" _ -> Just do
     locked <- elem CannotFlipPsiEnergy <$> getModifiers (UpgradeRef uid)
     if locked then pure [] else simply "log.flips" (UpgradeRef uid)

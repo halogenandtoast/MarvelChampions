@@ -42,6 +42,7 @@ export interface SupportView extends CardView {
 }
 
 export interface AttachmentView extends CardView {
+  exhausted?: boolean
   facedownCards?: number
   crisis?: boolean
   damage?: number
@@ -292,6 +293,7 @@ export interface MissionView {
 }
 
 export interface GameView {
+  trickster?: { lokiHitPoints: number; lokiFlipped: boolean; worldsCollideThreat: number; worldsCollideComplete: boolean } | null
   mission: MissionView | null
   uncontrolledAllies?: AllyView[]
   futurePastDeckCount?: number | null

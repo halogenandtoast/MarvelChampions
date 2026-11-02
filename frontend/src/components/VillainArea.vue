@@ -78,6 +78,12 @@ const escalation = (scheme: SchemeView) => {
 
 <template>
   <section class="villain-area" :aria-label="t('game.zones.villain')">
+    <div v-if="game.trickster" class="villain">
+      <BoardCard :code="game.trickster.lokiFlipped ? '55027b' : '55027a'" :name="cards.name('55027a')" />
+      <Meter :label="t('game.hp')" :value="game.trickster.lokiHitPoints" :max="20 * heroes" tone="villain" />
+      <BoardCard code="55028b" :name="cards.name('55028b')" :threat="game.trickster.worldsCollideThreat" />
+      <Meter :label="t('game.threat')" :value="game.trickster.worldsCollideThreat" :max="2" tone="villain" />
+    </div>
     <div v-for="villain in villains" :key="villain.id" class="villain" :class="{ active: villains.length > 1 && villain.active }">
       <span v-if="villains.length > 1 && villain.active" class="active-flag">{{ t('game.activeVillain') }}</span>
       <div class="body">

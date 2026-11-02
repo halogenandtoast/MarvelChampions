@@ -1,5 +1,7 @@
 module Marvel.Minion.Cards where
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -176,7 +178,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ nc48027, nc48034, nc48035, nc48036, nc48037
+      [ TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
+  , nc48027, nc48034, nc48035, nc48036, nc48037
   , Jubilee.jubilee47024, Jubilee.jubilee47030
   , pyroIceman
   , sauron

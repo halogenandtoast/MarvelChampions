@@ -558,5 +558,11 @@
   "rapidTeleportation": "Rapid Teleportation",
   "nightcrawlerSearchBamf": "Search for Bamf!",
   "crisisOfFaithExhaust": "Exhaust Kurt Wagner to remove Crisis of Faith",
-  "crisisOfFaithDiscard": "Discard each Attack and Defense event from your hand"
+  "crisisOfFaithDiscard": "Discard each Attack and Defense event from your hand",
+  "ttCharm": "Place 1 charm counter",
+  "ttRevealMinion": "Find and reveal a minion",
+  "ttRevealSideScheme": "Find and reveal a side scheme",
+  "ttStunAndCharm": "Become stunned and place 1 charm counter",
+  "ttConfuseAndCharm": "Become confused and place 1 charm counter",
+  "ttPayResource": "Spend 1 resource"
 }

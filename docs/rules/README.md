@@ -167,3 +167,6 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 - Not transcribed: the RR index (pp.2–3; it only maps terms to pages, and "See" redirects are already glossary
   entries), card illustrations, and the anatomy pages' card images (the anatomy keys and callouts are in
   `appendices.md`).
+
+- [Trickster Takeover](scenario-trickster-takeover.md): Enchantress, God of Lies
+  (Single Group Mode), Trickster Magic; [FFG MC55 rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf).

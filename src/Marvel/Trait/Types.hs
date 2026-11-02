@@ -195,5 +195,11 @@ data Trait
   | Metagame
   | Pool
   | Limbo
+  | AvatarofLoki
+  | DarkElf
+  | Defiant
+  | Enchantment
+  | Synergy
+  | Temptation
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

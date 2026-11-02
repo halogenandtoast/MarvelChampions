@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.TricksterTakeover qualified as TT
+
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus
 
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand
@@ -86,7 +88,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ map
   (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard nc48020, SomeSideSchemeCard nc48028, SomeSideSchemeCard nc48033
+  [ SomeSideSchemeCard TT.tt55006, SomeSideSchemeCard TT.tt55021, SomeSideSchemeCard TT.tt55022, SomeSideSchemeCard TT.tt55045, SomeSideSchemeCard TT.tt55046, SomeSideSchemeCard TT.tt55047, SomeSideSchemeCard TT.tt55048, SomeSideSchemeCard TT.tt55060, SomeSideSchemeCard TT.tt55061
+  , SomeSideSchemeCard nc48020, SomeSideSchemeCard nc48028, SomeSideSchemeCard nc48033
   , SomeSideSchemeCard jubilee47003, SomeSideSchemeCard jubilee47016, SomeSideSchemeCard jubilee47025, SomeSideSchemeCard jubilee47031, SomeSideSchemeCard jubilee47032, SomeSideSchemeCard jubilee47033
   , SomeSideSchemeCard sauronLives
   , SomeSideSchemeCard playingWithFire
