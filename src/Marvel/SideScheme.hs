@@ -2,6 +2,9 @@
 module Marvel.SideScheme where
 
 import Marvel.SideScheme.SideSchemes.AgentsOfShield qualified as AosEncounter
+
+import Marvel.SideScheme.SideSchemes.TricksterTakeover qualified as TT
+
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus
 
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand
@@ -87,7 +90,8 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
 allSideSchemes = fromList $ concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
-  [ SomeSideSchemeCard AosEncounter.aos50074, SomeSideSchemeCard AosEncounter.aos50075, SomeSideSchemeCard AosEncounter.aos50081, SomeSideSchemeCard AosEncounter.aos50085, SomeSideSchemeCard AosEncounter.aos50095, SomeSideSchemeCard AosEncounter.aos50101, SomeSideSchemeCard AosEncounter.aos50121, SomeSideSchemeCard AosEncounter.aos50122, SomeSideSchemeCard AosEncounter.aos50127, SomeSideSchemeCard AosEncounter.aos50135, SomeSideSchemeCard AosEncounter.aos50136, SomeSideSchemeCard AosEncounter.aos50140, SomeSideSchemeCard AosEncounter.aos50146, SomeSideSchemeCard AosEncounter.aos50150, SomeSideSchemeCard AosEncounter.aos50154, SomeSideSchemeCard AosEncounter.aos50159, SomeSideSchemeCard AosEncounter.aos50162, SomeSideSchemeCard AosEncounter.aos50173, SomeSideSchemeCard AosEncounter.aos50174, SomeSideSchemeCard AosEncounter.aos50180
+  [ SomeSideSchemeCard TT.tt55006, SomeSideSchemeCard TT.tt55021, SomeSideSchemeCard TT.tt55022, SomeSideSchemeCard TT.tt55045, SomeSideSchemeCard TT.tt55046, SomeSideSchemeCard TT.tt55047, SomeSideSchemeCard TT.tt55048, SomeSideSchemeCard TT.tt55060, SomeSideSchemeCard TT.tt55061
+  , SomeSideSchemeCard AosEncounter.aos50074, SomeSideSchemeCard AosEncounter.aos50075, SomeSideSchemeCard AosEncounter.aos50081, SomeSideSchemeCard AosEncounter.aos50085, SomeSideSchemeCard AosEncounter.aos50095, SomeSideSchemeCard AosEncounter.aos50101, SomeSideSchemeCard AosEncounter.aos50121, SomeSideSchemeCard AosEncounter.aos50122, SomeSideSchemeCard AosEncounter.aos50127, SomeSideSchemeCard AosEncounter.aos50135, SomeSideSchemeCard AosEncounter.aos50136, SomeSideSchemeCard AosEncounter.aos50140, SomeSideSchemeCard AosEncounter.aos50146, SomeSideSchemeCard AosEncounter.aos50150, SomeSideSchemeCard AosEncounter.aos50154, SomeSideSchemeCard AosEncounter.aos50159, SomeSideSchemeCard AosEncounter.aos50162, SomeSideSchemeCard AosEncounter.aos50173, SomeSideSchemeCard AosEncounter.aos50174, SomeSideSchemeCard AosEncounter.aos50180
   , SomeSideSchemeCard fw53031, SomeSideSchemeCard fw53041, SomeSideSchemeCard fw54029, SomeSideSchemeCard fw54036
   , SomeSideSchemeCard aosP50031, SomeSideSchemeCard aosP50061
   , SomeSideSchemeCard goingUndercoverShuri, SomeSideSchemeCard showofEmpathyShuri, SomeSideSchemeCard manipulatedMUSICShuri, SomeSideSchemeCard playingforKeepsShuri, SomeSideSchemeCard gettheScoopSilk, SomeSideSchemeCard theGreatHuntSilk, SomeSideSchemeCard growInvulnerableSilk

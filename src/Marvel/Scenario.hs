@@ -2,6 +2,9 @@
 module Marvel.Scenario where
 
 import Marvel.Scenario.AgentsOfShield
+
+import Marvel.Scenario.TricksterTakeover
+
 import Marvel.Scenario.AgeOfApocalypseDarkBeast
 import Marvel.Scenario.AgeOfApocalypseEnSabahNur
 import Marvel.Scenario.AgeOfApocalypseApocalypse
@@ -68,6 +71,8 @@ allScenarios = fromList $ map
     [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
   , SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
     , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
+    , SomeScenarioCard enchantressScenario
+    , SomeScenarioCard godOfLiesScenario
     , SomeScenarioCard mojoScenario
     , SomeScenarioCard mojoMagogScenario
     , SomeScenarioCard mojoSpiralScenario
@@ -144,7 +149,8 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
+    [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
+    , ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
     , ("50086a", [EncounterSet.AosAimScience, EncounterSet.AosBatrocsBrigade])
     , ("50103a", [EncounterSet.AosScientistSupreme])
     , ("50129a", [EncounterSet.AosGravitationalPull, EncounterSet.AosHardSound])

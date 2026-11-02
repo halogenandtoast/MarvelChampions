@@ -183,3 +183,6 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 - [hero-silk.md](hero-silk.md)
 - [hero-falcon.md](hero-falcon.md)
 - [hero-winter-soldier.md](hero-winter-soldier.md)
+
+- [Trickster Takeover](scenario-trickster-takeover.md): Enchantress, God of Lies
+  (Single Group Mode), Trickster Magic; [FFG MC55 rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf).

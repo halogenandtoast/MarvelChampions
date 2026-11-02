@@ -17,6 +17,8 @@ import Marvel.Window.Types qualified as AospWindow ()
 
 
 
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Hood.Cards (hoodCardDef)
 import Marvel.EncounterSet qualified as HoodSet
 import Marvel.Trait qualified as HoodTrait
@@ -76,7 +78,8 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ aos50090a, aos50090b, aos50105a, aos50106a, aos50107a, aos50108a, aos50109, aos50110, aos50111, aos50112, aos50131a, aos50131b, aos50181a, aos50182a, aos50183a
+  [ TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
+  , aos50090a, aos50090b, aos50105a, aos50106a, aos50107a, aos50108a, aos50109, aos50110, aos50111, aos50112, aos50131a, aos50131b, aos50181a, aos50182a, aos50183a
   , aosP50032
   , pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
   , hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063

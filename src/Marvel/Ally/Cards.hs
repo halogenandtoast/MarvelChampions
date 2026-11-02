@@ -18,6 +18,9 @@ import Marvel.Window.Types qualified as AospWindow ()
 
 import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
 import Marvel.Silk.Cards qualified as SilkPack
+
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -182,7 +185,8 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ FalconWinter.fw53002, FalconWinter.fw53015, FalconWinter.fw53017, FalconWinter.fw53018, FalconWinter.fw53035, FalconWinter.fw53036, FalconWinter.fw54003, FalconWinter.fw54012, FalconWinter.fw54013, FalconWinter.fw54032
+  [ TT.tt55063, TT.tt55064, TT.tt55065, TT.tt55066
+  , FalconWinter.fw53002, FalconWinter.fw53015, FalconWinter.fw53017, FalconWinter.fw53018, FalconWinter.fw53035, FalconWinter.fw53036, FalconWinter.fw54003, FalconWinter.fw54012, FalconWinter.fw54013, FalconWinter.fw54032
   , aosP50002, aosP50012, aosP50013, aosP50022, aosP50023, aosP50036, aosP50054, aosP50091, aosP50105b, aosP50106b, aosP50107b, aosP50108b
   , BlackPantherShuriPack.tChallaShuri, BlackPantherShuriPack.manifoldShuri, BlackPantherShuriPack.anekaShuri, BlackPantherShuriPack.ayoShuri, BlackPantherShuriPack.okoyeShuri, BlackPantherShuriPack.whiteWolfShuri, SilkPack.scarletSpiderSilk, SilkPack.spiderByteSilk, SilkPack.madameWebSilk, SilkPack.spiderMan2099Silk, SilkPack.spiderWomanSilk
   , nc48002, nc48012, nc48013, nc48021

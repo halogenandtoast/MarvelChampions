@@ -276,6 +276,7 @@ library
       Marvel.Ally.Allies.ThrogPuddlegulp
       Marvel.Ally.Allies.TigraGreerGrantNelson
       Marvel.Ally.Allies.Triage
+      Marvel.Ally.Allies.TricksterTakeover
       Marvel.Ally.Allies.UsAgentJohnWalker
       Marvel.Ally.Allies.Valkyrie
       Marvel.Ally.Allies.VenmAddyBrock
@@ -514,6 +515,7 @@ library
       Marvel.Attachment.Attachments.Thanos
       Marvel.Attachment.Attachments.TheHood
       Marvel.Attachment.Attachments.TowerDefense
+      Marvel.Attachment.Attachments.TricksterTakeover
       Marvel.Attachment.Attachments.TwistedReality
       Marvel.Attachment.Attachments.Unstoppable
       Marvel.Attachment.Attachments.UpgradedDrones
@@ -599,6 +601,7 @@ library
       Marvel.Environment.Environments.SmVenom
       Marvel.Environment.Environments.SmVenomGoblin
       Marvel.Environment.Environments.SurgeInCrime
+      Marvel.Environment.Environments.TricksterTakeover
       Marvel.Environment.Environments.UltronDronesVision
       Marvel.Environment.Types
       Marvel.Event
@@ -1225,6 +1228,7 @@ library
       Marvel.MainScheme.MainSchemes.TheMasterOfTime
       Marvel.MainScheme.MainSchemes.TheRiseOfRedSkull
       Marvel.MainScheme.MainSchemes.TowerDefense
+      Marvel.MainScheme.MainSchemes.TricksterTakeover
       Marvel.MainScheme.MainSchemes.UndergroundDistribution
       Marvel.MainScheme.MainSchemes.UnleashingTheMutagen
       Marvel.MainScheme.Types
@@ -1435,6 +1439,7 @@ library
       Marvel.Minion.Minions.Tombstone
       Marvel.Minion.Minions.Topaz
       Marvel.Minion.Minions.TrevorFitzroy
+      Marvel.Minion.Minions.TricksterTakeover
       Marvel.Minion.Minions.TyrannosaurusRex
       Marvel.Minion.Minions.UltimateBioServant
       Marvel.Minion.Minions.UltronNemesis
@@ -1585,6 +1590,7 @@ library
       Marvel.Scenario.MutantGenesis
       Marvel.Scenario.NextEvolution
       Marvel.Scenario.NextEvolutionMarauders
+      Marvel.Scenario.TricksterTakeover
       Marvel.Scenario.Types
       Marvel.SideScheme
       Marvel.SideScheme.Cards
@@ -1778,6 +1784,7 @@ library
       Marvel.SideScheme.SideSchemes.TimePortal
       Marvel.SideScheme.SideSchemes.TotalDestruction
       Marvel.SideScheme.SideSchemes.TrackingPrey
+      Marvel.SideScheme.SideSchemes.TricksterTakeover
       Marvel.SideScheme.SideSchemes.UltronsImperative
       Marvel.SideScheme.SideSchemes.UltronUnleashed
       Marvel.SideScheme.SideSchemes.UnderAttack
@@ -2134,6 +2141,7 @@ library
       Marvel.Treachery.Treacheries.ToughItOut
       Marvel.Treachery.Treacheries.TowerDefense
       Marvel.Treachery.Treacheries.Trickster
+      Marvel.Treachery.Treacheries.TricksterTakeover
       Marvel.Treachery.Treacheries.UncannyResilience
       Marvel.Treachery.Treacheries.UnderFire
       Marvel.Treachery.Treacheries.WarDelivery
@@ -2145,6 +2153,8 @@ library
       Marvel.Treachery.Treacheries.YoureDeadMeat
       Marvel.Treachery.Treacheries.Zzzap
       Marvel.Treachery.Types
+      Marvel.TricksterTakeover.Cards
+      Marvel.TricksterTakeover.Helpers
       Marvel.Upgrade
       Marvel.Upgrade.Cards
       Marvel.Upgrade.Types
@@ -2560,6 +2570,7 @@ library
       Marvel.Villain.Villains.TheHood
       Marvel.Villain.Villains.Thunderball
       Marvel.Villain.Villains.TowerDefense
+      Marvel.Villain.Villains.TricksterTakeover
       Marvel.Villain.Villains.Ultron
       Marvel.Villain.Villains.Wrecker
       Marvel.Villain.Villains.Zola
@@ -2901,6 +2912,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.TheHoodSpec
       Marvel.Encounter.ThorNemesisSpec
       Marvel.Encounter.TowerDefenseSpec
+      Marvel.Encounter.TricksterTakeoverSpec
       Marvel.Encounter.UltronSpec
       Marvel.Encounter.ValkyrieNemesisSpec
       Marvel.Encounter.VenomGoblinSpec

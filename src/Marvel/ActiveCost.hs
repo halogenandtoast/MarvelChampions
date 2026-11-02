@@ -179,6 +179,17 @@ payCostPartAs contributing activeCost cost = do
           paid $ DamageThisPayment n
         _ -> error "Unhandled"
       _ -> error "Unhandled"
+    ExhaustAllIdentitiesAndDamageCost n -> do
+      players <- getAllPlayers
+      for_ players $ \p -> do
+        exhaust p
+        damageIdentity p (activeCostSource activeCost) (toDamage n FromAbility)
+      paid ExhaustPayment
+    ExhaustAttachmentCost -> do
+      case activeCostTarget activeCost of
+        ForAbility a | AttachmentRef aid <- abilitySource a -> attachmentStep aid ExhaustedAttachment
+        _ -> pure ()
+      paid ExhaustPayment
     ExhaustCost -> case activeCostTarget activeCost of
       ForAbility a -> do
         case abilitySource a of

@@ -32,6 +32,15 @@ import Marvel.Ref
 import Marvel.Window qualified as W
 import System.Random.Shuffle
 
+data TricksterState = TricksterState
+  { lokiHitPoints :: Natural
+  , lokiFlipped :: Bool
+  , worldsCollideThreat :: Natural
+  , worldsCollideComplete :: Bool
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Scenario = forall a. (IsScenario a) => Scenario a
 
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsScenario a where
@@ -100,6 +109,7 @@ instance Entity Scenario where
     -- ^ the decks besides the encounter deck, each with its discard pile
     , scenarioCardDecks :: HashMap CardId DeckKey
     -- ^ the deck a card of another deck than the encounter deck is discarded to
+    , scenarioTrickster :: Maybe TricksterState
     , scenarioMission :: Maybe MissionState
     , scenarioVictoryCondition :: Maybe Natural
     -- ^ how many of the villain's versions in the victory display win the game, when the
@@ -193,6 +203,7 @@ scenario f cCode (standardVillain, expertVillain) mainSchemes encounterSets =
             , scenarioReshufflesThisRound = 0
             , scenarioDecks = mempty
             , scenarioCardDecks = mempty
+            , scenarioTrickster = Nothing
             , scenarioMission = Nothing
             , scenarioVictoryCondition = Nothing
             }

@@ -11,7 +11,7 @@ import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
 import Marvel.Game.Source
-    ( cannotTakeDamageFrom,
+    ( canAllyDefendEnemy, cannotTakeDamageFrom,
       characterHasCondition,
       getModifiers,
       getCharacterThwartAgainstScheme,
@@ -79,7 +79,8 @@ instance RunMessage (Attrs Ally) where
       when (allyDamage a <= before) $ checkWindows [W.Window W.After $ W.AllyDefendedWithoutTakingDamage (allyId a) enemy]
       pure a
     CardSpecific (isTarget a -> True) "basicDefensePaid" (fromJSON -> Success enemyId) -> do
-      forbidden <- any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
+      allowed <- canAllyDefendEnemy enemyId (allyId a)
+      forbidden <- (not allowed ||) . any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
       unless forbidden do
         exhaust (allyId a)
         enemyDefendedBy enemyId (AllyCharacter $ allyId a)

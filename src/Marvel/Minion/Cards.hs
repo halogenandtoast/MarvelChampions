@@ -19,6 +19,9 @@ import Marvel.Window.Types qualified as AospWindow ()
 
 import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
 import Marvel.Silk.Cards qualified as SilkPack
+
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -195,7 +198,8 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
+      [ TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
+  , aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
   , FalconWinter.fw53030, FalconWinter.fw53032, FalconWinter.fw53038, FalconWinter.fw54028, FalconWinter.fw54031, FalconWinter.fw54034
   , aosP50030, aosP50060, aosP50062
   , BlackPantherShuriPack.klawShuri, BlackPantherShuriPack.mUSICShuri, BlackPantherShuriPack.joystickShuri, SilkPack.morlunSilk, SilkPack.atlasSilk

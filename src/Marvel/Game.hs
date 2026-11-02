@@ -51,7 +51,7 @@ import Marvel.EncounterCard qualified as MGEncounter
 import Marvel.Stats (Sch (..), Thw (..), Atk (..))
 import Marvel.AlterEgo.Cards
 import Marvel.Attachment
-import Marvel.Attachment.Types (Attachment, Attrs (attachmentSideScheme), Field (AttachmentCounters))
+import Marvel.Attachment.Types (Attachment, Attrs (attachmentSideScheme), Field (AttachmentCounters, AttachmentExhausted))
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Attack
 import Marvel.Campaign (Campaign, CampaignStepKind (..))
@@ -1845,6 +1845,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   CardSpecific GameRef "aoaStartingAlly" (fromJSON -> Success (you, expert)) -> g <$ AoaMission.startingAlly you expert
   CardSpecific GameRef key value | "aoaMission" `T.isPrefixOf` key -> g <$ AoaMission.runMissionStep key value
+  PutSetupEncounterCardsIntoPlay -> do
+    catalogue <- getPlayerCardCatalogue
+    let linked = [def | def <- HashMap.elems catalogue, any (\case Linked _ -> True; _ -> False) (cdKeywords def)]
+    let parents = map (toCardCode . getCardDef) $ scenarioEncounterDeck $ toAttrs $ g.gameScenario
+    for_ [def | def <- linked, any (\case Linked parent -> parent `elem` parents; _ -> False) (cdKeywords def)] \def -> do
+      cid <- getRandom
+      setAside [PlayerCard $ MkPlayerCard cid def Nothing Nothing]
+    pure g
   CardSpecific GameRef "setupLinkedCards" _ -> do
     -- A separate physical linked set belongs to each deck containing its parent.
     -- Linked cards have no owner until a player takes control of them.
@@ -3523,7 +3531,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
     restricted <- any (\case OnlyIdentityCanDefend _ -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
     used <- pure $ maybe [] simultaneousDefenders gameSimultaneousMinionAttack
-    own <- if forbidden || restricted then pure [] else filter ((`notElem` used) . AllyCharacter) <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident))
+    own <- if forbidden || restricted then pure [] else filterM (canAllyDefendEnemy enemyId) =<< (filter ((`notElem` used) . AllyCharacter) <$> selectList (UnexhaustedAlly <> AllyControlledBy (IdentityWithId ident)))
     permitted <- filterM allyCanPayBasicDefense own
     if null permitted
       then declareDefenseWithout ident enemyId AnyDefense []
@@ -3534,7 +3542,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     restrictions <- getModifiers (enemyRef enemyId)
     let restricted = any (\case OnlyIdentityCanDefend _ -> True; _ -> False) restrictions
     used <- pure $ maybe [] simultaneousDefenders gameSimultaneousMinionAttack
-    allies <- if forbidden || restricted then pure [] else filter ((`notElem` used) . AllyCharacter) <$> selectList UnexhaustedAlly
+    allies <- if forbidden || restricted then pure [] else filterM (canAllyDefendEnemy enemyId) =<< (filter ((`notElem` used) . AllyCharacter) <$> selectList UnexhaustedAlly)
     identities <- if forbidden then pure mempty else select $ HeroIdentity <> IdentityCanDefendReady
     basicAllies <- filterM allyCanPayBasicDefense allies
     controllers <- for basicAllies \a -> (a,) <$> getsGame (fmap getAllyController . lookup a . gameAllies)
@@ -3927,6 +3935,18 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  -- Forced actions finish before scenario cleanup, hand refill or phase windows.
+  runMessage msg@(EndPhase PlayerPhase) g = do
+    pending <- concatMapM (\you -> map (you,) <$> getAbilitiesForMatching you (\ab ->
+      if abilityType ab /= Ability.ForcedAction then pure False else do
+        meets <- passesCriteria you ab
+        if meets then canAffordCost you (abilitySource ab) (abilityCost ab) else pure False)) =<< getAllPlayers
+    case pending of
+      [] -> dispatchGameMessage msg g
+      (you, _) : _ -> runQueueT $ do
+        chooseOne you [pure $ UseAbility ab | (owner, ab) <- pending, owner == you]
+        endPhase PlayerPhase
+        pure g
   runMessage (WithSimultaneousAttackContext cursor (Ask who question)) g = runQueueT do
     push $ Ask who question
     pure $ selectSimultaneousMinionAttack cursor g
@@ -8170,3 +8190,13 @@ intelligenceCards you = do
   assigned <- getsGame $ \g -> concatMap (\ident -> maybe [] (playerIdentityEncounterCards . toAttrs) (lookup ident $ gamePlayers g)) players
   top <- take 1 . pileDeck <$> (getPile =<< getDeckKeyFor you)
   pure $ assigned <> top
+
+canAllyDefendEnemy :: HasGame m => EnemyId -> AllyId -> m Bool
+canAllyDefendEnemy enemy aid = do
+  mods <- getModifiers (AllyRef aid)
+  pure $ CannotDefend `notElem` mods && case enemy of
+    EnemyVillainId _ -> CannotDefendAgainstVillain `notElem` mods
+    _ -> True
+
+attachmentIsReady :: HasGame m => AttachmentId -> m Bool
+attachmentIsReady aid = getsGame $ maybe False (not . field AttachmentExhausted) . lookup aid . gameAttachments

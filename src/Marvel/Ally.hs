@@ -7,6 +7,8 @@ module Marvel.Ally
   , module X
   ) where
 
+import Marvel.Ally.Allies.TricksterTakeover qualified as TT
+
 import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign
 import Marvel.Ally.Allies.NextEvolutionMorlockSiege
 import Marvel.Ally.Allies.NextEvolutionHopeSummersSet
@@ -43,7 +45,8 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard fw53002, SomeAllyCard fw53015, SomeAllyCard fw53017, SomeAllyCard fw53018, SomeAllyCard fw53035, SomeAllyCard fw53036, SomeAllyCard fw54003, SomeAllyCard fw54012, SomeAllyCard fw54013, SomeAllyCard fw54032
+  [ SomeAllyCard TT.tt55063, SomeAllyCard TT.tt55064, SomeAllyCard TT.tt55065, SomeAllyCard TT.tt55066
+  , SomeAllyCard fw53002, SomeAllyCard fw53015, SomeAllyCard fw53017, SomeAllyCard fw53018, SomeAllyCard fw53035, SomeAllyCard fw53036, SomeAllyCard fw54003, SomeAllyCard fw54012, SomeAllyCard fw54013, SomeAllyCard fw54032
   , SomeAllyCard aosP50002, SomeAllyCard aosP50012, SomeAllyCard aosP50013, SomeAllyCard aosP50022, SomeAllyCard aosP50023, SomeAllyCard aosP50036, SomeAllyCard aosP50054, SomeAllyCard aosP50091, SomeAllyCard aosP50105b, SomeAllyCard aosP50106b, SomeAllyCard aosP50107b, SomeAllyCard aosP50108b
   , SomeAllyCard tChallaShuri, SomeAllyCard manifoldShuri, SomeAllyCard anekaShuri, SomeAllyCard ayoShuri, SomeAllyCard okoyeShuri, SomeAllyCard whiteWolfShuri, SomeAllyCard scarletSpiderSilk, SomeAllyCard spiderByteSilk, SomeAllyCard madameWebSilk, SomeAllyCard spiderMan2099Silk, SomeAllyCard spiderWomanSilk
   , SomeAllyCard nc48002, SomeAllyCard nc48012, SomeAllyCard nc48013, SomeAllyCard nc48021

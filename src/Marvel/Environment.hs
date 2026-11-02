@@ -5,6 +5,9 @@ module Marvel.Environment where
 import Marvel.Environment.Environments.AosP50032 as X
 
 import Marvel.Environment.Environments.AgentsOfShield qualified as AosEncounter
+
+import Marvel.Environment.Environments.TricksterTakeover qualified as TT
+
 import Marvel.Environment.Environments.AgeOfApocalypseStandardIII
 
 import Marvel.Environment.Environments.AgeOfApocalypseSavageLand
@@ -76,7 +79,8 @@ withEnvironmentCardCode cCode f = case lookup cCode allEnvironments of
 allEnvironments :: HashMap CardCode SomeEnvironmentCard
 allEnvironments =
   fromList $ map (toFst someEnvironmentCardCode)
-    [ SomeEnvironmentCard AosEncounter.aos50090a, SomeEnvironmentCard AosEncounter.aos50090b, SomeEnvironmentCard AosEncounter.aos50105a, SomeEnvironmentCard AosEncounter.aos50106a, SomeEnvironmentCard AosEncounter.aos50107a, SomeEnvironmentCard AosEncounter.aos50108a, SomeEnvironmentCard AosEncounter.aos50109, SomeEnvironmentCard AosEncounter.aos50110, SomeEnvironmentCard AosEncounter.aos50111, SomeEnvironmentCard AosEncounter.aos50112, SomeEnvironmentCard AosEncounter.aos50131a, SomeEnvironmentCard AosEncounter.aos50131b, SomeEnvironmentCard AosEncounter.aos50181a, SomeEnvironmentCard AosEncounter.aos50182a, SomeEnvironmentCard AosEncounter.aos50183a
+    [ SomeEnvironmentCard TT.tt55052, SomeEnvironmentCard TT.tt55053, SomeEnvironmentCard TT.tt55054, SomeEnvironmentCard TT.tt55055
+  , SomeEnvironmentCard AosEncounter.aos50090a, SomeEnvironmentCard AosEncounter.aos50090b, SomeEnvironmentCard AosEncounter.aos50105a, SomeEnvironmentCard AosEncounter.aos50106a, SomeEnvironmentCard AosEncounter.aos50107a, SomeEnvironmentCard AosEncounter.aos50108a, SomeEnvironmentCard AosEncounter.aos50109, SomeEnvironmentCard AosEncounter.aos50110, SomeEnvironmentCard AosEncounter.aos50111, SomeEnvironmentCard AosEncounter.aos50112, SomeEnvironmentCard AosEncounter.aos50131a, SomeEnvironmentCard AosEncounter.aos50131b, SomeEnvironmentCard AosEncounter.aos50181a, SomeEnvironmentCard AosEncounter.aos50182a, SomeEnvironmentCard AosEncounter.aos50183a
   , SomeEnvironmentCard aosP50032
   , SomeEnvironmentCard pursuedByThePastFront, SomeEnvironmentCard pursuedByThePastBack, SomeEnvironmentCard theSavageLand, SomeEnvironmentCard genosha, SomeEnvironmentCard blueAreaOfTheMoon
   , SomeEnvironmentCard HoodPack.hood24049, SomeEnvironmentCard HoodPack.hood24049b, SomeEnvironmentCard HoodPack.hood24049a, SomeEnvironmentCard HoodPack.hood24060, SomeEnvironmentCard HoodPack.hood24061, SomeEnvironmentCard HoodPack.hood24062, SomeEnvironmentCard HoodPack.hood24063

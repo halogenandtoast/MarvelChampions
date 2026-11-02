@@ -488,3 +488,7 @@ discardIsFromEncounter :: HasGame m => m Bool
 getAssignedBoostInWindow :: HasGame m => EnemyId -> EncounterCard -> m (Maybe EncounterCard)
 
 getMinionDamageInPlay :: HasGame m => MinionId -> m Natural
+
+canAllyDefendEnemy :: HasGame m => EnemyId -> AllyId -> m Bool
+
+attachmentIsReady :: HasGame m => AttachmentId -> m Bool

@@ -150,7 +150,8 @@
       "mut_gen": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "sm": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "next_evol": "You can swap the recommended modular sets for others. Required sets are included automatically.",
-      "aoa": "Use the required encounter sets and the recommended modular sets shown, or replace modular sets to customize the scenario. Standard III may replace the core Standard set."
+      "aoa": "Use the required encounter sets and the recommended modular sets shown, or replace modular sets to customize the scenario. Standard III may replace the core Standard set.",
+      "tt": "Each scenario uses one modular encounter set. Trickster Magic is recommended. God of Lies uses Single Group Mode."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",

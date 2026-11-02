@@ -2,6 +2,9 @@
 module Marvel.MainScheme where
 
 import Marvel.MainScheme.MainSchemes.AgentsOfShield qualified as AosEncounter
+
+import Marvel.MainScheme.MainSchemes.TricksterTakeover qualified as TT
+
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus
 
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen
@@ -46,9 +49,10 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
 
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
 allMainSchemes = fromList $ map (toFst someMainSchemeCardCode) [ SomeMainSchemeCard AosEncounter.aos50067b, SomeMainSchemeCard AosEncounter.aos50087b, SomeMainSchemeCard AosEncounter.aos50088b, SomeMainSchemeCard AosEncounter.aos50089b, SomeMainSchemeCard AosEncounter.aos50104b, SomeMainSchemeCard AosEncounter.aos50130b, SomeMainSchemeCard AosEncounter.aos50167b, SomeMainSchemeCard AosEncounter.aos50168b, SomeMainSchemeCard AosEncounter.aos50169b] <> [
-  ("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
+  ("55004", SomeMainSchemeCard TT.tt55004b), ("55005", SomeMainSchemeCard TT.tt55005b), ("55028", SomeMainSchemeCard TT.tt55028b), ("55033", SomeMainSchemeCard TT.tt55033b),   ("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
   (toFst someMainSchemeCardCode)
-  [ SomeMainSchemeCard huntingGeneTraitors, SomeMainSchemeCard theHorsemenOfApocalypse, SomeMainSchemeCard theAgeOfApocalypse, SomeMainSchemeCard darkBeastsBogusJourney, SomeMainSchemeCard enSabahNursPyramid, SomeMainSchemeCard theRiseOfApocalypse
+  [ SomeMainSchemeCard TT.tt55004a, SomeMainSchemeCard TT.tt55004b, SomeMainSchemeCard TT.tt55005a, SomeMainSchemeCard TT.tt55005b, SomeMainSchemeCard TT.tt55028a, SomeMainSchemeCard TT.tt55028b, SomeMainSchemeCard TT.tt55033a, SomeMainSchemeCard TT.tt55033b
+  , SomeMainSchemeCard huntingGeneTraitors, SomeMainSchemeCard theHorsemenOfApocalypse, SomeMainSchemeCard theAgeOfApocalypse, SomeMainSchemeCard darkBeastsBogusJourney, SomeMainSchemeCard enSabahNursPyramid, SomeMainSchemeCard theRiseOfApocalypse
   , SomeMainSchemeCard ne40077, SomeMainSchemeCard ne40078, SomeMainSchemeCard ne40103, SomeMainSchemeCard ne40104, SomeMainSchemeCard ne40121, SomeMainSchemeCard ne40139, SomeMainSchemeCard ne40140, SomeMainSchemeCard ne40141, SomeMainSchemeCard ne40142, SomeMainSchemeCard ne40143, SomeMainSchemeCard ne40166, SomeMainSchemeCard ne40167
   , SomeMainSchemeCard mojo39002b, SomeMainSchemeCard mojo39015b, SomeMainSchemeCard mojo39025b
   , SomeMainSchemeCard mgStalkedBySabretooth, SomeMainSchemeCard mgTheInjuredSenator, SomeMainSchemeCard mgNightOfTheSentinels, SomeMainSchemeCard mgTheSentinelFactory, SomeMainSchemeCard mgMasterMoldsAgenda, SomeMainSchemeCard mgTheBrotherhoodStrikes, SomeMainSchemeCard mgTheAtrium, SomeMainSchemeCard mgTheCafeteria, SomeMainSchemeCard mgTheBasketballCourt, SomeMainSchemeCard mgTheCourtyard, SomeMainSchemeCard mgAsteroidM, SomeMainSchemeCard mgFactoryOnline, SomeMainSchemeCard mgTheRuleOfMagnus, SomeMainSchemeCard smHaplessPedestrians, SomeMainSchemeCard smLeaveUsAlone, SomeMainSchemeCard smMazeOfMirrors, SomeMainSchemeCard smEdgeOfReality, SomeMainSchemeCard smSinisterSynchronization, SomeMainSchemeCard smSinisterBeatdown, SomeMainSchemeCard smSkiesOverNewYork, SomeMainSchemeCard smLowerManhattan, SomeMainSchemeCard smMidtownManhattan, SomeMainSchemeCard smUpperManhattan

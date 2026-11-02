@@ -19,6 +19,9 @@ import Marvel.Window.Types qualified as AospWindow ()
 
 import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
 import Marvel.Silk.Cards qualified as SilkPack
+
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -189,7 +192,8 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
+  [ TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
+  , aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
   , FalconWinter.fw53031, FalconWinter.fw53041, FalconWinter.fw54029, FalconWinter.fw54036
   , aosP50031, aosP50061
   , BlackPantherShuriPack.goingUndercoverShuri, BlackPantherShuriPack.showofEmpathyShuri, BlackPantherShuriPack.manipulatedMUSICShuri, BlackPantherShuriPack.playingforKeepsShuri, SilkPack.gettheScoopSilk, SilkPack.theGreatHuntSilk, SilkPack.growInvulnerableSilk

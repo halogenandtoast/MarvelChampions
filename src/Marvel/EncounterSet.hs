@@ -257,6 +257,7 @@ data EncounterSet
   | X23Nemesis
   | DeadpoolNemesis
   | DreadpoolSet
+  | EnchantressScenario | GodOfLies | TricksterMagic
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -334,6 +335,7 @@ modularSets =
   , ReaversSet
   , ExodusSet
   -- The Hood
+  , TricksterMagic
   , BeastyBoys, BrothersGrimm, CrossfiresCrew, MisterHydeSet, RansackedArmory, SinisterSyndicate, StateOfEmergency, StreetsOfMayhem, WreckingCrewModular
   -- Mutant Genesis
   , Brotherhood

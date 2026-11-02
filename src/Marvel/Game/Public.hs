@@ -58,7 +58,7 @@ import Marvel.Name
 import Marvel.Phase
 import Marvel.Question
 import Marvel.Ref
-import Marvel.Scenario.Types (Attrs (..))
+import Marvel.Scenario.Types (TricksterState, Attrs (..))
 import Marvel.SideScheme.Types (Attrs (..), SideScheme)
 import Marvel.Stats ()
 import Marvel.Support.Types (Attrs (..), Support)
@@ -127,6 +127,7 @@ data GameView = GameView
   -- ^ the game areas, by the ids of what is in each; a game of one area has one
   , viewerArea :: Maybe AreaId
   -- ^ the area of the first seat whose hand the viewer sees
+  , trickster :: Maybe TricksterState
   , campaign :: Maybe CampaignInfo
   -- ^ the campaign the game is a scenario of
   }
@@ -353,7 +354,7 @@ data ObligationView = ObligationView {tuckedCards :: [CardView], id :: Obligatio
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural, counters :: Natural, crisis :: Bool}
+data AttachmentView = AttachmentView {id :: AttachmentId, code :: CardCode, name :: Text, damage :: Natural, counters :: Natural, crisis :: Bool, exhausted :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -552,7 +553,8 @@ gameView seesHand g = do
       , activeCost
       , areas = map areaView (gameAreas g)
       , viewerArea = headMay [aid | pid <- gameSeats g, seesHand pid, Just aid <- [areaId <$> areaOfTarget g (IdentityRef pid)]]
-      , campaign =
+      , trickster = scenarioTrickster $ toAttrs $ gameScenario g
+  , campaign =
           gameCampaign g <&> \c ->
             CampaignInfo
               { name = c.campaignName
@@ -710,7 +712,7 @@ gameView seesHand g = do
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
-     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters crisisHere
+     in AttachmentView a.attachmentId (toCardCode a.attachmentCardDef) (display $ cdName a.attachmentCardDef) a.attachmentDamage a.attachmentCounters crisisHere a.attachmentExhausted
   villainView (v :: Villain) = do
     let a = toAttrs v
     sch <- Villain.getModifiedScheme a

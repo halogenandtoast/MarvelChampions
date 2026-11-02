@@ -654,5 +654,11 @@
   "aosFindMercenary": "Find a Mercenary",
   "aosAdditionalBoost": "Deal an additional boost card",
   "aosPreventSecrets": "Prevent {count} secret counters",
-  "aosPreventThreat": "Prevent {count} threat"
+  "aosPreventThreat": "Prevent {count} threat",
+  "ttCharm": "Place 1 charm counter",
+  "ttRevealMinion": "Find and reveal a minion",
+  "ttRevealSideScheme": "Find and reveal a side scheme",
+  "ttStunAndCharm": "Become stunned and place 1 charm counter",
+  "ttConfuseAndCharm": "Become confused and place 1 charm counter",
+  "ttPayResource": "Spend 1 resource"
 }

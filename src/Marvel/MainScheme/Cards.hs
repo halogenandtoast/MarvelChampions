@@ -5,6 +5,9 @@ module Marvel.MainScheme.Cards where
 
 
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+
+import Marvel.TricksterTakeover.Cards qualified as TT
+
 import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost ()
@@ -49,7 +52,8 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ aos50067b, aos50087b, aos50088b, aos50089b, aos50104b, aos50130b, aos50167b, aos50168b, aos50169b
+    [ TT.tt55004a, TT.tt55004b, TT.tt55005a, TT.tt55005b, TT.tt55028a, TT.tt55028b, TT.tt55033a, TT.tt55033b
+  , aos50067b, aos50087b, aos50088b, aos50089b, aos50104b, aos50130b, aos50167b, aos50168b, aos50169b
   , huntingGeneTraitors, theHorsemenOfApocalypse, theAgeOfApocalypse, darkBeastsBogusJourney, enSabahNursPyramid, theRiseOfApocalypse
   , ne40077, ne40078, ne40103, ne40104, ne40121, ne40139, ne40140, ne40141, ne40142, ne40143, ne40166, ne40167
   , mojo39002a, mojo39002b, mojo39015a, mojo39015b, mojo39025a, mojo39025b

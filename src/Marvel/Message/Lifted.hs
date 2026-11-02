@@ -533,6 +533,23 @@ basicThwartDivided you source thw atk = do
     [_] -> chooseOrRunOne you choices
     _ -> chooseOnePrompted you "$label.assignDividedThreat" choices
 
+-- | Add threat removal to the thwart whose interrupt window is open.
+increaseCurrentThwart :: (HasQueue m) => Source -> SchemeId -> Natural -> m ()
+increaseCurrentThwart source scheme bonus = replaceMatchingMessage increase matches
+ where
+  matches = \case
+    CardSpecific target "resolveThwart" (fromJSON -> Success (from, _ :: Natural)) -> target == schemeRef scheme && from == source
+    _ -> False
+  increase = \case
+    CardSpecific target "resolveThwart" (fromJSON -> Success (from :: Source, n :: Natural)) -> [CardSpecific target "resolveThwart" $ toJSON (from, n + bonus)]
+    msg -> [msg]
+
+-- | Remove threat without thwarting the scheme.
+removeSchemeThreat :: (ReverseQueue m, IsRef source) => source -> SchemeId -> Natural -> m ()
+removeSchemeThreat source scheme n = push $ case scheme of
+  SchemeMainSchemeId mid -> MainSchemeMessage mid (MainSchemeThreatRemoved (toSource source) n)
+  SchemeSideSchemeId sid -> SideSchemeMessage sid (SideSchemeThreatRemoved (toSource source) n)
+
 -- | Threat removed from a scheme matching, the player choosing which.
 removeThreat :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Natural -> SchemeMatcher -> m ()
 removeThreat you source n = resolveAs you . RemoveThreat (toSource source) n
@@ -834,7 +851,10 @@ enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m 
 enemyDefendedBy enemy character = do
   modifiers <- getModifiers (enemyRef $ toEnemy enemy)
   let allowed = AttacksCannotBeDefended `notElem` modifiers && all (\case OnlyIdentityCanDefend who -> character == IdentityCharacter who; _ -> True) modifiers
-  when allowed $ push case toEnemy enemy of
+  characterAllowed <- case character of
+    AllyCharacter aid -> canAllyDefendEnemy (toEnemy enemy) aid
+    _ -> pure True
+  when (allowed && characterAllowed) $ push case toEnemy enemy of
     EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
     EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
     EnemyAttachmentId _ -> CheckWindows []
@@ -2585,6 +2605,14 @@ putCardFromSetAsideIntoPlay :: (ReverseQueue m) => IdentityId -> CardCode -> m (
 putCardFromSetAsideIntoPlay ident code = do
   cards <- getSetAsidePlayerCards
   for_ (headMay [c | c <- cards, toCardCode c == code, pcOwner c == Just ident]) $ putIntoPlay ident
+
+-- | Recruit a neutral linked ally from the shared set-aside area.
+recruitLinkedAlly :: ReverseQueue m => IdentityId -> CardCode -> m ()
+recruitLinkedAlly you code = do
+  cards <- getSetAsidePlayerCards
+  for_ (headMay [c | c <- cards, toCardCode c == code, isNothing (pcOwner c)]) $ \card ->
+    putIntoPlay you card {pcOwner = Just you, pcController = Just you}
+
 
 -- | Snapshot the upgrades attached to an enemy before its defeat interrupts run.
 -- Pass the same snapshot to the When and After windows.

@@ -111,6 +111,7 @@ data Modifier
   | CannotActivate
   | CannotBasicDefend
   | CannotDefend
+  | CannotDefendAgainstVillain
   | -- | reduce each instance of consequential damage, to a minimum of zero
     ConsequentialDamageReduction Natural
   | LastSpecial
