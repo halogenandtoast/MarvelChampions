@@ -1,5 +1,6 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.CivilWar.Cards qualified as CW
 import Marvel.CampaignPlayers.EncounterCards qualified as CN
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
@@ -188,7 +189,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ CN.enc56058, CN.enc60036, CN.enc60064
+  [ CW.cw56070,CW.cw56071,CW.cw56101,CW.cw56102,CW.cw56103
+  , CN.enc56058, CN.enc60036, CN.enc60064
   , bringTheHammerDown, youDareOpposeMe
   , WM.wm58028, WM.wm58029, HC.hc59040
   , TT.tt55023, TT.tt55024, TT.tt55025, TT.tt55026, TT.tt55049, TT.tt55050, TT.tt55051

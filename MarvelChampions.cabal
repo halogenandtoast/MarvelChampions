@@ -571,6 +571,7 @@ library
       Marvel.CivilWar.IronManAttachments
       Marvel.CivilWar.LeaderAttachments
       Marvel.CivilWar.Leaders
+      Marvel.CivilWar.LeaderTreacheries
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.Types
       Marvel.Cost
@@ -2870,6 +2871,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.LeaderAttachmentSpec
       Marvel.CivilWar.LeaderDefenseSpec
       Marvel.CivilWar.LeaderSpec
+      Marvel.CivilWar.LeaderTreacherySpec
       Marvel.CivilWar.TeamSpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec

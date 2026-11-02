@@ -44,6 +44,12 @@ Mass Increase responds to hero, ally, and leader attacks while Dense is attached
 
 The focused Civil War suite passes 129 examples, including cross-board leader attacks and both mass forms. The full unit suite passes 8,053 examples, and the two-seed Rhino, Klaw, and Kang smoke selection passes all 25 games. The local Rules Reference's Interrupt, Replacement Effect, Damage, and Tough entries govern these effects; a search for newer card-specific rulings found none changing their printed instructions.
 
+## Iron Man and Captain Marvel treacheries
+
+Repulsor Blast and Supersonic Punch are implemented in both identity forms, including counting individual printed energy/wild resources and Iron Man's Tech-dependent confusion or piercing. Photonic Blast, Crisis Interdiction, and Energy Absorption handle their form-dependent effects, energy counters, every scheme on the local board, and healing from the updated counter total. Energy Absorption's boost also adds its counter.
+
+Twelve behavior tests cover these five cards; the focused Civil War suite now passes 141 examples. Other leaders' treacheries, leader side schemes, main schemes, modular sets, and scenario registration remain separate work.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.

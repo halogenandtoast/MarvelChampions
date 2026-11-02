@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.CivilWar.LeaderTreacheries qualified as CW
 import Marvel.KreeFanatic qualified as KF
 import Marvel.CampaignPlayers.NemesisTreacheries qualified as CN
 
@@ -79,7 +80,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
   Just (SomeTreacheryCard a) -> f a
 
 allTreacheries :: HashMap CardCode SomeTreacheryCard
-allTreacheries = fromList $ map
+allTreacheries = fromList $ [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> map
   (toFst someTreacheryCardCode)
   [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
   , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe
