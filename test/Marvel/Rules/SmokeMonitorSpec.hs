@@ -18,7 +18,9 @@ spec = describe "Smoke question watchdog" do
     withQuestionMonitor 30000 (\_ -> threadDelay 100000) `shouldThrow` isWatchdog
 
   it "extends the deadline for new question versions" do
-    withQuestionMonitor 150000 (\question -> mapM_ (\v -> question v >> threadDelay 20000) [1..10])
+    -- The body exceeds the original deadline while leaving enough scheduling
+    -- slack between updates for a busy full-suite run.
+    withQuestionMonitor 500000 (\question -> mapM_ (\v -> question v >> threadDelay 100000) [1..10])
       `shouldReturn` ()
 
   it "does not treat repeatedly observing one question as progress" do
