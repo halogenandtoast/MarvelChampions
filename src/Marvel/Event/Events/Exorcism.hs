@@ -14,6 +14,7 @@ import Marvel.Deck
 import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Projection
+import Marvel.Query (selectAny)
 import Marvel.Resource.Types
 
 exorcism :: EventCard Exorcism
@@ -30,8 +31,12 @@ instance RunMessage Exorcism where
       cardSpecific attrs "confuse" you
       pure e
     CardSpecific (isTarget attrs -> True) "confuse" (fromJSON -> Success you) -> do
-      deck <- projectMap PlayerIdentityDeck unDeck you
-      when (maybe False (any (`elem` [Mental, Wild]) . printedResources . getCardDef) (headMay deck)) $
-        withTheVillain you (\villain -> confuse villain attrs)
+      -- Defeating a scheme can eliminate the thwarting player before this
+      -- continuation. Their deck has left the game, so its top-card test fails.
+      present <- selectAny (IdentityWithId you)
+      when present $ do
+        deck <- projectMap PlayerIdentityDeck unDeck you
+        when (maybe False (any (`elem` [Mental, Wild]) . printedResources . getCardDef) (headMay deck)) $
+          withTheVillain you (\villain -> confuse villain attrs)
       pure e
     _ -> Exorcism <$> runMessage msg attrs

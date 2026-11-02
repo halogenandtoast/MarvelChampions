@@ -1,6 +1,8 @@
 module Marvel.Hero.MagikSignatureSpec (spec) where
 
 import Marvel.Treachery.Cards qualified as Treacheries
+import Marvel.SideScheme.Cards qualified as SideSchemes
+import Data.HashMap.Strict qualified as HashMap
 import Marvel.Villain.Types (villainConfused, villainStunned)
 import TestImport
 
@@ -128,3 +130,23 @@ spec = describe "Magik signature" do
       villainDamageNow `shouldReturn` 3
       allyDamage <$> allyIn "45048" `shouldReturn` 0
       damageOf p `shouldReturn` 0
+
+  it "Exorcism finishes after Specter of Death eliminates Magik without testing her removed deck" do
+    tg <- testGame ["magik", "bishop"]
+    inGame tg do
+      let p = player1 tg
+          survivor = player2 tg
+      asMagik p
+      encounter <- revealNow p SideSchemes.theSpecterOfDeath
+      pass
+      let sid = sideSchemeOf encounter
+      resolve [SideSchemeMessage sid $ SideSchemeThreatRemoved (toSource p) 2]
+      maximumHp <- hitPointsOf p
+      setDamage p (maximumHp - 1)
+      _ <- stackDeck p ["01089"]
+      _ <- paying p "45038" ["01088"]
+      choose "defeat Specter of Death" (isTargetChoice $ SchemeSideSchemeId sid)
+      pass
+      players `shouldReturn` [survivor]
+      getsGame (HashMap.member sid . gameSideSchemes) `shouldReturn` False
+      villainConfused . toAttrs <$> getVillain `shouldReturn` False

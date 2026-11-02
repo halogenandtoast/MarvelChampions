@@ -25,31 +25,40 @@ pursuedByThePastFront, pursuedByThePastBack :: EnvironmentCard StandardIIIEnviro
 pursuedByThePastFront = environment StandardIIIEnvironment Cards.pursuedByThePastFront
 pursuedByThePastBack = environment StandardIIIEnvironment Cards.pursuedByThePastBack
 
+-- Delayed pursuit may outlive its player's fatal activation. RR Player
+-- Elimination: effects referring to players ignore eliminated players.
 instance RunMessage StandardIIIEnvironment where
   runMessage msg (StandardIIIEnvironment a) = runQueueT $ case msg of
     CardSpecific (isTarget a -> True) "addPursuit" (fromJSON -> Success (you,n)) -> do
-      players <- getStartingPlayerCount
-      let total = environmentCounters a + n
-      if total < fromIntegral players + 3 then pure $ StandardIIIEnvironment a {environmentCounters = total}
-      else do
-        code <- getIdentityCode you
-        let set = getNemesisSet code
-            defs = filter (\d -> cdEncounterSet d == Just set && Minions.isNemesisMinion d) (HashMap.elems Minions.allMinions)
-        present <- concatMapM (selectList . MinionIs) defs
-        if null present then cardSpecific a "revealNemesis" you
-          else traverse_ (`minionActivatesAgainst` you) present
-        pure $ StandardIIIEnvironment a {environmentCounters = 0}
+      present <- selectAny $ IdentityWithId you
+      if not present then pure $ StandardIIIEnvironment a else do
+        players <- getStartingPlayerCount
+        let total = environmentCounters a + n
+        if total < fromIntegral players + 3 then pure $ StandardIIIEnvironment a {environmentCounters = total}
+        else do
+          code <- getIdentityCode you
+          let set = getNemesisSet code
+              defs = filter (\d -> cdEncounterSet d == Just set && Minions.isNemesisMinion d) (HashMap.elems Minions.allMinions)
+          present <- concatMapM (selectList . MinionIs) defs
+          if null present then cardSpecific a "revealNemesis" you
+            else traverse_ (`minionActivatesAgainst` you) present
+          pure $ StandardIIIEnvironment a {environmentCounters = 0}
     CardSpecific (isTarget a -> True) "revealNemesis" (fromJSON -> Success you) -> do
-      code <- getIdentityCode you
-      cards <- findEncounterCards (CardWithType MinionType)
-      let minions = filter (\card -> cdEncounterSet (getCardDef card) == Just (getNemesisSet code) && Minions.isNemesisMinion (getCardDef card)) cards
-      traverse_ (revealFoundEncounterCard you) minions
-      cardSpecific a "remainingNemesis" you
-      pure $ StandardIIIEnvironment a {environmentCardDef = Cards.pursuedByThePastBack}
+      present <- selectAny $ IdentityWithId you
+      if not present then pure $ StandardIIIEnvironment a else do
+        code <- getIdentityCode you
+        cards <- findEncounterCards (CardWithType MinionType)
+        let minions = filter (\card -> cdEncounterSet (getCardDef card) == Just (getNemesisSet code) && Minions.isNemesisMinion (getCardDef card)) cards
+        traverse_ (revealFoundEncounterCard you) minions
+        cardSpecific a "remainingNemesis" you
+        pure $ StandardIIIEnvironment a {environmentCardDef = Cards.pursuedByThePastBack}
     CardSpecific (isTarget a -> True) "remainingNemesis" (fromJSON -> Success you) -> do
-      cards <- selectList (NemesisSetFor you)
-      let (_,schemes,rest) = partitionNemesisSet cards
-      traverse_ (revealEncounterCard you) schemes
-      shuffleIntoEncounterDeck rest
+      present <- selectAny $ IdentityWithId you
+      when present do
+        cards <- selectList (NemesisSetFor you)
+        let (_,schemes,rest) = partitionNemesisSet cards
+        traverse_ (revealEncounterCard you) schemes
+        shuffleIntoEncounterDeck rest
+      -- Finishing the flip is independent of the eliminated player's nemesis set.
       pure $ StandardIIIEnvironment a {environmentCardDef = Cards.pursuedByThePastFront}
     _ -> StandardIIIEnvironment <$> runMessage msg a

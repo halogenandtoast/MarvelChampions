@@ -22,6 +22,45 @@ pursue you n = do
 
 spec :: Spec
 spec = describe "Age of Apocalypse Standard III" do
+  it "ignores queued pursuit after its activating hero is eliminated while another player survives" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          survivor = player2 tg
+      env <- setupPursuit p
+      pursue p 4
+      changeForm p
+      pass
+      clearHand p
+      hp <- hitPointsOf p
+      setDamage p (hp - 1)
+      vid <- villainIdNow
+      start [VillainMessage vid $ VillainAttacksWithoutBoost p]
+      deferred <- L.runQueueT $ L.capture $ L.enemyActivationAfterCurrent vid (addPursuit p 1)
+      runNow deferred
+      choose "Spider-Sense" (isAbilityOf p)
+      choose "take the fatal attack" isNoDefender
+      pass
+      selectAny (IdentityWithId p) `shouldReturn` False
+      selectAny (IdentityWithId survivor) `shouldReturn` True
+      getCountersOn env `shouldReturn` 4
+      selectAny (MinionIs Minions.vulture) `shouldReturn` False
+
+  it "finishes flipping to the front if the pursued player dies during the nemesis reveal" do
+    tg <- testGame ["spider-man", "captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+      _ <- revealNow p Environments.pursuedByThePastBack
+      resolve []
+      env <- selectJust $ EnvironmentIs Environments.pursuedByThePastBack
+      runNow [IdentityMessage p IdentityDefeated]
+      selectAny (IdentityWithId p) `shouldReturn` False
+      runNow [CardSpecific (EnvironmentRef env) "remainingNemesis" $ toJSON p]
+      pass
+      selectAny (EnvironmentIs Environments.pursuedByThePastFront) `shouldReturn` True
+      selectAny (EnvironmentIs Environments.pursuedByThePastBack) `shouldReturn` False
+      selectAny (IdentityWithId $ player2 tg) `shouldReturn` True
+
   it "places pursuit without revealing a nemesis below the player-scaled threshold" do
     tg <- testGame ["spider-man"]
     inGame tg do
