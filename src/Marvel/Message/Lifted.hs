@@ -3025,7 +3025,7 @@ preventEnemyDamage enemy n = do
   pending <- withQueue $ \queue -> (queue, headMay
     [(source, damage) | message <- concatMap queuedMessageLeaves queue,
       Just (target, source, damage) <- [enemyDamageMessage message], target == enemy])
-  for_ pending $ \(source, damage) -> do
+  for_ pending $ \(source, damage) -> unless (damageUnpreventable damage) $ do
     incoming <- incomingEnemyDamage enemy source damage
     if damageAmount incoming <= n
       then do

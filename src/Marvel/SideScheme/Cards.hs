@@ -200,7 +200,7 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ CW.cw56082,CW.cw56077,CW.cw56120,CW.cw56072,CW.cw56104,CW.cw56149,CW.cw56179,CW.cw57012,CW.cw57054
+  [ CW.cw56086,CW.cw56082,CW.cw56077,CW.cw56120,CW.cw56072,CW.cw56104,CW.cw56149,CW.cw56179,CW.cw57012,CW.cw57054
   , CN.enc56025, CN.enc56056, CN.enc60034, CN.enc60062
   , judgeJuryExecutioner
   , CampaignPlayers.fne60012, CampaignPlayers.fne60024

@@ -704,5 +704,7 @@
   "cwChooseRegistrationFirstPlayer": "Choose the Registration first player",
   "cwChooseResistanceFirstPlayer": "Choose the Resistance first player",
   "cwDiscardHighestCost": "Discard the highest-cost card you control",
-  "cwSpiderWomanSchemes": "Spider-Woman schemes"
+  "cwSpiderWomanSchemes": "Spider-Woman schemes",
+  "cwDecoyFromDeck": "Attach a Life Model Decoy from the encounter deck",
+  "cwDecoyFromDiscard": "Attach a Life Model Decoy from the encounter discard pile"
 }

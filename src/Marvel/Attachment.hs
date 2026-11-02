@@ -61,6 +61,7 @@ import Marvel.Card.Builder ()
 import Marvel.Attachment.Types
 import Marvel.CivilWar.SignatureAttachments qualified as CW
 import Marvel.CivilWar.Initiative qualified as CwI
+import Marvel.CivilWar.MariaHill qualified as CwMH
 import Marvel.CivilWar.IronManAttachments qualified as CWTech
 import Marvel.CivilWar.LeaderAttachments qualified as CWGear
 import Marvel.Card
@@ -80,7 +81,7 @@ withAttachmentCardCode cCode f = case lookup cCode allAttachments of
 
 allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
-  fromList $ [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
+  fromList $ [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
     map
       (toFst someAttachmentCardCode)
       [ SomeAttachmentCard CN.cn56026, SomeAttachmentCard CN.cn56057, SomeAttachmentCard CN.cn60035
