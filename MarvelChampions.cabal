@@ -574,6 +574,7 @@ library
       Marvel.CivilWar.LeaderTreacheries
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.Types
+      Marvel.CivilWar.VisionTreacheries
       Marvel.Cost
       Marvel.Cost.Types
       Marvel.Count
@@ -2873,6 +2874,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.LeaderSpec
       Marvel.CivilWar.LeaderTreacherySpec
       Marvel.CivilWar.TeamSpec
+      Marvel.CivilWar.VisionTreacherySpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec
       Marvel.Encounter.AgentsOfShieldBlackWidowSpec

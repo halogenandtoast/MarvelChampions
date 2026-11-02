@@ -189,7 +189,7 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ CW.cw56070,CW.cw56071,CW.cw56101,CW.cw56102,CW.cw56103,CW.cw56146,CW.cw56147,CW.cw56176,CW.cw57009,CW.cw57010
+  [ CW.cw56070,CW.cw56071,CW.cw56101,CW.cw56102,CW.cw56103,CW.cw56146,CW.cw56147,CW.cw56176,CW.cw57009,CW.cw57010,CW.cw57051,CW.cw57052,CW.cw57053
   , CN.enc56058, CN.enc60036, CN.enc60064
   , bringTheHammerDown, youDareOpposeMe
   , WM.wm58028, WM.wm58029, HC.hc59040

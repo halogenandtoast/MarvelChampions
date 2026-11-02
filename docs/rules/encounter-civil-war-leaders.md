@@ -54,6 +54,12 @@ Shield Block and Shield Toss reattach the existing Shield, preserving its physic
 
 Fourteen additional cases cover these five cards and their boosts; 155 focused Civil War examples pass.
 
+## Vision's treacheries
+
+Solar Beam checks the mass form when its activation begins, after Density Control's interrupt, and modifies the actual ATK or SCH for that activation. Its modifier and activation state survive saving during the defense choice. Superdense Strike offers an exhausted character when Dense's damage can affect it: v1.8's Target entry allows a target affected by any part of an ability. Its independent Intangible flip still resolves when no character can be exhausted. Phase Disruption offers upgrades to the opposing team, discards them instead of exhausting them while Intangible is showing, and resolves its independent Dense flip even without an upgrade target.
+
+Twelve Vision treachery cases pass, for 167 focused Civil War examples. A search for newer card-specific rulings found no exception to these targeting rules.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.
