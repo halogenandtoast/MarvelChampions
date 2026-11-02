@@ -220,6 +220,9 @@ narrationFor = \case
   CardSpecific GameRef key (fromJSON -> Success (_ :: W.RevealSource, ident :: IdentityId, card :: EncounterCard)) | key `elem` ["revealAfterWould", "revealAfterWouldWithoutWhenRevealed"] -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.reveals" ["player" ~> who, "card" ~> EncounterCard card]]
+  CardSpecific (VillainRef vid) "gainVillainStatus" (fromJSON -> Success status) -> Just $
+    if status == ToughStatus then simply (statusKey status) (VillainRef vid) else unlessStalwart (VillainRef vid) $ simply (statusKey status) (VillainRef vid)
+  GiveStatus (VillainRef _) _ -> Nothing
   GiveStatus target s
     | s == ToughStatus -> Just $ simply (statusKey s) target
     | otherwise -> Just $ unlessStalwart target $ simply (statusKey s) target
@@ -507,8 +510,8 @@ villainNarration vid = \case
   VillainAdvanced -> Just $ whenRef (VillainRef vid) \v -> one $ toned Bad $ mechanic [ikeyPart "log.villainAdvances" ["villain" ~> v]]
   FlipVillain -> Just $ simply "log.flips" (VillainRef vid)
   -- a stalwart villain is not stunned or confused: nothing to tell
-  VillainStunned _ -> Just $ unlessStalwart (VillainRef vid) $ simply "log.stunned" (VillainRef vid)
-  VillainConfused _ -> Just $ unlessStalwart (VillainRef vid) $ simply "log.confused" (VillainRef vid)
+  VillainStunned _ -> Nothing
+  VillainConfused _ -> Nothing
   VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
   VillainAttackGains k -> gains (VillainRef vid) k
   VillainAttackChanged n | n /= 0 -> Just $ attackChanged (VillainRef vid) n

@@ -414,6 +414,13 @@ windowMatches matcher w source = case matcher of
           would <- wouldTakeDamage villainId damage
           if would then liftA2 (&&) (villainMatches villainMatcher villainId) (damageMatches damageMatcher damage) else pure False
     _ -> pure False
+  VillainWouldGainStatus matcher statuses -> case windowType w of
+    VillainGainingStatus vid status | windowTiming w == When, status `elem` statuses -> villainMatches matcher vid
+    _ -> pure False
+  VillainWouldTakeDamageAtLeastFrom matcher damageMatcher minimumAmount -> case windowType w of
+    VillainDamageFrom vid source damage | windowTiming w == When, damageAmount damage >= minimumAmount ->
+      (&&) <$> villainMatches matcher vid <*> damageMatchesFrom damageMatcher damage source
+    _ -> pure False
   VillainWouldTakeDamageFrom villainMatcher damageMatcher -> case windowType w of
     VillainDamageFrom villainId damageSourceRef damage | windowTiming w == When -> do
       would <- wouldTakeDamage villainId damage

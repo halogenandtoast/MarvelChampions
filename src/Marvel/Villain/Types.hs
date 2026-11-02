@@ -439,8 +439,8 @@ runVillainMessage msg attrs = case msg of
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   VillainPreventAttackDamage source -> pure attrs {villainPreventedAttack = Just source}
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
-  Msg.VillainStunned _ -> applySolidSoundStatus attrs StunnedStatus
-  Msg.VillainConfused _ -> applySolidSoundStatus attrs ConfusedStatus
+  Msg.VillainStunned _ -> beginVillainStatus attrs StunnedStatus
+  Msg.VillainConfused _ -> beginVillainStatus attrs ConfusedStatus
   VillainSchemes -> do
     confused <- isConfused attrs
     if confused
@@ -635,7 +635,8 @@ instance RunMessage (Attrs Villain) where
       pure attrs {villainActivationPlayer = Just you, villainAttackTarget = Just (AllyCharacter aid), villainAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (villainAttacking attrs)}
     PlaceCounters target n | target == toRef attrs -> pure attrs {villainCounters = villainCounters attrs + n}
     RemoveCounters target n | target == toRef attrs -> pure attrs {villainCounters = subtractNatural n (villainCounters attrs)}
-    GiveStatus (VillainRef vid) s | vid == villainId attrs -> applySolidSoundStatus attrs s
+    GiveStatus (VillainRef vid) s | vid == villainId attrs -> beginVillainStatus attrs s
+    CardSpecific target "gainVillainStatus" (fromJSON -> Success status) | isTarget attrs target -> applySolidSoundStatus attrs status
     RemoveStatus (VillainRef vid) StunnedStatus | vid == villainId attrs, villainAdditionalStun attrs -> pure attrs {villainAdditionalStun = False}
     RemoveStatus (VillainRef vid) ConfusedStatus | vid == villainId attrs, villainAdditionalConfuse attrs -> pure attrs {villainAdditionalConfuse = False}
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
@@ -776,3 +777,12 @@ applySolidSoundStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Att
 applySolidSoundStatus attrs status = do
   replaced <- if status == ToughStatus then pure False else absorbStatusWithSolidSound (EnemyVillainId $ villainId attrs)
   if replaced then pure attrs else statusUnlessStalwart attrs status
+
+-- | An impossible or redundant status does not open an interrupt window.
+beginVillainStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Attrs Villain)
+beginVillainStatus attrs status = do
+  updated <- statusUnlessStalwart attrs status
+  when (updated /= attrs) $ do
+    checkWindows [W.Window W.When $ W.VillainGainingStatus (villainId attrs) status]
+    cardSpecific attrs "gainVillainStatus" status
+  pure attrs

@@ -32,7 +32,17 @@ The focused Civil War suite passes 98 examples, including eleven Iron Man equipm
 
 Captain Marvel's Helmet, Captain America's Helmet, Super-Soldier Serum, Focused Rage, Solar Gem, Vision's Cape, and Density Control are implemented. Helmet removal requires three resources of the same type. Vision's removable equipment flips the existing mass-form attachment, preserving its identity and host. Density Control changes the form before the activation and remains attached if the requested form is already showing. Mass-form flips are narrated in the game log.
 
-The focused suite now passes 113 examples. The fifteen additional cases cover equipment costs and removal, boosts, Serum overkill, Focused Rage's scheme activation, and Density Control's attack, scheme, and unchanged-form branches. Cosmic Flight, Contaminant Immunity, and Mass Increase require further defensive timing support and remain separate work.
+The fifteen equipment cases cover costs and removal, boosts, Serum overkill, Focused Rage's scheme activation, and Density Control's attack, scheme, and unchanged-form branches.
+
+## Defensive equipment
+
+Cosmic Flight, Contaminant Immunity, and Mass Increase complete the leaders' attachment cards. Cosmic Flight responds only to attack damage above three after prevention, stays attached when tough prevents the attack, and leaves a second copy in play after the first reduces the damage to three. Damage interrupt windows refresh from the pending damage so subsequent interrupts see the updated amount.
+
+Villains now have an interrupt window before gaining a possible status. Contaminant Immunity replaces the pending stun or confusion with its own discard and a tough status; it does not replace an impossible or redundant status. The narrator reports the status after that replacement opportunity.
+
+Mass Increase responds to hero, ally, and leader attacks while Dense is attached. It stuns the attacking character and prevents the attack's remaining damage, including other targets of one attack event. A lasting effect survives the attachment's departure and expires when that attack ends. A save/load test resumes Melee between its two targets with this prevention still active.
+
+The focused Civil War suite passes 129 examples, including cross-board leader attacks and both mass forms. The full unit suite passes 8,053 examples, and the two-seed Rhino, Klaw, and Kang smoke selection passes all 25 games. The local Rules Reference's Interrupt, Replacement Effect, Damage, and Tough entries govern these effects; a search for newer card-specific rulings found none changing their printed instructions.
 
 ## Verification
 

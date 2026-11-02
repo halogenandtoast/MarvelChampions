@@ -2752,6 +2752,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source (SourceEntity target) modifiers (Just Effect.DisableAtStartOfVillainPhase)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "preventAllDamageFromAttack" (fromJSON -> Success source) -> do
+    eid <- getRandom
+    let attrs = Effect.EffectAttrs eid "engine-lasting" source (SourceEntity source) [PreventAllAttackDamage] (Just Effect.DisableAtEndOfAttack)
+    pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
   CardSpecific GameRef "payEnemyAttackNoDamageCost" (fromJSON -> Success (you :: IdentityId,enemy :: EnemyId,source :: Source,cost :: Cost)) -> do
     payCostThenWithPayment you source cost GameRef "enemyAttackNoDamageCostPaid" (you,enemy,source)
     pure g
@@ -3673,7 +3677,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CheckWindowsFor (ident : rest) windows | not (HashMap.member ident (gamePlayers g)) -> do
     checkWindowsFor rest windows
     pure g
-  CheckWindowsFor (ident : rest) windows -> do
+  CheckWindowsFor (ident : rest) originalWindows -> do
+    windows <- traverse refreshDamageInterruptWindow originalWindows
     abilities <- getAbilitiesForMatching ident (\a -> asYou ident $ anyM (`abilityInWindow` a) windows)
     attrs <- getIdentity ident
     -- a treachery's reveal, or an encounter card's, is cancelled by taking it off the
@@ -3710,6 +3715,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             _ -> False
           W.Window _ (W.VillainDamageFrom vid _ _) -> isQueued $ \case
             VillainMessage vid' (VillainDamaged _ _) -> vid' == vid
+            _ -> False
+          W.Window _ (W.VillainGainingStatus vid status) -> isQueued $ \case
+            CardSpecific (VillainRef other) "gainVillainStatus" (fromJSON -> Success pending) -> vid == other && status == pending
             _ -> False
           W.Window _ (W.IdentityTakeDamage iid _) -> isQueued \case
             IdentityMessage iid' (IdentityDamaged _ _) -> iid' == iid
@@ -3755,7 +3763,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       ([keyword],_,_) | engineAttackResponse keyword -> do
         resolve $ UseAbility (keyword & choicesL <>~ [again])
       (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
-    pure g
+    let updated window = fromMaybe window $ headMay [new | (old,new) <- zip originalWindows windows,old == window]
+    pure g {gameWindows = case gameWindows of [] -> []; current : older -> map updated current : older}
   DeclareDefense ident enemyId defensePriority -> do
     open <- selectAny (EnemyWithId enemyId <> UndefendedEnemy)
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers (enemyRef enemyId)
@@ -4691,7 +4700,12 @@ dispatchGameMessage original g
 
 dispatchGameMessageCore :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 dispatchGameMessageCore msg g = do
-  changed <- dispatchGameMessageCoreBody msg g
+  prevented <- case characterDamageMessage msg of
+    Just (_,source,damage) -> attackDamagePreventedFrom source damage
+    Nothing -> pure False
+  when prevented $ runQueueT $ for_ (characterDamageMessage msg) $ \(target,_,damage) ->
+    when (damageAmount damage > 0 && piercesTough damage) $ removeAllTough target
+  changed <- if prevented then pure g else dispatchGameMessageCoreBody msg g
   let after = rememberCompetitiveEffects g changed
   case msg of
     AddToVictoryDisplay _ -> do
@@ -4700,6 +4714,19 @@ dispatchGameMessageCore msg g = do
       runQueueT $ for_ added $ \def -> checkWindows [W.Window W.After $ W.VictoryCardAdded def]
     _ -> pure ()
   pure after
+
+characterDamageMessage :: Message -> Maybe (CharacterId,Source,Damage)
+characterDamageMessage message = case message of
+  IdentityMessage you (IdentityDamaged source damage) -> Just (IdentityCharacter you,source,damage)
+  AllyMessage aid (AllyDamaged source damage) -> Just (AllyCharacter aid,source,damage)
+  _ -> (\(enemy,source,damage) -> (toCharacter enemy,source,damage)) <$> enemyDamageMessage message
+
+attackDamagePreventedFrom :: HasGame m => Source -> Damage -> m Bool
+attackDamagePreventedFrom source damage
+  | damageUnpreventable damage = pure False
+  | damageSource damage `elem` [FromAttack,FromOverkill] || (case damageSource damage of FromPlayerAttack _ -> True; FromAllyAttack _ -> True; _ -> False) =
+      elem PreventAllAttackDamage <$> getModifiers source
+  | otherwise = pure False
 
 rememberCompetitiveEffects :: Game -> Game -> Game
 rememberCompetitiveEffects before after = case gameCompetition after of
@@ -8018,21 +8045,42 @@ sourceRestrictedFromEnemy source target = do
 
 
 incomingEnemyDamage :: HasGame m => EnemyId -> Source -> Damage -> m Damage
-incomingEnemyDamage enemy source original = case enemy of
-  EnemyAttachmentId _ -> pure $ if damageUnpreventable original then original else original {damageAmount = subtractNatural (damagePrevention original) (damageAmount original)}
-  EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure original {damageAmount = 0}) (\m -> Minion.incomingMinionDamage (toAttrs m) source original)
-  EnemyVillainId vid -> do
-    villain <- getsGame (lookup vid . gameVillains)
-    case villain of
-      Nothing -> pure original {damageAmount = 0}
-      Just v -> do
-        let attrs = toAttrs v
-        modifiers <- getModifiers vid
-        let reduced = Villain.reducedDamage modifiers original
-            sustained = subtractNatural (fromIntegral $ unHp $ Villain.villainHp attrs) (fromIntegral $ unHp $ Villain.villainMaxHp attrs)
-            n = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
-        pure $ if damageUnpreventable original then reduced else reduced {damageAmount = subtractNatural (damagePrevention original) n}
+incomingEnemyDamage enemy source original = do
+  prevented <- attackDamagePreventedFrom source original
+  if prevented then pure original {damageAmount = 0} else incoming
+ where
+  incoming = case enemy of
+    EnemyAttachmentId _ -> pure $ if damageUnpreventable original then original else original {damageAmount = subtractNatural (damagePrevention original) (damageAmount original)}
+    EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure original {damageAmount = 0}) (\m -> Minion.incomingMinionDamage (toAttrs m) source original)
+    EnemyVillainId vid -> do
+      villain <- getsGame (lookup vid . gameVillains)
+      case villain of
+        Nothing -> pure original {damageAmount = 0}
+        Just v -> do
+          let attrs = toAttrs v
+          modifiers <- getModifiers vid
+          let reduced = Villain.reducedDamage modifiers original
+              sustained = subtractNatural (fromIntegral $ unHp $ Villain.villainHp attrs) (fromIntegral $ unHp $ Villain.villainMaxHp attrs)
+              n = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
+          pure $ if damageUnpreventable original then reduced else reduced {damageAmount = subtractNatural (damagePrevention original) n}
 
+-- | Interrupts can change the amount still pending. A later interrupt answers
+-- that updated amount, rather than the amount before the first interrupt.
+refreshDamageInterruptWindow :: (HasGame m,HasQueue m) => W.Window -> m W.Window
+refreshDamageInterruptWindow window = case W.windowType window of
+  W.VillainDamageFrom vid source _ -> refresh (EnemyVillainId vid) (Just source) $ \case W.VillainDamageFrom {} -> True; _ -> False
+  W.DamagedVillain vid _ -> refresh (EnemyVillainId vid) Nothing $ \case W.DamagedVillain {} -> True; _ -> False
+  W.EnemyWouldBeDamaged enemy source _ -> refresh enemy (Just source) $ \case W.EnemyWouldBeDamaged {} -> True; _ -> False
+  _ -> pure window
+ where
+  refresh enemy source sameKind = do
+    pending <- withQueue $ \queue -> (queue,headMay
+      [message | message <- concatMap queuedMessageLeaves queue,Just (target,from,_) <- [enemyDamageMessage message],target == enemy,maybe True (== from) source])
+    case pending of
+      Nothing -> pure window
+      Just message -> do
+        current <- enemyDamageTakenWindows message
+        pure $ fromMaybe window $ find (sameKind . W.windowType) current
 
 
 canSourceDamageEnemy :: HasGame m => Source -> EnemyId -> m Bool

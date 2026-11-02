@@ -2868,6 +2868,7 @@ test-suite MarvelChampions-test
       Marvel.CampaignPlayerTest
       Marvel.CivilWar.IronManSpec
       Marvel.CivilWar.LeaderAttachmentSpec
+      Marvel.CivilWar.LeaderDefenseSpec
       Marvel.CivilWar.LeaderSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CoverageSpec

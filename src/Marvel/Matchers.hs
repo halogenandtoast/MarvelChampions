@@ -93,6 +93,7 @@ damageMatches matcher damage = case matcher of
     FromAllyAttack _ -> True
     _ -> False
   DamageFromAnAttack -> pure case damageSource damage of
+    FromAttack -> True
     FromPlayerAttack _ -> True
     FromAllyAttack _ -> True
     FromOverkill -> True

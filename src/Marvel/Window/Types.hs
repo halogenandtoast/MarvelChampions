@@ -102,6 +102,8 @@ data WindowMatcher
   | VillainWouldBeDefeatedMatching VillainMatcher
   | EnemyAttacksPlayerOrAlly WindowTiming EnemyMatcher IdentityMatcher
   | EnemyWouldScheme EnemyMatcher IdentityMatcher
+  | VillainWouldGainStatus VillainMatcher [StatusCard]
+  | VillainWouldTakeDamageAtLeastFrom VillainMatcher DamageMatcher Natural
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
@@ -304,6 +306,7 @@ data WindowType
   | RevealVillain VillainId RevealSource
   | DamagedVillain VillainId Damage
   | VillainDamageFrom VillainId Source Damage
+  | VillainGainingStatus VillainId StatusCard
   | -- | the villain, the damage that defeated its stage, what dealt it, and how much of
     -- it went past its hit points
     DefeatedVillain VillainId Damage Source Natural

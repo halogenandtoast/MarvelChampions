@@ -15,6 +15,7 @@ import Marvel.Trait.Types
 
 data Modifier
   = SkipNextVillainPhase
+  | PreventAllAttackDamage
   | PaidWithCyberneticArm
   | AllyBasicPowerAdditionalCost Cost
   | DamageOnlyFromCharacterAttacks CharacterId

@@ -205,6 +205,24 @@ spec = describe "Civil War team boundaries" do
       getEnemyAttack (EnemyVillainId attacker) `shouldReturn` Nothing
       getEnemyAttack (EnemyVillainId defender) `shouldReturn` Nothing
 
+  it "uses Mass Increase against a leader attacking Vision across the two boards" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      attacker <- villainIdNow
+      defender <- addSecondBoard tg
+      form <- encounterCard C.cw57046a
+      mass <- encounterCard C.cw57049
+      let aid = AttachmentId $ unCardId $ ecCardId mass
+      resolve [SetActivePlayer (player2 tg),ReplaceVillain defender "57040" Swapped,VillainMessage defender SetVillainHp,RevealEncounterCard (player2 tg) form,RevealEncounterCard (player2 tg) mass,SetActivePlayer (player1 tg)]
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      before <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      resolve messages
+      after <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      liftIO $ after `shouldBe` before
+      enemyMatches StunnedEnemy (EnemyVillainId attacker) `shouldReturn` True
+      getAttachedCharacter aid `shouldReturn` Nothing
+
   it "spends stun instead of attacking the other leader" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

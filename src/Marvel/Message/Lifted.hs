@@ -2814,6 +2814,10 @@ currentPlayerAttackSource you = withQueue $ \q -> (q, headMay $ concatMap attack
     Simultaneously messages -> concatMap attackSource messages
     _ -> []
 
+-- | A lasting prevention effect for this attack, including all of its targets.
+preventAllDamageFromAttack :: ReverseQueue m => Source -> m ()
+preventAllDamageFromAttack = cardSpecific GameRef "preventAllDamageFromAttack"
+
 -- | The current attack's pending damage, after its attack window has opened.
 modifyCurrentPlayerAttack :: (ReverseQueue m) => IdentityId -> Natural -> [Keyword] -> m ()
 modifyCurrentPlayerAttack you n keywords = do
