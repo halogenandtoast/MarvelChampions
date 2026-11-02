@@ -70,7 +70,7 @@ watch(answering, (id) => {
   if (id) viewing.value = id
 }, { immediate: true })
 const shownSeats = computed(() => (allSeats.value ? players.value : viewed.value ? [viewed.value] : []))
-const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m) => m.engagedWith === player.id || player.engagedMinions?.includes(m.id))
+const minionsOf = (player: PlayerView) => (game.value?.minions ?? []).filter((m) => !m.attachedToEnvironment && (m.engagedWith === player.id || player.engagedMinions?.includes(m.id)))
 // the environments in a player's play area (Ebony Maw's Spells)
 const environmentsOf = (player: PlayerView) => (game.value?.environments ?? []).filter((e) => e.owner === player.id)
 

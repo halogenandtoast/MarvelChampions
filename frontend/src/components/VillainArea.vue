@@ -116,6 +116,7 @@ const escalation = (scheme: SchemeView) => {
     <div v-if="environments.length" class="environments">
       <div v-for="environment in environments" :key="environment.id" class="scheme side">
         <BoardCard :id="environment.id" :code="environment.code" :held="environment.facedownCards" :name="environment.name" :attached="environment.attachments ?? []" :counters="environment.counters || null" :damage="environment.damage ?? 0" />
+        <BoardCard v-for="minion in game.minions.filter((minion) => minion.attachedToEnvironment === environment.id)" :key="minion.id" :id="minion.id" :code="minion.code" :name="minion.name" :damage="minion.damage" :tough="minion.tough" :stunned="minion.stunned" :confused="minion.confused" :attached="[...(minion.attachments ?? []), ...(minion.upgrades ?? [])]" />
       </div>
     </div>
 

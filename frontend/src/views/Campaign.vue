@@ -85,6 +85,7 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const shield = computed(() => view.value?.campaign.kind === 'AgentsOfShieldCampaign')
 const apocalypse = computed(() => view.value?.campaign.kind === 'AgeOfApocalypseCampaign')
 const nextEvolution = computed(() => view.value?.campaign.kind === 'NextEvolution')
 const mutant = computed(() => view.value?.campaign.kind === 'MutantGenesis')
@@ -265,6 +266,14 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="shield && log.shield" class="scenario-log">
+          <dt>{{ $t('campaign.shieldEvidence') }}</dt><dd>{{ names(log.shield.earnedEvidence) }}</dd>
+          <template v-for="[code, count] in log.shield.boardSecrets" :key="code"><dt>{{ name(code) }}</dt><dd>{{ count }}</dd></template>
+          <dt>{{ $t('campaign.shieldBetrayed') }}</dt><dd>{{ names(log.shield.betrayedBoard) }}</dd>
+          <dt>{{ $t('campaign.shieldCaptives') }}</dt><dd>{{ log.shield.rescuedCaptives }}</dd>
+          <dt>{{ $t('campaign.shieldAdaptoids') }}</dt><dd>{{ names(log.shield.adaptoidEnvironments) }}</dd>
+          <dt>{{ $t('campaign.shieldThunderbolts') }}</dt><dd>{{ names(log.shield.survivingThunderbolts) }}</dd>
         </dl>
         <dl v-else-if="apocalypse && log.apocalypse" class="scenario-log">
           <dt>{{ $t('campaign.aoaMissions') }}</dt>

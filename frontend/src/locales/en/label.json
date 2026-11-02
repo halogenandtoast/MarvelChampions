@@ -121,7 +121,7 @@
   "placeThreatOnUnderAttack": "Place {count} threat on Under Attack",
   "placeThreatOnReactorOverload": "Place {count} threat on Reactor Overload",
   "removeThreatFromAScheme": "Remove {count} threat from a scheme",
-  "drawCards": "Draw a card | Draw {count} cards",
+  "drawCards": "Draw cards",
   "dealDamageToAnEnemy": "Deal {count} damage to an enemy",
   "healAnIdentity": "Heal {count} damage from an identity",
   "chooseCardToSwap": "Choose a card to swap with the top card of your deck",
@@ -233,7 +233,7 @@
   "discardCardCannotChangeForm": "Discard a card from your hand; you cannot change form until your next turn ends",
   "pymParticlesHeal": "Heal {count} damage from your hero (Pym Particles)",
   "pymParticlesDraw": "Draw a card (Pym Particles) | Draw {count} cards (Pym Particles)",
-  "giveTough": "Give a friendly character a tough status card",
+  "giveTough": "Give a tough status card",
   "exhaustJessicaDrewRemoveUncertainLoyalties": "Exhaust Jessica Drew → remove Uncertain Loyalties from the game",
   "placeThreatDiscardObligation": "Place {count} threat on the main scheme, and discard this obligation",
   "spendAnEnergyResource": "Spend an energy resource",
@@ -322,8 +322,8 @@
   "encounterDiscard": "The encounter discard pile",
   "combatProtocols": "Combat Protocols",
   "cyberneticUpgrades": "Cybernetic Upgrades",
-  "stun": "Stun an enemy",
-  "confuse": "Confuse an enemy",
+  "stun": "Stun",
+  "confuse": "Confuse",
   "combatReadyShuffle": "Shuffle up to 2 Technique upgrades into your deck",
   "combatReadyDiscard": "Discard until you find a Technique upgrade",
   "deathPerception": "Death Perception",
@@ -553,10 +553,106 @@
   "kidOmegaThreat": "Spend a mental resource to remove 1 threat from each scheme",
   "stunned": "Stunned",
   "confused": "Confused",
-  "tough": "Tough",
+  "tough": "Give a tough status card",
   "magneticPull": "Magnetic Pull",
   "rapidTeleportation": "Rapid Teleportation",
   "nightcrawlerSearchBamf": "Search for Bamf!",
   "crisisOfFaithExhaust": "Exhaust Kurt Wagner to remove Crisis of Faith",
-  "crisisOfFaithDiscard": "Discard each Attack and Defense event from your hand"
+  "crisisOfFaithDiscard": "Discard each Attack and Defense event from your hand",
+  "silkTuckTop": "Tuck the top encounter card",
+  "bpRiskBoost": "Give an additional boost card and draw 1 card",
+  "discardEncounterCards": "Discard {count} encounter cards",
+  "placeOnTop": "Place on top",
+  "placeOnBottom": "Place on bottom",
+  "specialFunding": "Place an all-purpose counter after the support enters play",
+  "aosGrantWardPay": "Spend a mental resource",
+  "aosGrantWardDamage": "Take damage and remove Grant Ward from the game",
+  "aosEvidenceSearch": "Place 1 threat to search your deck",
+  "aosSpendThreat": "Remove {count} suit threat",
+  "aosMoveThreat": "Move {count} threat to the suit",
+  "changeSuit": "Change to Stealth suit form",
+  "addThreat": "Place threat on your suit form",
+  "dealDamage": "Deal damage",
+  "removeThreat": "Remove threat",
+  "heal": "Heal damage",
+  "birdsOfAFeather": "Birds of a feather",
+  "discardObligation": "Discard obligation",
+  "discardTopEncounterCard": "Discard top encounter card",
+  "doNotDiscard": "Do not discard",
+  "exhaustRemoveObligation": "Exhaust remove obligation",
+  "keepBoostCard": "Keep boost card",
+  "swapBoostCards": "Swap boost cards",
+  "aosAccusation": {
+    "50185": {
+      "50188": {
+        "50191": "Medical Records, Money, Security Clearance",
+        "50192": "Medical Records, Money, Travel",
+        "50193": "Medical Records, Money, Authority"
+      },
+      "50189": {
+        "50191": "Medical Records, Blackmail, Security Clearance",
+        "50192": "Medical Records, Blackmail, Travel",
+        "50193": "Medical Records, Blackmail, Authority"
+      },
+      "50190": {
+        "50191": "Medical Records, Ideology, Security Clearance",
+        "50192": "Medical Records, Ideology, Travel",
+        "50193": "Medical Records, Ideology, Authority"
+      }
+    },
+    "50186": {
+      "50188": {
+        "50191": "Wiretap, Money, Security Clearance",
+        "50192": "Wiretap, Money, Travel",
+        "50193": "Wiretap, Money, Authority"
+      },
+      "50189": {
+        "50191": "Wiretap, Blackmail, Security Clearance",
+        "50192": "Wiretap, Blackmail, Travel",
+        "50193": "Wiretap, Blackmail, Authority"
+      },
+      "50190": {
+        "50191": "Wiretap, Ideology, Security Clearance",
+        "50192": "Wiretap, Ideology, Travel",
+        "50193": "Wiretap, Ideology, Authority"
+      }
+    },
+    "50187": {
+      "50188": {
+        "50191": "Security Scanner, Money, Security Clearance",
+        "50192": "Security Scanner, Money, Travel",
+        "50193": "Security Scanner, Money, Authority"
+      },
+      "50189": {
+        "50191": "Security Scanner, Blackmail, Security Clearance",
+        "50192": "Security Scanner, Blackmail, Travel",
+        "50193": "Security Scanner, Blackmail, Authority"
+      },
+      "50190": {
+        "50191": "Security Scanner, Ideology, Security Clearance",
+        "50192": "Security Scanner, Ideology, Travel",
+        "50193": "Security Scanner, Ideology, Authority"
+      }
+    }
+  },
+  "discard": "Discard",
+  "cyberneticallyEnhanced": "Cybernetically Enhanced",
+  "eagleEyed": "Eagle-Eyed",
+  "lethalProtector": "Lethal Protector",
+  "aosHealVillain": "Heal the attached villain by 2",
+  "aosAdvanceExtractCaptives": "Advance to Extract Captives",
+  "aosRescueAnotherCaptive": "Rescue another captive",
+  "aosMakeAccusation": "Make an accusation",
+  "aosSpendResource": "Spend a resource",
+  "aosBystanderThreat": "Place threat on the main scheme",
+  "aosTakeSuitDamage": "Take damage equal to the threat on your suit",
+  "aosRemoveSuitThreat": "Remove all threat from your suit",
+  "aosRaiseAlert": "Raise the alert level",
+  "aosPreventSecret": "Prevent this secret counter",
+  "aosAddThreeBoost": "Give the activating enemy +3 boost",
+  "aosSpendThree": "Spend three resources",
+  "aosFindMercenary": "Find a Mercenary",
+  "aosAdditionalBoost": "Deal an additional boost card",
+  "aosPreventSecrets": "Prevent {count} secret counters",
+  "aosPreventThreat": "Prevent {count} threat"
 }

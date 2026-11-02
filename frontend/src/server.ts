@@ -17,6 +17,7 @@ export interface CardView {
 }
 
 export interface UpgradeView extends CardView {
+  threat?: number
   resourceSlots?: ("Energy" | "Mental" | "Physical" | "Wild")[]
   occupiedSlots?: number[]
   heldCardsFacedown?: number
@@ -25,6 +26,7 @@ export interface UpgradeView extends CardView {
   uses?: number
   controller?: string
   /** the cards attached faceup to it, played from there (Hawkeye's Quiver) */
+  tuckedCards?: CardView[]
   heldCards?: CardView[]
   /** a Spectrum energy form she is not in */
   facedown?: boolean
@@ -38,10 +40,12 @@ export interface SupportView extends CardView {
   threat?: number
   /** cards attached to it facedown */
   facedownCards?: number
+  tuckedCards?: CardView[]
   heldCards?: CardView[]
 }
 
 export interface AttachmentView extends CardView {
+  tuckedCards?: CardView[]
   facedownCards?: number
   crisis?: boolean
   damage?: number
@@ -103,6 +107,7 @@ export interface PlayerView {
   deckTop?: CardView | null
   discard: CardView[]
   /** Facedown boost cards waiting on this identity (Venom). */
+  tuckedEncounterCards?: CardView[]
   identityBoostCards?: number
   dealtEncounterCards: number
   /** the encounter cards dealt face down, by id */
@@ -173,10 +178,12 @@ export interface AreaView {
 
 export interface MinionView extends CardView {
   attachedToMinion?: string | null
+  attachedToEnvironment?: string | null
   counters: number
   threat: number
   exhausted?: boolean
   bombCounters?: number
+  tuckedCards?: CardView[]
   heldCards?: CardView[]
   facedownCards?: number
   toughCards?: number
@@ -451,6 +458,7 @@ export interface CampaignLog {
   sinister: SinisterLog
   mutantGenesis: MutantGenesisLog
   apocalypse: ApocalypseLog
+  shield: ShieldLog
   nextEvolution: NextEvolutionLog
 }
 
@@ -539,7 +547,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign' | 'AgentsOfShieldCampaign'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 
@@ -575,4 +583,16 @@ export interface CampaignView {
   currentGame: string | null
   won: boolean
   updatedAt: string
+}
+
+export interface ShieldLog {
+  earnedEvidence: string[]
+  boardSecrets: [string, number][]
+  betrayedBoard: string[]
+  widowRemaining: number
+  rescuedCaptives: number
+  adaptoidEnvironments: string[]
+  survivingThunderbolts: string[]
+  accusation: string[]
+  evidenceVictories: number
 }

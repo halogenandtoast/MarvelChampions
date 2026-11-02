@@ -108,5 +108,10 @@
     "campaign": "Age of Apocalypse",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc45-image0500.webp",
     "product": "https://www.fantasyflightgames.com/product/age-of-apocalypse/"
+  },
+  "agents-of-shield.webp": {
+    "campaign": "Agents of S.H.I.E.L.D.",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc50-image0500.webp",
+    "productPage": "https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/products/agents-shield/"
   }
 }

@@ -7,5 +7,6 @@ export const campaignArt: Record<CampaignKind, string> = {
   MutantGenesis: '/images/products/mutant-genesis.webp',
   SinisterMotives: '/images/products/sinister-motives.webp',
   AgeOfApocalypseCampaign: '/images/products/age-of-apocalypse.webp',
+  AgentsOfShieldCampaign: '/images/products/agents-of-shield.webp',
   NextEvolution: '/images/products/next-evolution.webp',
 }

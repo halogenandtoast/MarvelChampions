@@ -308,7 +308,13 @@
     "aoaMissions": "Missions attempted",
     "aoaSuccesses": "Missions completed",
     "aoaOverseers": "Overseers defeated",
-    "aoaRewards": "Campaign rewards"
+    "aoaRewards": "Campaign rewards",
+    "AgentsOfShieldCampaign": "Agents of S.H.I.E.L.D.",
+    "shieldEvidence": "Evidence collected",
+    "shieldBetrayed": "Compromised board members",
+    "shieldCaptives": "Rescued captives",
+    "shieldAdaptoids": "Adaptoid upgrades",
+    "shieldThunderbolts": "Surviving Thunderbolts"
   },
   "settings": {
     "title": "Settings",
