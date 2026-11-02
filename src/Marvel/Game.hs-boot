@@ -468,3 +468,7 @@ getAbilitiesForMatching :: HasGame m => IdentityId -> (Ability -> m Bool) -> m [
 getCharacterThwartAgainstScheme :: HasGame m => CharacterId -> SchemeId -> m Natural
 
 getAllyPrintedStats :: HasGame m => AllyId -> m (Natural, Natural, Natural)
+
+canAllyDefendEnemy :: HasGame m => EnemyId -> AllyId -> m Bool
+
+attachmentIsReady :: HasGame m => AttachmentId -> m Bool

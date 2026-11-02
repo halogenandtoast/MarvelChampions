@@ -6,6 +6,8 @@ import Marvel.Id
 
 data AttachmentMessage
   = RevealAttachment IdentityId
+  | ExhaustedAttachment
+  | ReadiedAttachment
   | AttachmentDamaged Natural
   | AttachedToEnemy EnemyId
   | -- | attached to the player's identity card ("attach to your identity")

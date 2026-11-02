@@ -273,6 +273,12 @@ canAffordCost identityId source cost = do
     PlaceIdentityCountersCost _ -> pure True
     ExhaustMilanoCost -> milanoIsReady
     IfControlsMilanoCost c c' -> controlsMilano identityId >>= \m -> go (if m then c else c')
+    ExhaustAllIdentitiesAndDamageCost n -> do
+      players <- getAllPlayers
+      allM (\p -> canAffordCost p (toSource p) (ExhaustCost <> DamageCost n)) players
+    ExhaustAttachmentCost -> case source of
+      AttachmentRef aid -> attachmentIsReady aid
+      _ -> pure False
     ExhaustCost -> case source of
       IdentityRef ident -> member ident <$> select UnexhaustedIdentity
       AllyRef ident -> member ident <$> select UnexhaustedAlly

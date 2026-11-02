@@ -20,6 +20,7 @@ data AbilityType
   | AlterEgoResponse
   | HeroResponse
   | ForcedResponse
+  | ForcedAction
   | Action
   | HeroAction
   | AlterEgoAction

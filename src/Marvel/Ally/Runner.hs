@@ -11,7 +11,7 @@ import Marvel.Question as X
 
 import Data.HashSet qualified as HashSet
 import Marvel.Game.Source
-    ( cannotTakeDamageFrom,
+    ( canAllyDefendEnemy, cannotTakeDamageFrom,
       characterHasCondition,
       getModifiers,
       getCharacterThwartAgainstScheme,
@@ -274,7 +274,8 @@ instance RunMessage (Attrs Ally) where
         when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyDefended enemyId -> do
-        forbidden <- any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
+        allowed <- canAllyDefendEnemy enemyId (allyId a)
+        forbidden <- (not allowed ||) . any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
         unless forbidden do
           exhaust ident
           enemyDefendedBy enemyId (AllyCharacter ident)

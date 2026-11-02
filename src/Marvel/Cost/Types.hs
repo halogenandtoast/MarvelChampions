@@ -35,6 +35,8 @@ data Cost
   | PlaceThreatOnMainSchemeCost Natural
   | ExhaustAnyIdentityCost
   | MainSchemeAccelerationTokenCost
+  | ExhaustAllIdentitiesAndDamageCost Natural
+  | ExhaustAttachmentCost
   | ExhaustCost
   | -- | at least so many cards from hand, and at most so many (any number for Nothing)
     DiscardHandCardsCost Natural (Maybe Natural)
@@ -162,6 +164,8 @@ instance Semigroup Cost where
 costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
 costResources (PlaceThreatOnMainSchemeCost _) = []
+costResources (ExhaustAllIdentitiesAndDamageCost _) = []
+costResources ExhaustAttachmentCost = []
 costResources ExhaustCost = []
 costResources (DiscardCost _) = []
 costResources (ShuffleDiscardCardIntoDeckCost _) = []

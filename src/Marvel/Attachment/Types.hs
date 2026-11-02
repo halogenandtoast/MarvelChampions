@@ -2,6 +2,7 @@ module Marvel.Attachment.Types where
 
 import Marvel.Prelude
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
 import Marvel.Ability.Types
 import Marvel.Card
@@ -48,6 +49,7 @@ instance Entity Attachment where
     { attachmentId :: AttachmentId
     , attachmentCardDef :: CardDef
     , attachmentEnemy :: Maybe EnemyId
+    , attachmentExhausted :: Bool
     , attachmentDamage :: Natural
     , attachmentIdentity :: Maybe IdentityId
     -- ^ the hero it is attached to, if it is
@@ -60,8 +62,9 @@ instance Entity Attachment where
     -- ^ the ally it is attached to, if it is (Restrained)
     }
     deriving stock (Show, Eq, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass ToJSON
   data Field Attachment :: Type -> Type where
+    AttachmentExhausted :: Field Attachment Bool
     AttachmentId :: Field Attachment AttachmentId
     AttachmentCardDef :: Field Attachment CardDef
     AttachmentEnemy :: Field Attachment (Maybe EnemyId)
@@ -72,6 +75,7 @@ instance Entity Attachment where
   field fld a =
     let AttachmentAttrs {..} = toAttrs a
      in case fld of
+          AttachmentExhausted -> attachmentExhausted
           AttachmentId -> attachmentId
           AttachmentCardDef -> attachmentCardDef
           AttachmentEnemy -> attachmentEnemy
@@ -133,6 +137,7 @@ attachment f cardDef =
             { attachmentId = mid
             , attachmentCardDef = cardDef
             , attachmentEnemy = Nothing
+            , attachmentExhausted = False
             , attachmentDamage = 0
             , attachmentIdentity = Nothing
             , attachmentCounters = 0
@@ -162,11 +167,14 @@ isPermanentAttachment = elem Permanent . cdKeywords . attachmentCardDef
 
 instance RunMessage (Attrs Attachment) where
   runMessage msg attrs = runQueueT $ case msg of
+    EndRound -> pure attrs {attachmentExhausted = False}
     AttachmentMessage attachmentId' msg'
       | attachmentId' == attachmentId attrs -> do
         -- "cannot be unattached" (Superior Tactics): it stays where it is
         stays <- (attached attrs &&) . elem CannotBeUnattached <$> getModifiers attrs
         case msg' of
+          ExhaustedAttachment -> pure attrs {attachmentExhausted = True}
+          ReadiedAttachment -> pure attrs {attachmentExhausted = False}
           AttachedToEnemy enemyId | stays, attachmentEnemy attrs /= Just enemyId -> pure attrs
           AttachedToIdentity _ | stays -> pure attrs
           AttachedToAlly _ | stays -> pure attrs
@@ -231,3 +239,7 @@ instance IsCard (Attrs Attachment) where
 
 instance HasCardDef (Attrs Attachment) where
   getCardDef = attachmentCardDef
+
+instance FromJSON (Attrs Attachment) where
+  parseJSON = withObject "AttachmentAttrs" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ old -> old) "attachmentExhausted" (toJSON False) o

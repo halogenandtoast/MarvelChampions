@@ -307,6 +307,7 @@ passesTypeIsRelevant ident a = case abilityType a of
   AlterEgoResponse -> pure False
   HeroResponse -> pure False
   ForcedResponse -> pure False
+  ForcedAction -> pure True
   Action -> pure True
   Basic -> pure True
   HeroAction -> member ident <$> select HeroIdentity
@@ -331,6 +332,7 @@ isForcedAbility a = case abilityType a of
   AlterEgoResponse -> False
   HeroResponse -> False
   ForcedResponse -> True
+  ForcedAction -> False
   Action -> False
   HeroAction -> False
   AlterEgoAction -> False
@@ -352,6 +354,7 @@ defaultAbilityLimit = \case
   AlterEgoResponse -> PerWindow 1
   HeroResponse -> PerWindow 1
   ForcedResponse -> PerWindow 1
+  ForcedAction -> NoLimit
   Action -> NoLimit
   HeroAction -> NoLimit
   AlterEgoAction -> NoLimit
