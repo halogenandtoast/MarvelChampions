@@ -97,8 +97,13 @@
       "health": "HP",
       "handSize": "HAND",
       "threat": "THREAT",
-      "boost": "BOOST"
-    }
+      "boost": "BOOST",
+      "baseThreat": "START",
+      "escalationThreat": "ROUND"
+    },
+    "baseThreat": "Starting threat",
+    "escalationThreat": "Threat per round",
+    "schemeIcons": "Scheme icons"
   },
   "card": {
     "back": "All cards",
@@ -107,7 +112,7 @@
     "stage": "Stage {stage}",
     "reverse": "Other side",
     "viewOnMarvelcdb": "View on MarvelCDB",
-    "viewSource": "View source scan",
+    "viewSource": "View source",
     "unverifiedOcr": "Unverified OCR. Check the scan for symbols, numbers and exact wording.",
     "facts": {
       "pack": "Pack",

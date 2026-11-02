@@ -166,6 +166,11 @@ def main(argv):
             raise ValueError(f"Duplicate card codes in {path}: {sorted(collisions)}")
         out["packs"].extend(custom["packs"])
         out["cards"].extend(custom["cards"])
+    # Supplements may add encounter cards to an existing MarvelCDB release.
+    # Count faces in the final index so its release filters include that content.
+    for pack in out["packs"]:
+        if pack["code"] in {"fne", "shadowland"}:
+            pack["cardCount"] = sum(c["packCode"] == pack["code"] for c in out["cards"])
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
     print(f"wrote {len(out['cards'])} cards in {len(out['packs'])} packs to {OUT}")
 

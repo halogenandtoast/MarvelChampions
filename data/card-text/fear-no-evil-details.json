@@ -1,0 +1,2142 @@
+{
+  "60065": {
+    "name": "Bullseye",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Assassin",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 14,
+    "stage": "I",
+    "scheme": 0,
+    "attack": 1
+  },
+  "60066": {
+    "name": "Bullseye",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Assassin",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 16,
+    "stage": "II",
+    "scheme": 1,
+    "attack": 2
+  },
+  "60067": {
+    "name": "Bullseye",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Assassin",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 18,
+    "stage": "III",
+    "scheme": 1,
+    "attack": 3
+  },
+  "60076": {
+    "name": "Electro",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 15,
+    "stage": "I",
+    "scheme": 1,
+    "attack": 1
+  },
+  "60077": {
+    "name": "Electro",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 17,
+    "stage": "II",
+    "scheme": 1,
+    "attack": 2
+  },
+  "60078": {
+    "name": "Electro",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 20,
+    "stage": "III",
+    "scheme": 2,
+    "attack": 2
+  },
+  "60086": {
+    "name": "Hammerhead",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 14,
+    "stage": "I",
+    "scheme": 2,
+    "attack": 1
+  },
+  "60087": {
+    "name": "Hammerhead",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 15,
+    "stage": "II",
+    "scheme": 2,
+    "attack": 2
+  },
+  "60088": {
+    "name": "Hammerhead",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 16,
+    "stage": "III",
+    "scheme": 3,
+    "attack": 3
+  },
+  "60097": {
+    "name": "Purple Man",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 13,
+    "stage": "I",
+    "scheme": 1,
+    "attack": 0
+  },
+  "60098": {
+    "name": "Purple Man",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 15,
+    "stage": "II",
+    "scheme": 2,
+    "attack": 1
+  },
+  "60099": {
+    "name": "Purple Man",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 17,
+    "stage": "III",
+    "scheme": 3,
+    "attack": 1
+  },
+  "60068a": {
+    "name": "Adamantium-Laced Spine",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Tech"
+    ],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60068b": {
+    "name": "Damaged Spine",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Tech"
+    ],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60110a": {
+    "name": "Typhoid Mary",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Mutant",
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 10,
+    "stage": "A",
+    "scheme": 2,
+    "attack": 1
+  },
+  "60110b": {
+    "name": "Bloody Mary",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Mutant",
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 10,
+    "stage": "B",
+    "scheme": 1,
+    "attack": 2
+  },
+  "60111a": {
+    "name": "Typhoid Mary",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Mutant",
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 13,
+    "stage": "A",
+    "scheme": 3,
+    "attack": 1
+  },
+  "60111b": {
+    "name": "Bloody Mary",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Mutant",
+      "Psionic",
+      "Underling"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 13,
+    "stage": "B",
+    "scheme": 1,
+    "attack": 3
+  },
+  "60129a": {
+    "name": "Out Front",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60129b": {
+    "name": "Alongside",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60159a": {
+    "name": "Kingpin",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 25,
+    "stage": "A1",
+    "scheme": 2,
+    "attack": 0
+  },
+  "60159b": {
+    "name": "Kingpin",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Martial Artist"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 25,
+    "stage": "A2",
+    "scheme": 2,
+    "attack": 2
+  },
+  "60160a": {
+    "name": "Kingpin",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 28,
+    "stage": "B1",
+    "scheme": 3,
+    "attack": 0
+  },
+  "60160b": {
+    "name": "Kingpin",
+    "type": "villain",
+    "typeName": "Villain",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Martial Artist"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "healthPerHero": true,
+    "health": 28,
+    "stage": "B2",
+    "scheme": 3,
+    "attack": 3
+  },
+  "60163a": {
+    "name": "Public Support",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Low"
+    ],
+    "quantity": 1
+  },
+  "60163b": {
+    "name": "Public Support",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "High"
+    ],
+    "quantity": 1
+  },
+  "60205a": {
+    "name": "Art Museum Heist",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Completed"
+    ],
+    "quantity": 1
+  },
+  "60205b": {
+    "name": "Art Museum Heist",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Failed"
+    ],
+    "quantity": 1
+  },
+  "60206a": {
+    "name": "The Getaway",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Completed"
+    ],
+    "quantity": 1
+  },
+  "60206b": {
+    "name": "The Getaway",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Failed"
+    ],
+    "quantity": 1
+  },
+  "60207a": {
+    "name": "Protection Racket",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Completed"
+    ],
+    "quantity": 1
+  },
+  "60207b": {
+    "name": "Protection Racket",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Failed"
+    ],
+    "quantity": 1
+  },
+  "60208a": {
+    "name": "The Raft Breakout",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Completed"
+    ],
+    "quantity": 1
+  },
+  "60208b": {
+    "name": "The Raft Breakout",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Failed"
+    ],
+    "quantity": 1
+  },
+  "60209a": {
+    "name": "Stop the Presses!",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Completed"
+    ],
+    "quantity": 1
+  },
+  "60209b": {
+    "name": "Stop the Presses!",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Failed"
+    ],
+    "quantity": 1
+  },
+  "60210a": {
+    "name": "Typhoid Mary",
+    "type": "ally",
+    "typeName": "Ally",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Mutant",
+      "Psionic"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "subname": "Mary Walker"
+  },
+  "60210b": {
+    "name": "Bloody Mary",
+    "type": "ally",
+    "typeName": "Ally",
+    "setName": "Fear No Evil Campaign",
+    "setCode": "fear_no_evil_campaign",
+    "setType": "campaign",
+    "traits": [
+      "Mutant",
+      "Psionic"
+    ],
+    "quantity": 1,
+    "unique": true,
+    "subname": "Mary Walker"
+  },
+  "60069": {
+    "name": "Raise the Stakes",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60070": {
+    "name": "Deadly Sai",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Weapon"
+    ],
+    "quantity": 1
+  },
+  "60071": {
+    "name": "Incessant Pursuit",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 3
+  },
+  "60072": {
+    "name": "Lady Bullseye",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [
+      "Assassin",
+      "Hand"
+    ],
+    "quantity": 1
+  },
+  "60074": {
+    "name": "Everything is a Weapon",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60075": {
+    "name": "Unerring Desire",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60079": {
+    "name": "Electric Charge",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "E Condition"
+    ],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60080": {
+    "name": "Drained of Power",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60081": {
+    "name": "Whiplash",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [
+      "Criminal"
+    ],
+    "quantity": 1
+  },
+  "60083": {
+    "name": "Chain Lightning",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60084": {
+    "name": "Energy Overload",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60085": {
+    "name": "Shocking Revelation",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60089": {
+    "name": "Energy Gatling Gun",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Tech"
+    ],
+    "quantity": 1
+  },
+  "60090": {
+    "name": "Hard-Headed",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60091": {
+    "name": "Chameleon",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia"
+    ],
+    "quantity": 1
+  },
+  "60092": {
+    "name": "Maggia Enforcers",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia"
+    ],
+    "quantity": 2
+  },
+  "60093": {
+    "name": "Maggia Underboss",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Maggia"
+    ],
+    "quantity": 2
+  },
+  "60096": {
+    "name": "Head First",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60100": {
+    "name": "Converted",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60101": {
+    "name": "Firefighter",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Civilian",
+      "Influenced"
+    ],
+    "quantity": 2
+  },
+  "60102": {
+    "name": "Judge",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Civilian",
+      "Influenced"
+    ],
+    "quantity": 1
+  },
+  "60103": {
+    "name": "Security Guard",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Civilian",
+      "Influenced"
+    ],
+    "quantity": 1
+  },
+  "60104": {
+    "name": "Skater Punk",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [
+      "Civilian",
+      "Influenced"
+    ],
+    "quantity": 1
+  },
+  "60105": {
+    "name": "\"Fight.\"",
+    "type": "obligation",
+    "typeName": "Obligation",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60106": {
+    "name": "\"Protect.\"",
+    "type": "obligation",
+    "typeName": "Obligation",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60107": {
+    "name": "\"Serve.\"",
+    "type": "obligation",
+    "typeName": "Obligation",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60109": {
+    "name": "Sway the Masses",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60114": {
+    "name": "Telekinesis",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Psionic",
+      "Superpower"
+    ],
+    "quantity": 1
+  },
+  "60115": {
+    "name": "Psionic Slash",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60116": {
+    "name": "Psi Nova",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60117": {
+    "name": "Assembled Armor",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Psionic",
+      "Superpower"
+    ],
+    "quantity": 1
+  },
+  "60118": {
+    "name": "Hail of Blades",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60119": {
+    "name": "Scavenged Bulwark",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60120": {
+    "name": "Hand Lookout",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Hand",
+      "Ninja"
+    ],
+    "quantity": 3
+  },
+  "60113a": {
+    "name": "Establish Trust",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60113b": {
+    "name": "Mary Walker",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [
+      "Persona"
+    ],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60121a": {
+    "name": "Art Museum Heist",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60121b": {
+    "name": "Art Museum Heist",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60128a": {
+    "name": "The Getaway",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60128b": {
+    "name": "The Getaway",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60134a": {
+    "name": "Protection Racket",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60134b": {
+    "name": "Battle in the Bodega",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60135a": {
+    "name": "Protection Racket",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60135b": {
+    "name": "Bull in a China Shop",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60136a": {
+    "name": "Protection Racket",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60136b": {
+    "name": "Hung Out to Dry",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60137a": {
+    "name": "Protection Racket",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60137b": {
+    "name": "Pawn Shop Showdown",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60138a": {
+    "name": "Protection Racket",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60138b": {
+    "name": "A Slice of the Pizza Dough",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60142a": {
+    "name": "The Raft Breakout",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60142b": {
+    "name": "The Raft Breakout",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60151a": {
+    "name": "Stop the Presses!",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60151b": {
+    "name": "Stop the Presses!",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60161a": {
+    "name": "The King's Gambit",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1A"
+  },
+  "60161b": {
+    "name": "The King's Gambit",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "1B"
+  },
+  "60162a": {
+    "name": "Endgame",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "2A"
+  },
+  "60162b": {
+    "name": "Endgame",
+    "type": "main_scheme",
+    "typeName": "Main Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "stage": "2B"
+  },
+  "60122": {
+    "name": "Impossible Object",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [
+      "Art"
+    ],
+    "quantity": 1
+  },
+  "60123": {
+    "name": "Inspiring Pottery",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [
+      "Art"
+    ],
+    "quantity": 1
+  },
+  "60124": {
+    "name": "Replica Shield",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [
+      "Art"
+    ],
+    "quantity": 1
+  },
+  "60125": {
+    "name": "Stunning Landscape",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [
+      "Art"
+    ],
+    "quantity": 1
+  },
+  "60126": {
+    "name": "Art Thief",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [
+      "Thief"
+    ],
+    "quantity": 2
+  },
+  "60127": {
+    "name": "Tug of War",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Art Museum Heist",
+    "setCode": "art_museum_heist",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60130": {
+    "name": "Escort Vehicle",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [
+      "Vehicle"
+    ],
+    "quantity": 1
+  },
+  "60132": {
+    "name": "Burning Rubber",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60133": {
+    "name": "Pedestrians",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60139": {
+    "name": "Shop Proprietor",
+    "type": "ally",
+    "typeName": "Ally",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [
+      "Civilian"
+    ],
+    "quantity": 1
+  },
+  "60140": {
+    "name": "Man-Bull",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [
+      "Brute"
+    ],
+    "quantity": 1
+  },
+  "60141": {
+    "name": "Change of Venue",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Protection Racket",
+    "setCode": "protection_racket",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60144": {
+    "name": "Absorbing Man",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Brute",
+      "Elite",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60145": {
+    "name": "Baron Zemo",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Elite",
+      "Hydra",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60146": {
+    "name": "Drang",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Badoon",
+      "Elite",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60147": {
+    "name": "Mysterio",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Elite",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60148": {
+    "name": "Proxima Midnight",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Black Order",
+      "Elite",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60149": {
+    "name": "Rhino",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Brute",
+      "Elite",
+      "Prisoner"
+    ],
+    "quantity": 1
+  },
+  "60150": {
+    "name": "Imprisoned",
+    "type": "obligation",
+    "typeName": "Obligation",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60158": {
+    "name": "Breaking News",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 2
+  },
+  "60153": {
+    "name": "Ben Urich",
+    "type": "support",
+    "typeName": "Support",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [
+      "Daily Bugle",
+      "Persona"
+    ],
+    "quantity": 1,
+    "unique": true
+  },
+  "60154": {
+    "name": "Betty Brant",
+    "type": "support",
+    "typeName": "Support",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [
+      "Daily Bugle",
+      "Persona"
+    ],
+    "quantity": 1,
+    "unique": true
+  },
+  "60155": {
+    "name": "J. Jonah Jameson",
+    "type": "support",
+    "typeName": "Support",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [
+      "Daily Bugle",
+      "Persona"
+    ],
+    "quantity": 1,
+    "unique": true
+  },
+  "60156": {
+    "name": "Robbie Robertson",
+    "type": "support",
+    "typeName": "Support",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [
+      "Daily Bugle",
+      "Persona"
+    ],
+    "quantity": 1,
+    "unique": true
+  },
+  "60112": {
+    "name": "Disturbed Psyche",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Typhoid Mary",
+    "setCode": "typhoid_mary",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1,
+    "permanent": false
+  },
+  "60143": {
+    "name": "Master Key",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "The Raft Breakout",
+    "setCode": "the_raft_breakout",
+    "setType": "scenario",
+    "traits": [
+      "Item"
+    ],
+    "quantity": 1,
+    "permanent": true
+  },
+  "60152": {
+    "name": "Daily Bugle",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60164": {
+    "name": "Bear Hug",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60165": {
+    "name": "James Wesley",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Persona"
+    ],
+    "quantity": 1
+  },
+  "60166": {
+    "name": "Kingpin's Cane",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Weapon",
+      "Ny"
+    ],
+    "quantity": 1
+  },
+  "60167": {
+    "name": "Mountain of Muscle",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Condition"
+    ],
+    "quantity": 1
+  },
+  "60168": {
+    "name": "Vanessa Fisk",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Persona"
+    ],
+    "quantity": 1
+  },
+  "60169": {
+    "name": "Black Cat",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Thief",
+      "Underling"
+    ],
+    "quantity": 1
+  },
+  "60170": {
+    "name": "Diamondback",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1
+  },
+  "60171": {
+    "name": "Spot",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1
+  },
+  "60172": {
+    "name": "Stilt-Man",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [
+      "Criminal",
+      "Underling"
+    ],
+    "quantity": 1
+  },
+  "60175": {
+    "name": "Bag of Tricks",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 3
+  },
+  "60176": {
+    "name": "Unrelenting Hate",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 3
+  },
+  "60073": {
+    "name": "Deranged Bloodlust",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Bullseye",
+    "setCode": "bullseye",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60082": {
+    "name": "Charging Up",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Electro",
+    "setCode": "electro",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60094": {
+    "name": "Consolidate Power",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60095": {
+    "name": "Power Struggle",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Hammerhead",
+    "setCode": "hammerhead",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60108": {
+    "name": "Power of Suggestion",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Purple Man",
+    "setCode": "purple_man",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60131": {
+    "name": "Jackknifed Tanker Truck",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "The Getaway",
+    "setCode": "the_getaway",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60157": {
+    "name": "Exclusive Interview",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Stop the Presses!",
+    "setCode": "stop_the_presses",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60173": {
+    "name": "Kingpin's Influence",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60174": {
+    "name": "Organized Crime",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Kingpin",
+    "setCode": "kingpin",
+    "setType": "scenario",
+    "traits": [],
+    "quantity": 1
+  },
+  "60180": {
+    "name": "Collapsing Bridge",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Disasters",
+    "setCode": "disasters",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60185": {
+    "name": "Police Cordon",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Cops",
+    "setCode": "cops",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60189": {
+    "name": "Traffic Jam",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Drive",
+    "setCode": "drive",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60199": {
+    "name": "Hit List",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Tombstone",
+    "setCode": "tombstone",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60204": {
+    "name": "Tracksuit Mafia",
+    "type": "side_scheme",
+    "typeName": "Side Scheme",
+    "setName": "Tracksuit Mafia",
+    "setCode": "tracksuit_mafia",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60177": {
+    "name": "Mystic Incursion",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Disasters",
+    "setCode": "disasters",
+    "setType": "modular",
+    "traits": [
+      "Disaster"
+    ],
+    "quantity": 1
+  },
+  "60178": {
+    "name": "Sinking Ferry",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Disasters",
+    "setCode": "disasters",
+    "setType": "modular",
+    "traits": [
+      "Disaster"
+    ],
+    "quantity": 1
+  },
+  "60179": {
+    "name": "Towering Inferno",
+    "type": "environment",
+    "typeName": "Environment",
+    "setName": "Disasters",
+    "setCode": "disasters",
+    "setType": "modular",
+    "traits": [
+      "Disaster"
+    ],
+    "quantity": 1
+  },
+  "60181": {
+    "name": "Bystanders in Peril",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Disasters",
+    "setCode": "disasters",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60182": {
+    "name": "Cop",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Cops",
+    "setCode": "cops",
+    "setType": "modular",
+    "traits": [
+      "Police"
+    ],
+    "quantity": 1
+  },
+  "60183": {
+    "name": "Crooked Cop",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Cops",
+    "setCode": "cops",
+    "setType": "modular",
+    "traits": [
+      "Criminal",
+      "Police"
+    ],
+    "quantity": 1
+  },
+  "60184": {
+    "name": "Wanted",
+    "type": "obligation",
+    "typeName": "Obligation",
+    "setName": "Cops",
+    "setCode": "cops",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60186": {
+    "name": "Sports Car",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Drive",
+    "setCode": "drive",
+    "setType": "modular",
+    "traits": [
+      "Vehicle"
+    ],
+    "quantity": 1
+  },
+  "60187": {
+    "name": "Motorcycle",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Drive",
+    "setCode": "drive",
+    "setType": "modular",
+    "traits": [
+      "Vehicle"
+    ],
+    "quantity": 1
+  },
+  "60188": {
+    "name": "Utility Van",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Drive",
+    "setCode": "drive",
+    "setType": "modular",
+    "traits": [
+      "Vehicle"
+    ],
+    "quantity": 1
+  },
+  "60190": {
+    "name": "Carjacking",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "Drive",
+    "setCode": "drive",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60191": {
+    "name": "Flight Serum",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "The Owl",
+    "setCode": "the_owl",
+    "setType": "modular",
+    "traits": [
+      "Superpower"
+    ],
+    "quantity": 1
+  },
+  "60192": {
+    "name": "Mister Fish",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Owl",
+    "setCode": "the_owl",
+    "setType": "modular",
+    "traits": [
+      "Criminal",
+      "Maggia"
+    ],
+    "quantity": 1
+  },
+  "60193": {
+    "name": "The Owl",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "The Owl",
+    "setCode": "the_owl",
+    "setType": "modular",
+    "traits": [
+      "Aerial",
+      "Criminal"
+    ],
+    "quantity": 1
+  },
+  "60194": {
+    "name": "Swoop Down",
+    "type": "treachery",
+    "typeName": "Treachery",
+    "setName": "The Owl",
+    "setCode": "the_owl",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60195": {
+    "name": "Cold as Ice",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Tombstone",
+    "setCode": "tombstone",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60196": {
+    "name": "Hard as Marble",
+    "type": "attachment",
+    "typeName": "Attachment",
+    "setName": "Tombstone",
+    "setCode": "tombstone",
+    "setType": "modular",
+    "traits": [],
+    "quantity": 1
+  },
+  "60197": {
+    "name": "Beetle",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tombstone",
+    "setCode": "tombstone",
+    "setType": "modular",
+    "traits": [
+      "Aerial",
+      "Criminal"
+    ],
+    "quantity": 1
+  },
+  "60198": {
+    "name": "Tombstone",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tombstone",
+    "setCode": "tombstone",
+    "setType": "modular",
+    "traits": [
+      "Criminal"
+    ],
+    "quantity": 1
+  },
+  "60200": {
+    "name": "Ivan Banionis",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tracksuit Mafia",
+    "setCode": "tracksuit_mafia",
+    "setType": "modular",
+    "traits": [
+      "Criminal",
+      "Tracksuit"
+    ],
+    "quantity": 1
+  },
+  "60201": {
+    "name": "The Clown",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tracksuit Mafia",
+    "setCode": "tracksuit_mafia",
+    "setType": "modular",
+    "traits": [
+      "Assassin",
+      "Tracksuit"
+    ],
+    "quantity": 1
+  },
+  "60202": {
+    "name": "Tracksuit Mafioso",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tracksuit Mafia",
+    "setCode": "tracksuit_mafia",
+    "setType": "modular",
+    "traits": [
+      "Criminal",
+      "Tracksuit"
+    ],
+    "quantity": 1
+  },
+  "60203": {
+    "name": "Tracksuit Bro",
+    "type": "minion",
+    "typeName": "Minion",
+    "setName": "Tracksuit Mafia",
+    "setCode": "tracksuit_mafia",
+    "setType": "modular",
+    "traits": [
+      "Criminal",
+      "Tracksuit"
+    ],
+    "quantity": 1
+  }
+}

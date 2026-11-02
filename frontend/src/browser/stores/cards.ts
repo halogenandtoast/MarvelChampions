@@ -48,7 +48,13 @@ export const useCardStore = defineStore('cards', () => {
     return inFlight
   }
 
-  const byCode = computed(() => new Map(all.value.map((c) => [c.code, c])))
+  const byCode = computed(() => {
+    const index = new Map(all.value.map((c) => [c.code, c]))
+    for (const card of all.value) for (const alias of card.aliases ?? []) {
+      if (!index.has(alias)) index.set(alias, card)
+    }
+    return index
+  })
   const cardByCode = (code: string | null | undefined): Card | undefined => (code ? byCode.value.get(code) : undefined)
 
   /** A fold-out identity's third side (Ant-Man's Giant, 12001c beside 12001a), browsed with its A side. */

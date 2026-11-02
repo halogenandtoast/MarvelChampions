@@ -15,24 +15,31 @@ const stats = computed(() => {
   }
   add('cost', card.cost)
   add('thwart', card.thwart)
-  add('attack', card.attack)
+  add('attack', card.attack, card.attackStar ? '★' : '')
   add('defense', card.defense)
   add('recover', card.recover)
-  add('scheme', card.scheme)
+  add('scheme', card.scheme, card.schemeStar ? '★' : '')
   add('health', card.health, card.healthPerHero ? '★' : '')
   add('handSize', card.handSize)
   add('threat', card.threat, card.threat !== null && card.threat !== undefined && !card.threatFixed && card.type !== 'side_scheme' ? '/★' : '')
-  add('boost', card.boost)
+  add('baseThreat', card.baseThreat, card.baseThreatFixed === false ? '/★' : '')
+  add('escalationThreat', card.escalationThreat, card.escalationThreatFixed === false ? '/★' : '')
+  add('boost', card.boost, card.boostStar ? '★' : '')
   return rows
 })
+const schemeIcons = computed(() => (['acceleration', 'crisis', 'hazard', 'amplify'] as const)
+  .flatMap((name) => Array.from({ length: card[name] ?? 0 }, () => name)))
 const resources = computed(() => Object.entries(card.resources ?? {}).flatMap(([name, n]) => Array.from({ length: n ?? 0 }, () => name)))
 </script>
 
 <template>
-  <ul v-if="stats.length || resources.length" class="stats" :class="{ compact }">
+  <ul v-if="stats.length || resources.length || schemeIcons.length" class="stats" :class="{ compact }">
     <li v-for="stat in stats" :key="stat.key" class="stat" :data-stat="stat.key" :title="t(`browser.stats.${stat.key}`)">
       <abbr>{{ t(`browser.stats.short.${stat.key}`) }}</abbr>
       <span class="value">{{ stat.value }}</span>
+    </li>
+    <li v-if="schemeIcons.length" class="stat resources" :title="t('browser.stats.schemeIcons')">
+      <GameIcon v-for="(icon, i) in schemeIcons" :key="i" :name="icon" />
     </li>
     <li v-if="resources.length" class="stat resources" :title="t('browser.stats.resources')">
       <GameIcon v-for="(r, i) in resources" :key="i" :name="r" />

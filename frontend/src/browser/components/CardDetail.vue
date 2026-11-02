@@ -114,7 +114,7 @@ const source = computed(() => shown.value.sourceUrl ?? `https://marvelcdb.com/ca
         <CardStats :card="shown" />
 
         <section v-if="shown.text" class="block">
-          <p v-if="shown.ocr && !shown.ocr.verified" class="flavor">{{ $t('browser.card.unverifiedOcr') }}</p>
+          <p v-if="!shown.textVerified && shown.ocr && !shown.ocr.verified" class="flavor">{{ $t('browser.card.unverifiedOcr') }}</p>
           <CardText :text="shown.text" />
         </section>
         <section v-if="shown.backText" class="block block--back">

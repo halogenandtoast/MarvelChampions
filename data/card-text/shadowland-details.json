@@ -1,0 +1,142 @@
+{
+  "65012a": {
+    "scheme": 2,
+    "attack": 1,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65012b": {
+    "scheme": 2,
+    "attack": 2,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65013a": {
+    "scheme": 1,
+    "attack": 2
+  },
+  "65013b": {
+    "scheme": 2,
+    "attack": 2
+  },
+  "65014a": {
+    "scheme": 1,
+    "attack": 2
+  },
+  "65014b": {
+    "scheme": 2,
+    "attack": 2
+  },
+  "65015a": {
+    "scheme": 1,
+    "attack": 2,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65015b": {
+    "scheme": 2,
+    "attack": 2,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65016a": {
+    "scheme": 2,
+    "attack": 1,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65016b": {
+    "scheme": 2,
+    "attack": 2,
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65017a": {
+    "scheme": 1,
+    "attack": 0
+  },
+  "65017b": {
+    "scheme": 1,
+    "attack": 1
+  },
+  "65037": {
+    "scheme": 0,
+    "attack": 0
+  },
+  "65057": {
+    "scheme": 2,
+    "attack": 3
+  },
+  "65058": {
+    "scheme": 2,
+    "attack": 4
+  },
+  "65059": {
+    "scheme": 3,
+    "attack": 4
+  },
+  "65019": {
+    "traits": [
+      "Condition",
+      "Spell"
+    ]
+  },
+  "65022": {
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65023": {
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65040": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65041": {
+    "traits": [
+      "Hand"
+    ]
+  },
+  "65046": {
+    "traits": [
+      "Condition"
+    ]
+  },
+  "65062": {
+    "traits": [
+      "Spell"
+    ]
+  },
+  "65063": {
+    "traits": [
+      "Spell"
+    ]
+  },
+  "65064": {
+    "traits": [
+      "Spell"
+    ]
+  },
+  "65065": {
+    "traits": [
+      "Spell"
+    ]
+  },
+  "65068": {
+    "traits": [
+      "Brute",
+      "Demon",
+      "Hand"
+    ]
+  }
+}

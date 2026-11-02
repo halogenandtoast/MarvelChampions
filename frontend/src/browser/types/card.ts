@@ -17,6 +17,8 @@ export type Resource = 'energy' | 'mental' | 'physical' | 'wild'
 export interface Card {
   code: string
   name: string
+  /** Earlier local import codes that still resolve to this printing. */
+  aliases?: string[]
   subname?: string
   packCode: string
   packName: string
@@ -41,9 +43,17 @@ export interface Card {
   healthPerHero?: boolean
   handSize?: number | null
   boost?: number | null
+  attackStar?: boolean
+  schemeStar?: boolean
   boostStar?: boolean
   threat?: number | null
   threatFixed?: boolean
+  baseThreatFixed?: boolean
+  acceleration?: number | null
+  crisis?: number | null
+  hazard?: number | null
+  amplify?: number | null
+  textVerified?: boolean
   baseThreat?: number | null
   escalationThreat?: number | null
   escalationThreatFixed?: boolean

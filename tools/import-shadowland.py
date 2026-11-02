@@ -140,11 +140,17 @@ def main():
             card.update(doubleSided=True, linkedTo=other['code'])
             if code.endswith('b'):
                 card['hidden'] = True
+    # Keep reviewed text, official collector numbers and legacy aliases on reimport.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("encounter_card_data", ROOT / "tools" / "encounter-card-data.py")
+    enrichment = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(enrichment)
+    cards = enrichment.enrich_shadowland(cards)
     cards.sort(key=lambda card: (card['position'], card['code']))
-    pack = {'code': 'shadowland', 'name': 'Shadowland', 'order': 1000,
+    pack = {'code': 'shadowland', 'name': 'Shadowland', 'order': 65,
             'cardCount': len(cards)}
-    reference = {'version': 1, 'source': source['source'],
-                 'notes': 'OCR is unverified; icons and stylized lettering may be missing or misread. Consult each scan for authoritative text and stats. All source files, including printed copies, are retained.',
+    reference = {'version': 1, 'source': enrichment.RULEBOOKS['shadowland'],
+                 'notes': 'Reviewed rules text and official collector numbers. Original source filenames and legacy codes are retained.',
                  'packs': [pack], 'cards': cards}
     REFERENCE.parent.mkdir(parents=True, exist_ok=True)
     REFERENCE.write_text(json.dumps(reference, ensure_ascii=False, indent=2) + '\n')
