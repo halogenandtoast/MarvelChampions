@@ -134,6 +134,7 @@ data WindowMatcher
   | MinionWouldLeavePlay MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
+  | VillainStatusGained WindowTiming VillainMatcher
   | AfterVillainThreatStep
   | PhaseBegins WindowTiming Phase
   | PhaseEnds WindowTiming Phase
@@ -308,6 +309,7 @@ data WindowType
   | DamagedVillain VillainId Damage
   | VillainDamageFrom VillainId Source Damage
   | VillainGainingStatus VillainId StatusCard
+  | VillainGainedStatus VillainId StatusCard
   | -- | the villain, the damage that defeated its stage, what dealt it, and how much of
     -- it went past its hit points
     DefeatedVillain VillainId Damage Source Natural

@@ -5723,12 +5723,15 @@ competitiveAbilityAllowed g you ability
  where
   source = refocus $ abilitySource ability
   crossLeaderResponse = isForcedAbility ability
-    && maybe False ((`elem` [VillainType,MinionType,AttachmentType,SideSchemeType]) . cdCardType) (abilityCardDef g source)
+    && maybe False ((`elem` [VillainType,MinionType,AttachmentType,SideSchemeType,MainSchemeType]) . cdCardType) (abilityCardDef g source)
     && maybe False (\target -> target `elem` crossedLeaders && target `elem` currentLeaders) host
   host = case source of
     AttachmentRef aid -> enemyRef <$> (Attachment.attachmentEnemy . toAttrs =<< lookup aid (gameAttachments g))
     SideSchemeRef _ -> case abilityWindow ability of
       Just (W.VillainWouldTakeDamageFrom (VillainWithId vid) _) -> Just $ VillainRef vid
+      _ -> Nothing
+    MainSchemeRef _ -> case abilityWindow ability of
+      Just (W.VillainStatusGained _ (VillainWithId vid)) -> Just $ VillainRef vid
       _ -> Nothing
     _ -> Just source
   crossedLeaders = concatMap crossed $ concat $ gameWindows g
@@ -5742,6 +5745,7 @@ competitiveAbilityAllowed g you ability
     W.VillainDamageFrom vid _ _ -> [VillainRef vid]
     W.DamagedVillain vid _ -> [VillainRef vid]
     W.VillainGainingStatus vid _ -> [VillainRef vid]
+    W.VillainGainedStatus vid _ -> [VillainRef vid]
     W.EnemyWouldBeDamaged enemy _ _ -> [enemyRef enemy]
     W.EnemyAttackDefeatedCharacter enemy character -> enemyRef enemy : [VillainRef vid | VillainCharacter vid <- [character]]
     W.EnemyAttacksAndDamages enemy character _ -> enemyRef enemy : [VillainRef vid | VillainCharacter vid <- [character]]
@@ -7794,6 +7798,7 @@ getZoneHeldCards target = getsGame $ \g -> case target of
   SupportRef sid -> maybe [] (supportHeldCards . toAttrs) (lookup sid $ gameSupports g)
   UpgradeRef uid -> maybe [] (upgradeHeldCards . toAttrs) (lookup uid $ gameUpgrades g)
   SideSchemeRef sid -> maybe [] (sideSchemeHeldCards . toAttrs) (lookup sid $ gameSideSchemes g)
+  MainSchemeRef sid -> maybe [] (mainSchemeHeldCards . toAttrs) (lookup sid $ gameMainSchemes g)
   EnvironmentRef eid -> maybe [] (MGEnvironment.environmentHeldCards . toAttrs) (lookup eid $ gameEnvironments g)
   _ -> []
 
@@ -9130,3 +9135,17 @@ explicitAttachmentTargets game = \case
   _ -> []
  where
   onEnemy enemy = [AttachmentRef aid | (aid,attachment) <- HashMap.toList (gameAttachments game), Attachment.attachmentEnemy (toAttrs attachment) == Just enemy]
+
+-- | Defeat responses still have the departing ally's physical card, including a
+-- converted encounter minion, in the removed-entity snapshot.
+getAllyPhysicalCard :: HasGame m => AllyId -> m (Maybe Card)
+getAllyPhysicalCard aid = getsGame $ \g -> toCard <$> (lookup aid (gameAllies g) <|> lookup aid (entitiesAllies $ gameRemovedEntities g))
+
+-- | After defeat, match the departing ally as it last existed. Its live slot is
+-- already empty, but its controller, traits and physical board still matter.
+allyMatchesAtDefeat :: HasGame m => AllyMatcher -> AllyId -> m Bool
+allyMatchesAtDefeat matcher aid = do
+  g <- getGame
+  let departed = lookup aid (gameAllies g) <|> lookup aid (entitiesAllies $ gameRemovedEntities g)
+      view = maybe g (\ally -> g & entitiesL . alliesL . at aid ?~ ally) departed
+  runReaderT (allyMatches matcher aid) view

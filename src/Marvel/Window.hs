@@ -202,6 +202,9 @@ windowMatches matcher w source = case matcher of
   RemovesLastThreat identityMatcher -> case windowType w of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
     _ -> pure False
+  VillainStatusGained timing matcher -> case windowType w of
+    VillainGainedStatus vid _ | windowTiming w == timing -> villainMatches matcher vid
+    _ -> pure False
   AfterVillainThreatStep -> pure $ windowTiming w == After && windowType w == VillainThreatStepFinished
   PhaseBegins timing phase -> pure $ windowTiming w == timing && windowType w == PhaseBegan phase
   PhaseEnds timing phase -> pure $ windowTiming w == timing && windowType w == PhaseEnded phase
@@ -728,14 +731,14 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   AllyDefeated timing allyMatcher -> case windowType w of
     DefeatedAlly allyId _
-      | windowTiming w == timing -> allyMatches allyMatcher allyId
+      | windowTiming w == timing -> allyMatchesAtDefeat allyMatcher allyId
     _ -> pure False
   AllyDefeatedByAttack timing allyMatcher -> case windowType w of
     DefeatedAlly allyId (Just _)
-      | windowTiming w == timing -> allyMatches allyMatcher allyId
+      | windowTiming w == timing -> allyMatchesAtDefeat allyMatcher allyId
     _ -> pure False
   AllyDefeatedByAttackOfEnemy timing allyMatcher enemyMatcher -> case windowType w of
-    DefeatedAlly aid (Just enemy) | windowTiming w == timing -> (&&) <$> allyMatches allyMatcher aid <*> enemyMatches enemyMatcher enemy
+    DefeatedAlly aid (Just enemy) | windowTiming w == timing -> (&&) <$> allyMatchesAtDefeat allyMatcher aid <*> enemyMatches enemyMatcher enemy
     _ -> pure False
   AllyDefeatedByAttackOf timing enemyMatcher -> case windowType w of
     DefeatedAlly _ (Just enemyId)

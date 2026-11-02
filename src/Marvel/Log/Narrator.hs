@@ -513,7 +513,7 @@ villainNarration vid = \case
   -- a stalwart villain is not stunned or confused: nothing to tell
   VillainStunned _ -> Nothing
   VillainConfused _ -> Nothing
-  VillainBecomeTough -> Just $ simply "log.tough" (VillainRef vid)
+  VillainBecomeTough -> Nothing
   VillainAttackGains k -> gains (VillainRef vid) k
   VillainAttackChanged n | n /= 0 -> Just $ attackChanged (VillainRef vid) n
   -- told as they are added, so icons cancelled as the card turns up are not

@@ -436,7 +436,7 @@ runVillainMessage msg attrs = case msg of
     pure attrs
   VillainResolveDefeat _ _ -> pure attrs
   VillainWouldBeDefeated -> attrs <$ defeatVillain vid
-  VillainBecomeTough -> pure $ attrs & toughL .~ True
+  VillainBecomeTough -> beginVillainStatus attrs ToughStatus
   VillainPreventAttackDamage source -> pure attrs {villainPreventedAttack = Just source}
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
   Msg.VillainStunned _ -> beginVillainStatus attrs StunnedStatus
@@ -776,7 +776,10 @@ instance FromJSON (Attrs Villain) where
 applySolidSoundStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Attrs Villain)
 applySolidSoundStatus attrs status = do
   replaced <- if status == ToughStatus then pure False else absorbStatusWithSolidSound (EnemyVillainId $ villainId attrs)
-  if replaced then pure attrs else statusUnlessStalwart attrs status
+  if replaced then pure attrs else do
+    updated <- statusUnlessStalwart attrs status
+    when (updated /= attrs) $ checkWindows [W.Window W.After $ W.VillainGainedStatus (villainId attrs) status]
+    pure updated
 
 -- | An impossible or redundant status does not open an interrupt window.
 beginVillainStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Attrs Villain)

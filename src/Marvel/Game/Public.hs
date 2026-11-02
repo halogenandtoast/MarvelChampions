@@ -879,8 +879,10 @@ gameView seesHand g = do
           QuestionLabel "$label.setupMainScheme" (Just target) _ -> target == toTarget a.mainSchemeId
           _ -> False) (HashMap.elems $ gameQuestion g)
         face = if awaitingSetup then setupFace code else code
+        hiddenHeld = a.mainSchemeHeldCardsFacedown
+        hiddenCount = length a.mainSchemeHeldEncounterCards + if hiddenHeld then length a.mainSchemeHeldCards else 0
         tokensHere = a.mainSchemeAccelerationTokens + maybe 0 areaAccelerationTokens (areaOfTarget g $ MainSchemeRef a.mainSchemeId)
-    pure $ SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere (Just threshold) (Just acceleration) a.mainSchemeHasGlider False
+    pure $ SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] hiddenCount [] [cardView (PlayerCard card) | not hiddenHeld,card <- a.mainSchemeHeldCards] tokensHere (Just threshold) (Just acceleration) a.mainSchemeHasGlider False
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s

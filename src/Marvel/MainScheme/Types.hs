@@ -55,6 +55,8 @@ instance Entity MainScheme where
     , mainSchemeThreshold :: GameValue
     , mainSchemeCrisis :: Bool
     , mainSchemeHeldCards :: [PlayerCard]
+    , mainSchemeHeldEncounterCards :: [EncounterCard]
+    , mainSchemeHeldCardsFacedown :: Bool
     , mainSchemeCounters :: Natural
     , mainSchemeHasGlider :: Bool
     , mainSchemeAccelerationTokens :: Natural
@@ -96,7 +98,7 @@ instance Entity MainScheme where
 instance FromJSON (Attrs MainScheme) where
   parseJSON = withObject "MainSchemeAttrs" \o -> genericParseJSON defaultOptions
     (Object $ KeyMap.union o $ KeyMap.fromList
-      [("mainSchemeHasGlider", Bool False), ("mainSchemeAccelerationTokens", Number 0)])
+      [("mainSchemeHasGlider", Bool False), ("mainSchemeAccelerationTokens", Number 0), ("mainSchemeHeldEncounterCards", toJSON ([] :: [EncounterCard])), ("mainSchemeHeldCardsFacedown", Bool False)])
 
 instance RunMessage MainScheme where
   runMessage msg (MainScheme a) = MainScheme <$> runMessage msg a
@@ -172,6 +174,8 @@ mainScheme f cardDef threshold initialThreat acceleration =
             , mainSchemeThreat = 0
             , mainSchemeCrisis = False
             , mainSchemeHeldCards = []
+            , mainSchemeHeldEncounterCards = []
+            , mainSchemeHeldCardsFacedown = False
             , mainSchemeCounters = 0
             , mainSchemeHasGlider = False
             , mainSchemeAccelerationTokens = 0
@@ -201,7 +205,15 @@ instance RunMessage (Attrs MainScheme) where
       pure $ attrs & threatL +~ n
     CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL %~ subtractNatural n
     CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
-    RemovePlayerCardFromHeldZones cid -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs)}
+    CardSpecific target "mgHoldCard" (fromJSON -> Success card) | target == toRef attrs ->
+      pure attrs {mainSchemeHeldCards = card : filter ((/= pcCardId card) . pcCardId) (mainSchemeHeldCards attrs)}
+    CardSpecific target "holdEncounterCard" (fromJSON -> Success card) | target == toRef attrs ->
+      pure attrs {mainSchemeHeldEncounterCards = card : filter ((/= ecCardId card) . ecCardId) (mainSchemeHeldEncounterCards attrs)}
+    CardSpecific target "mgClearHeld" _ | target == toRef attrs ->
+      pure attrs {mainSchemeHeldCards = [],mainSchemeHeldEncounterCards = []}
+    CardSpecific target "mgRemoveHeld" (fromJSON -> Success cid) | target == toRef attrs ->
+      pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs),mainSchemeHeldEncounterCards = filter ((/= cid) . ecCardId) (mainSchemeHeldEncounterCards attrs)}
+    RemovePlayerCardFromHeldZones cid -> pure attrs {mainSchemeHeldCards = filter ((/= cid) . pcCardId) (mainSchemeHeldCards attrs),mainSchemeHeldEncounterCards = filter ((/= cid) . ecCardId) (mainSchemeHeldEncounterCards attrs)}
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs -> do
       locked <- elem ThreatCannotBeRemoved <$> getModifiers attrs
       case msg' of

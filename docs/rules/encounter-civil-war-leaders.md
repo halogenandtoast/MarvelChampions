@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twelve main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending the other eight main-scheme faces, modular sets, and complete scenario setup.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and fourteen main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending the other six main-scheme faces, modular sets, and complete scenario setup.
 
 ## Leaders and combat
 
@@ -48,6 +48,10 @@ The first-stage schemes start at zero threat for a solo board and gain hinder 2 
 
 Public Outrage and Protect Secret Identities discard three cards from each player's own deck in the shared window after the threat step. No Going Back and Expose Overreach make allies enter exhausted. Secret Avengers and Mighty Avengers increase the enemy leader's actual ATK by one for a defended attack and two for an undefended attack, ending with the attack. A completed final stage loses a cooperative game; a competitive stage records its board's result for the opponent's reply.
 
+Negative Zone Prison captures the defeated ally's original physical card after an enemy attack. A controlled encounter minion remains an encounter card beneath it. Captured cards leave their previous discard pile, remain facedown in the public view, and survive saving. Each capture reduces the target by one and immediately checks whether the existing threat completes the scheme. Ally defeat matchers consult the departing ally's snapshot after it leaves play, preserving its controller, traits, and board.
+
+Guerilla Warfare responds after a status card is actually placed on its named enemy leader. Each of Steady's two stun cards counts separately. Redundant statuses and statuses blocked by Stalwart do not count. Contaminant Immunity's replacement tough counts once, without counting the prevented stun. During a cross-board leader attack, a status placed on a participating leader can trigger its physical board's Guerilla Warfare even while that board is inactive.
+
 ## Rules checked
 
 The local v1.8 entries for Target, Interrupt, Replacement Effect, Damage, Tough, and Retaliate govern these interactions. Searches for newer card-specific rulings found no exception to the defensive or targeting rules above.
@@ -62,4 +66,4 @@ The official [Rules Reference update](https://www.fantasyflightgames.com/mission
 
 ## Verification
 
-The full unit run for the shared threat window and public threat values passes 8,132 examples. The focused Civil War run including the twelve main-scheme faces passes 241 examples. Coverage includes resource costs, every leader attachment and treachery, side-scheme defeat effects, actual threat prevention, attack attribution, saved defense choices, cross-board responses after elimination, and independent encounter-deck searches.
+The full unit run passes 8,175 examples. The selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.

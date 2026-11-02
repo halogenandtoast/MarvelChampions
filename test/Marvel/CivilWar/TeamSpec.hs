@@ -151,6 +151,28 @@ spec = describe "Civil War team boundaries" do
       liftIO $ hpBefore - hpAfter `shouldBe` 4
       getActivePlayerId `shouldReturn` player1 tg
 
+  it "resolves Guerilla Warfare on an inactive board when Mass Increase stuns its leader during a cross-board attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      defender <- villainIdNow
+      attacker <- addSecondBoard tg
+      old <- fromMaybe (error "missing opposite main scheme") . headMay <$> getMainSchemesIn (CW.teamArea CW.Resistance)
+      resolve [SetActivePlayer q,ReplaceMainScheme old "56201b",SetActivePlayer p,ReplaceVillain defender "57040" Swapped,VillainMessage defender SetVillainHp]
+      sid <- fromMaybe (error "missing Guerilla Warfare") . headMay <$> getMainSchemesIn (CW.teamArea CW.Resistance)
+      dense <- encounterCard C.cw57046a
+      increase <- encounterCard C.cw57049
+      resolve [RevealEncounterCard p dense,RevealEncounterCard p increase]
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      start messages
+      choose "prevent the leader attack with Mass Increase" (isAbilityOf $ AttachmentId $ unCardId $ ecCardId increase)
+      choose "place threat on the inactive board's Guerilla Warfare" (isAbilityOf sid)
+      pass
+      getsGame (fmap Main.getMainSchemeThreat . lookup sid . gameMainSchemes) `shouldReturn` Just 1
+      getCharacterStatusCount (VillainCharacter attacker) StunnedStatus `shouldReturn` 1
+
   it "resolves boost-card 'you' as the defending leader's first player" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

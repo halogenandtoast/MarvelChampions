@@ -519,3 +519,7 @@ getEffectiveHerculesGiftCount :: HasGame m => IdentityId -> m Natural
 findPlayerCardsForEntry :: HasGame m => IdentityId -> CardCode -> m [PlayerCard]
 
 canPlaySearchedCardWithReduction :: (HasGame m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
+
+getAllyPhysicalCard :: HasGame m => AllyId -> m (Maybe Card)
+
+allyMatchesAtDefeat :: HasGame m => AllyMatcher -> AllyId -> m Bool

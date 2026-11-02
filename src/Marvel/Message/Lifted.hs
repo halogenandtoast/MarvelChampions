@@ -2764,6 +2764,11 @@ placePlayerCardUnder target card = do
   removeFromGame (CardIdRef $ pcCardId card)
   cardSpecific target "mgHoldCard" card
 
+placeEncounterCardUnderMainScheme :: ReverseQueue m => MainSchemeId -> EncounterCard -> m ()
+placeEncounterCardUnderMainScheme sid card = do
+  removeFromGame card
+  cardSpecific sid "holdEncounterCard" card
+
 putTopCardsUnder :: (ReverseQueue m, IsRef target) => IdentityId -> target -> Natural -> m ()
 putTopCardsUnder you target n = do
   cards <- take (fromIntegral n) <$> projectMap PlayerIdentityDeck unDeck you
