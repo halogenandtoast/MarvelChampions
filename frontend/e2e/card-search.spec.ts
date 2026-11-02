@@ -1,47 +1,56 @@
 import { expect, test } from '@playwright/test'
 
-for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 667 }]) {
-  test(`focused search scrolls within the modal at ${viewport.width}px`, async ({ page }) => {
-    await page.setViewportSize(viewport)
-    await page.goto('/#/cards/01001a')
-    const ids = await page.evaluate(async () => {
-      const load = (path: string) => import(/* @vite-ignore */ path)
-      const { createApp, h } = await load('/node_modules/.vite/deps/vue.js')
-      const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
-      const { default: CardPick } = await load('/src/components/CardPick.vue')
-      const { searchedCards, searchCardIds } = await load('/src/composables/cardSearch.ts')
-      const { loadLocaleMessages } = await load('/src/locales/messages.ts')
-      const { messages } = await loadLocaleMessages('en')
-      const focusedCards = Array.from({ length: 40 }, (_, i) => ({ id: `card-${i}`, code: '01001a', name: 'Spider-Man' }))
-      const question = { choices: [{ index: 0, kind: 'target', target: 'card-39', code: null }], searched: [] }
-      const game = { focusedCards, question: { player: question } }
-      const host = document.createElement('div')
-      document.body.replaceChildren(host)
-      host.id = 'search-host'
-      createApp({ setup: () => () => h(CardPick, {
-        choices: question.choices, searched: searchedCards(game, question), canChoose: true,
-        onChoose: (index: number) => { host.dataset.chosen = String(index) },
-      }) }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
-      return [...searchCardIds(game)]
+for (const noMatches of [false, true]) {
+  for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 667 }]) {
+    test(`${noMatches ? 'unmatched' : 'focused'} search scrolls within the modal at ${viewport.width}px`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await page.goto('/#/cards/01001a')
+      const ids = await page.evaluate(async (noMatches) => {
+        const load = (path: string) => import(/* @vite-ignore */ path)
+        const { createApp, h } = await load('/node_modules/.vite/deps/vue.js')
+        const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+        const { default: CardPick } = await load('/src/components/CardPick.vue')
+        const { searchedCards, searchCardIds } = await load('/src/composables/cardSearch.ts')
+        const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+        const { messages } = await loadLocaleMessages('en')
+        const focusedCards = Array.from({ length: 40 }, (_, i) => ({ id: `card-${i}`, code: '01001a', name: 'Spider-Man' }))
+        const question = { choices: noMatches
+          ? [{ index: 0, kind: 'label', label: '$label.noMatchingCardsFound' }]
+          : [{ index: 0, kind: 'target', target: 'card-39', code: null }], searched: [] }
+        const game = { focusedCards, question: { player: question } }
+        const host = document.createElement('div')
+        document.body.replaceChildren(host)
+        host.id = 'search-host'
+        createApp({ setup: () => () => h(CardPick, {
+          choices: question.choices, searched: searchedCards(game, question), canChoose: true,
+          onChoose: (index: number) => { host.dataset.chosen = String(index) },
+        }) }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+        return [...searchCardIds(game)]
+      }, noMatches)
+      expect(ids).toHaveLength(40)
+      const dialog = page.getByRole('dialog')
+      await expect(dialog).toBeVisible()
+      const bounds = (await dialog.boundingBox())!
+      expect(bounds.x).toBeGreaterThanOrEqual(0)
+      expect(bounds.y).toBeGreaterThanOrEqual(0)
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width)
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height)
+      expect(await dialog.locator('.pick-content').evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
+      const last = dialog.locator('.card').last()
+      await last.scrollIntoViewIfNeeded()
+      await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeInViewport()
+      const scrollTop = await dialog.locator('.pick-content').evaluate((el) => el.scrollTop)
+      await last.hover()
+      await expect.poll(() => dialog.locator('.pick-content').evaluate((el) => el.scrollTop)).toBe(scrollTop)
+      if (noMatches) {
+        await expect(dialog.locator('.card:disabled')).toHaveCount(40)
+        await dialog.getByRole('button', { name: 'No matching cards found', exact: true }).click()
+      } else {
+        await last.click()
+      }
+      await expect(page.locator('#search-host')).toHaveAttribute('data-chosen', '0')
     })
-    expect(ids).toHaveLength(40)
-    const dialog = page.getByRole('dialog')
-    await expect(dialog).toBeVisible()
-    const bounds = (await dialog.boundingBox())!
-    expect(bounds.x).toBeGreaterThanOrEqual(0)
-    expect(bounds.y).toBeGreaterThanOrEqual(0)
-    expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width)
-    expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height)
-    expect(await dialog.locator('.pick-content').evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
-    const last = dialog.locator('.card').last()
-    await last.scrollIntoViewIfNeeded()
-    await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeInViewport()
-    const scrollTop = await dialog.locator('.pick-content').evaluate((el) => el.scrollTop)
-    await last.hover()
-    await expect.poll(() => dialog.locator('.pick-content').evaluate((el) => el.scrollTop)).toBe(scrollTop)
-    await last.click()
-    await expect(page.locator('#search-host')).toHaveAttribute('data-chosen', '0')
-  })
+  }
 }
 
 

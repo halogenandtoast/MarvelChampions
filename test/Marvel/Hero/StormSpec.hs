@@ -47,6 +47,28 @@ special p = do
 
 spec :: Spec
 spec = describe "Storm" do
+  it "waits for a click on Thunderstorm before offering its Special's damage target" do
+    tg <- testGame ["storm"]
+    let p = player1 tg
+    inGame tg do
+      setWeather p "36004"
+      sid <- weatherId p
+      waiting <- openQuestion
+      withGame_ $ questionL .~ mempty
+      msgs <- Lifted.runQueueT $ Lifted.capture $ Lifted.resolveWeatherSpecial p sid
+      pushAll $ msgs <> [Ask ident q | Just (ident, q) <- [waiting]]
+      runGameMessages
+      villainDamageNow `shouldReturn` 0
+      openQuestion >>= \case
+        Just (ident, QuestionLabel "$label.resolveSpecial" (Just target) q) -> do
+          liftIO $ target `shouldBe` SupportRef sid
+          liftIO $ choicesOf q `shouldSatisfy` any (isTargetChoice $ SupportRef sid)
+          answerQuestion ident 0
+        _ -> error "expected Thunderstorm's Special prompt"
+      chooseVillain
+      pass
+      villainDamageNow `shouldReturn` 2
+
   it "begins with one weather in play, three in a separate deck, and does not resolve its Special" do
     tg <- testGame ["storm"]
     let p = player1 tg

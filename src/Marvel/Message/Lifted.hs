@@ -92,10 +92,11 @@ swapWeatherSupport you old card special = push $ SwapWeatherSupport you old card
 resolveCurrentWeatherSpecial :: (ReverseQueue m) => IdentityId -> m ()
 resolveCurrentWeatherSpecial = push . ResolveCurrentWeatherSpecial
 
--- | Only a Special that can affect the game resolves and opens its after window.
+-- | A Special that can affect the game waits for its card to be clicked before
+-- resolving and opening its after window.
 resolveWeatherSpecial :: (ReverseQueue m) => IdentityId -> SupportId -> m ()
 resolveWeatherSpecial you sid = whenM (asYou you $ weatherSpecialCanResolve you sid) $ do
-  push $ ResolveWeatherSpecial you sid
+  specialAbility you sid $ push $ ResolveWeatherSpecial you sid
 
 -- | The support queues this after its Special's effects, only when it resolves.
 finishWeatherSpecial :: (ReverseQueue m) => IdentityId -> SupportId -> m ()
