@@ -700,5 +700,7 @@
   "cwEnemyTeamChooses": "The opposing team chooses",
   "cwCooperativeEnemyChoice": "Choose as the enemy team using the Grim Rule",
   "cwChooseRegistrationFirstPlayer": "Choose the Registration first player",
-  "cwChooseResistanceFirstPlayer": "Choose the Resistance first player"
+  "cwChooseResistanceFirstPlayer": "Choose the Resistance first player",
+  "cwDiscardHighestCost": "Discard the highest-cost card you control",
+  "cwSpiderWomanSchemes": "Spider-Woman schemes"
 }

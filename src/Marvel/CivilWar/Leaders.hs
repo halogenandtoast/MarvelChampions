@@ -96,6 +96,7 @@ instance RunMessage CivilWarLeader where
           n <- sum <$> traverse getCountersOn finesse
           changeAttack (villainId a) (fromIntegral n)
           for_ finesse $ \aid -> removeCounters aid =<< getCountersOn aid
+          cardSpecific (villainId a) "cwFinesseSpent" n
         E.CwSheHulk -> for_ [you | W.IdentityChangesForm you <- windows] $ \you -> damageIdentity you a (toDamage 1 FromAbility)
         _ -> pure ()
       pure e

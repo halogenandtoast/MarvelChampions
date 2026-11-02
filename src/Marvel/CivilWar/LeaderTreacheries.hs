@@ -8,7 +8,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.EncounterSet qualified as E
 import Marvel.Game.Source
-import Marvel.Hood.Helpers (exhaustCharacterChoice)
+import Marvel.Hood.Helpers (exhaustCharacterChoice,controlledCards)
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
@@ -24,7 +24,7 @@ newtype LeaderTreachery = LeaderTreachery (Attrs Treachery)
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 leaderTreacheryDefinitions :: [CardDef]
-leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103,C.cw56146,C.cw56147,C.cw56176,C.cw57009,C.cw57010]
+leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103,C.cw56146,C.cw56147,C.cw56176,C.cw56178,C.cw57009,C.cw57010]
 
 leaderTreacheries :: [TreacheryCard LeaderTreachery]
 leaderTreacheries = map (treachery LeaderTreachery) leaderTreacheryDefinitions
@@ -82,6 +82,14 @@ instance RunMessage LeaderTreachery where
           confuseIdentity you
           finesse <- selectList $ AttachmentIs C.cw56174
           traverse_ (`placeCounters` 1) finesse
+        "56178" -> do
+          cards <- controlledCards you [AllyType,UpgradeType,SupportType]
+          scored <- for cards $ \target -> (target,) . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` target)
+          leader <- leaderOfFamily E.CwSpiderWoman
+          let highest = [target | (target,cost) <- scored,cost == maximum (0 : map snd scored)]
+          chooseOne you $
+            [labeled "$label.cwDiscardHighestCost" $ chooseOrRunOne you [targeting target $ discardControlled target | target <- highest] | notNull highest]
+            <> [labeled "$label.cwSpiderWomanSchemes" $ villainSchemesAgainst vid you | Just vid <- [leader]]
         "57009" -> leaderOfFamily E.CwSheHulk >>= traverse_ (\vid -> do
           if hero then enemyAttacks vid you else villainSchemesAgainst vid you
           giveStatus vid ToughStatus)
@@ -118,5 +126,10 @@ instance RunMessage LeaderTreachery where
       pure e
     Boost (RevealedAsBoost target enemy) | isTarget a target,toCardCode a == "57010" -> do
       exhaustCharacterChoice =<< getBoostedPlayer enemy
+      pure e
+    Boost (RevealedAsBoost target enemy) | isTarget a target,toCardCode a == "56178" -> do
+      you <- getBoostedPlayer enemy
+      n <- sum <$> traverse (getCharacterStatusCount $ IdentityCharacter you) [StunnedStatus,ConfusedStatus,ToughStatus]
+      addEnemyBoost enemy n
       pure e
     _ -> LeaderTreachery <$> runMessage msg a

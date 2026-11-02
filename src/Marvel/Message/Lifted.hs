@@ -889,6 +889,10 @@ enemyDefendedBy enemy character = do
 enemyAttacksWithCompletion :: (ReverseQueue m, IsEnemy enemy, IsRef source) => enemy -> IdentityId -> source -> m ()
 enemyAttacksWithCompletion enemy ident source = cardSpecific GameRef "enemyAttacksWithCompletion" (toEnemy enemy, ident, toSource source)
 
+-- | A caller-owned attack token identifies its completion even when it is canceled.
+enemyAttacksWithCompletionId :: (ReverseQueue m, IsEnemy enemy, IsRef source) => CardId -> enemy -> IdentityId -> source -> m ()
+enemyAttacksWithCompletionId nonce enemy ident source = cardSpecific GameRef "enemyAttacksWithCompletionId" (nonce,toEnemy enemy,ident,toSource source)
+
 eventOwnedBy :: ReverseQueue m => EventId -> IdentityId -> m ()
 eventOwnedBy eid = cardSpecific (EventRef eid) "eventOwner"
 

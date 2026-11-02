@@ -276,3 +276,41 @@ spec = describe "Leader treacheries" do
       choose "exhaust Black Cat" (isTargetChoice $ allyIdOf cat)
       isExhaustedNow you `shouldReturn` False
       allyMatches ExhaustedAlly (allyIdOf cat) `shouldReturn` True
+
+  it "Inconspicuous offers the highest-cost controlled card rather than a cheaper one" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "56168"
+      mansion <- putIntoPlay you "01091"
+      tenacity <- putIntoPlay you "01093"
+      inconspicuous <- encounterCard C.cw56178
+      start [RevealEncounterCard you inconspicuous]
+      choose "discard the highest-cost card" (isLabel "$label.cwDiscardHighestCost")
+      pass
+      getsGame (isJust . lookup (supportIdOf mansion) . gameSupports) `shouldReturn` False
+      getsGame (isJust . lookup (UpgradeId $ unCardId $ pcCardId tenacity) . gameUpgrades) `shouldReturn` True
+
+  it "Inconspicuous offers scheming when there is no controlled card to discard" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      _ <- withLeader "56168"
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      before <- mainSchemeThreatNow
+      inconspicuous <- encounterCard C.cw56178
+      start [RevealEncounterCard (player1 tg) inconspicuous]
+      offers (isLabel "$label.cwDiscardHighestCost") `shouldReturn` False
+      choose "Spider-Woman schemes" (isLabel "$label.cwSpiderWomanSchemes")
+      pass
+      mainSchemeThreatNow `shouldReturn` (before + 2)
+
+  it "Inconspicuous's boost counts all three status cards on the resolving identity" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "56168"
+      resolve [GiveStatus (IdentityRef you) StunnedStatus,GiveStatus (IdentityRef you) ConfusedStatus,GiveStatus (IdentityRef you) ToughStatus]
+      inconspicuous <- encounterCard C.cw56178
+      resolve [RevealBoostCard inconspicuous (EnemyVillainId vid)]
+      n <- getsGame $ maybe 0 (V.villainBoost . toAttrs) . lookup vid . gameVillains
+      liftIO $ n `shouldBe` 3

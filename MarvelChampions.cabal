@@ -566,6 +566,7 @@ library
       Marvel.Card.WhenDefeated
       Marvel.Card.WhenRevealed
       Marvel.Choice
+      Marvel.CivilWar.AttackTreacheries
       Marvel.CivilWar.Cards
       Marvel.CivilWar.Helpers
       Marvel.CivilWar.IronManAttachments
@@ -2868,6 +2869,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.NextEvolutionSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
+      Marvel.CivilWar.AttackTreacherySpec
       Marvel.CivilWar.IronManSpec
       Marvel.CivilWar.LeaderAttachmentSpec
       Marvel.CivilWar.LeaderDefenseSpec

@@ -60,6 +60,14 @@ Solar Beam checks the mass form when its activation begins, after Density Contro
 
 Twelve Vision treachery cases pass, for 167 focused Civil War examples. A search for newer card-specific rulings found no exception to these targeting rules.
 
+## Remaining attack and choice treacheries
+
+Heroic Strike tracks the actual characters its particular attack damages and stuns surviving damaged characters after the attack finishes. Tough prevents its stun, while overkill damage can stun the identity behind a defeated ally. A saved defense choice preserves the attack token and its completion callback.
+
+Venom Blast uses the number of skill counters Spider-Woman actually removes for that attack. It gains ranged at one, piercing at two, and overkill at three; an added counter from revealing the treachery contributes before the attack. Its alter-ego branch surges. Explicit attack tokens keep effects associated with their own activation and support deferred activations.
+
+Inconspicuous offers a legal highest-cost controlled card to discard or Spider-Woman's scheme activation. Its boost counts every status card on the resolving identity. Eleven additional tests pass, for 178 focused Civil War examples.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.

@@ -2009,6 +2009,18 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         cardSpecific (trackedAttackSource tracked) "attackCompleted" (trackedAttackResult tracked)
         let without = g {gameTrackedEnemyAttacks = filter ((/= nonce) . trackedAttackId) gameTrackedEnemyAttacks}
         pure $ restoreEnemyAttack (trackedAttackEnemy tracked) (trackedAttackPrevious tracked) without
+  CardSpecific GameRef "enemyAttacksWithCompletionId" (fromJSON -> Success (nonce,enemy,who,source)) -> do
+    prior <- getEnemyAttack enemy
+    enemyAttacks enemy who
+    cardSpecific GameRef "finishEnemyAttackCompletionId" nonce
+    pure g {gameTrackedEnemyAttacks = TrackedEnemyAttack nonce enemy source prior Nothing : gameTrackedEnemyAttacks}
+  CardSpecific GameRef "finishEnemyAttackCompletionId" (fromJSON -> Success nonce) -> do
+    case find ((== nonce) . trackedAttackId) gameTrackedEnemyAttacks of
+      Nothing -> pure g
+      Just tracked -> do
+        cardSpecific (trackedAttackSource tracked) "attackCompletedWithId" (nonce,trackedAttackResult tracked)
+        let without = g {gameTrackedEnemyAttacks = filter ((/= nonce) . trackedAttackId) gameTrackedEnemyAttacks}
+        pure $ restoreEnemyAttack (trackedAttackEnemy tracked) (trackedAttackPrevious tracked) without
   CardSpecific GameRef "moveThreatToUpgradeSlot" (fromJSON -> Success (uid, scheme, slot :: Int)) -> do
     valid <- upgradeSlotIsEmpty uid slot
     removable <- canMoveSchemeThreatFrom uid scheme
