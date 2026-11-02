@@ -8,6 +8,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.EncounterSet qualified as E
 import Marvel.Game.Source
+import Marvel.Hood.Helpers (exhaustCharacterChoice)
 import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
@@ -23,7 +24,7 @@ newtype LeaderTreachery = LeaderTreachery (Attrs Treachery)
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 leaderTreacheryDefinitions :: [CardDef]
-leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103]
+leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103,C.cw56146,C.cw56147,C.cw56176,C.cw57009,C.cw57010]
 
 leaderTreacheries :: [TreacheryCard LeaderTreachery]
 leaderTreacheries = map (treachery LeaderTreachery) leaderTreacheryDefinitions
@@ -66,6 +67,30 @@ instance RunMessage LeaderTreachery where
         "56103" -> do
           addCaptainMarvelEnergy 1
           cardSpecific a "energyAbsorptionHeal" ()
+        "56146" -> leaderOfFamily E.CwCaptainAmerica >>= traverse_ (\vid -> do
+          attached <- selectAny $ AttachmentMatches [AttachmentIs C.cw56143,AttachmentOnEnemy $ EnemyVillainId vid]
+          if attached then giveStatus vid ToughStatus else returnCaptainAmericaShield you vid
+          dealBoost vid)
+        "56147" -> leaderOfFamily E.CwCaptainAmerica >>= traverse_ (\vid ->
+          if not hero then villainSchemesAgainst vid you else do
+            attached <- selectAny $ AttachmentMatches [AttachmentIs C.cw56143,AttachmentOnEnemy $ EnemyVillainId vid]
+            if attached then do
+              damageAllCharacters a (toDamage 2 FromAbility) (CharacterControlledBy $ IdentityWithId you)
+            else returnCaptainAmericaShield you vid)
+        "56176" -> do
+          stunIdentity you
+          confuseIdentity you
+          finesse <- selectList $ AttachmentIs C.cw56174
+          traverse_ (`placeCounters` 1) finesse
+        "57009" -> leaderOfFamily E.CwSheHulk >>= traverse_ (\vid -> do
+          if hero then enemyAttacks vid you else villainSchemesAgainst vid you
+          giveStatus vid ToughStatus)
+        "57010" -> do
+          identities <- selectList $ IdentityWithId you <> UnexhaustedIdentity
+          allies <- selectList $ AllyControlledBy (IdentityWithId you) <> UnexhaustedAlly
+          traverse_ exhaust identities
+          traverse_ exhaust allies
+          when (null identities && null allies) $ gainSurge a
         _ -> pure ()
       pure $ LeaderTreachery a {treacheryResolver = Just you}
     WithDiscarded (isTarget a -> True) FromDeck (onlyPlayerCards -> cards) | toCardCode a == "56070" -> do
@@ -80,5 +105,18 @@ instance RunMessage LeaderTreachery where
       counters <- sum <$> (traverse getCountersOn =<< captainMarvelEnergy)
       leaderOfFamily E.CwCaptainMarvel >>= traverse_ (\vid -> healFrom a vid counters)
       pure e
+    Boost (CardSpecific (isTarget a -> True) "pheromonesAfterBoostStun" (fromJSON -> Success (you,old :: Natural))) -> do
+      current <- getCharacterStatusCount (IdentityCharacter you) StunnedStatus
+      when (current <= old) $ confuseIdentity you
+      pure e
     Boost (RevealedAsBoost target _) | isTarget a target,toCardCode a == "56103" -> e <$ addCaptainMarvelEnergy 1
+    Boost (RevealedAsBoost target enemy) | isTarget a target,toCardCode a == "56176" -> do
+      you <- getBoostedPlayer enemy
+      old <- getCharacterStatusCount (IdentityCharacter you) StunnedStatus
+      stunIdentity you
+      cardSpecific a "pheromonesAfterBoostStun" (you,old)
+      pure e
+    Boost (RevealedAsBoost target enemy) | isTarget a target,toCardCode a == "57010" -> do
+      exhaustCharacterChoice =<< getBoostedPlayer enemy
+      pure e
     _ -> LeaderTreachery <$> runMessage msg a

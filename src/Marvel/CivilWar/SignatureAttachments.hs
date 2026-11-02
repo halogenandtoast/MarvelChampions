@@ -115,6 +115,8 @@ instance RunMessage SignatureAttachment where
         _ -> pure ()
       pure $ SignatureAttachment ((if toCardCode a == "56174" then a {attachmentCounters = min 3 $ attachmentCounters a + 1} else a) `With` pending)
     CardSpecific (isTarget a -> True) "cwEnergy" (fromJSON -> Success n) -> pure $ SignatureAttachment (a {attachmentCounters = attachmentCounters a + n} `With` pending)
+    PlaceCounters target n | isTarget a target,toCardCode a == "56174" ->
+      pure $ SignatureAttachment (a {attachmentCounters = min 3 $ attachmentCounters a + n} `With` pending)
     CardSpecific (isTarget a -> True) "cwSpendEnergy" (fromJSON -> Success attacker) -> do
       when (attachmentCounters a >= 4) $ for_ [vid | Just (EnemyVillainId vid) <- [attachmentEnemy a]] $ \vid -> do
         present <- inAnyArea $ selectAny $ CharacterWithId attacker

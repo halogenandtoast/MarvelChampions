@@ -113,3 +113,11 @@ flipLeaderMassForm enemy = do
   forms <- concatMapM (\def -> selectList $ AttachmentMatches
     [AttachmentOnEnemy enemy,AttachmentIs def]) [C.cw57046a,C.cw57046b]
   traverse_ (\aid -> cardSpecific aid "cwFlipMass" ()) forms
+
+-- | Reattaching an in-play Shield keeps the physical card and detaches its old host.
+returnCaptainAmericaShield :: ReverseQueue m => IdentityId -> VillainId -> m ()
+returnCaptainAmericaShield you vid = do
+  shields <- selectList $ AttachmentIs C.cw56143
+  case shields of
+    [] -> searchEverywhereAndRevealEncounterCard you $ CardIs C.cw56143
+    _ -> traverse_ (`attachTo` vid) shields

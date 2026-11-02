@@ -3,11 +3,12 @@ module Marvel.CivilWar.LeaderTreacherySpec (spec) where
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf,leaderHp)
 import Marvel.Message.Lifted qualified as L
-import Marvel.Matchers
+import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as M
 import Marvel.Query
 import Marvel.SideScheme.Cards qualified as S
-import TestImport
+import Marvel.Villain.Types qualified as V
+import TestImport hiding (ExhaustedAlly)
 
 spec :: Spec
 spec = describe "Leader treacheries" do
@@ -142,3 +143,136 @@ spec = describe "Leader treacheries" do
       absorption <- encounterCard C.cw56103
       resolve [RevealBoostCard absorption (EnemyVillainId vid),ClearBoosts]
       getCountersOn (attachmentIdOf energy) `shouldReturn` 1
+
+  for_ [False,True] $ \heldByHero ->
+    it ("Shield Block returns the actual Shield and deals a boost: hero holds it " <> show heldByHero) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        vid <- withLeader "56137"
+        shield <- encounterCard C.cw56143
+        resolve [RevealEncounterCard you shield]
+        when heldByHero $ do
+          messages <- L.runQueueT $ L.capture $ L.attachToCharacter (attachmentIdOf shield) (IdentityCharacter you)
+          resolve messages
+        resolve [RemoveStatus (VillainRef vid) ToughStatus]
+        _ <- stackEncounterDeck [M.hydraMercenary]
+        block <- encounterCard C.cw56146
+        resolve [RevealEncounterCard you block]
+        getAttachedCharacter (attachmentIdOf shield) `shouldReturn` Just (VillainCharacter vid)
+        villainMatches VillainWithToughStatus vid `shouldReturn` True
+        boosts <- getsGame $ maybe 0 (length . V.villainBoostCards . toAttrs) . lookup vid . gameVillains
+        liftIO $ boosts `shouldBe` 1
+
+  it "Shield Toss damages the hero and each ally when Captain America has his Shield" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- withLeader "56137"
+      shield <- encounterCard C.cw56143
+      resolve [RevealEncounterCard you shield]
+      cat <- putIntoPlay you "01067"
+      toss <- encounterCard C.cw56147
+      resolve [RevealEncounterCard you toss]
+      damageOf you `shouldReturn` 2
+      selectAny (AllyWithId $ allyIdOf cat) `shouldReturn` False
+
+  it "Shield Toss returns a stolen Shield without dealing its damage" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      vid <- withLeader "56137"
+      shield <- encounterCard C.cw56143
+      resolve [RevealEncounterCard you shield]
+      messages <- L.runQueueT $ L.capture $ L.attachToCharacter (attachmentIdOf shield) (IdentityCharacter you)
+      resolve messages
+      toss <- encounterCard C.cw56147
+      resolve [RevealEncounterCard you toss]
+      getAttachedCharacter (attachmentIdOf shield) `shouldReturn` Just (VillainCharacter vid)
+      damageOf you `shouldReturn` 0
+
+  it "Shield Toss schemes against an alter-ego" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      _ <- withLeader "56137"
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      toss <- encounterCard C.cw56147
+      before <- mainSchemeThreatNow
+      resolve [RevealEncounterCard (player1 tg) toss]
+      mainSchemeThreatNow `shouldReturn` (before + 2)
+
+  for_ [0,2] $ \initial ->
+    it ("Pheromones stuns, confuses and respects Finesse's three-counter limit from " <> show initial) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        _ <- withLeader "56168"
+        finesse <- encounterCard C.cw56174
+        resolve [RevealEncounterCard you finesse,PlaceCounters (AttachmentRef $ attachmentIdOf finesse) initial]
+        pheromones <- encounterCard C.cw56176
+        resolve [RevealEncounterCard you pheromones]
+        isStunned you `shouldReturn` True
+        isConfused you `shouldReturn` True
+        getCountersOn (attachmentIdOf finesse) `shouldReturn` min 3 (initial + 2)
+
+  for_ [False,True] $ \alreadyStunned ->
+    it ("Pheromones's boost confuses only if it cannot stun: " <> show alreadyStunned) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        vid <- withLeader "56168"
+        when alreadyStunned $ resolve [GiveStatus (IdentityRef you) StunnedStatus]
+        pheromones <- encounterCard C.cw56176
+        resolve [RevealBoostCard pheromones (EnemyVillainId vid),ClearBoosts]
+        isStunned you `shouldReturn` True
+        isConfused you `shouldReturn` alreadyStunned
+
+  for_ [False,True] $ \hero ->
+    it ("One-Two Punch activates then gives She-Hulk tough: hero " <> show hero) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        when hero $ changeForm you
+        vid <- withLeader "57001"
+        _ <- stackEncounterDeck [M.hydraMercenary]
+        punch <- encounterCard C.cw57009
+        before <- mainSchemeThreatNow
+        resolve [RevealEncounterCard you punch]
+        villainMatches VillainWithToughStatus vid `shouldReturn` True
+        if hero then damageOf you `shouldReturn` 3 else mainSchemeThreatNow `shouldReturn` (before + 2)
+
+  it "Ground Stomp exhausts the identity and all ready allies" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57001"
+      cat <- putIntoPlay you "01067"
+      stomp <- encounterCard C.cw57010
+      resolve [RevealEncounterCard you stomp]
+      isExhaustedNow you `shouldReturn` True
+      allyMatches ExhaustedAlly (allyIdOf cat) `shouldReturn` True
+
+  it "Ground Stomp surges if every controlled character was already exhausted" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57001"
+      resolve [IdentityMessage you ExhaustedIdentity]
+      [surged] <- stackEncounterDeck [S.crowdControl]
+      stomp <- encounterCard C.cw57010
+      resolve [RevealEncounterCard you stomp]
+      dealtTo you >>= (`shouldSatisfy` elem surged)
+
+  it "Ground Stomp's boost lets its resolver choose a ready character to exhaust" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57001"
+      cat <- putIntoPlay you "01067"
+      stomp <- encounterCard C.cw57010
+      start [RevealBoostCard stomp (EnemyVillainId vid),ClearBoosts]
+      choose "exhaust Black Cat" (isTargetChoice $ allyIdOf cat)
+      isExhaustedNow you `shouldReturn` False
+      allyMatches ExhaustedAlly (allyIdOf cat) `shouldReturn` True

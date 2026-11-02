@@ -50,6 +50,10 @@ Repulsor Blast and Supersonic Punch are implemented in both identity forms, incl
 
 Twelve behavior tests cover these five cards; the focused Civil War suite now passes 141 examples. Other leaders' treacheries, leader side schemes, main schemes, modular sets, and scenario registration remain separate work.
 
+Shield Block and Shield Toss reattach the existing Shield, preserving its physical identity and detaching its previous host. Shield Toss damages all controlled characters together when the Shield is already on Captain America. Pheromones applies both statuses and its additional skill counter, with Finesse capped at three for every counter-placement source. Its boost confuses only when its attempted stun did not add a status card. One-Two Punch activates She-Hulk before giving her tough. Ground Stomp exhausts ready controlled characters, surging only when none were exhausted; its boost offers one ready character. Surge deals a facedown encounter card under v1.8.
+
+Fourteen additional cases cover these five cards and their boosts; 155 focused Civil War examples pass.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.
