@@ -49,7 +49,9 @@ def html_to_text(s):
 
 
 def traits(s):
-    return [t.strip() for t in (s or "").split(".") if t.strip()]
+    # Periods inside acronyms belong to the trait, rather than separating traits.
+    protected = re.sub(r"(?:\b[A-Z]\.){2,}", lambda m: m.group().replace(".", "\0") + ".", s or "")
+    return [t.strip().replace("\0", ".") for t in protected.split(".") if t.strip()]
 
 
 def card(c, pack_order):
