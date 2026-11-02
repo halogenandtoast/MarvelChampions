@@ -81,9 +81,10 @@ instance RunMessage CivilWarLeader where
       case leaderFamily a of
         E.CwIronMan -> do
           deck <- asYou you getEncounterDeck
+          key <- getDeckKeyFor you
           let choices = filter (\c -> cdEncounterSet (getCardDef c) == Just E.CwIronMan && cdCardType (getCardDef c) == AttachmentType) deck
           lookForEnemyTeam you a choices [cardLabeled (toCardCode card) $ revealEncounterCard you card | card <- choices]
-          shuffleEncounterDeck
+          fromDeck key shuffleEncounterDeck
         family -> for_ (setupAttachment family) $ \code -> do
           key <- getDeckKeyFor you
           fromDeck key $ searchEverywhereAndRevealEncounterCard you (CardIs $ civilWarDef code)

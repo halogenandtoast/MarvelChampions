@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.CivilWar.LeaderSideSchemes qualified as CW
 import Marvel.KreeFanatic qualified as KF
 import Marvel.CampaignPlayers.NemesisSchemes qualified as CN
 
@@ -92,7 +93,7 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
   Just (SomeSideSchemeCard a) -> f a
 
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
-allSideSchemes = fromList $ concatMap
+allSideSchemes = fromList $ [(toCardCode card,SomeSideSchemeCard card) | card <- CW.leaderSideSchemes] <> concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
   [ SomeSideSchemeCard CN.cn56025, SomeSideSchemeCard CN.cn56056, SomeSideSchemeCard CN.cn60034, SomeSideSchemeCard CN.cn60062
   , SomeSideSchemeCard KF.judgeJuryExecutioner

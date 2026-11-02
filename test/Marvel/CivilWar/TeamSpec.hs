@@ -223,6 +223,83 @@ spec = describe "Civil War team boundaries" do
       enemyMatches StunnedEnemy (EnemyVillainId attacker) `shouldReturn` True
       getAttachedCharacter aid `shouldReturn` Nothing
 
+  for_ [False,True] $ \eliminated ->
+    it ("Self-propelled Glide protects a cross-board leader with its physical team eliminated: " <> show eliminated) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        attacker <- villainIdNow
+        defender <- addSecondBoard tg
+        finesse <- encounterCard C.cw56174
+        glide <- encounterCard C.cw56179
+        let aid = AttachmentId $ unCardId $ ecCardId finesse
+        resolve [SetActivePlayer (player2 tg),ReplaceVillain defender "56168" Swapped,VillainMessage defender SetVillainHp,RevealEncounterCard (player2 tg) finesse,PlaceCounters (AttachmentRef aid) 2,RevealEncounterCard (player2 tg) glide,SetActivePlayer (player1 tg)]
+        when eliminated $ resolve [IdentityMessage (player2 tg) IdentityDefeated]
+        saved <- getsGame toJSON
+        case fromJSON @Game saved of
+          Success restored -> withGame_ $ const restored
+          Error reason -> liftIO $ expectationFailure reason
+        _ <- stackEncounterDeck [M.hydraMercenary]
+        before <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+        messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+        resolve messages
+        after <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+        liftIO $ before - after `shouldBe` 1
+        getCountersOn aid `shouldReturn` 2
+
+  it "lets the opponent choose Stark Tower's attachment from the defeated scheme's own encounter deck" do
+    tg <- competitive ["black-widow","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      leader <- villainIdNow
+      opponent <- addSecondBoard tg
+      resolve [ReplaceVillain leader "56059" Swapped,VillainMessage leader SetVillainHp]
+      ownCards <- traverse encounterCard [C.cw56065,C.cw56067,C.cw56068]
+      otherCards <- traverse encounterCard [M.hydraMercenary,M.hydraSoldier,M.hydraBomber]
+      messages <- L.runQueueT $ L.capture $ do
+        L.createDeck (L.VillainDeckKey leader) ownCards
+        L.createDeck (L.VillainDeckKey opponent) otherCards
+      resolve messages
+      otherBefore <- asYou (player2 tg) getEncounterDeck
+      tower <- encounterCard C.cw56072
+      resolve [RevealEncounterCard you tower]
+      covert <- putInHand you "08003"
+      resources <- traverse (putInHand you) ["01089","01093"]
+      playWith covert resources
+      choose "defeat Stark Tower" (isTargetChoice $ SideSchemeId $ unCardId $ ecCardId tower)
+      pressWhenRevealed
+      fmap fst <$> asked `shouldReturn` Just (player2 tg)
+      choose "the opponent chooses Mark V Helmet" $ \case CardLabel code _ -> code == "56067"; _ -> False
+      pass
+      let helmet = ownCards !! 1
+      getAttachedCharacter (AttachmentId $ unCardId $ ecCardId helmet) `shouldReturn` Just (VillainCharacter leader)
+      asYou (player2 tg) getEncounterDeck `shouldReturn` otherBefore
+      remaining <- asYou you getEncounterDeck
+      liftIO $ length remaining `shouldBe` 2
+      liftIO $ helmet `shouldSatisfy` (`notElem` remaining)
+
+  it "keeps Iron Man's setup search and shuffle on his encounter deck when the opponent chooses" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      leader <- villainIdNow
+      opponent <- addSecondBoard tg
+      resolve [ReplaceVillain leader "56059" Swapped,VillainMessage leader SetVillainHp]
+      ownCards <- traverse encounterCard [C.cw56065,C.cw56067,C.cw56068]
+      otherCards <- traverse encounterCard [M.hydraMercenary,M.hydraSoldier,M.hydraBomber]
+      messages <- L.runQueueT $ L.capture $ do
+        L.createDeck (L.VillainDeckKey leader) ownCards
+        L.createDeck (L.VillainDeckKey opponent) otherCards
+      resolve messages
+      otherBefore <- asYou (player2 tg) getEncounterDeck
+      start [CardSpecific (VillainRef leader) "cwLeaderSetup" Null]
+      fmap fst <$> asked `shouldReturn` Just (player2 tg)
+      choose "the opponent chooses Mark V Helmet" $ \case CardLabel code _ -> code == "56067"; _ -> False
+      pass
+      asYou (player2 tg) getEncounterDeck `shouldReturn` otherBefore
+      remaining <- asYou you getEncounterDeck
+      liftIO $ length remaining `shouldBe` 2
+      getAttachedCharacter (AttachmentId $ unCardId $ ecCardId $ ownCards !! 1) `shouldReturn` Just (VillainCharacter leader)
+
   it "spends stun instead of attacking the other leader" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

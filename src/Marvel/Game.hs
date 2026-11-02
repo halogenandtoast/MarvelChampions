@@ -5723,13 +5723,29 @@ competitiveAbilityAllowed g you ability
  where
   source = refocus $ abilitySource ability
   crossLeaderResponse = isForcedAbility ability
-    && maybe False ((`elem` [VillainType,MinionType,AttachmentType]) . cdCardType) (abilityCardDef g source)
-    && maybe False (`elem` crossedLeaders) host
+    && maybe False ((`elem` [VillainType,MinionType,AttachmentType,SideSchemeType]) . cdCardType) (abilityCardDef g source)
+    && maybe False (\target -> target `elem` crossedLeaders && target `elem` currentLeaders) host
   host = case source of
     AttachmentRef aid -> enemyRef <$> (Attachment.attachmentEnemy . toAttrs =<< lookup aid (gameAttachments g))
+    SideSchemeRef _ -> case abilityWindow ability of
+      Just (W.VillainWouldTakeDamageFrom (VillainWithId vid) _) -> Just $ VillainRef vid
+      _ -> Nothing
     _ -> Just source
-  crossedLeaders = concat
-    [[enemyRef attacker,enemyRef defender] | W.Window _ (W.EnemyAttackOnEnemy attacker defender) <- concat (take 1 $ gameWindows g), areaOf attacker /= areaOf defender]
+  crossedLeaders = concatMap crossed $ concat $ gameWindows g
+  crossed (W.Window _ event) = case event of
+    W.EnemyAttackOnEnemy attacker defender | areaOf attacker /= areaOf defender -> [enemyRef attacker,enemyRef defender]
+    W.VillainDamageFrom defender from damage | Just attacker <- sourceEnemy from,damageSource damage `elem` [FromAttack,FromOverkill],areaOf attacker /= areaOf (EnemyVillainId defender) -> [enemyRef attacker,VillainRef defender]
+    _ -> []
+  currentLeaders = concatMap namedLeaders $ concat $ take 1 $ gameWindows g
+  namedLeaders (W.Window _ event) = case event of
+    W.EnemyAttackOnEnemy attacker defender -> [enemyRef attacker,enemyRef defender]
+    W.VillainDamageFrom vid _ _ -> [VillainRef vid]
+    W.DamagedVillain vid _ -> [VillainRef vid]
+    W.VillainGainingStatus vid _ -> [VillainRef vid]
+    W.EnemyWouldBeDamaged enemy _ _ -> [enemyRef enemy]
+    W.EnemyAttackDefeatedCharacter enemy character -> enemyRef enemy : [VillainRef vid | VillainCharacter vid <- [character]]
+    W.EnemyAttacksAndDamages enemy character _ -> enemyRef enemy : [VillainRef vid | VillainCharacter vid <- [character]]
+    _ -> []
   areaOf enemy = areaId <$> areaOfTarget g (enemyRef enemy)
   here = areaId <$> areaOfTarget g (IdentityRef you)
   local target = (areaId <$> areaOfTarget g target) == here
@@ -6463,6 +6479,7 @@ gameSelectAttachment m = do
         && any ((`elem` [Ability.HeroAction, Ability.HeroResponse]) . abilityType) (getAbilities attachment)
     AttachmentIs def -> pure . sameCard def . getCardDef
     AttachmentWithTrait t -> pure . member t . cdTraits . getCardDef
+    AttachmentWithCounters matcher -> \attachment -> gameValueMatches matcher $ Attachment.attachmentCounters $ toAttrs attachment
     AttachmentOnEnemy eid -> pure . (== Just eid) . Attachment.attachmentEnemy . toAttrs
     AttachmentMatches xs -> \a -> allM (`matchFilter` a) xs
 

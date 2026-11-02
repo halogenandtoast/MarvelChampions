@@ -480,6 +480,7 @@ data AttachmentMatcher
   | AttachmentWithPrintedHeroActionOrResponse
   | AttachmentIs CardDef
   | AttachmentWithTrait Trait
+  | AttachmentWithCounters GameValueMatcher
   | -- | attached to the enemy
     AttachmentOnEnemy EnemyId
   | AttachmentMatches [AttachmentMatcher]
