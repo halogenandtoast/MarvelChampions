@@ -3269,7 +3269,13 @@ addToTargetedBasicThwart you bonus = replaceMatchingMessage raise matches
 
 -- | Replace a pending facedown encounter-card deal before drawing its card.
 cancelDealtEncounterCard :: ReverseQueue m => IdentityId -> m ()
-cancelDealtEncounterCard you = insteadOf (\case CardSpecific GameRef "fwActuallyDealEncounterCard" (fromJSON -> Success other) -> you == other; _ -> False) (pure ())
+cancelDealtEncounterCard you = insteadOf matches (pure ())
+ where
+  matches = \case
+    UsingDeck _ inner -> matches inner
+    CardSpecific GameRef "fwActuallyDealEncounterCard" (fromJSON -> Success other) -> you == other
+    CardSpecific GameRef "actuallyDealFoundEncounterCard" (fromJSON -> Success (other,_ :: EncounterCard)) -> you == other
+    _ -> False
 
 getIdentityDefenseForLastAttack :: HasGame m => IdentityId -> m Natural
 getIdentityDefenseForLastAttack = project PlayerIdentityLastDefense

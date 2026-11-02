@@ -3247,6 +3247,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   ShuffleIntoEncounterDeck cards -> pure $ g
     {gameRemovedFromGameEncounterCards = filter (`notElem` cards) gameRemovedFromGameEncounterCards}
     & boostCardsL %~ HashMap.filter (`notElem` cards)
+  PutEncounterCardIntoPlay _ card | isJust (inPlayRef g $ EncounterCard card) -> pure g
   PutEncounterCardIntoPlay ident card -> case cdCardType (getCardDef card) of
     SideSchemeType -> do
       let scheme = createSideScheme card

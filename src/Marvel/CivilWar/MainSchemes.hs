@@ -5,6 +5,7 @@ import Marvel.Ability
 import Marvel.Attack (attackDefended)
 import Marvel.Card
 import Marvel.CivilWar.Cards qualified as C
+import Marvel.CivilWar.Helpers (lookForEnemyTeam)
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.Cost
 import Marvel.Entity
@@ -16,6 +17,7 @@ import Marvel.MainScheme.Types
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
+import Marvel.Query (selectJust)
 import Marvel.Question (runAbility)
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -30,7 +32,7 @@ instance FromJSON CivilWarMainScheme where
 civilWarMainSchemeDefinitions :: [CardDef]
 civilWarMainSchemeDefinitions = filter ((`elem` implementedSchemes) . toCardCode) C.civilWarDefinitions
  where
-  implementedSchemes = ["56063b","56172b","56121b","56199b","56122b","57044b","57005b","56200b","56124b","57045b","56142b","57006b","56064b","56201b"]
+  implementedSchemes = ["56063b","56172b","56121b","56199b","56122b","57044b","57005b","56200b","56124b","57045b","56142b","57006b","56064b","56201b","56096b","56141b","56123b","56173b","56202b"]
 
 civilWarMainSchemes :: [MainSchemeCard CivilWarMainScheme]
 civilWarMainSchemes = [mainSchemeWith (\a -> CivilWarMainScheme (a `With` Nothing)) def (PerPlayer $ if firstStage def then 7 else 9) (Static 0) (PerPlayer 1) (\a -> a {mainSchemeHeldCardsFacedown = toCardCode def == "56064b"}) | def <- civilWarMainSchemeDefinitions]
@@ -62,6 +64,7 @@ instance IsMainScheme CivilWarMainScheme where
         [windowAbility a 2 W.AfterVillainThreatStep ForcedResponse NoCost (runAbility a 2)]
     | toCardCode a == "56064b" = [windowAbility a 3 (W.AllyDefeatedByAttack W.After AnyAlly) ForcedResponse NoCost (runAbility a 3)]
     | toCardCode a == "56201b" = [windowAbility a 4 (W.VillainStatusGained W.After $ VillainWithId vid) ForcedResponse NoCost (runAbility a 4) | Just vid <- [leader]]
+    | toCardCode a == "56202b" = [windowAbility a 5 W.AfterVillainThreatStep ForcedResponse NoCost (runAbility a 5)]
     | otherwise = []
 
 instance RunMessage CivilWarMainScheme where
@@ -77,11 +80,78 @@ instance RunMessage CivilWarMainScheme where
       updated <- runMessage msg a
       mainSchemeStep (mainSchemeId a) (MainSchemePlaceThreat 0)
       pure $ CivilWarMainScheme (updated `With` leader)
+    MainSchemeMessage sid RevealMainScheme | sid == mainSchemeId a,toCardCode a `elem` ["56096b","56141b","56123b","56173b"] -> do
+      first <- firstPlayerAtScheme a
+      key <- getDeckKeyFor first
+      players <- playersAtScheme a
+      pile <- getPile key
+      let sideSchemes = toCardCode a `elem` ["56123b","56173b"]
+          pool = pileDeck pile <> [card | sideSchemes,card <- pileDiscard pile]
+          kind = if sideSchemes then SideSchemeType else MinionType
+          eligible = filter ((== kind) . cdCardType . getCardDef) pool
+      cardSpecific a "cwSearchCards" (key,first,players,eligible,[] :: [(IdentityId,EncounterCard)])
+      pure e
+    CardSpecific target "cwSearchCards" (fromJSON -> Success (key :: DeckKey,first :: IdentityId,players :: [IdentityId],eligible :: [EncounterCard],found :: [(IdentityId,EncounterCard)])) | isTarget a target -> do
+      case players of
+        recipient : remaining | not (null eligible) ->
+          lookForEnemyTeam first recipient eligible
+            [cardLabeled (toCardCode card) $ cardSpecific a "cwSearchCards" (key,first,remaining,filter ((/= ecCardId card) . ecCardId) eligible,found <> [(recipient,card)]) | card <- eligible]
+        _ -> fromDeck key do
+          for_ found $ \(recipient,card) -> dealFoundEncounterCard recipient card
+          shuffleEncounterDeck
+      pure e
+    RanAbility _ (isTarget a -> True) 5 _ _ -> do
+      first <- firstPlayerAtScheme a
+      key <- getDeckKeyFor first
+      players <- playersAtScheme a
+      cardSpecific a "cwJailbreakDiscard" (key,first,players,[] :: [(IdentityId,EncounterCard)])
+      pure e
+    CardSpecific target "cwJailbreakDiscard" (fromJSON -> Success (key :: DeckKey,first :: IdentityId,players :: [IdentityId],found :: [(IdentityId,EncounterCard)])) | isTarget a target -> do
+      living <- getAllPlayers
+      case filter (`elem` living) players of
+        [] -> cardSpecific a "cwJailbreakPut" (first,found)
+        [recipient] -> cardSpecific a "cwJailbreakOne" (key,first,recipient,[] :: [IdentityId],found)
+        remaining -> do
+          chooser <- firstPlayerAtScheme a
+          chooseOnePromptedAbout chooser "$label.cwChooseDiscardPlayer" a
+            [targeting recipient $ cardSpecific a "cwJailbreakOne" (key,first,recipient,filter (/= recipient) remaining,found) | recipient <- remaining]
+      pure e
+    CardSpecific target "cwJailbreakOne" (fromJSON -> Success (key :: DeckKey,first :: IdentityId,recipient :: IdentityId,remaining :: [IdentityId],found :: [(IdentityId,EncounterCard)])) | isTarget a target -> do
+      cards <- take 1 . pileDeck <$> getPile key
+      setActivePlayer recipient
+      fromDeck key $ discardTopOfEncounterDeck 1
+      let minions = [(recipient,card) | card <- cards,cdCardType (getCardDef card) == MinionType]
+      cardSpecific a "cwJailbreakDiscard" (key,first,remaining,found <> minions)
+      pure e
+    CardSpecific target "cwJailbreakPut" (fromJSON -> Success (first :: IdentityId,found :: [(IdentityId,EncounterCard)])) | isTarget a target -> do
+      living <- getAllPlayers
+      case filter ((`elem` living) . fst) found of
+        [] -> setActivePlayer first
+        [(you,card)] -> putEncounterCardIntoPlay you card >> setActivePlayer first
+        remaining -> do
+          chooser <- firstPlayerAtScheme a
+          chooseOnePromptedAbout chooser "$label.cwChooseMinionRecipient" a
+            [targeting you $ do
+              putEncounterCardIntoPlay you card
+              cardSpecific a "cwJailbreakPut" (first,filter ((/= you) . fst) remaining)
+            | (you,card) <- remaining]
+      pure e
     RanAbility _ (isTarget a -> True) 1 _ _ -> e <$ placeThreatOn a (mainSchemeId a) 1
     RanAbility _ (isTarget a -> True) 2 _ _ -> do
-      here <- getAreaOfTarget a
-      players <- filterM (fmap (== here) . getAreaOfTarget) =<< getAllPlayers
-      traverse_ (`discardTopOfDeck` 3) players
+      cardSpecific a "cwPlayerDeckDiscards" =<< playersAtScheme a
+      pure e
+    CardSpecific target "cwPlayerDeckDiscards" (fromJSON -> Success (players :: [IdentityId])) | isTarget a target -> do
+      living <- getAllPlayers
+      case filter (`elem` living) players of
+        [] -> pure ()
+        [you] -> discardTopOfDeck you 3
+        remaining -> do
+          first <- firstPlayerAtScheme a
+          chooseOnePromptedAbout first "$label.cwChooseDiscardPlayer" a
+            [targeting you $ do
+              discardTopOfDeck you 3
+              cardSpecific a "cwPlayerDeckDiscards" (filter (/= you) remaining)
+            | you <- remaining]
       pure e
     RanAbility _ (isTarget a -> True) 3 windows _ -> do
       for_ [aid | W.DefeatedAlly aid (Just _) <- windows] $ \aid -> do
@@ -103,3 +173,16 @@ instance RunMessage CivilWarMainScheme where
         Nothing -> if firstStage a then nextMainScheme sid else gameOver Lost
       pure e
     _ -> (\updated -> CivilWarMainScheme (updated `With` leader)) <$> runMessage msg a
+
+playersAtScheme :: HasGame m => Attrs MainScheme -> m [IdentityId]
+playersAtScheme a = do
+  here <- getAreaOfTarget a
+  filterM (fmap (== here) . getAreaOfTarget) =<< getAllPlayers
+
+firstPlayerAtScheme :: HasGame m => Attrs MainScheme -> m IdentityId
+firstPlayerAtScheme a = do
+  competition <- getCompetition
+  here <- getAreaOfTarget a
+  case competition of
+    Just c -> pure $ CW.teamFirstPlayer c $ if here == CW.teamArea CW.Registration then CW.Registration else CW.Resistance
+    Nothing -> selectJust FirstPlayer

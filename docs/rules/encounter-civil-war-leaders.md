@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and fourteen main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending the other six main-scheme faces, modular sets, and complete scenario setup.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and nineteen main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending Hunting Rebel Heroes, modular sets, and complete scenario setup.
 
 ## Leaders and combat
 
@@ -52,6 +52,12 @@ Negative Zone Prison captures the defeated ally's original physical card after a
 
 Guerilla Warfare responds after a status card is actually placed on its named enemy leader. Each of Steady's two stun cards counts separately. Redundant statuses and statuses blocked by Stalwart do not count. Contaminant Immunity's replacement tough counts once, without counting the prevented stun. During a cross-board leader attack, a status placed on a participating leader can trigger its physical board's Guerilla Warfare even while that board is inactive.
 
+S.H.I.E.L.D. Recruits and Gathering Support search the encounter deck for minions; The Initiative and Neighborhood Protectors also search the discard pile for side schemes. The opponent assigns one eligible card to each player, with all selections made before dealing the cards facedown. The search pool is the original searched area, so a refill caused by dealing cannot extend a deck-only search into the discard pile. Searches, dealing, and shuffling stay on the receiving team's encounter deck. An interrupted search preserves its assignments through saving.
+
+Superhero Jailbreak discards one encounter card for each player before putting the discarded minions into play. The first player chooses both discard order and minion-entry order under the v1.8 “Each Player” entry. Decks refill between different players' discards. Entry does not reveal the minions, so surge does not resolve; Quickstrike still applies. If a refill causes the same physical minion to be discarded twice, putting it into play once does not create a second copy or reassign an already-present minion.
+
+Searched facedown cards open the ordinary would-be-dealt window. Aerial Recon can prevent a searched card's deal, leaving it in the searched area. Its cancellation also recognizes an explicitly selected encounter deck.
+
 ## Rules checked
 
 The local v1.8 entries for Target, Interrupt, Replacement Effect, Damage, Tough, and Retaliate govern these interactions. Searches for newer card-specific rulings found no exception to the defensive or targeting rules above.
@@ -66,4 +72,4 @@ The official [Rules Reference update](https://www.fantasyflightgames.com/mission
 
 ## Verification
 
-The full unit run passes 8,175 examples. The selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.
+The full unit run passes 8,198 examples. The prior selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther; it predates the searched-card deal window and duplicate-entry guard. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.

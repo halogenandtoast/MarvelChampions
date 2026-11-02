@@ -311,6 +311,8 @@
   "proximaGetsAttack": "Proxima Midnight gets +{count} ATK for this attack",
   "chooseTowerDefenseDifficulty": "Modular difficulty: place damage on Avengers Tower",
   "towerDamagePerPlayer": "No damage on Avengers Tower | Place {count} damage per player on Avengers Tower | Place {count} damage per player on Avengers Tower",
+  "cwChooseMinionRecipient": "Choose the next player to put their minion into play",
+  "cwChooseDiscardPlayer": "Choose the next player to discard",
   "discardFromTopOfDeck": "Discard cards from the top of your deck",
   "discardTopOfDeck": "Discard no cards | Discard the top card of your deck | Discard the top {count} cards of your deck",
   "dealDamageToTheVillain": "Deal {count} damage to the villain",

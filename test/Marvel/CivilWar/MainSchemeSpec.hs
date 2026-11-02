@@ -1,6 +1,7 @@
 module Marvel.CivilWar.MainSchemeSpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.HashMap.Strict qualified as HashMap
 import Marvel.Game.Public (publicGame)
 import Marvel.Message.Lifted qualified as L
 import Marvel.CivilWar.Cards qualified as C
@@ -9,6 +10,7 @@ import Marvel.Keyword qualified as K
 import Marvel.MainScheme.Types qualified as Main
 import Marvel.Minion.Cards qualified as M
 import Marvel.Treachery.Cards qualified as T
+import Marvel.SideScheme.Cards qualified as S
 import Marvel.Modifier
 import TestImport
 
@@ -20,7 +22,7 @@ replaceScheme code = do
 
 spec :: Spec
 spec = describe "Civil War main schemes" do
-  for_ ["56063b","56172b","56121b","56199b","56122b","57044b","57005b","56200b"] $ \code ->
+  for_ ["56063b","56172b","56121b","56199b","56122b","57044b","57005b","56200b","56096b","56141b"] $ \code ->
     for_ [("solo",["spider-man"],0,7),("two heroes",["spider-man","captain-marvel"],4,14)] $ \(description,heroes,initial,target) ->
       it (show code <> " resolves its initial threat and target for " <> description) do
         tg <- testGame heroes
@@ -264,3 +266,194 @@ spec = describe "Civil War main schemes" do
       case fromJSON @Main.MainScheme legacy of
         Error err -> liftIO $ expectationFailure err
         Success restored -> liftIO $ toAttrs restored `shouldBe` toAttrs scheme
+
+  for_ ["56096b","56141b"] $ \code ->
+    it (show code <> " searches only the deck and deals one chosen minion facedown to each player") do
+      tg <- testGame ["spider-man","captain-marvel"]
+      inGame tg do
+        let p = player1 tg
+            q = player2 tg
+            selected card = \case CardLabel other _ -> other == toCardCode card;_ -> False
+        _ <- setEncounterDeck [M.hydraMercenary,M.weaponsRunner,T.hardToKeepDown] [M.armoredGuard]
+        old <- mainSchemeId
+        start [ReplaceMainScheme old code]
+        offers (selected M.armoredGuard) `shouldReturn` False
+        choose "deal Hydra Mercenary to the first player" (selected M.hydraMercenary)
+        choose "deal Weapons Runner to the second player" (selected M.weaponsRunner)
+        map toCardCode . playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` [toCardCode M.hydraMercenary]
+        map toCardCode . playerIdentityEncounterCards <$> playerAttrs q `shouldReturn` [toCardCode M.weaponsRunner]
+        getsGame (length . gameMinions) `shouldReturn` 0
+        encounterDiscardCodes `shouldReturn` [toCardCode M.armoredGuard]
+
+  for_ ["56123b","56173b"] $ \code ->
+    it (show code <> " searches both deck and discard and deals side schemes facedown without revealing them") do
+      tg <- testGame ["spider-man","captain-marvel"]
+      inGame tg do
+        let p = player1 tg
+            q = player2 tg
+            selected card = \case CardLabel other _ -> other == toCardCode card;_ -> False
+        _ <- setEncounterDeck [S.breakinAndTakin,T.hardToKeepDown] [S.crowdControl]
+        old <- mainSchemeId
+        start [ReplaceMainScheme old code]
+        choose "deal the side scheme from the deck" (selected S.breakinAndTakin)
+        choose "deal the side scheme from the discard" (selected S.crowdControl)
+        map toCardCode . playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` [toCardCode S.breakinAndTakin]
+        map toCardCode . playerIdentityEncounterCards <$> playerAttrs q `shouldReturn` [toCardCode S.crowdControl]
+        getsGame (length . gameSideSchemes) `shouldReturn` 0
+        encounterDiscardCodes `shouldReturn` []
+
+  it "continues without an empty search question when there are fewer minions than players" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- setEncounterDeck [M.hydraMercenary,T.hardToKeepDown] []
+      _ <- replaceScheme "56096b"
+      map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` [toCardCode M.hydraMercenary]
+      playerIdentityEncounterCards <$> playerAttrs (player2 tg) `shouldReturn` []
+
+  it "Superhero Jailbreak puts discarded minions into play without resolving their reveal keywords" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      sid <- replaceScheme "56202b"
+      _ <- withLeader "57040"
+      _ <- setEncounterDeck ([M.weaponsRunner,T.hardToKeepDown] <> replicate 8 M.hydraMercenary) []
+      endTurn
+      endTurn
+      mainSchemeThreat `shouldReturn` 2
+      choose "resolve Superhero Jailbreak" (isAbilityOf sid)
+      choose "discard for the first player first" (isTargetChoice $ player1 tg)
+      minions <- getsGame $ HashMap.elems . gameMinions
+      liftIO $ [(toCardCode (getCardDef minion),minionEngagedIdentity $ toAttrs minion) | minion <- minions] `shouldBe` [(toCardCode M.weaponsRunner,player1 tg)]
+      playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` []
+      playerIdentityEncounterCards <$> playerAttrs (player2 tg) `shouldReturn` []
+      encounterDiscardCodes >>= (`shouldSatisfy` elem (toCardCode T.hardToKeepDown))
+
+  it "Superhero Jailbreak completes every player's discard before a discarded Quickstrike minion attacks" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      sid <- replaceScheme "56202b"
+      _ <- withLeader "57040"
+      resolve [IdentityMessage p $ IdentitySetHitPoints 1]
+      _ <- setEncounterDeck ([M.vulture,M.hydraMercenary] <> replicate 8 M.weaponsRunner) []
+      endTurn
+      endTurn
+      choose "resolve Superhero Jailbreak" (isAbilityOf sid)
+      choose "discard for the first player first" (isTargetChoice $ player1 tg)
+      choose "put the first player's minion into play first" (isTargetChoice p)
+      encounterDiscardCodes >>= (`shouldSatisfy` elem (toCardCode M.hydraMercenary))
+      minions <- getsGame $ HashMap.elems . gameMinions
+      liftIO $ map (toCardCode . getCardDef) minions `shouldBe` [toCardCode M.vulture]
+      damageOf p `shouldReturn` 9
+
+  it "Superhero Jailbreak lets the first player assign the first discard to another player" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      sid <- replaceScheme "56202b"
+      _ <- withLeader "57040"
+      _ <- setEncounterDeck ([M.weaponsRunner,T.hardToKeepDown] <> replicate 8 M.hydraMercenary) []
+      endTurn
+      endTurn
+      choose "resolve Superhero Jailbreak" (isAbilityOf sid)
+      fmap fst <$> asked `shouldReturn` Just (player1 tg)
+      choose "discard for the second player first" (isTargetChoice $ player2 tg)
+      minions <- getsGame $ HashMap.elems . gameMinions
+      liftIO $ [(toCardCode $ getCardDef minion,minionEngagedIdentity $ toAttrs minion) | minion <- minions] `shouldBe` [(toCardCode M.weaponsRunner,player2 tg)]
+
+  for_ ["56122b","57044b"] $ \code ->
+    it (show code <> " lets the first player order the players' deck discards") do
+      tg <- testGame ["spider-man","captain-marvel"]
+      inGame tg do
+        let p = player1 tg
+            q = player2 tg
+        sid <- replaceScheme code
+        _ <- withLeader "57040"
+        _ <- setEncounterDeck (replicate 8 M.hydraMercenary) []
+        endTurn
+        endTurn
+        pBefore <- unDeck . playerIdentityDeck <$> playerAttrs p
+        qBefore <- unDeck . playerIdentityDeck <$> playerAttrs q
+        choose "resolve the main scheme" (isAbilityOf sid)
+        fmap fst <$> asked `shouldReturn` Just p
+        offers (isTargetChoice p) `shouldReturn` True
+        offers (isTargetChoice q) `shouldReturn` True
+        choose "discard for the second player first" (isTargetChoice q)
+        unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` drop 3 pBefore
+        unDeck . playerIdentityDeck <$> playerAttrs q `shouldReturn` drop 3 qBefore
+
+  it "Superhero Jailbreak lets the first player choose the entry order after all discards are known" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      changeForm p
+      sid <- replaceScheme "56202b"
+      _ <- withLeader "57040"
+      _ <- setEncounterDeck ([M.vulture,M.hydraMercenary] <> replicate 8 M.weaponsRunner) []
+      endTurn
+      endTurn
+      choose "resolve Superhero Jailbreak" (isAbilityOf sid)
+      choose "discard for the first player first" (isTargetChoice p)
+      getsGame (length . gameMinions) `shouldReturn` 0
+      choose "put the second player's minion into play first" (isTargetChoice q)
+      minions <- getsGame $ HashMap.elems . gameMinions
+      liftIO $ [(toCardCode $ getCardDef minion,minionEngagedIdentity $ toAttrs minion) | minion <- minions] `shouldMatchList` [(toCardCode M.vulture,p),(toCardCode M.hydraMercenary,q)]
+
+  it "Superhero Jailbreak does not put one physical minion into play twice if a refill discards it for two players" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      sid <- replaceScheme "56202b"
+      _ <- withLeader "57040"
+      _ <- setEncounterDeck [M.weaponsRunner] []
+      endTurn
+      endTurn
+      choose "resolve Superhero Jailbreak" (isAbilityOf sid)
+      choose "discard for the first player first" (isTargetChoice p)
+      choose "put the second player's minion into play first" (isTargetChoice q)
+      minions <- getsGame $ HashMap.elems . gameMinions
+      liftIO $ [(toCardCode $ getCardDef minion,minionEngagedIdentity $ toAttrs minion) | minion <- minions] `shouldBe` [(toCardCode M.weaponsRunner,q)]
+      playerIdentityMinions <$> playerAttrs p `shouldReturn` mempty
+
+  it "does not extend a deck-only minion search into cards shuffled from the discard pile after dealing" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- setEncounterDeck [M.hydraMercenary] [M.weaponsRunner]
+      _ <- replaceScheme "56096b"
+      map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` [toCardCode M.hydraMercenary]
+      playerIdentityEncounterCards <$> playerAttrs (player2 tg) `shouldReturn` []
+
+  it "allows Aerial Recon to prevent a searched card from being dealt and leaves that card in the deck" do
+    tg <- testGame ["falcon"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      recon <- putIntoPlay p "53009"
+      messages <- L.runQueueT $ L.capture $ L.placeCounters (upgradeIdOf recon) 1
+      resolve messages
+      _ <- setEncounterDeck [M.hydraMercenary,T.hardToKeepDown] []
+      old <- mainSchemeId
+      start [ReplaceMainScheme old "56096b"]
+      choose "choose the searched minion" $ \case CardLabel code _ -> code == toCardCode M.hydraMercenary;_ -> False
+      choose "prevent the facedown deal with Aerial Recon" (isAbilityOf $ upgradeIdOf recon)
+      pass
+      playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` []
+      getCountersOn (upgradeIdOf recon) `shouldReturn` 0
+      map toCardCode <$> getEncounterDeck >>= (`shouldSatisfy` elem (toCardCode M.hydraMercenary))
+
+  it "resumes a saved opponent search after its first selection without losing either assignment" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- setEncounterDeck [M.hydraMercenary,M.weaponsRunner,T.hardToKeepDown] []
+      old <- mainSchemeId
+      start [ReplaceMainScheme old "56096b"]
+      choose "choose the first minion" $ \case CardLabel code _ -> code == toCardCode M.hydraMercenary;_ -> False
+      playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` []
+      game <- getGame
+      case fromJSON @Game (toJSON game) of
+        Error err -> liftIO $ expectationFailure err
+        Success restored -> withGame_ (const restored)
+      choose "choose the second minion after loading" $ \case CardLabel code _ -> code == toCardCode M.weaponsRunner;_ -> False
+      map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` [toCardCode M.hydraMercenary]
+      map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player2 tg) `shouldReturn` [toCardCode M.weaponsRunner]

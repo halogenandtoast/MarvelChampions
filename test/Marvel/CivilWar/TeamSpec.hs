@@ -268,6 +268,31 @@ spec = describe "Civil War team boundaries" do
         liftIO $ before - after `shouldBe` 1
         getCountersOn aid `shouldReturn` 2
 
+  for_ [("56096b",M.hydraMercenary),("56141b",M.hydraMercenary),("56123b",S.breakinAndTakin),("56173b",S.breakinAndTakin)] $ \(code,selected) ->
+    it (show code <> " lets the opponent choose a facedown card while searching and shuffling only the receiving team's deck") do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let p = player1 tg
+            q = player2 tg
+        leader <- villainIdNow
+        opponent <- addSecondBoard tg
+        ownCards <- traverse encounterCard [selected,M.hydraSoldier]
+        otherCards <- traverse encounterCard [M.hydraMercenary,M.hydraSoldier,M.hydraBomber]
+        messages <- L.runQueueT $ L.capture $ do
+          L.createDeck (L.VillainDeckKey leader) ownCards
+          L.createDeck (L.VillainDeckKey opponent) otherCards
+        resolve messages
+        otherBefore <- asYou q getEncounterDeck
+        old <- fromMaybe (error "missing receiving board scheme") . headMay <$> getMainSchemesIn (CW.teamArea CW.Registration)
+        start [ReplaceMainScheme old code]
+        fmap fst <$> asked `shouldReturn` Just q
+        choose "the opponent chooses the facedown card" $ \case CardLabel candidate _ -> candidate == toCardCode selected;_ -> False
+        map toCardCode . playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` [toCardCode selected]
+        playerIdentityEncounterCards <$> playerAttrs q `shouldReturn` []
+        asYou q getEncounterDeck `shouldReturn` otherBefore
+        remaining <- asYou p getEncounterDeck
+        liftIO $ length remaining `shouldBe` 1
+
   it "lets the opponent choose Stark Tower's attachment from the defeated scheme's own encounter deck" do
     tg <- competitive ["black-widow","captain-marvel"]
     inGame tg do

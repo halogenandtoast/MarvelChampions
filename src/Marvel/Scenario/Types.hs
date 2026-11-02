@@ -304,6 +304,7 @@ leaves card attrs =
 deckMessage :: Message -> Maybe (Maybe IdentityId)
 deckMessage = \case
   DealEncounterCard ident -> Just (Just ident)
+  DealFoundEncounterCard ident _ -> Just (Just ident)
   DrawAndRevealEncounterCard ident -> Just (Just ident)
   SearchForAndRevealEncounterCard ident _ -> Just (Just ident)
   SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
@@ -457,6 +458,10 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       | otherwise -> attrs <$ revealEncounterCard ident card
     WithDiscardedMatch (VillainRef vid) FromEncounterDeck (EncounterCard card) -> attrs <$ attachEncounterCard card vid
     DealFoundEncounterCard ident card -> do
+      checkWindows [W.Window W.Would $ W.EncounterCardBeingDealt ident]
+      fromDeck key $ cardSpecific GameRef "actuallyDealFoundEncounterCard" (ident,card)
+      pure attrs
+    CardSpecific GameRef "actuallyDealFoundEncounterCard" (fromJSON -> Success (ident,card :: EncounterCard)) -> do
       identityStep ident (DealtEncounterCard card)
       pure $ leaves card attrs
     -- into The Collection from the encounter deck or its discard pile
