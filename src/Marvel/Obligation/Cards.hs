@@ -1,5 +1,6 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
@@ -163,6 +164,10 @@ import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.Matchers ()
 import Marvel.GameValue.Types qualified as MGValue ()
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -176,7 +181,9 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ aos50134, aos50179
+    [ WM.wm58025, HC.hc59004, HC.hc59035
+  , JL.jl61030, JL.jl61033a, JL.jl61033b, JL.jl61033c, JL.jl62028
+  , aos50134, aos50179
   , FalconWinter.fw53029, FalconWinter.fw54027
   , aosP50029, aosP50059
   , BlackPantherShuriPack.tChallasShadowShuri, SilkPack.silkSenseOverloadSilk

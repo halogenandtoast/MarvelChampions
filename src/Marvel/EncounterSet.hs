@@ -5,7 +5,16 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = BlackPantherShuriNemesis
+  = TigraNemesis
+  | HulklingNemesis
+  | DaredevilNemesis
+  | EchoNemesis
+  | WonderManNemesisSet
+  | HerculesNemesisSet
+  | AllVersusAllSet
+  | JessicaJonesNemesis
+  | LukeCageNemesis
+  | BlackPantherShuriNemesis
   | BlackPantherShuriObligation
   | SilkNemesis
   | SilkObligation
@@ -265,7 +274,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
+  [ AllVersusAllSet
+  , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme
   , AosGravitationalPull, AosHardSound, AosPaleLittleSpider, AosPowerOfTheAtom, AosSupersonic, AosTheLeaper
   , SauronSet, HellfireSet, ArcadeSet, CrazyGangSet
@@ -348,6 +358,14 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "56001" -> TigraNemesis
+  "56029" -> HulklingNemesis
+  "60001" -> DaredevilNemesis
+  "60037" -> EchoNemesis
+  "58001" -> WonderManNemesisSet
+  "59001" -> HerculesNemesisSet
+  "61001" -> JessicaJonesNemesis
+  "62001" -> LukeCageNemesis
   "50001" -> MariaHillNemesis
   "50034" -> NickFuryNemesis
   "51001" -> BlackPantherShuriNemesis

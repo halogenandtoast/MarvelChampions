@@ -3,6 +3,7 @@ module Marvel.Window (
   module Marvel.Window.Types,
 ) where
 
+import Data.HashSet qualified as HashSet
 import Marvel.Prelude
 import Marvel.Card.Def (cdEncounterSet, HasCardDef (getCardDef))
 import Marvel.Identity.Types (Field(PlayerIdentityTuckedEncounterCards))
@@ -161,6 +162,39 @@ windowMatches matcher w source = case matcher of
   ThreatRemovedByThwart timing sourceMatcher schemeMatcher -> case windowType w of
     ThwartRemovedThreat from scheme _ removed | windowTiming w == timing && removed > 0 ->
       (&&) <$> sourceMatches sourceMatcher from <*> schemeMatches schemeMatcher scheme
+    _ -> pure False
+  BoostCardFlippedDuringUndefendedAttack timing matcher -> case windowType w of
+    FlippedBoostCard _ enemy | windowTiming w == timing -> do
+      attack <- getEnemyAttack enemy
+      maybe (pure False) (\a -> (not (attackDefended a) &&) <$> enemyMatches matcher enemy) attack
+    _ -> pure False
+  CharacterThwartsScheme timing sourceMatcher schemeMatcher -> case windowType w of
+    ThwartRemovedThreat from scheme _ _ | windowTiming w == timing -> (&&) <$> sourceMatches sourceMatcher from <*> schemeMatches schemeMatcher scheme
+    _ -> pure False
+  CharacterSharingHeroTraitWouldTakeDamage matcher -> case windowType w of
+    IdentityTakeDamage ident damage | windowTiming w == When -> sharingTraitDamage matcher (IdentityCharacter ident) damage
+    AllyTakeDamage aid damage | windowTiming w == When -> sharingTraitDamage matcher (AllyCharacter aid) damage
+    EnemyDamageWouldBeDealt enemy _ damage | windowTiming w == When -> sharingTraitDamage matcher (case enemy of EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid; EnemyAttachmentId aid -> AttachmentCharacter aid) damage
+    _ -> pure False
+  CharacterDefeated timing matcher -> case windowType w of
+    DefeatedMinion mid _ _ _ | windowTiming w == timing -> if matcher == AnyCharacter then pure True else characterMatches matcher (MinionCharacter mid)
+    DefeatedVillain vid _ _ _ | windowTiming w == timing -> if matcher == AnyCharacter then pure True else characterMatches matcher (VillainCharacter vid)
+    DefeatedAlly aid _ | windowTiming w == timing -> if matcher == AnyCharacter then pure True else characterMatches matcher (AllyCharacter aid)
+    IdentityDefeat ident | windowTiming w == timing -> if matcher == AnyCharacter then pure True else characterMatches matcher (IdentityCharacter ident)
+    _ -> pure False
+  AllyWouldBeDefeatedByConsequentialDamage matcher -> case windowType w of
+    AllyTakeDamage aid damage | windowTiming w == When, damageSource damage == FromConsequential -> do
+      remaining <- getCharacterRemainingHitPoints (AllyCharacter aid)
+      tough <- characterToughCount (AllyCharacter aid)
+      matches <- allyMatches matcher aid
+      pure $ matches && damageAmount damage >= remaining && damageAmount damage > 0 && not (tough > 0 && preventedByTough damage)
+    _ -> pure False
+  AvengerHeroChangedToAlterEgo -> pure $ windowTiming w == After && case windowType w of AvengerChangedToAlterEgo _ -> True; _ -> False
+  SideSchemeExactlyDefeatedBy matcher -> case windowType w of
+    ExactlyDefeatedSideSchemeBy _ source | windowTiming w == After -> getHeroSourceController source >>= maybe (pure False) (identityMatches matcher)
+    _ -> pure False
+  RemovesLastThreatFrom identityMatcher schemeMatcher -> case windowType w of
+    LastThreatRemoved ident scheme | windowTiming w == After -> (&&) <$> identityMatches identityMatcher ident <*> schemeMatches schemeMatcher scheme
     _ -> pure False
   RemovesLastThreat identityMatcher -> case windowType w of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
@@ -393,7 +427,11 @@ windowMatches matcher w source = case matcher of
   VillainIsDefeated timing villainMatcher -> case windowType w of
     VillainDefeat villainId | timing == windowTiming w -> villainMatches villainMatcher villainId
     _ -> pure False
+  VillainSchemedPlacingThreat matcher -> case windowType w of
+    VillainSchemeResolved vid n | windowTiming w == After, n > 0 -> villainMatches matcher vid
+    _ -> pure False
   VillainSchemed timing villainMatcher -> case windowType w of
+    VillainSchemeResolved villainId _ | windowTiming w == timing -> villainMatches villainMatcher villainId
     Schemed villainId
       | timing == windowTiming w ->
           villainMatches villainMatcher villainId
@@ -501,6 +539,20 @@ windowMatches matcher w source = case matcher of
     _ -> pure False
   IdentityIgnoresCrisis timing im sm -> case windowType w of
     IgnoredCrisis ident sid | windowTiming w == timing -> liftA2 (&&) (identityMatches im ident) (sideSchemeMatches sm sid)
+    _ -> pure False
+  EnemyExactlyDefeatedByAttack matcher -> case windowType w of
+    DefeatedMinion _ damage source 0 | windowTiming w == After -> damageMatchesFrom (AttackFromPlayer matcher) damage source
+    DefeatedVillain _ damage source 0 | windowTiming w == After -> damageMatchesFrom (AttackFromPlayer matcher) damage source
+    _ -> pure False
+  CardAddedToVictoryDisplay matcher -> case windowType w of
+    VictoryCardAdded card | windowTiming w == After -> pure $ cardMatch matcher card
+    _ -> pure False
+  CharacterDiscardsTough timing matcher -> case windowType w of
+    IdentityDiscardedTough ident | windowTiming w == timing -> characterMatches matcher (IdentityCharacter ident)
+    CharacterDiscardedTough character | windowTiming w == timing -> characterMatches matcher character
+    _ -> pure False
+  SupportCountersPlaced timing matcher -> case windowType w of
+    SupportCounterAmountChanged sid old new | windowTiming w == timing, new > old -> elem sid <$> selectList matcher
     _ -> pure False
   IdentityDiscardsTough timing identityMatcher -> case windowType w of
     IdentityDiscardedTough ident | windowTiming w == timing -> identityMatches identityMatcher ident
@@ -812,3 +864,13 @@ wouldTakeDamage villainId damage
   | damageAmount damage == 0 = pure False
   | preventedByTough damage = not <$> villainMatches VillainWithToughStatus villainId
   | otherwise = pure True
+
+sharingTraitDamage :: HasGame m => IdentityMatcher -> CharacterId -> Damage -> m Bool
+sharingTraitDamage matcher character damage
+  | damageUnpreventable damage || damageAmount damage == 0 = pure False
+  | otherwise = do
+      heroes <- selectList (matcher <> HeroIdentity)
+      traits <- getCharacterTraits character
+      anyM (\you -> if character == IdentityCharacter you then pure False else do
+        heroTraits <- getCharacterTraits (IdentityCharacter you)
+        pure $ not $ HashSet.null $ HashSet.intersection traits heroTraits) heroes

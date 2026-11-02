@@ -10,6 +10,8 @@ data Damage = Damage
   , damageDealtAmount :: Maybe Natural
   , damagePrevention :: Natural
   -- ^ prevention applied after incoming enemy damage modifiers and caps
+  , damageUnpreventable :: Bool
+  -- ^ cannot be reduced or prevented, including by tough
   , damageIndirect :: Bool
   , damageOverkill :: Bool
   , damageSource :: DamageSource
@@ -27,6 +29,7 @@ instance FromJSON Damage where
   parseJSON = withObject "Damage" $ \o -> genericParseJSON defaultOptions $ Object $
     KeyMap.insertWith (\_ existing -> existing) "damageDealtAmount" Null $
     KeyMap.insertWith (\_ existing -> existing) "damagePrevention" (toJSON (0 :: Natural)) $
+    KeyMap.insertWith (\_ existing -> existing) "damageUnpreventable" (Bool False) $
     KeyMap.insertWith (\_ existing -> existing) "damageIndirect" (Bool False) o
 
 data DamageSource
@@ -48,6 +51,7 @@ toDamage n source =
     { damageAmount = n
     , damageDealtAmount = Nothing
     , damagePrevention = 0
+    , damageUnpreventable = False
     , damageIndirect = False
     , damageOverkill = False
     , damageSource = source
@@ -55,6 +59,9 @@ toDamage n source =
     , damagePiercing = False
     , damageRanged = False
     }
+
+withUnpreventable :: Damage -> Damage
+withUnpreventable d = d {damageUnpreventable = True}
 
 withOverkill :: Damage -> Damage
 withOverkill d = d { damageOverkill = True }
@@ -74,7 +81,7 @@ withRanged d = d { damageRanged = True }
 -- unless the damage ignores it or pierces it. No damage is none to prevent: the card
 -- stays (RR Tough: "would take damage").
 preventedByTough :: Damage -> Bool
-preventedByTough d = damageAmount d > 0 && not (damageIgnoresTough d || damagePiercing d)
+preventedByTough d = damageAmount d > 0 && not (damageUnpreventable d || damageIgnoresTough d || damagePiercing d)
 
 -- | Whether the damage discards the character's tough status card as it is dealt: a
 -- piercing attack's, if it deals any.

@@ -477,7 +477,7 @@ glob = CardDef
   }
 
 suppressingFire :: CardDef
-suppressingFire = CardDef
+suppressingFire = reprintedAs ["56014"] $  CardDef
   { cdCardCode = "46014"
   , cdName = "Suppressing Fire"
   , cdCost = Just 0

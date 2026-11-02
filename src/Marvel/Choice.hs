@@ -158,7 +158,7 @@ resolveChoice ident = \case
   ChangeForm -> do
     alterEgo <- identityMatches AlterEgoIdentity ident
     modifiers <- getModifiers ident
-    let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo]
+    let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo] <> mconcat [c | AdditionalChangeFormCost c <- modifiers]
     pure $ if additional == NoCost then [IdentityMessage ident ChooseOtherForm]
       else [CardSpecific (IdentityRef ident) "choosePaidHeroForm" Null]
   ChangeToForm x -> pure [IdentityMessage ident $ ChangedToForm x]
@@ -181,135 +181,147 @@ resolveChoice ident = \case
   -- an attack, by the hero's basic power or an (attack) card, attacks each enemy it
   -- damages: the window after the hero attacks it opens for each
   DamageEnemy target source damage' -> do
-    replacement <- case damageSource damage' of
-      FromPlayerAttack who | source /= IdentityRef who -> do
-        labels <- sourceAbilitySubTypes source
-        hero <- selectAny (IdentityWithId who <> HeroIdentity)
-        modifiers <- getModifiers (IdentityRef who)
-        pure $ if hero && Ability.Attack `notElem` labels && any (\case ReplaceHeroAttackWithDiscardAndStun _ -> True; _ -> False) modifiers then Just who else Nothing
-      _ -> pure Nothing
-    case replacement of
-      Just who -> do
-        targets <- (\ms -> [t | ReplaceHeroAttackWithDiscardAndStun t <- ms]) <$> getModifiers (IdentityRef who)
-        let choices = [TargetLabel target [Run [RemoveFromPlay target, IdentityMessage who IdentityStunned]] | target <- targets]
-        pure $ case choices of
-          [TargetLabel _ [Run messages]] -> messages
-          [] -> []
-          _ -> [Ask who $ ChooseOne choices]
-      Nothing -> do
-        attackKeywords <- case damageSource damage' of
-          FromPlayerAttack attacker -> if source == IdentityRef attacker then getModifiers source else (<>) <$> getModifiers (IdentityRef attacker) <*> getModifiers source
-          FromAllyAttack attacker -> getModifiers (AllyRef attacker)
-          _ -> pure []
-        -- each instance of damage the source deals may be increased, as by Embiggen!
-        -- (excess damage carried on by overkill has had it already)
-        bonus <-
-          if damageSource damage' == FromOverkill
-            then pure 0
-            else sourceBonus source \case
-              DamageDealtModifier n -> Just n
-              _ -> Nothing
-        -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
-        let
-          enemyAsRef = case target of
-            EnemyRef (EnemyVillainId vid) -> VillainRef vid
-            EnemyRef (EnemyMinionId mid) -> MinionRef mid
-            EnemyRef (EnemyAttachmentId aid) -> AttachmentRef aid
-            t -> t
-          attackReduction = case enemyAsRef of
-            VillainRef _ -> pure 0 -- applied after tough in Villain.reducedDamage
-            MinionRef _ -> pure 0 -- applied after attack interrupts in Minion.Runner
-            _ -> sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
-          -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
-          attackCap = case enemyAsRef of
-            VillainRef _ -> pure Nothing -- reduced and capped together after tough
-            MinionRef _ -> pure Nothing
-            _ -> (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
-          fromAttack = case damageSource damage' of
-            FromPlayerAttack _ -> True
-            FromAllyAttack _ -> True
-            _ -> False
-        -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
-        -- tough status card: 'Marvel.Villain.Types')
-        targetModifiers <- getModifiers enemyAsRef
-        sourceDef <- getsGame (\g -> abilityCardDef g $ refocus source)
-        let taken = case enemyAsRef of
-              MinionRef _ -> 0 -- final target modifiers follow attack interrupts
-              _ -> sum [n | DamageTakenModifier n <- targetModifiers]
-                + sum [n | DamageTakenFromPrintedResource resource n <- targetModifiers, maybe False (elem resource . printedResources) sourceDef]
-                + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
-            targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
-            attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
-        ordinaryReduction <- if fromAttack then attackReduction else pure 0
-        conditional <- conditionalAttackReduction enemyAsRef source damage'
-        let reduction = ordinaryReduction + conditional
-        cap <- if fromAttack then attackCap else pure Nothing
-        let
-          incoming = damageAmount damage' + bonus + sum [n | AttackDamageToEnemyModifier e n <- attackKeywords, e == enemy, damageAmount damage' > 0]
-          increased = if incoming == 0 then 0 else fromIntegral (max 0 (fromIntegral incoming + taken))
-          reduced = subtractNatural reduction increased
-          damage = damage'
-            { damageAmount = maybe reduced (min reduced) cap
-            , damageDealtAmount = Just incoming
-            , damagePiercing = damagePiercing damage' || attackHas Piercing
-            , damageOverkill = damageOverkill damage' || attackHas Overkill
-            , damageRanged = damageRanged damage' || attackHas Ranged
-            }
-          enemy = case target of
-            VillainRef vid -> EnemyVillainId vid
-            MinionRef mid -> EnemyMinionId mid
-            AttachmentRef aid -> EnemyAttachmentId aid
-            EnemyRef e -> e
-            _ -> error "can not damage target"
-          attacked = case damageSource damage of
-            -- an event's attack is answered by the event, after all of it if it is labeled one
-            FromPlayerAttack attacker
-              | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy (damageRanged damage))]
-              | otherwise ->
-                  [enemyRetaliates enemy (IdentityCharacter attacker) | not (damageRanged damage)]
-                    <> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
-                    <> [CheckWindows [Window After $ W.PlayerAttackResolved source attacker [enemy]] | case source of IdentityRef _ -> False; _ -> True]
-            _ -> []
-        -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
-        -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
-        -- "would take damage" does not answer it, though "when he is attacked" does
-        ignored <- case (damageSource damage, enemy) of
-          (FromPlayerAttack who, EnemyVillainId _) -> do
-            mods <- getModifiers (IdentityRef who)
-            if IgnoresGuard `elem` mods then do
-              minions <- selectList (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who))
-              pure [CheckWindows [Window After $ W.IgnoredKeyword who mid | mid <- minions] | notNull minions]
-            else pure []
-          _ -> pure []
-        begun <- sourceHasBegunLabeledAttack source
-        targeted <- sourceHasAttackedTarget source enemy
-        let attackingWindow = case damageSource damage of
-              FromPlayerAttack who ->
-                [CheckWindows windows | let windows = [Window When $ W.IdentityAttack who enemy | not begun] <> [Window When $ W.IdentityAttackTarget who enemy | not targeted], notNull windows]
-              _ -> []
-        let rangedWindow = case damageSource damage of
-              FromPlayerAttack who | damageRanged damage -> [CheckWindows [Window When $ W.MakingRangedAttack who source enemy]]
-              _ -> []
-        let keywordWindow = case damageSource damage of
-              FromPlayerAttack who ->
-                [CheckWindows [Window When $ W.MakingKeywordAttack who source enemy
-                  ([Overkill | damageOverkill damage] <> [Piercing | damagePiercing damage] <> [Ranged | damageRanged damage])
-                  (not (damageOverkill damage' || damagePiercing damage' || damageRanged damage' || any (\k -> KeywordModifier k `elem` attackKeywords) [Overkill, Piercing, Ranged]))]]
-              _ -> []
-        let damageMetadata = case damageSource damage of
-              FromPlayerAttack who -> [CardSpecific GameRef "playerAttackDamageBeforeTarget" (toJSON (who, source, enemy, damage { damageAmount = damageAmount damage' + bonus
-                , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
-                , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
-                , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords }))]
-              _ -> []
-        pure $ ignored <> attackingWindow <> rangedWindow <> keywordWindow <> damageMetadata <>
-          ( case enemy of
-              EnemyVillainId vid ->
-                [VillainMessage vid $ VillainDamaged source damage]
-              EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
-              EnemyAttachmentId aid -> [AttachmentMessage aid $ AttachmentDamaged $ damageAmount damage]
-          )
-            <> attacked
+    let actualTarget = case target of
+          EnemyRef enemy -> enemyRef enemy
+          other -> other
+        payer = case damageSource damage' of
+          FromPlayerAttack you -> Just you
+          FromAllyAttack _ -> Just ident
+          _ -> Nothing
+    modifiers <- getModifiers actualTarget
+    let extra = mconcat [cost | EnemyAttacksAdditionalCost cost <- modifiers]
+    if isJust payer && extra /= NoCost && AttackAdditionalCostPaid source `notElem` modifiers
+      then pure [CardSpecific GameRef "payEnemyAttackCost" (toJSON (fromMaybe ident payer, actualTarget, source, damage', extra))]
+      else do
+        replacement <- case damageSource damage' of
+          FromPlayerAttack who | source /= IdentityRef who -> do
+            labels <- sourceAbilitySubTypes source
+            hero <- selectAny (IdentityWithId who <> HeroIdentity)
+            modifiers <- getModifiers (IdentityRef who)
+            pure $ if hero && Ability.Attack `notElem` labels && any (\case ReplaceHeroAttackWithDiscardAndStun _ -> True; _ -> False) modifiers then Just who else Nothing
+          _ -> pure Nothing
+        case replacement of
+          Just who -> do
+            targets <- (\ms -> [t | ReplaceHeroAttackWithDiscardAndStun t <- ms]) <$> getModifiers (IdentityRef who)
+            let choices = [TargetLabel target [Run [RemoveFromPlay target, IdentityMessage who IdentityStunned]] | target <- targets]
+            pure $ case choices of
+              [TargetLabel _ [Run messages]] -> messages
+              [] -> []
+              _ -> [Ask who $ ChooseOne choices]
+          Nothing -> do
+            attackKeywords <- case damageSource damage' of
+              FromPlayerAttack attacker -> if source == IdentityRef attacker then getModifiers source else (<>) <$> getModifiers (IdentityRef attacker) <*> getModifiers source
+              FromAllyAttack attacker -> getModifiers (AllyRef attacker)
+              _ -> pure []
+            -- each instance of damage the source deals may be increased, as by Embiggen!
+            -- (excess damage carried on by overkill has had it already)
+            bonus <-
+              if damageSource damage' == FromOverkill
+                then pure 0
+                else sourceBonus source \case
+                  DamageDealtModifier n -> Just n
+                  _ -> Nothing
+            -- "reduce the damage attached enemy takes from each attack" (Vibration Resistance)
+            let
+              enemyAsRef = case target of
+                EnemyRef (EnemyVillainId vid) -> VillainRef vid
+                EnemyRef (EnemyMinionId mid) -> MinionRef mid
+                EnemyRef (EnemyAttachmentId aid) -> AttachmentRef aid
+                t -> t
+              attackReduction = case enemyAsRef of
+                VillainRef _ -> pure 0 -- applied after tough in Villain.reducedDamage
+                MinionRef _ -> pure 0 -- applied after attack interrupts in Minion.Runner
+                _ -> sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers enemyAsRef
+              -- "cannot take more than n damage from a single attack" (Cutthroat Ambition)
+              attackCap = case enemyAsRef of
+                VillainRef _ -> pure Nothing -- reduced and capped together after tough
+                MinionRef _ -> pure Nothing
+                _ -> (\ms -> case [n | AttackDamageCap n <- ms] of [] -> Nothing; ns -> Just (minimum ns)) <$> getModifiers enemyAsRef
+              fromAttack = case damageSource damage' of
+                FromPlayerAttack _ -> True
+                FromAllyAttack _ -> True
+                _ -> False
+            -- (Thanos's Armor's "reduce any amount of damage by 1" is the villain's, after his
+            -- tough status card: 'Marvel.Villain.Types')
+            targetModifiers <- getModifiers enemyAsRef
+            sourceDef <- getsGame (\g -> abilityCardDef g $ refocus source)
+            let taken = case enemyAsRef of
+                  MinionRef _ -> 0 -- final target modifiers follow attack interrupts
+                  _ -> sum [n | DamageTakenModifier n <- targetModifiers]
+                    + sum [n | DamageTakenFromPrintedResource resource n <- targetModifiers, maybe False (elem resource . printedResources) sourceDef]
+                    + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
+                targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
+                attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
+            ordinaryReduction <- if fromAttack then attackReduction else pure 0
+            conditional <- conditionalAttackReduction enemyAsRef source damage'
+            let reduction = ordinaryReduction + conditional
+            cap <- if fromAttack then attackCap else pure Nothing
+            let
+              incoming = damageAmount damage' + bonus + sum [n | AttackDamageToEnemyModifier e n <- attackKeywords, e == enemy, damageAmount damage' > 0]
+              increased = if incoming == 0 then 0 else fromIntegral (max 0 (fromIntegral incoming + taken))
+              reduced = if damageUnpreventable damage' then max incoming increased else subtractNatural reduction increased
+              damage = damage'
+                { damageAmount = if damageUnpreventable damage' then reduced else maybe reduced (min reduced) cap
+                , damageDealtAmount = Just incoming
+                , damagePiercing = damagePiercing damage' || attackHas Piercing
+                , damageOverkill = damageOverkill damage' || attackHas Overkill
+                , damageRanged = damageRanged damage' || attackHas Ranged
+                }
+              enemy = case target of
+                VillainRef vid -> EnemyVillainId vid
+                MinionRef mid -> EnemyMinionId mid
+                AttachmentRef aid -> EnemyAttachmentId aid
+                EnemyRef e -> e
+                _ -> error "can not damage target"
+              attacked = case damageSource damage of
+                -- an event's attack is answered by the event, after all of it if it is labeled one
+                FromPlayerAttack attacker
+                  | EventRef eid <- source -> [EventMessage eid (EventAttacked attacker enemy (damageRanged damage))]
+                  | otherwise ->
+                      [enemyRetaliates enemy (IdentityCharacter attacker) | not (damageRanged damage)]
+                        <> [CheckWindows [Window After $ W.IdentityAttack attacker enemy]]
+                        <> [CheckWindows [Window After $ W.PlayerAttackResolved source attacker [enemy]] | case source of IdentityRef _ -> False; _ -> True]
+                _ -> []
+            -- the window as he is dealt it: damage he cannot take (Loki while a side scheme is in
+            -- play, the rest of an attack Master of Illusions prevents) is none he would take, so
+            -- "would take damage" does not answer it, though "when he is attacked" does
+            ignored <- case (damageSource damage, enemy) of
+              (FromPlayerAttack who, EnemyVillainId _) -> do
+                mods <- getModifiers (IdentityRef who)
+                if IgnoresGuard `elem` mods then do
+                  minions <- selectList (MinionWithKeyword Guard <> MinionEngagedWith (IdentityWithId who))
+                  pure [CheckWindows [Window After $ W.IgnoredKeyword who mid | mid <- minions] | notNull minions]
+                else pure []
+              _ -> pure []
+            begun <- sourceHasBegunLabeledAttack source
+            targeted <- sourceHasAttackedTarget source enemy
+            let attackingWindow = case damageSource damage of
+                  FromPlayerAttack who ->
+                    [CheckWindows windows | let windows = [Window When $ W.IdentityAttack who enemy | not begun] <> [Window When $ W.IdentityAttackTarget who enemy | not targeted], notNull windows]
+                  _ -> []
+            let rangedWindow = case damageSource damage of
+                  FromPlayerAttack who | damageRanged damage -> [CheckWindows [Window When $ W.MakingRangedAttack who source enemy]]
+                  _ -> []
+            let keywordWindow = case damageSource damage of
+                  FromPlayerAttack who ->
+                    [CheckWindows [Window When $ W.MakingKeywordAttack who source enemy
+                      ([Overkill | damageOverkill damage] <> [Piercing | damagePiercing damage] <> [Ranged | damageRanged damage])
+                      (not (damageOverkill damage' || damagePiercing damage' || damageRanged damage' || any (\k -> KeywordModifier k `elem` attackKeywords) [Overkill, Piercing, Ranged]))]]
+                  _ -> []
+            let damageMetadata = case damageSource damage of
+                  FromPlayerAttack who -> [CardSpecific GameRef "playerAttackDamageBeforeTarget" (toJSON (who, source, enemy, damage { damageAmount = damageAmount damage' + bonus
+                    , damageOverkill = damageOverkill damage' || KeywordModifier Overkill `elem` attackKeywords
+                    , damagePiercing = damagePiercing damage' || KeywordModifier Piercing `elem` attackKeywords
+                    , damageRanged = damageRanged damage' || KeywordModifier Ranged `elem` attackKeywords }))]
+                  _ -> []
+            pure $ ignored <> attackingWindow <> rangedWindow <> keywordWindow <> damageMetadata <>
+              ( case enemy of
+                  EnemyVillainId vid ->
+                    [VillainMessage vid $ VillainDamaged source damage]
+                  EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
+                  EnemyAttachmentId aid -> [AttachmentMessage aid $ AttachmentDamaged $ damageAmount damage]
+              )
+                <> attacked
   -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
   -- a thwart, as "Hero Action (thwart)"; "remove threat" otherwise is not one
   ThwartScheme target source n' -> do
@@ -375,7 +387,7 @@ resolveChoice ident = \case
           FromAllyAttack _ -> True
           _ -> False
         reduction = conditional + if isAttack then sum [n | AttackDamageReduction n <- modifiers] else 0
-        reduced = damage {damageAmount = subtractNatural reduction (damageAmount damage)}
+        reduced = if damageUnpreventable damage then damage else damage {damageAmount = subtractNatural reduction (damageAmount damage)}
     case characterId of
       IdentityCharacter ident' -> do
         capped <- capIdentityAttackDamage ident' source reduced

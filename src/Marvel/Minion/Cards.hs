@@ -1,5 +1,6 @@
 module Marvel.Minion.Cards where
 
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
@@ -179,6 +180,10 @@ import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Boost qualified as MGBoost
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -198,7 +203,9 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
+      [ WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
+  , JL.jl61031, JL.jl62029, JL.jl62032, JL.jl62033
+  , TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
   , aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
   , FalconWinter.fw53030, FalconWinter.fw53032, FalconWinter.fw53038, FalconWinter.fw54028, FalconWinter.fw54031, FalconWinter.fw54034
   , aosP50030, aosP50060, aosP50062

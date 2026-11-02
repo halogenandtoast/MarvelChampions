@@ -40,6 +40,7 @@ data CardMatcher
   = AnyCard
   | CardWithAspect Aspect
   | CardWithResource Resource
+  | CardWithTeamUp
   | CardWithAbilityType AbilityType
   | CardWithType CardType
   | CardWithTrait Trait
@@ -72,6 +73,7 @@ cardMatch :: HasCardDef a => CardMatcher -> a -> Bool
 cardMatch matcher a = case matcher of
   AnyCard -> True
   CardWithAspect aspect -> cdAspect def == Just aspect
+  CardWithTeamUp -> isJust (cdTeamUp def)
   CardWithAbilityType ability -> cdAbilityType def == Just ability
   CardWithType cType -> cdCardType def == cType
   CardWithTrait trait -> trait `member` cdTraits def
@@ -228,7 +230,7 @@ toCardCodePairs c =
 
 -- | The card is also printed under these codes.
 reprintedAs :: [CardCode] -> CardDef -> CardDef
-reprintedAs codes def = def {cdAlternateCardCodes = codes}
+reprintedAs codes def = def {cdAlternateCardCodes = codes <> filter (`notElem` codes) (cdAlternateCardCodes def)}
 
 -- | A printing of the card under its own code, for a reprint whose def differs, as one in
 -- another encounter set; register its entity with 'reprintAs'.

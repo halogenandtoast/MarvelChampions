@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Event where
 
+import Marvel.Event.Events.JessicaLuke qualified as JL
 import Marvel.Prelude
 
 import Marvel.Card.Builder
@@ -26,7 +27,10 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard fw53003, SomeEventCard fw53004, SomeEventCard fw53005, SomeEventCard fw53019, SomeEventCard fw54004, SomeEventCard fw54005, SomeEventCard fw54006, SomeEventCard fw54014, SomeEventCard fw54016, SomeEventCard fw54022, SomeEventCard fw54023
+  [ SomeEventCard cw56008, SomeEventCard cw56009, SomeEventCard cw56016, SomeEventCard cw56017, SomeEventCard cw56037, SomeEventCard cw56038, SomeEventCard cw56039, SomeEventCard cw56040, SomeEventCard cw56047, SomeEventCard cw56050, SomeEventCard fne60008, SomeEventCard fne60009, SomeEventCard fne60010, SomeEventCard fne60011, SomeEventCard fne60023, SomeEventCard fne60040a, SomeEventCard fne60040b, SomeEventCard fne60040c, SomeEventCard fne60041, SomeEventCard fne60048, SomeEventCard fne60049, SomeEventCard fne60050, SomeEventCard fne60055
+  , SomeEventCard wm58003, SomeEventCard wm58004, SomeEventCard wm58005, SomeEventCard wm58016, SomeEventCard wm58018, SomeEventCard wm58019, SomeEventCard wm58020, SomeEventCard wm58033, SomeEventCard hc59009, SomeEventCard hc59010, SomeEventCard hc59011, SomeEventCard hc59026
+  , SomeEventCard JL.jl61004, SomeEventCard JL.jl61005, SomeEventCard JL.jl61006, SomeEventCard JL.jl61019, SomeEventCard JL.jl61026, SomeEventCard JL.jl61027, SomeEventCard JL.jl62003, SomeEventCard JL.jl62004, SomeEventCard JL.jl62005, SomeEventCard JL.jl62006, SomeEventCard JL.jl62015, SomeEventCard JL.jl62022, SomeEventCard JL.jl62023, SomeEventCard JL.jl62034, SomeEventCard JL.jl62035
+  , SomeEventCard fw53003, SomeEventCard fw53004, SomeEventCard fw53005, SomeEventCard fw53019, SomeEventCard fw54004, SomeEventCard fw54005, SomeEventCard fw54006, SomeEventCard fw54014, SomeEventCard fw54016, SomeEventCard fw54022, SomeEventCard fw54023
   , SomeEventCard aosP50003, SomeEventCard aosP50004, SomeEventCard aosP50005, SomeEventCard aosP50006, SomeEventCard aosP50024, SomeEventCard aosP50037, SomeEventCard aosP50038, SomeEventCard aosP50039
   , SomeEventCard clawedStrikeShuri, SomeEventCard ontheProwlShuri, SomeEventCard wakandaForeverShuri, SomeEventCard infiltrationShuri, SomeEventCard heartofthePantherShuri, SomeEventCard smoothasSilkSilk, SomeEventCard swingingSilkKickSilk, SomeEventCard wallcrawlSilk, SomeEventCard stopHittingYourselfSilk, SomeEventCard investigativeJournalismSilk, SomeEventCard quickQuipSilk
   , SomeEventCard nc48007, SomeEventCard nc48008, SomeEventCard nc48009, SomeEventCard nc48010, SomeEventCard nc48011, SomeEventCard nc48016, SomeEventCard nc48018, SomeEventCard nc48031, SomeEventCard nc48032

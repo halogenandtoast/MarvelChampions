@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlayByCardAbilities, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost, AdditionalReadyCost))
+import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeDiscarded, CannotLeavePlayByCardAbilities, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost, AdditionalReadyCost))
 
 import Control.Monad.State
 import Data.List (partition, nub, nubBy)
@@ -25,7 +25,7 @@ import Marvel.Hand
 import Marvel.Game.Source
 import Marvel.GameValue.Types (GameValue (Static))
 import Marvel.I18n (ikeyWith, intVar)
-import Marvel.Id (CharacterId (..), IdentityId, MinionId (..), SchemeId (..), SideSchemeId (..))
+import Marvel.Id (EnemyId (..), CharacterId (..), IdentityId, MinionId (..), SchemeId (..), SideSchemeId (..))
 import Marvel.Identity.Types
 import Marvel.Message.Lifted
 import Marvel.Payment
@@ -162,6 +162,21 @@ payCostPartAs contributing activeCost cost = do
         [ labeled (countLabel "takeDamage" n) (payCost acid $ DamageCost n)
         | n <- [1 .. remaining]
         ]
+    ConfuseSelfUnlessTraitCost trait -> do
+      hasTrait <- identityMatches (IdentityWithTrait trait) iid
+      unless hasTrait $ confuseIdentity iid
+    HealEnemyCost n matcher -> do
+      enemies <- selectList matcher
+      valid <- filterM (\enemy -> do
+        let character = case enemy of EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid; EnemyAttachmentId aid -> AttachmentCharacter aid
+        damaged <- (>= n) <$> characterStoredDamage character
+        mods <- getModifiers (enemyRef enemy)
+        pure $ damaged && CannotBeHealedByPlayerCards `notElem` mods) enemies
+      chooseOne iid [targeting (enemyRef enemy) do
+        let character = case enemy of EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid; EnemyAttachmentId aid -> AttachmentCharacter aid
+        heal character n
+        paid (TargetPayment (enemyRef enemy) <> HealPayment n)
+        | enemy <- valid]
     HealCost n -> do
       heal iid n
       paid $ HealPayment n
@@ -232,6 +247,9 @@ payCostPartAs contributing activeCost cost = do
         AllyRef _ -> removeFromPlay target
         _ -> error "Unhandled"
       paid $ DiscardPayment target
+    CountersFromSupportCost matcher n -> do
+      supports <- selectList (matcher <> SupportControlledBy (IdentityWithId iid) <> SupportWithUses (AtLeast $ Static $ fromIntegral n))
+      oneOf supports (\s -> removeCounters s n >> paid (CountersPayment n))
     CountersFromUpgradeCost matcher n -> do
       upgrades <- selectList (matcher <> upgradeControlledBy iid <> UpgradeWithUses (AtLeast $ Static $ fromIntegral n))
       oneOf upgrades (\u -> removeCounters u n >> paid (CountersPayment n))
@@ -779,8 +797,14 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
       let actual = sum [damageAmount damage | Window After (IdentityTookDamage you source damage) <- windows, you == activeCostIdentityId activeCost, source == activeCostSource activeCost]
           receipt = \case
             PendingDamageCostPayment n taken -> PendingDamageCostPayment n (taken + actual)
+            PendingEnergySiphonPayment card n taken -> PendingEnergySiphonPayment card n (taken + sum [damageAmount damage | Window After (IdentityTookDamage you source damage) <- windows, you == fromMaybe (activeCostIdentityId activeCost) (pcController card <|> pcOwner card), source == toSource card])
             other -> other
       pure activeCost {activeCostPayment = mconcat $ map receipt $ payments $ activeCostPayment activeCost}
+    CardSpecific (ActiveCostRef acid) "wmFinishEnergySiphon" (fromJSON -> Success (_you :: IdentityId, card :: PlayerCard, n :: Natural)) | acid == activeCostId activeCost -> do
+      let taken = sum [actual | PendingEnergySiphonPayment c _ actual <- payments (activeCostPayment activeCost), c == card]
+          keep = \case PendingEnergySiphonPayment c _ _ -> c /= card; _ -> True
+      spendCardWithResources acid card (replicate (fromIntegral $ 1 + if taken >= n then n else 0) Energy) [Energy]
+      pure activeCost {activeCostPayment = mconcat $ filter keep $ payments $ activeCostPayment activeCost}
     CardSpecific (ActiveCostRef acid) "verifyDamageCost" (fromJSON -> Success (n :: Natural)) | acid == activeCostId activeCost -> do
       let receipts = payments (activeCostPayment activeCost)
           taken = sum [actual | PendingDamageCostPayment _ actual <- receipts]
@@ -985,6 +1009,8 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
       let reserved = paymentReservedAllyCards (activeCostPayment activeCost)
           reservedSupports = paymentReservedSupportCards (activeCostPayment activeCost)
           reservedTop = paymentReservedTopDeckCards (activeCostPayment activeCost)
+          reservedEcho = [(who,card,reflexes) | ReservedEchoCardPayment who card reflexes <- payments (activeCostPayment activeCost)]
+          reservedSense = [(who,card,index) | ReservedSenseCardPayment who card index <- payments (activeCostPayment activeCost)]
       for_ reserved \(aid, card) -> do
         alive <- selectAny (AllyWithId aid)
         if alive then attachPlayableEventToAlly aid card else discardCard card
@@ -992,6 +1018,13 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
         alive <- supportIsInPlay sid
         if alive then supportStep sid (AttachPlayableEvent card) else discardCard card
       for_ reservedTop $ cardSpecific payer "restoreTopDeckPlay"
+      for_ reservedSense $ \(who,card,index) -> do
+        removeFromGame card
+        cardSpecific who "fneRestoreSensePlay" (card,index)
+      for_ reservedEcho $ \(who,card,reflexes) -> do
+        removeFromGame card
+        addToHand who reflexes
+        cardSpecific who "fneRestoreReplay" (card,reflexes)
       -- a card played from a discard pile, or held by an upgrade, was left there
       fromHand <- case activeCostTarget activeCost of
         ForCard card -> do
@@ -1000,7 +1033,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           -- PayForCard removes hand cards while payment is active. A card held,
           -- discarded, or set aside has not left its original zone yet.
           inDeck <- projectP PlayerIdentityDeck (elem card . unDeck) payer
-          ((card `notElem` (reservedTop <> map snd reserved <> map snd reservedSupports) && card `notElem` (held <> aside) && not inDeck) &&) <$> projectP PlayerIdentityDiscard (notElem card . unDiscard) payer
+          ((card `notElem` (reservedTop <> [card | (_,card,_) <- reservedSense] <> [card | (_,card,_) <- reservedEcho] <> map snd reserved <> map snd reservedSupports) && card `notElem` (held <> aside) && not inDeck) &&) <$> projectP PlayerIdentityDiscard (notElem card . unDiscard) payer
         _ -> pure False
       for_ [card | ForCard card <- [activeCostTarget activeCost], fromHand] (addToHand payer)
       for_ (activeCostSpentCards activeCost) \card -> addToHand (fromMaybe payer $ pcController card <|> pcOwner card) card
@@ -1026,6 +1059,17 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
               -- A save made after choosing typed resources but before provenance
               -- was recorded still gets the same explicit source allocation.
               allocatePayment ident resources
+        Just resources
+          | MayOverpay `elem` flattenCosts (activeCostCost activeCost)
+          , null [() | OverpaidResourcesPayment _ <- payments (activeCostPayment activeCost)] -> do
+              let base = mconcat $ filter (/= MayOverpay) $ flattenCosts (activeCostCost activeCost)
+                  reserved = [r | OverpaymentOnlyPayment r <- payments (activeCostPayment activeCost)]
+                  allocations = nub [resources L.\\ used | used <- actualResourceAllocations base resources, null (reserved L.\\ (resources L.\\ used))]
+              case allocations of
+                [] -> abortPayment ident
+                [excess] -> cardSpecific (ActiveCostRef ident) "allocateOverpayment" excess
+                _ -> chooseOne (activeCostIdentityId activeCost)
+                  [labeled (allocationLabel excess) (cardSpecific (ActiveCostRef ident) "allocateOverpayment" excess) | excess <- allocations]
         Just _ -> do
           let card = case activeCostTarget activeCost of ForCard c -> Just c; _ -> Nothing
           payers <- allianceCostPayers (activeCostIdentityId activeCost) card
@@ -1035,6 +1079,9 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
               frameworkDiscard $ payCostPart activeCost (otherCosts $ activeCostCost activeCost)
               paidCosts ident
       pure activeCost
+    CardSpecific (ActiveCostRef ident) "allocateOverpayment" (fromJSON -> Success (resources :: [Resource])) | ident == activeCostId activeCost -> do
+      finishPayment ident
+      pure activeCost {activeCostPayment = activeCostPayment activeCost <> OverpaidResourcesPayment resources}
     AllocatedPayment ident resources | ident == activeCostId activeCost -> do
       generated <- paymentResources (activeCostPayment activeCost)
       if resources `elem` actualResourceAllocations (activeCostCost activeCost) generated
@@ -1076,7 +1123,9 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           [(fromMaybe payer $ pcController card <|> pcOwner card, card) | card <- handSpent] <> receipted
         cards = map snd spent
         alreadyReceipted card = any ((== pcCardId card) . pcCardId . snd) receipted
-        payment = activeCostPayment activeCost <> x <> Payments [SpentCardPayment card | card <- handSpent, not $ alreadyReceipted card]
+        payment = activeCostPayment activeCost <> (case activeCostTarget activeCost of
+          ForCard card | toCardCode card == "56007" -> mconcat [TargetPayment (MinionRef mid) | SearchedMinionPayment mid <- payments (activeCostPayment activeCost)]
+          _ -> NoPayment) <> x <> Payments [SpentCardPayment card | card <- handSpent, not $ alreadyReceipted card]
       -- Held-card abilities already discarded their own card. Discard hand cards
       -- here once; do not discard receipted held cards a second time.
       for_ handSpent discardCard
@@ -1105,7 +1154,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
           medLabPlay <- anyM (\(sid, reserved) -> do
             medLab <- elem sid <$> selectList (SupportNamed "Med Lab")
             pure $ reserved == card && medLab) (paymentReservedSupportCards payment)
-          when (card `elem` paymentReservedTopDeckCards payment || medLabPlay || (card `notElem` (map snd (paymentReservedAllyCards payment) <> map snd (paymentReservedSupportCards payment)) && card `notElem` (held <> aside) && not inDiscard && not inDeck)) $
+          when (card `notElem` [sense | ReservedSenseCardPayment _ sense _ <- payments payment] && card `notElem` [event | ReservedEchoCardPayment _ event _ <- payments payment] && (card `elem` paymentReservedTopDeckCards payment || medLabPlay || (card `notElem` (map snd (paymentReservedAllyCards payment) <> map snd (paymentReservedSupportCards payment)) && card `notElem` (held <> aside) && not inDiscard && not inDeck))) $
             checkWindows [Window After $ PlayedCardFromHand payer card]
         ForAbility ab -> do
           usedAbility payer ab
@@ -1140,7 +1189,9 @@ resourceCostPaid ActiveCost {..} = do
   prs <- paymentResources activeCostPayment
   countersPaid <- identityCounterCostsAvailable ActiveCost {..}
   handTarget <- chosenHandCardAvailable ActiveCost {..}
-  resourcesPaid <- flip evalStateT prs $ do
+  let reserved = [r | OverpaymentOnlyPayment r <- payments activeCostPayment]
+      usable = prs L.\\ reserved
+  resourcesPaid <- flip evalStateT usable $ do
     l <- fmap and $ for rs $ \r -> do
       prs' <- get
       case (r `elem` prs', Wild `elem` prs') of
@@ -1155,8 +1206,8 @@ resourceCostPaid ActiveCost {..} = do
     pure $
       l
         && length prs' >= length mrs
-        && coversDifferentTypes (differentResourcesNeeded activeCostCost) prs
-        && coversSameType (sameResourcesNeeded activeCostCost) prs
+        && coversDifferentTypes (differentResourcesNeeded activeCostCost) usable
+        && coversSameType (sameResourcesNeeded activeCostCost) usable
   let requiredPrinted = printedResourceRequirements activeCostCost
       printedReceipts = [rs | PrintedResourcesPayment rs <- payments activeCostPayment]
       printedPaid = coversPrintedResources requiredPrinted (if null printedReceipts then concatMap (printedResources . getCardDef) activeCostSpentCards else concat printedReceipts)

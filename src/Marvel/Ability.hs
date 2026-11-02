@@ -3,6 +3,7 @@ module Marvel.Ability (
   module X,
 ) where
 
+import Marvel.Trait.Types (Trait (Elite))
 import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
@@ -10,7 +11,7 @@ import Marvel.Ability.Types as X
 import Marvel.Aspect qualified as Aspect
 import Marvel.Card.PlayerCard.Types
 import Marvel.Discard (unDiscard)
-import Marvel.Damage (damageAmount)
+import Marvel.Damage (damageAmount, damageUnpreventable)
 import Marvel.Message qualified as Msg
 import Marvel.Card.Id (CardId (..))
 import Marvel.Cost.Types
@@ -184,6 +185,29 @@ passesCriteria x a =
       top <- headMay <$> getEncounterDeck
       effective <- maybe (pure 0) getBoostIcons top
       pure $ not visible || effective > 0 || maybe False (notNull . cdBoostIcons . getCardDef) top
+    CanPlayTopSense -> canPlayTopSenseFor x
+    HasEchoTuckedEvent -> hasEchoTuckedEventFor x
+    AllyHasTwoAttackableEnemies aid -> (>= 2) . length <$> selectList (AttackableByAlly aid)
+    PendingDamagePreventable -> do
+      windows <- getCurrentWindows
+      pure $ any (\window -> case windowType window of
+        IdentityTakeDamage you damage -> you == x && not (damageUnpreventable damage)
+        AllyTakeDamage _ _ -> False
+        _ -> False) windows
+    CanRevealHerculesLabor -> herculesCanRevealLaborFor x
+    EffectiveHerculesGiftCount matcher -> gameValueMatches matcher =<< getEffectiveHerculesGiftCount x
+    HasEffectiveHerculesGift -> herculesHasGiftFor x
+    CanDiscardMinionWithSupportCounters matcher bonus -> do
+      supports <- selectList matcher
+      counters <- sum <$> traverse getCountersOn supports
+      minions <- selectList (NotMinion $ MinionWithTrait Elite)
+      anyM (fmap (<= counters + bonus) . getEnemyRemainingHitPoints . EnemyMinionId) minions
+    UpgradeHeldCardsCount matcher count -> do
+      upgrades <- selectList matcher
+      anyM (\uid -> getZoneHeldCards (UpgradeRef uid) >>= gameValueMatches count . fromIntegral . length) upgrades
+    PayingToOverpay -> do
+      cost <- getActiveCost >>= maybe (pure Nothing) getActiveCostValue
+      pure $ maybe False hasMayOverpay cost
     PayingForCardOtherThan previous -> do
       current <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
       pure $ maybe True ((/= previous) . pcCardId) current
@@ -212,8 +236,10 @@ passesCriteria x a =
     -- peril is checked by 'getAbilitiesFor'
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
+    PlayedEventIsNot blocked -> any (\case Window _ (EventPlayed _ eid _) -> CardId (unEventId eid) /= blocked; _ -> False) <$> getCurrentWindows
     HeldAllyPlayable sid -> heldAllyPlayable x sid
     CanFindTouched -> canFindTouched x
+    CanFindPlayerCardForEntry code -> notNull <$> findPlayerCardsForEntry x code
     CanResolveSettingSpecial -> canResolveSettingSpecial x
     MedLabCaptureAvailable -> medLabCaptureAvailable
     VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
@@ -270,6 +296,29 @@ passesCardCriteria ident card = go
       top <- headMay <$> getEncounterDeck
       effective <- maybe (pure 0) getBoostIcons top
       pure $ not visible || effective > 0 || maybe False (notNull . cdBoostIcons . getCardDef) top
+    CanPlayTopSense -> canPlayTopSenseFor ident
+    HasEchoTuckedEvent -> hasEchoTuckedEventFor ident
+    AllyHasTwoAttackableEnemies aid -> (>= 2) . length <$> selectList (AttackableByAlly aid)
+    PendingDamagePreventable -> do
+      windows <- getCurrentWindows
+      pure $ any (\window -> case windowType window of
+        IdentityTakeDamage you damage -> you == ident && not (damageUnpreventable damage)
+        AllyTakeDamage _ _ -> False
+        _ -> False) windows
+    CanRevealHerculesLabor -> herculesCanRevealLaborFor ident
+    EffectiveHerculesGiftCount matcher -> gameValueMatches matcher =<< getEffectiveHerculesGiftCount ident
+    HasEffectiveHerculesGift -> herculesHasGiftFor ident
+    CanDiscardMinionWithSupportCounters matcher bonus -> do
+      supports <- selectList matcher
+      counters <- sum <$> traverse getCountersOn supports
+      minions <- selectList (NotMinion $ MinionWithTrait Elite)
+      anyM (fmap (<= counters + bonus) . getEnemyRemainingHitPoints . EnemyMinionId) minions
+    UpgradeHeldCardsCount matcher count -> do
+      upgrades <- selectList matcher
+      anyM (\uid -> getZoneHeldCards (UpgradeRef uid) >>= gameValueMatches count . fromIntegral . length) upgrades
+    PayingToOverpay -> do
+      cost <- getActiveCost >>= maybe (pure Nothing) getActiveCostValue
+      pure $ maybe False hasMayOverpay cost
     PayingForCardOtherThan previous -> do
       current <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
       pure $ maybe True ((/= previous) . pcCardId) current
@@ -291,8 +340,10 @@ passesCardCriteria ident card = go
     SourceHasKeyword _ -> pure True
     ForAnyPlayer -> pure True
     PlayedEventInDiscard -> playedEventInDiscard
+    PlayedEventIsNot blocked -> any (\case Window _ (EventPlayed _ eid _) -> CardId (unEventId eid) /= blocked; _ -> False) <$> getCurrentWindows
     HeldAllyPlayable _ -> pure False
     CanFindTouched -> pure False
+    CanFindPlayerCardForEntry code -> notNull <$> findPlayerCardsForEntry ident code
     CanResolveSettingSpecial -> canResolveSettingSpecial ident
     MedLabCaptureAvailable -> pure False
     VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
@@ -442,3 +493,8 @@ medLabCaptureAvailable :: HasGame m => m Bool
 medLabCaptureAvailable = do
   windows <- getCurrentWindows
   anyM canCaptureDefeatedAlly [card | Window _ (AllyCardDefeatedByConsequentialDamage _ card) <- windows]
+
+hasMayOverpay :: Cost -> Bool
+hasMayOverpay MayOverpay = True
+hasMayOverpay (Costs costs) = any hasMayOverpay costs
+hasMayOverpay _ = False

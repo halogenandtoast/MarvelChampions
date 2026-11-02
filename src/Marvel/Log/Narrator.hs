@@ -174,6 +174,9 @@ narrationFor = \case
   MinionMessage mid msg -> minionNarration mid msg
   AllyMessage aid msg -> allyNarration aid msg
   -- an energy form turned faceup is the form its player changes to (Spectrum)
+  UpgradeMessage uid (UpgradeAttachedToTarget target) -> Just $
+    whenRef (UpgradeRef uid) \card -> whenRef target \host ->
+      one $ mechanic [ikeyPart "log.attachedTo" ["card" ~> card, "target" ~> host]]
   UpgradeMessage _ (UpgradeHostBecameMinion _) -> Nothing
   UpgradeMessage uid FlipUpgradeFaceUp -> Just $ whenRef (UpgradeRef uid) \form ->
     getSourceController (UpgradeRef uid) >>= \case

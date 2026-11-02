@@ -1,4 +1,5 @@
 module Marvel.Treachery.Treacheries (module X) where
+import Marvel.Treachery.Treacheries.WonderHerculesPack as X
 import Marvel.Treachery.Treacheries.AgentsOfShield as X
 import Marvel.Treachery.Treacheries.Fw53033 as X
 import Marvel.Treachery.Treacheries.Fw53042 as X

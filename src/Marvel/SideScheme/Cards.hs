@@ -1,5 +1,7 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
@@ -176,6 +178,10 @@ import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.Matchers ()
 import Marvel.GameValue.Types qualified as MGValue
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -192,7 +198,10 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
+  [ CampaignPlayers.fne60012, CampaignPlayers.fne60024
+  , WM.wm58027, HC.hc59028, HC.hc59038, HC.hc59041, HC.hc59045
+  , JL.jl61007, JL.jl61020, JL.jl61028, JL.jl61029, JL.jl61032, JL.jl61039, JL.jl62030
+  , TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
   , aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
   , FalconWinter.fw53031, FalconWinter.fw53041, FalconWinter.fw54029, FalconWinter.fw54036
   , aosP50031, aosP50061
@@ -1787,7 +1796,7 @@ cable40006 :: CardDef
 cable40006 = (sideScheme "40006" "Technovirus Purge" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 0, cdResources = [(NE.PrintedResource, NE.Energy)], cdAspect = Nothing, cdKeywords = fromList [NE.Victory 0] }
 
 cable40018 :: CardDef
-cable40018 = (sideScheme "40018" "Call for Backup" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Mental)], cdAspect = Just NE.Leadership, cdKeywords = fromList [NE.Victory 0] }
+cable40018 = reprintedAs ["59022"] $ (sideScheme "40018" "Call for Backup" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Mental)], cdAspect = Just NE.Leadership, cdKeywords = fromList [NE.Victory 0] }
 
 cable40019 :: CardDef
 cable40019 = (sideScheme "40019" "Lock and Load" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Physical)], cdAspect = Just NE.Aggression, cdKeywords = fromList [NE.Victory 0] }
@@ -1818,7 +1827,7 @@ takeOuttheGuards = CardDef
 
 -- NeXt Evolution: Domino
 superpowerTraining :: CardDef
-superpowerTraining = CardDef
+superpowerTraining = reprintedAs ["60056"] $  CardDef
   { cdCardCode = "40059", cdName = "Superpower Training", cdCost = Just 1
   , cdTraits = fromList [], cdKeywords = fromList [NEK.Victory 0]
   , cdCardType = PlayerSideSchemeType, cdAbilityType = Nothing, cdAbilitySubTypes = []
@@ -2804,7 +2813,7 @@ hasWhenRevealed card = toCardCode card `elem`
 -- Psylocke
 
 layTheTrap :: CardDef
-layTheTrap = CardDef
+layTheTrap = reprintedAs ["61021"] $ CardDef
   { cdCardCode = "41016", cdName = "Lay the Trap", cdCost = Just 1
   , cdTraits = fromList [], cdKeywords = fromList [PsyKeyword.Victory 0]
   , cdCardType = PsyCard.PlayerSideSchemeType, cdAbilityType = Nothing, cdAbilitySubTypes = []

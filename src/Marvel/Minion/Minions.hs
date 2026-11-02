@@ -1,4 +1,5 @@
 module Marvel.Minion.Minions (module X) where
+import Marvel.Minion.Minions.WonderHerculesPack as X
 import Marvel.Minion.Minions.AgentsOfShield as X
 import Marvel.Minion.Minions.Fw53030 as X
 import Marvel.Minion.Minions.Fw53032 as X

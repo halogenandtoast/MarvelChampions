@@ -217,5 +217,17 @@ data Trait
   | Enchantment
   | Synergy
   | Temptation
+  | Atlantis
+  | Eternal
+  | Gift
+  | Labor
+  | MartialArtist
+  | Maxim
+  | Skrull
+  | Shapeshift
+  | MidnightSun
+  | Dance
+  | Sense
+  | Police
   deriving stock (Show, Eq, Generic, Enum, Bounded)
   deriving anyclass (Hashable, ToJSON, FromJSON)

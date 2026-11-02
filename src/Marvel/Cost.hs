@@ -13,8 +13,8 @@ import Marvel.Card.Def
       CardType(MinionType, SideSchemeType),
       HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, AllyBasicPowerAdditionalCost, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
-import Marvel.Keyword (Keyword (Permanent))
+import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeConfused, KeywordModifier, CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, AllyBasicPowerAdditionalCost, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, AdditionalChangeFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
+import Marvel.Keyword (Keyword (Permanent, Stalwart, Steady))
 
 import Data.List qualified as L
 import Marvel.Ability
@@ -37,7 +37,7 @@ import Marvel.Question qualified as Q
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
-import Marvel.Status (StatusCard (ToughStatus))
+import Marvel.Status (StatusCard (ToughStatus, ConfusedStatus))
 
 -- | Resource restrictions apply to the card whose ability is paid for, just as
 -- they do to a card being played (RR Cost). This is context, never a payment source.
@@ -102,7 +102,7 @@ getAbilityCost a = case abilitySource a of
   IdentityRef ident | Q.ChangeForm `elem` abilityChoices a -> do
     alterEgo <- identityMatches AlterEgoIdentity ident
     modifiers <- getModifiers ident
-    pure $ abilityCost a <> mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo]
+    pure $ abilityCost a <> mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, alterEgo] <> mconcat [c | AdditionalChangeFormCost c <- modifiers]
   IdentityRef ident | abilityType a == Basic, Q.Attack `elem` abilityChoices a -> do
     modifiers <- getModifiers ident
     pure $ abilityCost a <> mconcat [c | BasicAttackAdditionalCost c <- modifiers]
@@ -155,6 +155,21 @@ canAffordCost identityId source cost = do
     UpToRemainingHitPointsDamageCost -> do
       (remaining, _, _) <- getRemainingHitPoints identityId
       (remaining > 0 &&) <$> go (DamageCost 1)
+    ConfuseSelfUnlessTraitCost trait -> do
+      immune <- identityMatches (IdentityWithTrait trait) identityId
+      if immune then pure True else do
+        modifiers <- getModifiers (IdentityRef identityId)
+        printed <- getsGame (maybe [] (toList . cdKeywords) . (\g -> abilityCardDef g (IdentityRef identityId)))
+        statuses <- getCharacterStatusCount (IdentityCharacter identityId) ConfusedStatus
+        let keywords = printed <> [keyword | KeywordModifier keyword <- modifiers]
+        pure $ CannotBeConfused `notElem` modifiers && Stalwart `notElem` keywords && statuses < (if Steady `elem` keywords then 2 else 1)
+    HealEnemyCost n matcher -> do
+      enemies <- selectList matcher
+      or <$> traverse (\enemy -> do
+        let character = case enemy of EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid; EnemyAttachmentId aid -> AttachmentCharacter aid
+        damaged <- (>= n) <$> characterStoredDamage character
+        mods <- getModifiers (enemyRef enemy)
+        pure $ damaged && CannotBeHealedByPlayerCards `notElem` mods) enemies
     HealCost n ->
       member identityId
         <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
@@ -303,6 +318,7 @@ canAffordCost identityId source cost = do
       MainSchemeRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
       CardIdRef _ -> member identityId <$> select UnexhaustedIdentity
       _ -> error "Unhandled"
+    CountersFromSupportCost matcher n -> selectAny (matcher <> SupportControlledBy (IdentityWithId identityId) <> SupportWithUses (AtLeast $ Static $ fromIntegral n))
     CountersFromUpgradeCost matcher n -> selectAny (matcher <> UpgradeControlledBy (IdentityWithId identityId) <> UpgradeWithUses (AtLeast $ Static $ fromIntegral n))
     UseCost -> case source of
       UpgradeRef ident -> member ident <$> select UpgradeWithAnyUses

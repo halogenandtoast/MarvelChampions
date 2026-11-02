@@ -1,5 +1,7 @@
 module Marvel.Hero.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
 import Marvel.Ability.Types qualified as AospAbility ()
@@ -118,6 +120,10 @@ import Marvel.Trait qualified as NET
 import Marvel.Trait qualified as NE
 import Marvel.Ability.Types qualified as NEAbility ()
 
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 import Marvel.Matchers ()
 import Marvel.Resource ()
@@ -136,7 +142,10 @@ import Marvel.Trait
 
 allHeroCards :: [CardDef]
 allHeroCards =
-  [ FalconWinter.fw53001a, FalconWinter.fw54001a
+  [ CampaignPlayers.cw56001a, CampaignPlayers.cw56029a, CampaignPlayers.fne60001a, CampaignPlayers.fne60037a
+  , WM.wm58001a, HC.hc59001a
+  , JL.jl61001a, JL.jl62001a
+  , FalconWinter.fw53001a, FalconWinter.fw54001a
   , aosP50001a, aosP50034a
   , BlackPantherShuriPack.blackPantherShuri, SilkPack.silkHero
   , nc48001a

@@ -1,5 +1,7 @@
 module Marvel.Ally.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
 import Marvel.Ability.Types qualified as AospAbility ()
@@ -167,6 +169,10 @@ import Marvel.EncounterSet ()
 import Marvel.Cost.Types
 import Marvel.Window ()
 import Marvel.GameValue.Types qualified as MGValue ()
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -185,7 +191,10 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ TT.tt55063, TT.tt55064, TT.tt55065, TT.tt55066
+  [ CampaignPlayers.cw56002, CampaignPlayers.cw56010, CampaignPlayers.cw56019, CampaignPlayers.cw56030, CampaignPlayers.cw56041, CampaignPlayers.cw56052, CampaignPlayers.fne60007, CampaignPlayers.fne60019, CampaignPlayers.fne60020, CampaignPlayers.fne60021, CampaignPlayers.fne60022, CampaignPlayers.fne60039
+  , WM.wm58012, WM.wm58013, WM.wm58014, WM.wm58015, WM.wm58022, HC.hc59008, HC.hc59018, HC.hc59019, HC.hc59020, HC.hc59025
+  , JL.jl61003, JL.jl61015, JL.jl61016, JL.jl61017, JL.jl61025, JL.jl61038, JL.jl62002, JL.jl62012, JL.jl62013, JL.jl62014, JL.jl62020, JL.jl62021
+  , TT.tt55063, TT.tt55064, TT.tt55065, TT.tt55066
   , FalconWinter.fw53002, FalconWinter.fw53015, FalconWinter.fw53017, FalconWinter.fw53018, FalconWinter.fw53035, FalconWinter.fw53036, FalconWinter.fw54003, FalconWinter.fw54012, FalconWinter.fw54013, FalconWinter.fw54032
   , aosP50002, aosP50012, aosP50013, aosP50022, aosP50023, aosP50036, aosP50054, aosP50091, aosP50105b, aosP50106b, aosP50107b, aosP50108b
   , BlackPantherShuriPack.tChallaShuri, BlackPantherShuriPack.manifoldShuri, BlackPantherShuriPack.anekaShuri, BlackPantherShuriPack.ayoShuri, BlackPantherShuriPack.okoyeShuri, BlackPantherShuriPack.whiteWolfShuri, SilkPack.scarletSpiderSilk, SilkPack.spiderByteSilk, SilkPack.madameWebSilk, SilkPack.spiderMan2099Silk, SilkPack.spiderWomanSilk
@@ -655,7 +664,7 @@ wong :: CardDef
 wong = identityAlly "09002" "Wong" 3 [Mystic] [Wild]
 
 brotherVoodooJerichoDrumm :: CardDef
-brotherVoodooJerichoDrumm =
+brotherVoodooJerichoDrumm = reprintedAs ["56042"] $
   ally "09012" ("Brother Voodoo" <:> "Jericho Drumm") 3 [Avenger, Mystic] [Mental] Protection
 
 clea :: CardDef
@@ -702,7 +711,7 @@ captainMarvelCarolDanvers :: CardDef
 captainMarvelCarolDanvers = identityAlly "04032" ("Captain Marvel" <:> "Carol Danvers") 4 [Avenger] [Wild]
 
 spiderGirlAnyaCorazon :: CardDef
-spiderGirlAnyaCorazon = ally "04040" ("Spider-Girl" <:> "Anya Corazon") 2 [Avenger] [Energy] Aggression
+spiderGirlAnyaCorazon = reprintedAs ["56011"] $  ally "04040" ("Spider-Girl" <:> "Anya Corazon") 2 [Avenger] [Energy] Aggression
 
 spiderManPeterParker :: CardDef
 spiderManPeterParker = ally "04045" ("Spider-Man" <:> "Peter Parker") 5 [Avenger] [Mental] Justice

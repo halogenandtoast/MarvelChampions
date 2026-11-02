@@ -1,4 +1,6 @@
 module Marvel.Upgrade.Upgrades (module X) where
+import Marvel.Upgrade.Upgrades.CampaignPlayers as X
+import Marvel.Upgrade.Upgrades.WonderHerculesPack as X
 import Marvel.Upgrade.Upgrades.Fw53008 as X
 import Marvel.Upgrade.Upgrades.Fw53009 as X
 import Marvel.Upgrade.Upgrades.Fw53010 as X

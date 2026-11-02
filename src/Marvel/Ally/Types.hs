@@ -155,8 +155,10 @@ instance IsRef (Attrs Ally) where
 getModifiedAttack :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedAttack attrs = do
   modifiers <- getModifiers attrs
-  let base = fromMaybe (unAtk $ allyAttack attrs) (headMay [n | BaseAttack n <- modifiers])
-  pure $ fromInteger $ max 0 (toInteger base + sum (map change modifiers))
+  remaining <- getCharacterRemainingHitPoints (AllyCharacter $ allyId attrs)
+  let bonus = sum [n | StatsAtOneRemainingHitPoint n <- modifiers, remaining == 1]
+      base = fromMaybe (unAtk $ allyAttack attrs) (headMay [n | BaseAttack n <- modifiers])
+  pure $ bonus + fromInteger (max 0 (toInteger base + sum (map change modifiers)))
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
@@ -189,7 +191,9 @@ getModifiedThwartConsequentialDamage attrs = do
 getModifiedThwart :: (HasGame m) => Attrs Ally -> m Natural
 getModifiedThwart attrs = do
   modifiers <- getModifiers attrs
-  pure $ subtractNatural (sum [n | ThwartPenalty n <- modifiers]) $
+  remaining <- getCharacterRemainingHitPoints (AllyCharacter $ allyId attrs)
+  let bonus = sum [n | StatsAtOneRemainingHitPoint n <- modifiers, remaining == 1]
+  pure $ (bonus +) $ subtractNatural (sum [n | ThwartPenalty n <- modifiers]) $
     fromMaybe (unThw $ allyThwart attrs) (headMay [n | BaseThwart n <- modifiers]) + sum [n | ThwartModifier n <- modifiers]
 
 instance IsCard (Attrs Ally) where

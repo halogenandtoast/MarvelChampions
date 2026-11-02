@@ -49,6 +49,7 @@ data IdentityMatcher
   | IdentityWithId IdentityId
   | IdentityWithTrait Trait
   | AnyIdentity
+  | IdentityWithAtLeastBaseHitPoints
   | IdentityWithPrintedHitPoints GameValueMatcher
   | IdentityWithDamage GameValueMatcher
   | -- | with so many counters on the identity card (Groot's growth counters)
@@ -145,6 +146,12 @@ data SupportMatcher
   | SupportWithTrait Trait
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup SupportMatcher where
+  SupportMatches xs <> SupportMatches ys = SupportMatches (xs <> ys)
+  SupportMatches xs <> y = SupportMatches (xs <> [y])
+  x <> SupportMatches ys = SupportMatches (x : ys)
+  x <> y = SupportMatches [x,y]
 
 pattern SupportWithAnyUses :: SupportMatcher
 pattern SupportWithAnyUses <- SupportWithUses (GreaterThan (Static 0))
@@ -283,7 +290,8 @@ data TreacheryMatcher = AnyTreachery
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data SchemeMatcher
-  = NotScheme SchemeMatcher
+  = PlayerSideScheme
+  | NotScheme SchemeMatcher
   | AnyScheme
   | MainScheme
   | EncounterMainScheme
@@ -321,11 +329,13 @@ instance Monoid SchemeMatcher where
   mempty = AnyScheme
 
 data SideSchemeMatcher
-  = AnySideScheme
+  = SideSchemeMatchAll [SideSchemeMatcher]
+  | AnySideScheme
   | -- | as it was, among those that have just left play too: what an "after it is
     -- defeated" window matches
     LeftPlaySideScheme SideSchemeMatcher
   | CrisisSideScheme
+  | SideSchemeWithCard CardMatcher
   | SideSchemeIs CardDef
   | SideSchemeWithId SideSchemeId
   | SideSchemeWithKeyword Keyword
@@ -335,6 +345,12 @@ data SideSchemeMatcher
     SignatureSchemeOf VillainMatcher
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
+
+instance Semigroup SideSchemeMatcher where
+  AnySideScheme <> x = x
+  x <> AnySideScheme = x
+  SideSchemeMatchAll xs <> SideSchemeMatchAll ys = SideSchemeMatchAll (xs <> ys)
+  x <> y = SideSchemeMatchAll [x,y]
 
 data MinionMatcher
   = AnyMinion
@@ -387,6 +403,7 @@ data CharacterMatcher
   | DamageableCharacter
   | AnyCharacter
   | CharacterMatches [CharacterMatcher]
+  | CharacterOneOf [CharacterMatcher]
   | -- | the identities and allies of the players matching
     CharacterControlledBy IdentityMatcher
   | -- | the identities of the players matching: "damages you"
@@ -495,6 +512,8 @@ data AbilityMatcher = AbilityWithType AbilityType | AbilityOnUpgrade UpgradeMatc
 -- | What did something, by its source.
 data SourceMatcher
   = AnySource
+  | SourceExtendsIdentity IdentityMatcher
+  | SourceWithTrait Trait
   | SourceIs Source
   | -- | the identity itself: its basic powers and its own card's abilities
     SourceIsIdentity IdentityMatcher

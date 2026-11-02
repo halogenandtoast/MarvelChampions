@@ -375,7 +375,7 @@ runVillainMessage msg attrs = case msg of
     let reduced = reducedDamage modifiers dealt
         sustained = subtractNatural (fromIntegral $ unHp $ villainHp attrs) (fromIntegral $ unHp $ villainMaxHp attrs)
         room = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
-        damage = if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = subtractNatural (damagePrevention dealt) room}
+        damage = if damageUnpreventable dealt then reduced else if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = subtractNatural (damagePrevention dealt) room}
     -- none at all (The Red House), or none from a player card (Sanctuary)
     cannotTakeDamage <- (||) <$> cannotTakeDamageFrom (toRef attrs) source <*> (not <$> canDamageThroughAerialRestriction (toRef attrs) source dealt)
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
@@ -384,8 +384,8 @@ runVillainMessage msg attrs = case msg of
         -- he is not defeated, nor is any of it excess
         held = CannotBeDefeated `elem` modifiers
     if
-      | cannotTakeDamage -> pure attrs
-      | preventedAttackDamage attrs source damage -> pure attrs
+      | cannotTakeDamage && not (damageUnpreventable dealt) -> pure attrs
+      | preventedAttackDamage attrs source damage && not (damageUnpreventable dealt) -> pure attrs
       | villainTough attrs && preventedByTough dealt -> pure $ attrs & toughL .~ False
       | otherwise -> do
         when (damageAmount damage > 0) $ do
@@ -504,9 +504,9 @@ runVillainMessage msg attrs = case msg of
     scheme <- maybe (selectOne EncounterMainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
     sch <- getModifiedScheme attrs
     for_ scheme \s -> case villainSchemeRemoval attrs of
-      Nothing -> placeThreatFrom W.ThreatFromVillain s (sch + villainBoost attrs)
+      Nothing -> placeVillainSchemeThreat vid s (sch + villainBoost attrs)
       Just (you, source) -> thwartSchemeAs you s source (sch + villainBoost attrs)
-    checkWindows [W.Window W.After $ W.Schemed vid]
+    cardSpecific attrs "villainSchemeResult" (0 :: Natural)
     pure $ attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing} & boostL .~ 0
   VillainAttacked -> do
     case villainAttacking attrs of
@@ -604,6 +604,10 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "recordPendingSchemeThreat" (fromJSON -> Success scheme) | isTarget attrs target -> attrs <$ recordPendingVillainSchemeThreat (villainId attrs) scheme
+    CardSpecific target "villainSchemeResult" (fromJSON -> Success n) | isTarget attrs target -> do
+      checkWindows [W.Window W.After $ W.VillainSchemeResolved (villainId attrs) n]
+      pure attrs
     CardSpecific target "fwReplaceBoost" (fromJSON -> Success (old, replacement)) | isTarget attrs target ->
       pure attrs {villainBoostCards = map (\card -> if card == old then replacement else card) (villainBoostCards attrs)}
     CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {villainSchemeReplacesAttack = flag}
@@ -693,7 +697,9 @@ keepDial attrs a = a {villainCounters = villainCounters attrs} & (hpL .~ villain
 -- | The damage less what reduces "any amount of damage" the villain would take (Thanos's
 -- Armor), once a tough status card has had its say.
 reducedDamage :: [Modifier] -> Damage -> Damage
-reducedDamage modifiers d = d {damageAmount = maybe reduced (min reduced) cap}
+reducedDamage modifiers d
+  | damageUnpreventable d = d
+  | otherwise = d {damageAmount = maybe reduced (min reduced) cap}
  where
   attack = case damageSource d of
     FromPlayerAttack _ -> True

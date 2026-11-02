@@ -106,6 +106,8 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasAbilities a, HasModifi
   obligationDisplayThreat _ = 0
   obligationDisplayCounters :: a -> Natural
   obligationDisplayCounters _ = 0
+  obligationDisplayExhausted :: a -> Bool
+  obligationDisplayExhausted _ = False
   toObligationAttrs :: a -> Attrs Obligation
   default toObligationAttrs :: (Coercible a (Attrs Obligation)) => a -> Attrs Obligation
   toObligationAttrs = coerce
@@ -212,3 +214,6 @@ getObligationDisplayThreat (Obligation a) = obligationDisplayThreat a
 
 getObligationDisplayCounters :: Obligation -> Natural
 getObligationDisplayCounters (Obligation a) = obligationDisplayCounters a
+
+getObligationDisplayExhausted :: Obligation -> Bool
+getObligationDisplayExhausted (Obligation a) = obligationDisplayExhausted a

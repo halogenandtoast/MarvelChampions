@@ -15,6 +15,7 @@ data UpgradeMessage
   | -- | on what it was played, chosen before its cost was paid
     PlayedUpgrade (Maybe Target)
   | UpgradeControlledByPlayer IdentityId
+  | UpgradeAttachedToTarget Target
   | UpgradeAttachedToEnemy EnemyId
   | UpgradeAttachedToIdentity IdentityId
   | UpgradeAttachedToAlly AllyId

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.AlterEgo where
 
+import Marvel.AlterEgo.AlterEgos.JessicaLuke qualified as JL
 import Marvel.Prelude
 
 import Marvel.AlterEgo.AlterEgos
@@ -24,7 +25,10 @@ withAlterEgoCardCode cCode f = case lookup cCode allAlterEgos of
 allAlterEgos :: HashMap CardCode SomeAlterEgoCard
 allAlterEgos = fromList $ map
   (toFst someAlterEgoCardCode)
-  [ SomeAlterEgoCard fw53001b, SomeAlterEgoCard fw54001b
+  [ SomeAlterEgoCard cw56001b, SomeAlterEgoCard cw56029b, SomeAlterEgoCard fne60001b, SomeAlterEgoCard fne60037b
+  , SomeAlterEgoCard wm58001b, SomeAlterEgoCard hc59001b
+  , SomeAlterEgoCard JL.jl61001b, SomeAlterEgoCard JL.jl62001b
+  , SomeAlterEgoCard fw53001b, SomeAlterEgoCard fw54001b
   , SomeAlterEgoCard aosP50001b, SomeAlterEgoCard aosP50034b
   , SomeAlterEgoCard shuriAlterEgo, SomeAlterEgoCard cindyMoon
   , SomeAlterEgoCard nc48001b

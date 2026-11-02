@@ -3,6 +3,7 @@ module Marvel.Ally.Runner
   ( module X
   ) where
 
+import Control.Monad (replicateM_)
 import Marvel.Prelude
 
 import Marvel.Ally.Types as X hiding (Field(..))
@@ -75,6 +76,13 @@ allyGivenStatus a status = do
 
 instance RunMessage (Attrs Ally) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "discardToughForPiercing" (fromJSON -> Success (source,damage :: Damage)) -> do
+      let count = if allyTough a then 1 + allyAdditionalTough a else 0
+          remaining = damage {damagePiercing = False}
+      replicateM_ (fromIntegral count) $ checkWindows [W.Window W.After $ W.CharacterDiscardedTough (AllyCharacter $ allyId a)]
+      checkWindows [W.Window W.When $ W.AllyTakeDamage (allyId a) remaining, W.Window W.When $ W.AllyTakeDamageFrom (allyId a) source remaining]
+      allyStep (allyId a) (AllyDamaged source remaining)
+      pure a {allyTough = False, allyAdditionalTough = 0}
     CardSpecific (isTarget a -> True) "ncDefenseComplete" (fromJSON -> Success (enemy :: EnemyId, before :: Natural)) -> do
       when (allyDamage a <= before) $ checkWindows [W.Window W.After $ W.AllyDefendedWithoutTakingDamage (allyId a) enemy]
       pure a
@@ -316,11 +324,14 @@ instance RunMessage (Attrs Ally) where
       AllyRetaliates enemy n -> do
         dealDamage enemy a (toDamage n FromRetaliate)
         pure a
+      AllyDamaged source damage | piercesTough damage -> a <$ cardSpecific a "discardToughForPiercing" (source,damage)
       AllyDamaged source damage -> do
         immune <- cannotTakeDamageFrom (AllyRef ident) source
-        if immune then pure a
+        if immune && not (damageUnpreventable damage) then pure a
         else if allyTough a && preventedByTough damage
-          then pure $ removeOneAllyStatus ToughStatus a
+          then do
+            checkWindows [W.Window W.After $ W.CharacterDiscardedTough (AllyCharacter ident)]
+            pure $ removeOneAllyStatus ToughStatus a
           else do
             hitPoints <- getModifiedHitPoints a
             attackDealtDamageTo source damage ident
@@ -378,6 +389,9 @@ instance RunMessage (Attrs Ally) where
       selectOne FirstPlayer >>= traverse_ \first -> when (first /= allyController a) do
         allyStep (allyId a) (AllyChangedController first)
       pure a
+    RemoveStatus (AllyRef ident) ToughStatus | ident == allyId a -> do
+      when (allyTough a) $ checkWindows [W.Window W.After $ W.CharacterDiscardedTough (AllyCharacter ident)]
+      pure $ removeOneAllyStatus ToughStatus a
     RemoveStatus (AllyRef ident) s | ident == allyId a -> pure $ removeOneAllyStatus s a
     _ -> pure a
    where

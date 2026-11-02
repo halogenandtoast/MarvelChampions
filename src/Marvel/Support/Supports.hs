@@ -1,4 +1,6 @@
 module Marvel.Support.Supports (module X) where
+import Marvel.Support.Supports.CampaignPlayers as X
+import Marvel.Support.Supports.WonderHerculesPack as X
 import Marvel.Support.Supports.Fw53006 as X
 import Marvel.Support.Supports.Fw53007 as X
 import Marvel.Support.Supports.Fw53020 as X

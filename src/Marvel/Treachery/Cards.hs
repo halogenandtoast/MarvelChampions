@@ -168,6 +168,10 @@ import Marvel.EncounterSet qualified as MGSet
 import Marvel.Keyword qualified as MGKeyword
 import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Boost qualified as MGBoost
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -183,7 +187,8 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ TT.tt55023, TT.tt55024, TT.tt55025, TT.tt55026, TT.tt55049, TT.tt55050, TT.tt55051
+  [ WM.wm58028, WM.wm58029, HC.hc59040
+  , TT.tt55023, TT.tt55024, TT.tt55025, TT.tt55026, TT.tt55049, TT.tt55050, TT.tt55051
   , aos50076, aos50077, aos50078, aos50079, aos50082, aos50096, aos50097, aos50102, aos50123, aos50124, aos50128, aos50137, aos50138, aos50141, aos50142, aos50147, aos50151, aos50155, aos50160, aos50163, aos50164, aos50175, aos50176, aos50177, aos50184a, aos50184b, aos50184c
   , FalconWinter.fw53033, FalconWinter.fw53042, FalconWinter.fw54037
   , aosP50033, aosP50063

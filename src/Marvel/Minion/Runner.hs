@@ -70,11 +70,12 @@ runMinionMessage msg attrs = case msg of
     modifiers <- getModifiers attrs
     damage <- incomingMinionDamage attrs source originalDamage
     hitPoints <- getModifiedHitPoints attrs
+    forbidden <- not <$> characterAttackDamageAllowed (toRef attrs) originalDamage
     cannotTakeDamage <- cannotTakeDamageFrom (toRef attrs) source
     if
       -- already defeated: damage to a minion on its way out of play does nothing
       | minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers -> pure attrs
-      | cannotTakeDamage -> pure attrs
+      | (cannotTakeDamage || forbidden) && not (damageUnpreventable originalDamage) -> pure attrs
       | minionTough attrs && preventedByTough originalDamage -> pure $ removeOneTough attrs
       | otherwise -> do
         when (damageAmount damage > 0) $ do
@@ -89,6 +90,7 @@ runMinionMessage msg attrs = case msg of
           minionStep (minionId attrs) (MinionDefeatedWithExcess source damage excess)
         pure $ (attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))) {minionDamageThisPhase = minionDamageThisPhase attrs + damageAmount damage, minionAdditionalTough = if piercesTough damage then 0 else minionAdditionalTough attrs}
   MinionDefeatedWithExcess source damage overkill -> do
+    baseScheme <- minionBaseScheme attrs
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
     blocked <- elem CannotBeDefeated <$> getModifiers attrs
@@ -99,7 +101,7 @@ runMinionMessage msg attrs = case msg of
       when (overkill > 0 && damageOverkill damage) do
         traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
       checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
-    pure attrs
+    pure attrs {minionDefeatedBaseScheme = if blocked then Nothing else Just baseScheme}
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
@@ -137,10 +139,13 @@ runMinionMessage msg attrs = case msg of
     resolveMinionLeavingPlay (minionId attrs)
     pure attrs
   MinionLeavesPlay -> do
+    -- Refresh after When Defeated and would-leave interrupts, while the host and
+    -- all its constant modifiers are still present.
+    baseScheme <- minionBaseScheme attrs
     -- The departure handles attached cards after the host's discard interrupts.
     defeatedLeavesPlay attrs
     minionDisengages (minionEngagedIdentity attrs) (minionId attrs)
-    pure attrs
+    pure attrs {minionDefeatedBaseScheme = Just baseScheme}
   -- a villainous minion is given a boost card as it uses a basic power (RR, Villainous)
   MinionSchemesAgainst you -> do
     minionStep (minionId attrs) MinionSchemes
@@ -298,6 +303,7 @@ instance RunMessage (Attrs Minion) where
       CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success (you,aid)) | target == toRef attrs ->
         pure attrs {minionActivationPlayer = Just you, minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
       RemovePlayerCardFromHeldZones cid -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs), minionHeldTreacheries = filter ((/= cid) . ecCardId) (minionHeldTreacheries attrs)}
+      CardSpecific (isTarget attrs -> True) "ignoreWhenDefeated" (fromJSON -> Success flag) -> pure attrs {minionIgnoreWhenDefeated = flag}
       CardSpecific (isTarget attrs -> True) "informantScheme" (fromJSON -> Success you) -> pure attrs {minionSchemeRemoval = Just you}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do

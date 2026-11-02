@@ -199,6 +199,7 @@ countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
 
 instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific (isTarget attrs -> True) "removeAccelerationToken" _ -> pure attrs {sideSchemeAccelerationTokens = subtractNatural 1 $ sideSchemeAccelerationTokens attrs}
     CardSpecific target "playerSideSchemeCard" (fromJSON -> Success card) | target == toRef attrs -> pure attrs {sideSchemePlayerCard = Just card}
     CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> do
       let remaining = subtractNatural n (sideSchemeThreat attrs)
@@ -254,5 +255,6 @@ instance RunMessage (Attrs SideScheme) where
           signature <- match (sideSchemeId attrs) (SignatureSchemeOf AnyVillain)
           let defeated = subtractNatural n (sideSchemeThreat attrs) == 0 && not signature && CannotLeavePlay `notElem` modifiers
           when defeated $ if thwart then defeatSideSchemeByThwart (sideSchemeId attrs) source else defeatSideSchemeBy (sideSchemeId attrs) source
+          when (defeated && thwart && n == sideSchemeThreat attrs && n > 0) $ checkWindows [Window After $ ExactlyDefeatedSideSchemeBy (sideSchemeId attrs) source]
           defeater <- if defeated then getSourceController source else pure Nothing
           pure $ attrs & threatL %~ subtractNatural n & \a -> a {sideSchemeDefeatedBy = defeater <|> sideSchemeDefeatedBy a}

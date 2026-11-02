@@ -39,7 +39,12 @@ modifiedStat :: Natural -> (Modifier -> Integer) -> [Modifier] -> Natural
 modifiedStat base f modifiers = fromInteger $ max 0 (toInteger base + sum (map f modifiers))
 
 getModifiedAttack :: (HasGame m) => Attrs Hero -> m Natural
-getModifiedAttack attrs = modifiedStat (unAtk $ heroBaseAttack attrs) change <$> getModifiers attrs
+getModifiedAttack attrs = do
+  modifiers <- getModifiers attrs
+  if UseDefenseForAttackAndThwart `elem` modifiers then getModifiedDefense attrs
+    else do
+      remaining <- getCharacterRemainingHitPoints (IdentityCharacter $ heroIdentityId attrs)
+      pure $ modifiedStat (unAtk $ heroBaseAttack attrs) change modifiers + sum [n | StatsAtOneRemainingHitPoint n <- modifiers, remaining == 1]
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
@@ -51,7 +56,7 @@ getModifiedAttackAgainst :: (HasGame m) => Attrs Hero -> EnemyId -> m Natural
 getModifiedAttackAgainst attrs enemy = do
   normal <- getModifiedAttack attrs
   modifiers <- getModifiers attrs
-  pure $ normal + sum [n | AttackModifierAgainst target n <- modifiers, target == enemy]
+  pure $ normal + if UseDefenseForAttackAndThwart `elem` modifiers then 0 else sum [n | AttackModifierAgainst target n <- modifiers, target == enemy]
 
 getModifiedDefenseAgainst :: (HasGame m) => Attrs Hero -> EnemyId -> m Natural
 getModifiedDefenseAgainst attrs enemy = do
@@ -60,7 +65,12 @@ getModifiedDefenseAgainst attrs enemy = do
   pure $ normal + sum [n | DefenseModifierAgainst target n <- modifiers, target == enemy]
 
 getModifiedThwart :: (HasGame m) => Attrs Hero -> m Natural
-getModifiedThwart attrs = modifiedStat (unThw $ heroBaseThwart attrs) change <$> getModifiers attrs
+getModifiedThwart attrs = do
+  modifiers <- getModifiers attrs
+  if UseDefenseForAttackAndThwart `elem` modifiers then getModifiedDefense attrs
+    else do
+      remaining <- getCharacterRemainingHitPoints (IdentityCharacter $ heroIdentityId attrs)
+      pure $ modifiedStat (unThw $ heroBaseThwart attrs) change modifiers + sum [n | StatsAtOneRemainingHitPoint n <- modifiers, remaining == 1]
  where
   change (ThwartModifier n) = toInteger n
   change (ThwartPenalty n) = negate (toInteger n)

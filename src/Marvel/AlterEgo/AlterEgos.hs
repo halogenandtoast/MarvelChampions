@@ -1,4 +1,6 @@
 module Marvel.AlterEgo.AlterEgos (module X) where
+import Marvel.AlterEgo.AlterEgos.CampaignPlayers as X
+import Marvel.AlterEgo.AlterEgos.WonderHerculesPack as X
 import Marvel.AlterEgo.AlterEgos.Fw53001b as X
 import Marvel.AlterEgo.AlterEgos.Fw54001b as X
 

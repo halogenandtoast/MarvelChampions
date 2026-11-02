@@ -5,7 +5,9 @@ module Marvel.Identity (
   module Marvel.Identity.Types,
 ) where
 
+import Marvel.CampaignPlayers.Helpers (echoReplayCards, echoReplayDiscount, echoReservedReplay, identitySensePending)
 import Data.List qualified
+import Marvel.Resource.Resources.WonderMan (energySiphonResources)
 import Marvel.Prelude
 import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Aspect (Aspect)
@@ -391,8 +393,10 @@ isPlayableWith ignoringCost attrs c = do
 previewHandPlay :: HasGame m => PlayerIdentity -> PlayerCard -> m PlayerIdentity
 previewHandPlay player card = do
   available <- getPlayableHandCards (toId player)
+  modifiers <- getModifiers player
+  let topPermission = PlayTopOfDeckAsHand `elem` modifiers
   let attrs = toAttrs player
-      top = card `notElem` unHand (playerIdentityHand attrs) && card `elem` available
+      top = topPermission && card `elem` take 1 (unDeck $ playerIdentityDeck attrs) && card `notElem` unHand (playerIdentityHand attrs) && card `elem` available && Just card == headMay (unDeck $ playerIdentityDeck attrs)
   pure $ if top then PlayerIdentity attrs {playerIdentityPendingTopDeckPlay = Just card} else player
 
 isPlayableFromHand :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
@@ -400,8 +404,12 @@ isPlayableFromHand = isPlayableFromHandWith False
 
 isPlayableFromHandWith :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> m Bool
 isPlayableFromHandWith ignoringCost player card = do
-  preview <- previewHandPlay player card
-  isPlayableWith ignoringCost preview card
+  echoCards <- echoReplayCards (toId player)
+  if card `elem` echoCards && card `notElem` unHand (playerIdentityHand $ toAttrs player)
+    then canAffordEchoReplayFor ignoringCost (toId player) card
+    else do
+      preview <- previewHandPlay player card
+      isPlayableWith ignoringCost preview card
 
 -- \^ this is critical and order matters to avoid infinite recursionl
 
@@ -497,12 +505,27 @@ resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
   onTarget <- maybe (pure []) getModifiers mTarget
   missionReduction <- missionAllyReduction c
+  echoReduction <- echoReplayDiscount (toId attrs) c
   soldier <- if toCardCode c == "40023" then selectAny (IdentityWithId (toId attrs) <> IdentityWithTrait Soldier) else pure False
   let pending = playerIdentityPendingTopDeckPlay (toAttrs attrs) == Just c
       asHand = c `elem` unHand (playerIdentityHand $ toAttrs attrs) || pending
       topDiscount = if pending then 1 else 0 :: Natural
-  let intrinsic = (if soldier then -1 else 0) - fromIntegral topDiscount
-  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic - fromIntegral missionReduction + sum (map (change asHand) modifiers <> map changeOn onTarget))
+  minions <- selectList (MinionEngagedWith $ IdentityWithId $ toId attrs)
+  allies <- selectList (AllyControlledBy $ IdentityWithId $ toId attrs)
+  traits <- getTraits attrs
+  let discountTraits = case toCardCode c of
+        "60023" -> [MartialArtist]
+        "60026" -> [Attorney,Police]
+        "60027" -> [MartialArtist,Spy]
+        _ -> []
+      printedDiscount = if any (`member` traits) discountTraits then 1 else 0
+      variableAdjustment = case toCardCode c of
+        "56008" -> negate (length minions)
+        "60048" -> length allies
+        "60050" -> length allies
+        _ -> 0
+      intrinsic = (if soldier then -1 else 0) - fromIntegral topDiscount - printedDiscount + variableAdjustment
+  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic - fromIntegral echoReduction - fromIntegral missionReduction + sum (map (change asHand) modifiers <> map changeOn onTarget))
  where
   change asHand = \case
     ResourceCostReduction n -> negate (fromIntegral n)
@@ -539,7 +562,13 @@ printedXChoices ignoringCost attrs c mTarget = do
       upperPaid = max 0 (length resources - adjustment + potentialReduction)
   upperEffect <- selectListCount meaningful
   let upper = if ignoringCost || ignored then upperEffect else fromIntegral upperPaid
-  pure [minimumX .. upper]
+  if toCardCode c == "58018" then do
+    schemes <- selectList ThwartableScheme
+    confused <- identityMatches ConfusedIdentity ident
+    let bound = fromIntegral $ length schemes
+        capped = if ignoringCost || ignored then bound else min bound upper
+    pure $ if confused then [0 .. max 0 capped] else [1 .. capped]
+  else pure [minimumX .. upper]
 
 -- | The whole cost of playing the card on the target: its resource cost, and the cost
 -- of its ability (an event's "→"), paid together.
@@ -553,6 +582,7 @@ getCardCost = getCardCostWithX Nothing
 
 getCardCostWithX :: (MonadThrow m, Projection m PlayerIdentity, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
 getCardCostWithX chosenX attrs c mTarget = do
+  def <- effectivePlayerCardDef (toId attrs) c
   modifiedCost <- case chosenX of
     Nothing -> getModifiedCost attrs c mTarget
     Just n -> getModifiedCostWithBase attrs c mTarget (Just $ fromIntegral n)
@@ -561,12 +591,19 @@ getCardCostWithX chosenX attrs c mTarget = do
       cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) =<< getPlayers
       pure $ maybe 0 (fromMaybe 0 . cdCost . getCardDef) (find ((== cid) . pcCardId) cards)
     _ -> pure 0
+  echoReduction <- echoReplayDiscount (toId attrs) c
+  (_, adjustment) <- resourceCostAdjustment attrs c mTarget
+  let base = maybe (fromMaybe 0 $ cdCost def) fromIntegral chosenX
+      -- Only the portion unused by the event's resource cost carries to its
+      -- resource-valued ability cost (FFG 2026-08-26, Photographic Reflexes).
+      beforeEcho = max 0 (base + adjustment + fromIntegral echoReduction)
+      remainingEchoReduction = subtractNatural (fromIntegral beforeEcho) echoReduction
+      printedAfterEcho = max 0 (printed - fromIntegral remainingEchoReduction)
   pure $
     mconcat (map (ResourceCost . (\r -> r <|> spendOnly (cdCriteria def))) (requirementResourceCost (requiredResources def) modifiedCost))
-      <> mconcat (replicate printed (ResourceCost Nothing))
+      <> mconcat (replicate printedAfterEcho (ResourceCost Nothing))
       <> filterCosts (\case TargetPrintedCost -> False; PrintedXCost _ _ -> False; _ -> True) (cdAbilityCost def)
  where
-  def = getCardDef c
   usesTargetCost = elem TargetPrintedCost . flattenCosts
 
 -- | The targets the card can be played on whose cost the player can pay: just
@@ -753,6 +790,8 @@ beginCardPayment chosenX pid card mWindow mTarget = do
   activeCostId <- getRandom
   holder <- getAllyHoldingCard card
   supportHolder <- getSupportHoldingCard card
+  echoReserved <- echoReservedReplay (toId pid)
+  sensePending <- identitySensePending (toId pid)
   for_ holder (\aid -> reserveAllyHeldCard aid card)
   for_ supportHolder (\sid -> supportStep sid (ReserveHeldCard card))
   setActiveCost $
@@ -761,7 +800,7 @@ beginCardPayment chosenX pid card mWindow mTarget = do
         (toId pid)
         (ForCard card)
         cost
-        (maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder <> maybe NoPayment (\sid -> ReservedSupportCardPayment sid card) supportHolder <> (if playerIdentityPendingTopDeckPlay (toAttrs pid) == Just card then ReservedTopDeckCardPayment card else NoPayment))
+        (maybe NoPayment (\(reserved,index) -> if pcCardId reserved == pcCardId card then ReservedSenseCardPayment (toId pid) card index else NoPayment) sensePending <> maybe NoPayment (\(event,reflexes) -> if event == card then ReservedEchoCardPayment (toId pid) event reflexes else NoPayment) echoReserved <> maybe NoPayment XPayment chosenX <> maybe NoPayment TargetPayment mTarget <> maybe NoPayment (\aid -> ReservedAllyCardPayment aid card) holder <> maybe NoPayment (\sid -> ReservedSupportCardPayment sid card) supportHolder <> (if playerIdentityPendingTopDeckPlay (toAttrs pid) == Just card then ReservedTopDeckCardPayment card else NoPayment))
         mWindow
         mempty
         Nothing
@@ -814,13 +853,10 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       pure pid
     -- draw up to hand size, mulligan any of it, draw again, then the setup abilities
     DealStartingHand -> do
-      campaign <- getCampaign
-      let extraMulligan = maybe False (\c -> c.kind == Campaign.SinisterMotives && c.campaignLog.sinister.reputation >= 5) campaign
-      let setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
-      for_ [DrawOrDiscardToHandLimit, DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
-      when extraMulligan $
-        for_ [DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
-      for_ setupAbilities \a -> ranAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment
+      let cards = filter (elem Starting . cdKeywords . getCardDef) (unDeck playerIdentityDeck)
+      unless (null cards) $ chooseOne playerIdentityId $
+        [targeting card (addToHand playerIdentityId card) | card <- cards] <> [labeled "$label.done" (pure ())]
+      cardSpecific pid "drawOpeningHand" ()
       pure pid
     IdentityDealtBoost card -> pure $ PlayerIdentity attrs
       {playerIdentityBoostCards = playerIdentityBoostCards <> [card]}
@@ -951,9 +987,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     ChangedToForm side -> do
       modifiers <- getModifiers pid
       let toHero = case HashMap.lookup side playerIdentitySides of Just (HeroSide _) -> True; _ -> False
-          canChange = side /= playerIdentitySide && CannotChangeForm `notElem` modifiers && (not toHero || CannotChangeToHeroForm `notElem` modifiers)
+          canChange = side /= playerIdentitySide && CannotChangeForm `notElem` modifiers && (if toHero then CannotChangeToHeroForm `notElem` modifiers else CannotChangeToAlterEgoForm `notElem` modifiers)
       when canChange do
-        let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, toHero]
+        let additional = mconcat [c | AdditionalChangeToHeroFormCost c <- modifiers, toHero] <> mconcat [c | AdditionalChangeFormCost c <- modifiers]
         if additional == NoCost then do
           checkWindows [W.Window W.When $ W.IdentityChangesForm playerIdentityId]
           cardSpecific pid "completeChangeForm" side
@@ -1008,8 +1044,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     -- a card played from a discard pile is left there until it is played, so that
     -- giving it up leaves it where it was
     PayForCard card mWindow mTarget -> beginCardPayment Nothing pid card mWindow mTarget
-    PlayedCard card _ -> pure $ PlayerIdentity attrs
-      {playerIdentityPendingTopDeckPlay = if playerIdentityPendingTopDeckPlay == Just card then Nothing else playerIdentityPendingTopDeckPlay}
+    PlayedCard card _ -> do
+      pendingSense <- identitySensePending playerIdentityId
+      when (maybe False ((== pcCardId card) . pcCardId . fst) pendingSense) $ cardSpecific playerIdentityId "fneSensePlayFinished" ()
+      pure $ PlayerIdentity attrs
+        {playerIdentityPendingTopDeckPlay = if playerIdentityPendingTopDeckPlay == Just card then Nothing else playerIdentityPendingTopDeckPlay}
     PaidWithCard card -> do
       mActiveCost <- getActiveCost
       case mActiveCost of
@@ -1018,7 +1057,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           mCost <- getActiveCostCard activeCostId
           generated <- resourcesFor card mCost
           printed <- printedResourcesFor card
-          spendCardWithResources activeCostId card generated printed
+          if toCardCode card == "58006" then energySiphonResources playerIdentityId activeCostId card
+            else spendCardWithResources activeCostId card generated printed
           pure $
             PlayerIdentity $
               attrs
@@ -1279,7 +1319,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         pure pid
       else do
         immune <- cannotTakeDamageFrom (IdentityRef playerIdentityId) source
-        if immune then pure pid
+        if immune && not (damageUnpreventable damage) then pure pid
         else if playerIdentityTough && damageAmount damage > 0 && preventedByTough damage
           then do
             checkWindows [W.Window W.After $ W.IdentityDiscardedTough playerIdentityId]
@@ -1494,6 +1534,7 @@ completeIdentityFormChange pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) s
   let fromAlterEgo = case currentIdentity pid of AlterEgoSide _ -> True; _ -> False
   checkWindows $ W.Window W.After (W.IdentityChangesForm playerIdentityId)
     : [W.Window W.After (W.MutantChangedToHero playerIdentityId) | fromAlterEgo && toHero && Mutant `member` oldTraits]
+    <> [W.Window W.After (W.AvengerChangedToAlterEgo playerIdentityId) | not fromAlterEgo && not toHero && Avenger `member` oldTraits]
   pure $ PlayerIdentity $ attrs & sideL .~ side
 
 runPlayerMessage ::
@@ -1502,19 +1543,22 @@ runPlayerMessage ::
   PlayerIdentity ->
   m PlayerIdentity
 runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
+    CardSpecific (IdentityRef who) "drawOpeningHand" _ | who == playerIdentityId attrs -> drawOpeningHand pid
     -- The ordinary change-form action paid this before its use was marked. Effect
     -- changes still enter through ChangedToForm and pay their additional cost there.
     CardSpecific (IdentityRef who) "choosePaidHeroForm" _ | who == playerIdentityId attrs -> do
       modifiers <- getModifiers pid
-      let forms = [(side, face) | (side, HeroSide face) <- HashMap.toList (playerIdentitySides attrs)]
-          permitted = CannotChangeForm `notElem` modifiers && CannotChangeToHeroForm `notElem` modifiers
+      let forms = [(side, face) | (side, face) <- HashMap.toList (playerIdentitySides attrs), side /= playerIdentitySide attrs]
+          permitted = CannotChangeForm `notElem` modifiers
       when permitted $ chooseOrRunOne who
         [ do
             messages <- capture $ do
               checkWindows [W.Window W.When $ W.IdentityChangesForm who]
               cardSpecific pid "completeChangeForm" side
-            pure $ CardLabel (toCardCode face) (Run messages)
-        | (side, face) <- forms ]
+            pure $ case face of
+              HeroSide hero -> CardLabel (toCardCode hero) (Run messages)
+              AlterEgoSide alterEgo -> CardLabel (toCardCode alterEgo) (Run messages)
+        | (side, face) <- forms, case face of HeroSide _ -> CannotChangeToHeroForm `notElem` modifiers; _ -> CannotChangeToAlterEgoForm `notElem` modifiers ]
       pure pid
     CardSpecific (IdentityRef who) "changeFormCostPaid" (fromJSON -> Success (side :: Side, _payment :: Payment))
       | who == playerIdentityId attrs -> do
@@ -1528,21 +1572,35 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       pure $ PlayerIdentity (toAttrs next) {playerIdentityTopDeckPlayUsed = False}
     CardSpecific (IdentityRef who) "playFromHand" (fromJSON -> Success (card, window :: Maybe W.Window))
       | who == playerIdentityId attrs -> do
-          permitted <- getPlayableHandCards who
-          let actualHand = card `elem` unHand (playerIdentityHand attrs)
-              topPlay = not actualHand && card `elem` permitted
-          -- Held events and ordinary hand cards retain their existing source. Only
-          -- an explicit top-card hand play reserves the deck's current card here.
-          when (actualHand || topPlay) $ identityStep who (PlayingCard card window)
-          unless (actualHand || topPlay) do
-            held <- getHeldPlayableCards who
-            when (card `elem` held || (cdPlayableFromDiscard (getCardDef card) && card `elem` unDiscard (playerIdentityDiscard attrs))) $
-              identityStep who (PlayingCard card window)
-          pure $ if topPlay then PlayerIdentity attrs
-            { playerIdentityDeck = Deck (filter (/= card) $ unDeck $ playerIdentityDeck attrs)
-            , playerIdentityTopDeckPlayUsed = True
-            , playerIdentityPendingTopDeckPlay = Just card
-            } else pid
+          echoCards <- echoReplayCards who
+          if card `elem` echoCards then do
+            let reflexes = filter ((`elem` ["60040a","60040b","60040c"]) . toCardCode) $ unHand $ playerIdentityHand attrs
+            chooseOne who [targeting chosen (cardSpecific who "fneReplayChosen" (card,chosen,window)) | chosen <- reflexes]
+            pure pid
+          else do
+            permitted <- getPlayableHandCards who
+            let actualHand = card `elem` unHand (playerIdentityHand attrs)
+                topPlay = not actualHand && card `elem` permitted
+            -- Held events and ordinary hand cards retain their existing source. Only
+            -- an explicit top-card hand play reserves the deck's current card here.
+            when (actualHand || topPlay) $ identityStep who (PlayingCard card window)
+            unless (actualHand || topPlay) do
+              held <- getHeldPlayableCards who
+              when (card `elem` held || (cdPlayableFromDiscard (getCardDef card) && card `elem` unDiscard (playerIdentityDiscard attrs))) $
+                identityStep who (PlayingCard card window)
+            pure $ if topPlay then PlayerIdentity attrs
+              { playerIdentityDeck = Deck (filter (/= card) $ unDeck $ playerIdentityDeck attrs)
+              , playerIdentityTopDeckPlayUsed = True
+              , playerIdentityPendingTopDeckPlay = Just card
+              } else pid
+    CardSpecific (IdentityRef who) "fneReplayChosen" (fromJSON -> Success (card :: PlayerCard,reflexes :: PlayerCard,window :: Maybe W.Window))
+      | who == playerIdentityId attrs -> do
+          let replayed = card {pcController = Just who}
+          cardSpecific who "fneReserveReplay" (replayed,reflexes)
+          discardCard reflexes
+          addToHand who replayed
+          cardSpecific who "playFromHand" (replayed,window)
+          pure pid
     CardSpecific (IdentityRef who) "restoreTopDeckPlay" (fromJSON -> Success card)
       | who == playerIdentityId attrs -> pure $ PlayerIdentity attrs
           { playerIdentityDeck = Deck (card : filter (/= card) (unDeck $ playerIdentityDeck attrs))
@@ -1770,3 +1828,15 @@ deriving newtype instance FromJSON PlayerIdentity
 -- choose to discard this card from your hand"); a random discard still takes it.
 choosableToDiscard :: [PlayerCard] -> [PlayerCard]
 choosableToDiscard = filter (not . staysInHand)
+
+drawOpeningHand :: ReverseQueue m => PlayerIdentity -> m PlayerIdentity
+drawOpeningHand pid@(PlayerIdentity PlayerIdentityAttrs {..}) = do
+  campaign <- getCampaign
+  let extraMulligan = maybe False (\c -> c.kind == Campaign.SinisterMotives && c.campaignLog.sinister.reputation >= 5) campaign
+  let setupAbilities = filter ((== Setup) . abilityType) $ getAbilities pid
+  for_ [DrawOrDiscardToHandLimit, DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
+  when extraMulligan $
+    for_ [DiscardCards, DrawOrDiscardToHandLimit] (identityStep playerIdentityId)
+  for_ setupAbilities \a -> ranAbility (toId pid) (toTarget pid) (abilityIndex a) [] NoPayment
+  cardSpecific GameRef "playerCardSetup" playerIdentityId
+  pure pid

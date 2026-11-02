@@ -14,6 +14,8 @@ import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
+import Marvel.Phase (Phase(VillainPhase))
+import Marvel.Window.Types qualified as W
 
 data Effect = forall a. (IsEffect a) => Effect a
 
@@ -92,7 +94,9 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
 data EffectTiming
-  = DisableAtEndOfPhase
+  = DisableAtEndOfAttack
+  | DisableAtStartOfVillainPhase
+  | DisableAtEndOfPhase
   | DisableAtEndOfRound
   | -- | at the end of the turn of the identity it is on: "until the end of this turn", or
     -- from the villain phase "until your next turn ends"
@@ -164,6 +168,13 @@ instance RunMessage (Attrs Effect) where
     EventMessage eid ResolvedEvent
       | effectMatcher a == EventEntity eid ->
           a <$ disableEffect (effectId a)
+    CheckWindows windows | effectEnds a == Just DisableAtEndOfAttack -> do
+      let finished = any (\case
+            W.Window W.After (W.PlayerAttackResolved source _ _) -> source == effectSource a
+            W.Window W.After (W.AllyAttack aid _) -> effectSource a == AllyRef aid
+            _ -> False) windows
+      a <$ when finished (disableEffect $ effectId a)
+    BeginPhase VillainPhase | effectEnds a == Just DisableAtStartOfVillainPhase -> a <$ disableEffect (effectId a)
     EndPhase _ -> a <$ when (effectEnds a == Just DisableAtEndOfPhase) (disableEffect $ effectId a)
     EndRound -> a <$ when (effectEnds a == Just DisableAtEndOfRound) (disableEffect $ effectId a)
     IdentityEndedTurn ident | effectEnds a == Just DisableAtEndOfTurn -> do

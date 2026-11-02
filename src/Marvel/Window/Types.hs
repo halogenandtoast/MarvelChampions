@@ -67,6 +67,14 @@ data WindowMatcher
   | EnemyDefeatedByBasicAttack IdentityMatcher
   | ThreatRemovedFromScheme SchemeMatcher
   | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
+  | BoostCardFlippedDuringUndefendedAttack WindowTiming EnemyMatcher
+  | CharacterSharingHeroTraitWouldTakeDamage IdentityMatcher
+  | CharacterThwartsScheme WindowTiming SourceMatcher SchemeMatcher
+  | CharacterDefeated WindowTiming CharacterMatcher
+  | AllyWouldBeDefeatedByConsequentialDamage AllyMatcher
+  | AvengerHeroChangedToAlterEgo
+  | SideSchemeExactlyDefeatedBy IdentityMatcher
+  | RemovesLastThreatFrom IdentityMatcher SchemeMatcher
   | RemovesLastThreat IdentityMatcher
   | -- | "after you play <this card>": played, not only put into play
     PlayThis WindowTiming
@@ -114,6 +122,7 @@ data WindowMatcher
     -- not all of it prevented by his tough status card
     VillainWouldTakeDamage VillainMatcher DamageMatcher
   | VillainWouldTakeDamageFrom VillainMatcher DamageMatcher
+  | VillainSchemedPlacingThreat VillainMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | IdentityThwarts WindowTiming IdentityMatcher
@@ -139,6 +148,10 @@ data WindowMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
   | UpgradeLosesLastCounter WindowTiming UpgradeMatcher
   | UpgradeCountersPlaced WindowTiming UpgradeMatcher
+  | EnemyExactlyDefeatedByAttack IdentityMatcher
+  | CardAddedToVictoryDisplay CardMatcher
+  | SupportCountersPlaced WindowTiming SupportMatcher
+  | CharacterDiscardsTough WindowTiming CharacterMatcher
   | IdentityDiscardsTough WindowTiming IdentityMatcher
   | VillainWouldActivate IdentityMatcher
   | IdentityAttackResolved IdentityMatcher
@@ -315,6 +328,7 @@ data WindowType
   | EnemyAttackOnEnemy EnemyId EnemyId
   | -- | the damage an enemy's attack dealt the character
     EnemyAttacksAndDamages EnemyId CharacterId Natural
+  | VillainSchemeResolved VillainId Natural
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId
   | IdentityAttackTarget IdentityId EnemyId
@@ -325,6 +339,7 @@ data WindowType
   | -- | A hero or ally attacks a friendly identity, without becoming an enemy.
     FriendlyCharacterAttack CharacterId IdentityId
   | ThreatPlaced ThreatSource SchemeId Natural
+  | AvengerChangedToAlterEgo IdentityId
   | MutantChangedToHero IdentityId
   | IdentityChangesForm IdentityId
   | -- | the identity changed to the energy form of this upgrade, turned faceup
@@ -336,6 +351,9 @@ data WindowType
   | EncounterCardWasDealt IdentityId EncounterCard
   | EncounterCardBeingDealt IdentityId
   | IdentityDiscardedTough IdentityId
+  | CharacterDiscardedTough CharacterId
+  | SupportCounterAmountChanged SupportId Natural Natural
+  | VictoryCardAdded CardDef
   | VillainActivationWouldBegin VillainId IdentityId
   | IgnoredKeyword IdentityId MinionId
   | IgnoredCrisis IdentityId SideSchemeId
@@ -356,6 +374,7 @@ data WindowType
   | -- | the side scheme has been defeated, by the player, and by what removed its last
     -- threat when that is known
     DefeatedSideSchemeBy SideSchemeId IdentityId (Maybe Source)
+  | ExactlyDefeatedSideSchemeBy SideSchemeId Source
   | DefeatedSideSchemeByThwart SideSchemeId Source
   | -- | the alter-ego has used their REC
     UsedRecovery IdentityId

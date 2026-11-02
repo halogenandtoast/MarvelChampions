@@ -51,4 +51,4 @@ instance RunMessage (Attrs AlterEgo) where
 getModifiedRecovery :: (HasGame m) => Attrs AlterEgo -> m Natural
 getModifiedRecovery a = do
   modifiers <- getModifiers (alterEgoIdentityId a)
-  pure $ unRec (alterEgoBaseRecovery a) + sum [n | RecoveryModifier n <- modifiers]
+  pure $ subtractNatural (sum [n | RecoveryPenalty n <- modifiers]) (unRec (alterEgoBaseRecovery a) + sum [n | RecoveryModifier n <- modifiers])

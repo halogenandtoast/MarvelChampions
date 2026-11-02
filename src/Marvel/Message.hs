@@ -35,7 +35,7 @@ import Marvel.Damage (Damage (..), DamageSource (FromAttack, FromOverkill, FromR
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers.Types
-import Marvel.Modifier.Types (Modifier (CannotBeCanceled))
+import Marvel.Modifier.Types (Modifier (CannotBeCanceled, UseDefenseForAttackAndThwart))
 import Marvel.Payment.Types
 import Marvel.Resource.Types (Resource)
 import Marvel.Phase
@@ -63,7 +63,9 @@ damageIdentity ident source damage
 -- | Damage to an ally: first the window for what answers "when a character would take
 -- damage", then the damage.
 damageAlly :: AllyId -> Source -> Damage -> [Message]
-damageAlly aid source damage =
+damageAlly aid source damage
+  | damagePiercing damage && damageAmount damage > 0 = [CardSpecific (AllyRef aid) "discardToughForPiercing" (toJSON (source,damage))]
+  | otherwise =
   [ CheckWindows [Window When $ AllyTakeDamage aid damage, Window When $ Marvel.Window.Types.AllyTakeDamageFrom aid source damage]
   , AllyMessage aid $ AllyDamaged source damage
   ]
@@ -76,6 +78,7 @@ preventAllyDamage aid n = replaceMatchingMessage prevent \case
   _ -> False
  where
   prevent = \case
+    msg@(AllyMessage _ (AllyDamaged _ dmg)) | damageUnpreventable dmg -> [msg]
     AllyMessage a (AllyDamaged source dmg) ->
       [AllyMessage a $ AllyDamaged source dmg {damageAmount = damageAmount dmg - n} | damageAmount dmg > n]
     msg -> [msg]
@@ -88,6 +91,7 @@ preventDamage ident n = replaceMatchingMessage prevent \case
   _ -> False
  where
   prevent = \case
+    msg@(IdentityMessage _ (IdentityDamaged _ dmg)) | damageUnpreventable dmg -> [msg]
     IdentityMessage i (IdentityDamaged source dmg) ->
       [ IdentityMessage i $ IdentityDamaged source dmg {damageAmount = damageAmount dmg - n}
       | damageAmount dmg > n
@@ -191,17 +195,22 @@ engageMinion minion ident =
 
 -- | Add to the power of the basic attack, thwart or defense the player is making, as an
 -- interrupt to making it.
-addToBasicPower :: (HasQueue m) => IdentityId -> Natural -> m ()
-addToBasicPower ident n = replaceMatchingMessage raise \case
-  IdentityMessage ident' (SideMessage (RecoveredWithBonus _)) -> ident == ident'
-  IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
-  IdentityMessage ident' (SideMessage (BasicAttackOn _ _)) -> ident == ident'
-  IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
-  IdentityMessage ident' (SideMessage (DefenseUsingAttackApplied _ _)) -> ident == ident'
-  IdentityMessage ident' (SideMessage (DefenseApplied _ _)) -> ident == ident'
-  _ -> False
+addToBasicPower :: (HasQueue m, HasGame m) => IdentityId -> Natural -> m ()
+addToBasicPower ident n = do
+  substitutes <- elem UseDefenseForAttackAndThwart <$> getModifiers (IdentityRef ident)
+  replaceMatchingMessage (raise substitutes) $ \case
+    IdentityMessage ident' (SideMessage (RecoveredWithBonus _)) -> ident == ident'
+    IdentityMessage ident' (SideMessage (BasicAttack _)) -> ident == ident'
+    IdentityMessage ident' (SideMessage (BasicAttackOn _ _)) -> ident == ident'
+    IdentityMessage ident' (SideMessage (BasicThwart _)) -> ident == ident'
+    IdentityMessage ident' (SideMessage (DefenseUsingAttackApplied _ _)) -> ident == ident'
+    IdentityMessage ident' (SideMessage (DefenseApplied _ _)) -> ident == ident'
+    _ -> False
  where
-  raise = \case
+  raise substitutes = \case
+    message@(IdentityMessage _ (SideMessage (BasicAttack _))) | substitutes -> [message]
+    message@(IdentityMessage _ (SideMessage (BasicAttackOn _ _))) | substitutes -> [message]
+    message@(IdentityMessage _ (SideMessage (BasicThwart _))) | substitutes -> [message]
     IdentityMessage i (SideMessage (RecoveredWithBonus x)) -> [IdentityMessage i (SideMessage (RecoveredWithBonus (x + n)))]
     IdentityMessage i (SideMessage (DefenseUsingAttackApplied x e)) -> [IdentityMessage i (SideMessage (DefenseUsingAttackApplied (x + n) e))]
     IdentityMessage i (SideMessage (DefenseApplied x e)) -> [IdentityMessage i (SideMessage (DefenseApplied (x + n) e))]

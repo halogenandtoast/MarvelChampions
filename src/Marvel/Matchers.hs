@@ -17,7 +17,7 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers.Types
-import Marvel.Ref (Ref (AllyRef, EventRef, IdentityRef), Source)
+import Marvel.Ref (Ref (AllyRef, EventRef, IdentityRef), Source, refocus)
 
 identityMatches :: (HasGame m) => IdentityMatcher -> IdentityId -> m Bool
 identityMatches matcher ident = member ident <$> inAnyArea (gameSelectIdentity matcher)
@@ -126,6 +126,11 @@ heroAttackBy damage source = case damageSource damage of
 sourceMatches :: (HasGame m) => SourceMatcher -> Source -> m Bool
 sourceMatches matcher source = case matcher of
   AnySource -> pure True
+  SourceExtendsIdentity matcher' -> getHeroSourceController source >>= maybe (pure False) (identityMatches matcher')
+  SourceWithTrait trait -> case source of
+    IdentityRef you -> member trait <$> getCharacterTraits (IdentityCharacter you)
+    AllyRef aid -> member trait <$> getCharacterTraits (AllyCharacter aid)
+    _ -> maybe False (member trait . cdTraits) <$> getsGame (`abilityCardDef` refocus source)
   SourceIsHero matcher' -> do
     controller <- getHeroSourceController source
     maybe (pure False) (identityMatches $ matcher' <> HeroIdentity) controller

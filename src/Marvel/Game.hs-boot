@@ -348,6 +348,7 @@ getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
 
 getEnemyKeywords :: HasGame m => EnemyId -> m [Keyword]
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
+getEnemyBaseScheme :: HasGame m => EnemyId -> m Natural
 getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural
 getEnemyPrintedAttack :: (HasGame m) => EnemyId -> m Natural
 getAttachmentIdentity :: (HasGame m) => AttachmentId -> m (Maybe IdentityId)
@@ -492,3 +493,24 @@ getMinionDamageInPlay :: HasGame m => MinionId -> m Natural
 canAllyDefendEnemy :: HasGame m => EnemyId -> AllyId -> m Bool
 
 attachmentIsReady :: HasGame m => AttachmentId -> m Bool
+
+getActiveCostValue :: HasGame m => ActiveCostId -> m (Maybe Cost)
+getCardsInPlayTargets :: HasGame m => m [Target]
+
+encounterCardPrintedHitPoints :: IdentityId -> EncounterCard -> Natural
+
+characterAttackDamageAllowed :: HasGame m => Target -> Damage -> m Bool
+
+herculesCanRevealLaborFor :: HasGame m => IdentityId -> m Bool
+herculesHasGiftFor :: HasGame m => IdentityId -> m Bool
+
+canPlayTopSenseFor :: (HasGame m, HasQueue m) => IdentityId -> m Bool
+hasEchoTuckedEventFor :: HasGame m => IdentityId -> m Bool
+
+canAffordEchoReplayFor :: (HasGame m, HasQueue m) => Bool -> IdentityId -> PlayerCard -> m Bool
+
+getEffectiveHerculesGiftCount :: HasGame m => IdentityId -> m Natural
+
+findPlayerCardsForEntry :: HasGame m => IdentityId -> CardCode -> m [PlayerCard]
+
+canPlaySearchedCardWithReduction :: (HasGame m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool

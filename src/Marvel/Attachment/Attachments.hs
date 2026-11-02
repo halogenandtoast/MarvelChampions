@@ -1,4 +1,5 @@
 module Marvel.Attachment.Attachments (module X) where
+import Marvel.Attachment.Attachments.WonderHerculesPack as X
 import Marvel.Attachment.Attachments.AgentsOfShield as X
 import Marvel.Attachment.Attachments.Fw53039 as X
 import Marvel.Attachment.Attachments.Fw53040 as X

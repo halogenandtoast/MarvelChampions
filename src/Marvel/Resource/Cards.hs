@@ -98,6 +98,9 @@ import Marvel.Keyword ()
 import Marvel.EncounterSet ()
 import Marvel.Cost.Types
 import Marvel.Window ()
+import Marvel.WonderMan.Cards qualified as WM
+
+
 import Marvel.Prelude
 
 
@@ -113,7 +116,8 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ concatMap
   toCardCodePairs
-  [ aosP50007, aosP50014
+  [ WM.wm58006
+  , aosP50007, aosP50014
   , BlackPantherShuriPack.vibraniumShuri
   , Jubilee.jubilee47010a, Jubilee.jubilee47010b, Jubilee.jubilee47010c
   , masterOfMagnetism
@@ -239,7 +243,7 @@ thePowerOfJustice = deckLimited 2 $ reprintedAs ["47017", "08014", "15016", "200
     <>~ [(ResourceForCardsMatching $ CardWithAspect Justice, Wild)]
 
 thePowerOfLeadership :: CardDef
-thePowerOfLeadership = reprintedAs ["45019", "03018", "04019", "17018", "29021"] $
+thePowerOfLeadership = reprintedAs ["45019", "03018", "04019", "17018", "29021", "62017"] $
   resource "01072" "The Power of Leadership" [] [Wild] Leadership
     & resourcesL
     <>~ [(ResourceForCardsMatching $ CardWithAspect Leadership, Wild)]
@@ -251,13 +255,13 @@ thePowerOfProtection = reprintedAs ["48019", "05016", "09017", "16015"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["54024", "53025", "50025", "52025", "51027", "48023", "49024", "45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["59029"] $ reprintedAs ["58023"] $ reprintedAs ["60057"] $  reprintedAs ["56020"] $  reprintedAs ["54024", "53025", "50025", "52025", "51027", "48023", "49024", "45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025", "62025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["54025", "53026", "50026", "52026", "51028", "48024", "49025", "45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["59030"] $ reprintedAs ["60058"] $  reprintedAs ["56021"] $  reprintedAs ["54025", "53026", "50026", "52026", "51028", "48024", "49025", "45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026", "62026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["54026", "53027", "50027", "52027", "51029", "48025", "49026", "45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["59031"] $ reprintedAs ["60059"] $  reprintedAs ["56022"] $  reprintedAs ["54026", "53027", "50027", "52027", "51029", "48025", "49026", "45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027", "62027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -296,16 +300,16 @@ bandTogether = resource "21018" "Band Together" [] [] Leadership & resourcesL .~
 -- Adam Warlock (each Max 1 per deck)
 
 audacity :: CardDef
-audacity = deckLimited 1 $ reprintedAs ["25021"] $ resource "21046" "Audacity" [] [Wild] Aggression
+audacity = reprintedAs ["56018"] $  deckLimited 1 $ reprintedAs ["25021"] $ resource "21046" "Audacity" [] [Wild] Aggression
 
 determination :: CardDef
-determination = deckLimited 1 $ reprintedAs ["22016"] $ resource "21052" "Determination" [] [Wild] Justice
+determination = deckLimited 1 $ reprintedAs ["22016", "61022"] $ resource "21052" "Determination" [] [Wild] Justice
 
 innovation :: CardDef
-innovation = deckLimited 1 $ reprintedAs ["23021"] $ resource "21058" "Innovation" [] [Wild] Leadership
+innovation = deckLimited 1 $ reprintedAs ["23021", "62016"] $ resource "21058" "Innovation" [] [Wild] Leadership
 
 preservation :: CardDef
-preservation = deckLimited 1 $ reprintedAs ["26021"] $ resource "21064" "Preservation" [] [Wild] Protection
+preservation = reprintedAs ["56051"] $  deckLimited 1 $ reprintedAs ["26021"] $ resource "21064" "Preservation" [] [Wild] Protection
 
 -- The Mad Titan's Shadow: the campaign set
 

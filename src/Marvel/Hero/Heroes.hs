@@ -1,4 +1,6 @@
 module Marvel.Hero.Heroes (module X) where
+import Marvel.Hero.Heroes.CampaignPlayers as X
+import Marvel.Hero.Heroes.WonderHerculesPack as X
 import Marvel.Hero.Heroes.Fw53001a as X
 import Marvel.Hero.Heroes.Fw54001a as X
 

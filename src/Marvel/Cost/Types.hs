@@ -29,6 +29,8 @@ data Cost
     -- points, inclusive (Maximum Effort and "Yoo-Hoo!").
     UpToRemainingHitPointsDamageCost
   | IndirectDamageCost Natural
+  | ConfuseSelfUnlessTraitCost Trait
+  | HealEnemyCost Natural EnemyMatcher
   | HealCost Natural
   | DamageThisCost Natural
   | DealDamageThisCost Natural
@@ -57,6 +59,7 @@ data Cost
   | -- | discard matching cards at random from the payer's hand
     DiscardRandomHandCardsMatchingCost Natural CardMatcher
   | CountersFromUpgradeCost UpgradeMatcher Natural
+  | CountersFromSupportCost SupportMatcher Natural
   | UseCost
   | NoCost
   | -- | as many resources, each of a different type
@@ -240,10 +243,13 @@ costResources UpToRemainingHitPointsDamageCost = []
 costResources (TouchedDamageCost _) = []
 costResources (DamageCharacterCost _ _) = []
 costResources (IndirectDamageCost _) = []
+costResources (ConfuseSelfUnlessTraitCost _) = []
+costResources (HealEnemyCost _ _) = []
 costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
 costResources (DealDamageThisCost _) = []
 costResources (CountersFromUpgradeCost _ _) = []
+costResources (CountersFromSupportCost _ _) = []
 costResources UseCost = []
 -- | X is at least 1
 costResources (DynamicResourceCost r) = [r]

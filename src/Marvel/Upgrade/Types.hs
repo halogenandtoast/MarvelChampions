@@ -55,6 +55,7 @@ instance Entity Upgrade where
     , upgradeCardDef :: CardDef
     , upgradeController :: IdentityId
     , upgradeExhausted :: Bool
+    , upgradeAttachedCard :: Maybe Target
     , upgradeAttachedEnemy :: Maybe EnemyId
     , upgradeAttachedIdentity :: Maybe IdentityId
     , upgradeAttachedAlly :: Maybe AllyId
@@ -67,6 +68,7 @@ instance Entity Upgrade where
     , upgradeHeldCards :: [PlayerCard]
     -- ^ cards attached faceup to it, its controller may play as if in hand (Hawkeye's
     -- Quiver); discarded as it leaves play
+    , upgradeCanPlayHeldCards :: Bool
     , upgradeHeldCardsFacedown :: Bool
     , upgradeResourceSlots :: [Resource]
     , upgradeOccupiedSlots :: [Int]
@@ -220,7 +222,9 @@ upgrade f cardDef =
             , upgradeUses = 0
             , upgradeDiscardIfNoUses = False
             , upgradeOwner = ident
+            , upgradeAttachedCard = Nothing
             , upgradeHeldCards = []
+            , upgradeCanPlayHeldCards = True
             , upgradeHeldCardsFacedown = False
             , upgradeResourceSlots = []
             , upgradeOccupiedSlots = []
@@ -281,6 +285,8 @@ instance RunMessage (Attrs Upgrade) where
     CardSpecific (isTarget a -> True) "occupyResourceSlot" (fromJSON -> Success slot) ->
       pure $ if slot >= 0 && slot < length (upgradeResourceSlots a) && slot `notElem` upgradeOccupiedSlots a
         then a {upgradeOccupiedSlots = upgradeOccupiedSlots a <> [slot]} else a
+    CardSpecific (isTarget a -> True) "holdTuckedCard" (fromJSON -> Success card) ->
+      pure a {upgradeCanPlayHeldCards = False, upgradeHeldCardsFacedown = False, upgradeHeldCards = upgradeHeldCards a <> [card]}
     CardSpecific (isTarget a -> True) "holdFacedownCard" (fromJSON -> Success card) ->
       pure a {upgradeHeldCardsFacedown = True, upgradeHeldCards = upgradeHeldCards a <> [card]}
     CardSpecific (isTarget a -> True) "releaseHeldCard" (fromJSON -> Success card) ->
@@ -302,7 +308,7 @@ instance RunMessage (Attrs Upgrade) where
       when (upgradeUses a > 0 && n >= upgradeUses a && upgradeDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n
     UpgradeMessage ident msg' | ident == upgradeId a -> case msg' of
-      UpgradeDetached -> pure a {upgradeAttachedEnemy = Nothing, upgradeAttachedIdentity = Nothing, upgradeAttachedAlly = Nothing,
+      UpgradeDetached -> pure a {upgradeAttachedCard = Nothing, upgradeAttachedEnemy = Nothing, upgradeAttachedIdentity = Nothing, upgradeAttachedAlly = Nothing,
         upgradeAttachedSideScheme = Nothing, upgradeAttachedMainScheme = Nothing}
       PlayedUpgrade mTarget -> do
         case mTarget of
@@ -324,7 +330,8 @@ instance RunMessage (Attrs Upgrade) where
           SideSchemeRef sideSchemeId -> UpgradeAttachedToSideScheme sideSchemeId
           SchemeRef (SchemeMainSchemeId mainSchemeId) -> UpgradeAttachedToMainScheme mainSchemeId
           MainSchemeRef mainSchemeId -> UpgradeAttachedToMainScheme mainSchemeId
-          target -> error $ "an upgrade cannot attach to " <> show target
+          target -> UpgradeAttachedToTarget target
+      UpgradeAttachedToTarget target -> pure a {upgradeAttachedCard = Just target}
       UpgradeControlledByPlayer p -> do
         when (p /= upgradeController a) $ upgradeControlLost (upgradeController a) (upgradeId a)
         upgradeCreated p (upgradeId a)
@@ -377,7 +384,7 @@ instance RunMessage (Attrs Upgrade) where
     _ -> pure a
    where
     attachedHosts = catMaybes [enemyRef <$> upgradeAttachedEnemy a, AllyRef <$> upgradeAttachedAlly a,
-      SideSchemeRef <$> upgradeAttachedSideScheme a, MainSchemeRef <$> upgradeAttachedMainScheme a]
+      SideSchemeRef <$> upgradeAttachedSideScheme a, MainSchemeRef <$> upgradeAttachedMainScheme a, upgradeAttachedCard a]
     leavingHost = \case
       RemoveFromPlay target -> Just target
       RemoveFromGame target -> Just target
@@ -387,4 +394,4 @@ instance RunMessage (Attrs Upgrade) where
 
 instance FromJSON (Attrs Upgrade) where
   parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-    [("upgradeRedirectNextScheme", Bool False), ("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]
+    [("upgradeCanPlayHeldCards", Bool True), ("upgradeAttachedCard", toJSON (Nothing :: Maybe Target)), ("upgradeRedirectNextScheme", Bool False), ("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]

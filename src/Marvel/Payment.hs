@@ -33,6 +33,7 @@ paymentResources payment = case paymentActualResources payment of
   generated (ResourcePaymentFromPlayerCard card) = do
     context <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
     resourcesFor card context
+  generated (OverpaymentOnlyPayment r) = pure [r]
   generated (ResourcePayment r) = pure [r]
   generated (WildPayment r) = pure [r]
   generated (ContributedWildPayment _ r) = pure [r]

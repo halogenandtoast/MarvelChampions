@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Support where
 
+import Marvel.Support.Supports.JessicaLuke qualified as JL
 import Marvel.Support.Supports.AgeOfApocalypseBasicCampaign
 
 import Marvel.Support.Supports.NextEvolutionNextEvolutionCampaign
@@ -31,7 +32,10 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard fw53006, SomeSupportCard fw53007, SomeSupportCard fw53020, SomeSupportCard fw53021, SomeSupportCard fw53037, SomeSupportCard fw54007
+  [ SomeSupportCard cw56003, SomeSupportCard cw56012, SomeSupportCard cw56031, SomeSupportCard cw56043, SomeSupportCard fne60013, SomeSupportCard fne60014, SomeSupportCard fne60015, SomeSupportCard fne60016, SomeSupportCard fne60029, SomeSupportCard fne60042
+  , SomeSupportCard wm58007, SomeSupportCard wm58024, SomeSupportCard wm58031, SomeSupportCard wm58034, SomeSupportCard hc59012, SomeSupportCard hc59023
+  , SomeSupportCard JL.jl61002, SomeSupportCard JL.jl61008, SomeSupportCard JL.jl62007, SomeSupportCard JL.jl62018, SomeSupportCard JL.jl62019
+  , SomeSupportCard fw53006, SomeSupportCard fw53007, SomeSupportCard fw53020, SomeSupportCard fw53021, SomeSupportCard fw53037, SomeSupportCard fw54007
   , SomeSupportCard aosP50008, SomeSupportCard aosP50009, SomeSupportCard aosP50015, SomeSupportCard aosP50017, SomeSupportCard aosP50018, SomeSupportCard aosP50019, SomeSupportCard aosP50020, SomeSupportCard aosP50028, SomeSupportCard aosP50040, SomeSupportCard aosP50041, SomeSupportCard aosP50055, SomeSupportCard aosP50056
   , SomeSupportCard theElephantsTrunkShuri, SomeSupportCard queenRamondaShuri, SomeSupportCard theRaftShuri, SomeSupportCard doraMilajeShuri, SomeSupportCard targetSpotterShuri, SomeSupportCard albertMoonSilk, SomeSupportCard jJonahJamesonSilk, SomeSupportCard drSinclairSilk
   , SomeSupportCard nc48003

@@ -46,7 +46,7 @@ import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Modifier.Types
-    ( Modifier(RemovedThreatPlacedOnMinion, CannotLeavePlay, AttacksAgainstGainKeyword,
+    ( Modifier(RemovedThreatPlacedOnMinion, CannotLeavePlay, AttacksAgainstGainKeyword, AttacksAgainstLoseKeyword, EnemyAttacksAdditionalCost, AttackAdditionalCostPaid,
                ThwartWithAttack, KeywordModifier, AdditionalReadyCost,
                CannotChangeEnergyForm, CannotChangeMassForm,
                AttacksCannotBeDefended, OnlyIdentityCanDefend,
@@ -60,7 +60,7 @@ import Marvel.Queue
 import Marvel.Count (selectCount)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Name (display)
-import Marvel.Query (selectJust, selectList, selectOne)
+import Marvel.Query (selectAny, selectJust, selectList, selectOne)
 import Marvel.Keyword (Keyword (EnergyForm, MassForm, Incite, Permanent, Overkill, Piercing, Ranged, Assault))
 import Marvel.Keyword qualified as Keyword
 import Marvel.Queue as X (cancelMatchingMessage, replaceMatchingMessage, isQueued)
@@ -282,20 +282,26 @@ dealDamage enemy source = resolve . DamageEnemy (EnemyRef $ toEnemy enemy) (toSo
 -- the status effect into damage.
 attackEnemyWithoutDamage :: (ReverseQueue m, IsEnemy enemy, IsRef source) => IdentityId -> enemy -> source -> m ()
 attackEnemyWithoutDamage you enemy source = do
-  let target = toEnemy enemy
-      from = toSource source
-  begun <- sourceHasBegunLabeledAttack from
-  targeted <- sourceHasAttackedTarget from target
-  modifiers <- (<>) <$> getModifiers (IdentityRef you) <*> getModifiers from
-  targetModifiers <- getModifiers (enemyRef target)
-  let ranged = KeywordModifier Ranged `elem` modifiers || AttacksAgainstGainKeyword Ranged `elem` targetModifiers
-  let windows = [Window When $ W.IdentityAttack you target | not begun] <> [Window When $ W.IdentityAttackTarget you target | not targeted]
-  unless (null windows) $ checkWindows windows
-  case from of
-    EventRef eid -> eventStep eid (EventAttacked you target ranged)
-    _ -> do
-      unless ranged $ enemyRetaliates target (IdentityCharacter you)
-      checkWindows [Window After $ W.IdentityAttack you target]
+  let targetRef = enemyRef enemy
+  modifiers <- getModifiers targetRef
+  let extra = mconcat [cost | EnemyAttacksAdditionalCost cost <- modifiers]
+  if extra /= Cost.NoCost && AttackAdditionalCostPaid (toSource source) `notElem` modifiers
+    then cardSpecific GameRef "payEnemyAttackNoDamageCost" (you,toEnemy enemy,toSource source,extra)
+    else do
+      let target = toEnemy enemy
+          from = toSource source
+      begun <- sourceHasBegunLabeledAttack from
+      targeted <- sourceHasAttackedTarget from target
+      modifiers <- (<>) <$> getModifiers (IdentityRef you) <*> getModifiers from
+      targetModifiers <- getModifiers (enemyRef target)
+      let ranged = KeywordModifier Ranged `elem` modifiers || AttacksAgainstGainKeyword Ranged `elem` targetModifiers
+      let windows = [Window When $ W.IdentityAttack you target | not begun] <> [Window When $ W.IdentityAttackTarget you target | not targeted]
+      unless (null windows) $ checkWindows windows
+      case from of
+        EventRef eid -> eventStep eid (EventAttacked you target ranged)
+        _ -> do
+          unless ranged $ enemyRetaliates target (IdentityCharacter you)
+          checkWindows [Window After $ W.IdentityAttack you target]
 
 -- | Initiate the attack before its status effect, then land its damage. Keeping
 -- the generated status and damage together allows an attack-target replacement to
@@ -897,10 +903,14 @@ undefendedIfDefenderGone a = case attackCharacter a of
   _ -> pure a
 
 wasAttacked :: (ReverseQueue m) => Attack -> m ()
-wasAttacked a = push case attackCharacter a of
-  IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
-  AllyCharacter ally -> AllyMessage ally (AllyWasAttacked a)
-  _ -> Msg.cardSpecific GameRef "enemyCharacterWasAttacked" a
+wasAttacked original = do
+  modifiers <- getModifiers (characterRef $ attackCharacter original)
+  let lost = [keyword | AttacksAgainstLoseKeyword keyword <- modifiers]
+      a = original {attackPiercing = attackPiercing original && Piercing `notElem` lost, attackRanged = attackRanged original && Ranged `notElem` lost, attackOverkill = attackOverkill original && Overkill `notElem` lost}
+  push case attackCharacter a of
+    IdentityCharacter ident -> IdentityMessage ident (IdentityWasAttacked a)
+    AllyCharacter ally -> AllyMessage ally (AllyWasAttacked a)
+    _ -> Msg.cardSpecific GameRef "enemyCharacterWasAttacked" a
 
 declareDefense :: (ReverseQueue m, IsEnemy enemy) => IdentityId -> enemy -> DefensePriority -> m ()
 declareDefense ident enemy = push . DeclareDefense ident (toEnemy enemy)
@@ -1621,6 +1631,12 @@ attachPlayableEventToAlly ally card = do
 -- | Play this card normally with a reduction confined to its own play and payment.
 playCardWithReduction :: (ReverseQueue m) => IdentityId -> Natural -> PlayerCard -> m ()
 playCardWithReduction who n card = push $ PlayCardWithReduction who card n
+
+-- | An explicit search permission; leave the physical card in its deck until
+-- payment succeeds, so declining payment preserves its original zone.
+playSearchedCardWithReduction :: ReverseQueue m => IdentityId -> Natural -> PlayerCard -> m ()
+playSearchedCardWithReduction who amount card = cardSpecific GameRef "playSearchedCardWithReduction" (who,amount,card)
+
 
 playCardIgnoringResourceCost :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
 playCardIgnoringResourceCost who card = push $ PlayCardIgnoringResourceCost who card
@@ -2460,7 +2476,7 @@ changeBoostIconCount card f = replaceMatchingMessage change \case
 -- | A thwart's actual removal, distinguished from moving or otherwise removing threat.
 thwartRemovesThreat :: (ReverseQueue m) => WindowTiming -> Source -> SchemeId -> Natural -> Natural -> m ()
 thwartRemovesThreat timing source scheme before n =
-  when (min before n > 0) $ checkWindows [Window timing $ W.ThwartRemovedThreat source scheme before (min before n)]
+  checkWindows [Window timing $ W.ThwartRemovedThreat source scheme before (min before n)]
 
 -- | Positive-to-zero threat removal by an identity or a card that extends it.
 heroRemovedLastThreat :: (ReverseQueue m) => Source -> SchemeId -> Natural -> Natural -> m ()
@@ -3178,7 +3194,7 @@ swapHeldWeapon you host outgoing incoming = cardSpecific GameRef "swapHeldWeapon
 lastingModifiers :: (ReverseQueue m, IsRef source) => source -> EntityMatcher -> [Modifier] -> Bool -> m ()
 lastingModifiers source matcher modifiers roundEnd = cardSpecific GameRef "lastingModifiers" (toSource source, matcher, modifiers, roundEnd)
 
-addToIdentityBasicPower :: HasQueue m => IdentityId -> Natural -> m ()
+addToIdentityBasicPower :: (HasQueue m, HasGame m) => IdentityId -> Natural -> m ()
 addToIdentityBasicPower = addToBasicPower
 
 -- | Give this physical encounter card to an enemy as a facedown boost card.
@@ -3386,4 +3402,62 @@ preventCardDiscardFromPlay card = cancelMatchingMessage $ \case
     SupportRef sid -> unSupportId sid == unCardId (toCardId (toCard card))
     UpgradeRef uid -> unUpgradeId uid == unCardId (toCardId (toCard card))
     SideSchemeRef sid -> unSideSchemeId sid == unCardId (toCardId (toCard card))
+    _ -> False
+
+-- | Skip the entire next villain phase, including its timing windows.
+attachUpgradeToTarget :: (ReverseQueue m, IsRef target) => UpgradeId -> target -> m ()
+attachUpgradeToTarget uid target = upgradeStep uid (UpgradeAttachedToTarget $ toTarget target)
+
+skipNextVillainPhase :: ReverseQueue m => m ()
+skipNextVillainPhase = cardSpecific GameRef "skipNextVillainPhase" ()
+
+untilNextVillainPhase :: (ReverseQueue m, IsRef source, IsRef target) => source -> target -> [Modifier] -> m ()
+untilNextVillainPhase source target modifiers = cardSpecific GameRef "untilNextVillainPhase" (toSource source, toTarget target, modifiers)
+
+playHeldCardAsHand :: (ReverseQueue m, IsRef host) => IdentityId -> host -> PlayerCard -> m ()
+playHeldCardAsHand you host card = releaseHeldCard host you card >> playCardWithReduction you 0 card
+
+discardHeldPlayerCard :: (ReverseQueue m, IsRef host) => IdentityId -> host -> PlayerCard -> m ()
+discardHeldPlayerCard _ host card = cardSpecific host "releaseHeldCard" card >> discardCard card
+
+-- Resolve only the discarded treachery's printed When Revealed ability.
+resolveEncounterWhenRevealed :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+resolveEncounterWhenRevealed you card = cardSpecific GameRef "resolveEncounterWhenRevealed" (you,card)
+
+dealMinionAsEncounterCard :: ReverseQueue m => MinionId -> IdentityId -> m ()
+dealMinionAsEncounterCard mid you = cardSpecific GameRef "dealMinionAsEncounterCard" (mid,you)
+
+revealEncounterCardWithPlayerCount :: ReverseQueue m => IdentityId -> Natural -> EncounterCard -> m ()
+revealEncounterCardWithPlayerCount you count card = cardSpecific GameRef "revealEncounterCardWithPlayerCount" (you,fromIntegral count :: Int,card)
+
+preventCharacterDamage :: (ReverseQueue m, IsCharacter character) => character -> Natural -> m ()
+preventCharacterDamage character n = case toCharacter character of
+  IdentityCharacter you -> Msg.preventDamage you n
+  AllyCharacter aid -> Msg.preventAllyDamage aid n
+  VillainCharacter vid -> preventEnemyDamage (EnemyVillainId vid) n
+  MinionCharacter mid -> preventEnemyDamage (EnemyMinionId mid) n
+  AttachmentCharacter aid -> preventEnemyDamage (EnemyAttachmentId aid) n
+
+basicThwartIgnoringPatrolAndCrisis :: ReverseQueue m => IdentityId -> Natural -> m ()
+basicThwartIgnoringPatrolAndCrisis you bonus = cardSpecific GameRef "basicThwartIgnoringPatrolAndCrisis" (you,bonus)
+
+-- Tuck is faceup and grants no permission to play the card (RR Tuck).
+tuckPlayerCardUnder :: (ReverseQueue m, IsRef host) => host -> PlayerCard -> m ()
+tuckPlayerCardUnder host card = removeFromGame card >> cardSpecific host "holdTuckedCard" card
+
+-- Preserve the actual pending amount after threat interrupts, before the board can
+-- advance or a response can remove threat. Nested schemes retain their own receipt.
+placeVillainSchemeThreat :: ReverseQueue m => VillainId -> SchemeId -> Natural -> m ()
+placeVillainSchemeThreat vid scheme n = do
+  when (n > 0) $ checkWindows [Window Would $ W.ThreatPlaced ThreatFromVillain scheme n]
+  cardSpecific (VillainRef vid) "recordPendingSchemeThreat" scheme
+  push $ threatPlacement scheme n
+
+recordPendingVillainSchemeThreat :: ReverseQueue m => VillainId -> SchemeId -> m ()
+recordPendingVillainSchemeThreat vid scheme = do
+  amount <- fromMaybe 0 <$> pendingThreatPlacement scheme
+  present <- selectAny (SchemeWithId scheme)
+  let receipt = if present then amount else 0
+  replaceMatchingMessage (const [Msg.cardSpecific (VillainRef vid) "villainSchemeResult" receipt]) $ \case
+    CardSpecific (VillainRef who) "villainSchemeResult" _ -> who == vid
     _ -> False

@@ -91,9 +91,12 @@ instance Entity Minion where
     , minionExhausted :: Bool
     -- ^ physical state retained when an ally is temporarily treated as a minion
     , minionDamage :: Natural
+    , minionIgnoreWhenDefeated :: Bool
     , minionDamageThisPhase :: Natural
     , minionHitPoints :: HP Natural
     , minionScheme :: Sch
+    , minionDefeatedBaseScheme :: Maybe Natural
+    -- ^ defined base SCH preserved for after-defeat responses
     , minionAttack :: Atk
     , minionEngagedIdentity :: IdentityId
     , minionStunned :: Bool
@@ -268,9 +271,11 @@ minion f cardDef sch atk hp =
             , minionOriginalCardDef = cardDef
             , minionExhausted = False
             , minionDamage = 0
+            , minionIgnoreWhenDefeated = False
             , minionDamageThisPhase = 0
             , minionAttack = atk
             , minionScheme = sch
+            , minionDefeatedBaseScheme = Nothing
             , minionHitPoints = hp
             , minionEngagedIdentity = ident
             , minionStunned = False
@@ -328,7 +333,7 @@ instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "minionSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "minionSchemeRemoval" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
-      [("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool
@@ -353,7 +358,10 @@ getModifiedAttack attrs = (fromInteger . max 0) <$> getModifiedAttackSigned attr
 -- | Keep the signed intermediate while an activation still has boosts and
 -- attack-specific modifiers to add (RR Modifiers).
 getModifiedAttackSigned :: HasGame m => Attrs Minion -> m Integer
-getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ minionAttack attrs)) . sum . map change) <$> getModifiers attrs
+getModifiedAttackSigned attrs = do
+  modifiers <- getModifiers attrs
+  let base = fromMaybe (unAtk $ minionAttack attrs) (headMay [n | BaseAttack n <- modifiers])
+  pure $ toInteger base + sum (map change modifiers)
  where
   change (AttackModifier n) = toInteger n
   change (AttackPenalty n) = negate (toInteger n)
@@ -364,10 +372,17 @@ getModifiedAttackSigned attrs = ((+ toInteger (unAtk $ minionAttack attrs)) . su
 toEnemyId :: Attrs Minion -> EnemyId
 toEnemyId = EnemyMinionId . minionId
 
+-- | A star defined by the card establishes its base before additive modifiers.
+minionBaseScheme :: HasGame m => Attrs Minion -> m Natural
+minionBaseScheme attrs = do
+  modifiers <- getModifiers attrs
+  pure $ fromMaybe (unSch $ minionScheme attrs) (headMay [n | BaseScheme n <- modifiers])
+
 getModifiedScheme :: (HasGame m) => Attrs Minion -> m Natural
 getModifiedScheme attrs = do
   modifiers <- getModifiers attrs
-  pure $ fromInteger $ max 0 $ toInteger (unSch $ minionScheme attrs) + sum (map change modifiers)
+  let base = fromMaybe (unSch $ minionScheme attrs) (headMay [n | BaseScheme n <- modifiers])
+  pure $ fromInteger $ max 0 $ toInteger base + sum (map change modifiers)
  where
   change (SchemeModifier n) = toInteger n
   change (SchemePenalty n) = negate (toInteger n)
@@ -405,5 +420,7 @@ incomingMinionDamage attrs source originalDamage = do
       caps = [cap | attacking, AttackDamageCap cap <- modifiers]
       capped = minimum (reduced : caps)
       room = minimum (capped : [subtractNatural (minionDamageThisPhase attrs) cap | MaximumDamagePerPhase cap <- modifiers])
-      damage = if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = subtractNatural (damagePrevention originalDamage) room}
+      damage = if damageUnpreventable originalDamage
+        then originalDamage {damageAmount = max (damageAmount originalDamage) incoming}
+        else if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = subtractNatural (damagePrevention originalDamage) room}
   pure damage

@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Phase (Phase)
 import Marvel.Card.Code (CardCode)
 import Marvel.Card.Id (CardId)
-import Marvel.Id (SupportId, UpgradeId)
+import Marvel.Id (SupportId, UpgradeId, AllyId)
 import Marvel.Keyword (Keyword)
 
 import Marvel.Ability.Types (AbilitySubType (..), AbilityType (..))
@@ -16,6 +16,7 @@ import Marvel.Trait.Types (Trait)
 data Criteria
   = IsSelf
   | CanFindTouched
+  | CanFindPlayerCardForEntry CardCode
   | -- | the acting player can resolve the current unblanked Setting Special as a cost
     CanResolveSettingSpecial
   | NemesisMinionOutOfPlay
@@ -36,6 +37,7 @@ data Criteria
   | MovableSupportCounter Trait
   | MovableThreatExists
   | PlayedEventInDiscard
+  | PlayedEventIsNot CardId
   | MinionExists MinionMatcher
   | EnemyExists EnemyMatcher
   | SchemeExists SchemeMatcher
@@ -43,6 +45,16 @@ data Criteria
   | AttachmentExists AttachmentMatcher
   | SideSchemeExists SideSchemeMatcher
   | SupportExists SupportMatcher
+  | CanPlayTopSense
+  | HasEchoTuckedEvent
+  | AllyHasTwoAttackableEnemies AllyId
+  | PendingDamagePreventable
+  | CanRevealHerculesLabor
+  | EffectiveHerculesGiftCount GameValueMatcher
+  | HasEffectiveHerculesGift
+  | CanDiscardMinionWithSupportCounters SupportMatcher Natural
+  | UpgradeHeldCardsCount UpgradeMatcher GameValueMatcher
+  | PayingToOverpay
   | HeldAllyPlayable SupportId
   | MedLabCaptureAvailable
   | CharacterExists CharacterMatcher

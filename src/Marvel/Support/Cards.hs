@@ -1,5 +1,7 @@
 module Marvel.Support.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
 import Marvel.Ability.Types qualified as AospAbility ()
@@ -153,6 +155,10 @@ import Marvel.EncounterSet
 import Marvel.Ability.Types ()
 import Marvel.Cost.Types
 import Marvel.Window ()
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 
@@ -168,7 +174,10 @@ import Marvel.Matchers
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ FalconWinter.fw53006, FalconWinter.fw53007, FalconWinter.fw53020, FalconWinter.fw53021, FalconWinter.fw53037, FalconWinter.fw54007
+  [ CampaignPlayers.cw56003, CampaignPlayers.cw56012, CampaignPlayers.cw56031, CampaignPlayers.cw56043, CampaignPlayers.fne60013, CampaignPlayers.fne60014, CampaignPlayers.fne60015, CampaignPlayers.fne60016, CampaignPlayers.fne60029, CampaignPlayers.fne60042
+  , WM.wm58007, WM.wm58024, WM.wm58031, WM.wm58034, HC.hc59012, HC.hc59023
+  , JL.jl61002, JL.jl61008, JL.jl62007, JL.jl62018, JL.jl62019
+  , FalconWinter.fw53006, FalconWinter.fw53007, FalconWinter.fw53020, FalconWinter.fw53021, FalconWinter.fw53037, FalconWinter.fw54007
   , aosP50008, aosP50009, aosP50015, aosP50017, aosP50018, aosP50019, aosP50020, aosP50028, aosP50040, aosP50041, aosP50055, aosP50056
   , BlackPantherShuriPack.theElephantsTrunkShuri, BlackPantherShuriPack.queenRamondaShuri, BlackPantherShuriPack.theRaftShuri, BlackPantherShuriPack.doraMilajeShuri, BlackPantherShuriPack.targetSpotterShuri, SilkPack.albertMoonSilk, SilkPack.jJonahJamesonSilk, SilkPack.drSinclairSilk
   , nc48003
@@ -404,7 +413,7 @@ avengersMansion = deckLimited 3 $ reprintedAs ["05022", "06025", "09025", "10023
   $ basicSupport "01091" "Avengers Mansion" 4 [Avenger, Location] [Mental]
 
 helicarrier :: CardDef
-helicarrier = reprintedAs ["10024", "29026"] $ limited (MaxPerPlayer 1)
+helicarrier = reprintedAs ["59033"] $ reprintedAs ["10024", "29026"] $ limited (MaxPerPlayer 1)
   $ basicSupport "01092" "Helicarrier" 3 [Location, Shield] [Physical]
 
 stevesApartment :: CardDef
@@ -438,7 +447,7 @@ safeHouse29 =
   unique $ identitySupport "08005" "Safe House #29" 1 [Location, Shield] [Physical]
 
 quincarrier :: CardDef
-quincarrier = deckLimited 1 $ reprintedAs ["13025", "23023"] $ (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
+quincarrier = reprintedAs ["59034"] $ deckLimited 1 $ reprintedAs ["13025", "23023"] $ (unique $ basicSupport "08023" "Quincarrier" 3 [Avenger, Vehicle] [Mental])
   { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
   }
 
@@ -453,7 +462,7 @@ sanctumSanctorum =
   unique $ identitySupport "09008" "Sanctum Sanctorum" 1 [Location] [Mental]
 
 theNightNurse :: CardDef
-theNightNurse =
+theNightNurse = reprintedAs ["56044"] $
   unique $ support "09019" "The Night Nurse" 1 [Persona] [Mental] Protection
 
 teamTraining :: CardDef

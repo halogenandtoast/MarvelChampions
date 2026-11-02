@@ -1,7 +1,7 @@
 module Marvel.Modifier.Types where
 
 import Marvel.Prelude
-import Marvel.Ref (Target)
+import Marvel.Ref (Target, Source)
 
 import Marvel.Card.Id (CardId)
 import Marvel.Id (EnemyId, CharacterId, AttachmentId)
@@ -14,14 +14,23 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = PaidWithCyberneticArm
+  = SkipNextVillainPhase
+  | PaidWithCyberneticArm
   | AllyBasicPowerAdditionalCost Cost
+  | DamageOnlyFromCharacterAttacks CharacterId
+  | ThreatRemovableOnlyByIdentity IdentityId
+  | ThreatRemovableOnlyByCharacterThwarts CharacterId
+  | AttackAdditionalCostPaid Source
+  | EnemyAttacksAdditionalCost Cost
+  | AllowsCostContributions
+  | EnemyAttackDamageReduction Natural
   | AttackDamageReductionUnlessAerialOrRanged Natural
   | OnlyIdentityCanDefend IdentityId
   | QuickstrikeWhenEngaging IdentityId
   | IgnoreBoostCards
   | MinionAttackConsequentialDamageReduction Natural
   | BaseAttack Natural
+  | BaseScheme Natural
   | AdditionalReadyCost Cost
   | BaseThwart Natural
   | DamageTakenFromPrintedResource Resource Int
@@ -39,6 +48,11 @@ data Modifier
   | AttackWithThwart
   | AttackConsequentialDamageReduction Natural
   | AttacksAgainstGainKeyword Keyword
+  | AttacksAgainstLoseKeyword Keyword
+  | StatsAtOneRemainingHitPoint Natural
+  | UseDefenseForAttackAndThwart
+  | NotCountedAgainstPlayerSideSchemeLimit
+  | AdditionalChangeFormCost Cost
   | AttackDamageTakenModifier Int
   | AttackDamageToEnemyModifier EnemyId Natural
   | DirectedForceApplied
@@ -139,6 +153,7 @@ data Modifier
     ThreatRemovedModifier Natural
   | -- | a divided thwart counts its threat-removal bonuses once in the total pool
     ThreatRemovalBonusInTotal
+  | RecoveryPenalty Natural
   | RecoveryModifier Natural
   | CannotTakeDamage
   | -- | on a character: it takes no damage from a player card, or from an effect one
@@ -180,6 +195,7 @@ data Modifier
   | -- | an identity that stays in the form it is in
     CannotChangeForm
   | AdditionalChangeToHeroFormCost Cost
+  | CannotChangeToAlterEgoForm
   | CannotChangeToHeroForm
   | -- | "your hero gets -1 THW": taken off, not below 0
     ThwartPenalty Natural

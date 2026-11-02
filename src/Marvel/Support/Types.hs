@@ -18,6 +18,7 @@ import Marvel.Id as X (SupportId)
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
+import Marvel.Window qualified as W
 
 data Support = forall a. (IsSupport a) => Support a
 
@@ -58,6 +59,7 @@ instance Entity Support where
     , supportHeldEncounterCards :: [EncounterCard]
     , supportHeldCards :: [PlayerCard]
     -- ^ cards attached here facedown
+    , supportHeldCardsFaceup :: Bool
     , supportCanPlayHeldEvents :: Bool
     -- ^ a printed permission; Bruno's stored cards have no such permission
     , supportThreat :: Natural
@@ -90,7 +92,7 @@ instance Entity Support where
 
 instance FromJSON (Attrs Support) where
   parseJSON = withObject "SupportAttrs" $ \original ->
-    let o = KeyMap.insertWith (\_ old -> old) "supportHeldEncounterCards" (toJSON ([] :: [EncounterCard])) original
+    let o = KeyMap.insertWith (\_ old -> old) "supportHeldCardsFaceup" (Bool False) $ KeyMap.insertWith (\_ old -> old) "supportHeldEncounterCards" (toJSON ([] :: [EncounterCard])) original
      in
     genericParseJSON defaultOptions $ Object $
       if KeyMap.member "supportCanPlayHeldEvents" o then o
@@ -174,6 +176,7 @@ support f cardDef =
             , supportDiscardIfNoUses = False
             , supportHeldEncounterCards = []
             , supportHeldCards = []
+            , supportHeldCardsFaceup = False
             , supportCanPlayHeldEvents = False
             , supportThreat = 0
             }
@@ -197,6 +200,8 @@ instance RunMessage (Attrs Support) where
       pure a {supportCanPlayHeldEvents = False, supportHeldCards = supportHeldCards a <> [card]}
     CardSpecific (isTarget a -> True) "releaseHeldCard" (fromJSON -> Success card) ->
       pure a {supportHeldCards = filter (/= card) (supportHeldCards a)}
+    CardSpecific (isTarget a -> True) "holdTuckedCard" (fromJSON -> Success card) ->
+      pure a {supportHeldCardsFaceup = True, supportHeldCards = supportHeldCards a <> [card]}
     RemovePlayerCardFromHeldZones cid -> pure a {supportHeldCards = filter ((/= cid) . pcCardId) (supportHeldCards a)}
     PassFirstPlayer -> do
       follows <- elem ControlledByFirstPlayer <$> getModifiers a
@@ -214,7 +219,9 @@ instance RunMessage (Attrs Support) where
       first <- selectOne FirstPlayer
       for_ first $ \new -> when (new /= supportController a) $ supportStep (supportId a) (SupportChangedController new)
       pure a
-    PlaceCounters target n | target == toRef a -> pure $ a & usesL +~ n
+    PlaceCounters target n | target == toRef a -> do
+      when (n > 0) $ checkWindows [W.Window W.After $ W.SupportCounterAmountChanged (supportId a) (supportUses a) (supportUses a + n)]
+      pure $ a & usesL +~ n
     RemoveCounters target n | target == toRef a -> do
       when (supportUses a > 0 && n >= supportUses a && supportDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n

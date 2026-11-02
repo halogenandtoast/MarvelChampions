@@ -1,4 +1,6 @@
 module Marvel.Ally.Allies (module X) where
+import Marvel.Ally.Allies.CampaignPlayers as X
+import Marvel.Ally.Allies.WonderHerculesPack as X
 import Marvel.Ally.Allies.Fw53002 as X
 import Marvel.Ally.Allies.Fw53015 as X
 import Marvel.Ally.Allies.Fw53017 as X

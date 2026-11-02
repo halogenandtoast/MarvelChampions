@@ -1,5 +1,7 @@
 module Marvel.AlterEgo.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
 import Marvel.Ability.Types qualified as AospAbility ()
@@ -118,6 +120,10 @@ import Marvel.Aspect qualified as NEA ()
 import Marvel.Resource.Types qualified as NER ()
 import Marvel.Keyword qualified as NEK ()
 import Marvel.Trait qualified as NET
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 import Marvel.Matchers ()
 import Marvel.Resource ()
@@ -136,7 +142,10 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ FalconWinter.fw53001b, FalconWinter.fw54001b
+    [ CampaignPlayers.cw56001b, CampaignPlayers.cw56029b, CampaignPlayers.fne60001b, CampaignPlayers.fne60037b
+  , WM.wm58001b, HC.hc59001b
+  , JL.jl61001b, JL.jl62001b
+  , FalconWinter.fw53001b, FalconWinter.fw54001b
   , aosP50001b, aosP50034b
   , BlackPantherShuriPack.shuriAlterEgo, SilkPack.cindyMoon
   , nc48001b

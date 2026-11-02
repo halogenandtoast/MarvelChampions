@@ -2,7 +2,10 @@
 
 module Marvel.Effect where
 
+import Marvel.CampaignPlayers.Helpers (campaignStickEffect, campaignBasicKeywordEffect)
+import Marvel.CampaignPlayers.Helpers (campaignNextEventEffect)
 import Marvel.Event.Events.SneakAttack ()
+import Marvel.Event.Events.JessicaLuke (takeAStandEffect)
 
 import Marvel.Attachment.Attachments.MojoGenres (mojoStakeEffect)
 import Marvel.Event.Events.Cable ()
@@ -51,7 +54,15 @@ instance FromJSON Effect where
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
   fromList $
-    [ ("50038", SomeCardEffect covertSurveillanceEffect)
+    [ ("56005", SomeCardEffect campaignBasicKeywordEffect)
+    , ("58020", SomeCardEffect wmUnifiedStrikeEffect)
+    , ("58033", SomeCardEffect wmDisarmingDefenseEffect)
+    , ("59014", SomeCardEffect hcGoldenMaceEffect)
+    , ("62015", SomeCardEffect takeAStandEffect)
+    , ("60029", SomeCardEffect campaignStickEffect)
+    , ("60039", SomeCardEffect campaignNextEventEffect)
+    , ("59023", SomeCardEffect recruitmentDriveEffect)
+    , ("50038", SomeCardEffect covertSurveillanceEffect)
     , ("50037", SomeCardEffect concentratedFireEffect)
     , ("50036", SomeCardEffect mariaHillAllyEffect)
     , ("50013", SomeCardEffect slingshotEffect)

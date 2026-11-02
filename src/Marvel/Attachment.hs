@@ -2,6 +2,7 @@
 
 module Marvel.Attachment where
 
+import Marvel.Attachment.Attachments.JessicaLuke qualified as JL
 import Marvel.Attachment.Attachments.AgentsOfShield qualified as AosEncounter
 
 import Marvel.Attachment.Attachments.TricksterTakeover qualified as TT
@@ -75,7 +76,9 @@ allAttachments =
   fromList $
     map
       (toFst someAttachmentCardCode)
-      [ SomeAttachmentCard TT.tt55007a, SomeAttachmentCard TT.tt55007b, SomeAttachmentCard TT.tt55008a, SomeAttachmentCard TT.tt55008b, SomeAttachmentCard TT.tt55009a, SomeAttachmentCard TT.tt55009b, SomeAttachmentCard TT.tt55010a, SomeAttachmentCard TT.tt55010b, SomeAttachmentCard TT.tt55011a, SomeAttachmentCard TT.tt55011b, SomeAttachmentCard TT.tt55012, SomeAttachmentCard TT.tt55013, SomeAttachmentCard TT.tt55014, SomeAttachmentCard TT.tt55015, SomeAttachmentCard TT.tt55016, SomeAttachmentCard TT.tt55034a, SomeAttachmentCard TT.tt55034b, SomeAttachmentCard TT.tt55035, SomeAttachmentCard TT.tt55036, SomeAttachmentCard TT.tt55062
+      [ SomeAttachmentCard hc59002, SomeAttachmentCard hc59003, SomeAttachmentCard hc59039
+  , SomeAttachmentCard JL.jl62031
+  , SomeAttachmentCard TT.tt55007a, SomeAttachmentCard TT.tt55007b, SomeAttachmentCard TT.tt55008a, SomeAttachmentCard TT.tt55008b, SomeAttachmentCard TT.tt55009a, SomeAttachmentCard TT.tt55009b, SomeAttachmentCard TT.tt55010a, SomeAttachmentCard TT.tt55010b, SomeAttachmentCard TT.tt55011a, SomeAttachmentCard TT.tt55011b, SomeAttachmentCard TT.tt55012, SomeAttachmentCard TT.tt55013, SomeAttachmentCard TT.tt55014, SomeAttachmentCard TT.tt55015, SomeAttachmentCard TT.tt55016, SomeAttachmentCard TT.tt55034a, SomeAttachmentCard TT.tt55034b, SomeAttachmentCard TT.tt55035, SomeAttachmentCard TT.tt55036, SomeAttachmentCard TT.tt55062
   , SomeAttachmentCard AosEncounter.aos50068, SomeAttachmentCard AosEncounter.aos50069, SomeAttachmentCard AosEncounter.aos50070, SomeAttachmentCard AosEncounter.aos50071, SomeAttachmentCard AosEncounter.aos50092, SomeAttachmentCard AosEncounter.aos50114, SomeAttachmentCard AosEncounter.aos50115, SomeAttachmentCard AosEncounter.aos50116, SomeAttachmentCard AosEncounter.aos50117, SomeAttachmentCard AosEncounter.aos50118, SomeAttachmentCard AosEncounter.aos50119, SomeAttachmentCard AosEncounter.aos50132, SomeAttachmentCard AosEncounter.aos50144, SomeAttachmentCard AosEncounter.aos50145, SomeAttachmentCard AosEncounter.aos50149, SomeAttachmentCard AosEncounter.aos50153, SomeAttachmentCard AosEncounter.aos50157, SomeAttachmentCard AosEncounter.aos50158, SomeAttachmentCard AosEncounter.aos50170, SomeAttachmentCard AosEncounter.aos50171, SomeAttachmentCard AosEncounter.aos50181b, SomeAttachmentCard AosEncounter.aos50182b, SomeAttachmentCard AosEncounter.aos50183b
   , SomeAttachmentCard fw53039, SomeAttachmentCard fw53040, SomeAttachmentCard fw54030, SomeAttachmentCard fw54035
   , SomeAttachmentCard energyTruncheonShuri

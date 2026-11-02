@@ -29,6 +29,7 @@ data Keyword
   | Villainous
   | Permanent
   | Setup
+  | Starting
   -- The Galaxy's Most Wanted
   | -- | defeated, it goes to the victory display, worth this many victory points (RR
     -- Victory X)

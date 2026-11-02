@@ -1,4 +1,6 @@
 module Marvel.Event.Events (module X) where
+import Marvel.Event.Events.CampaignPlayers as X
+import Marvel.Event.Events.WonderHerculesPack as X
 import Marvel.Event.Events.Fw53003 as X
 import Marvel.Event.Events.Fw53004 as X
 import Marvel.Event.Events.Fw53005 as X

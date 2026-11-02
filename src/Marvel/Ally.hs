@@ -7,6 +7,7 @@ module Marvel.Ally
   , module X
   ) where
 
+import Marvel.Ally.Allies.JessicaLuke qualified as JL
 import Marvel.Ally.Allies.TricksterTakeover qualified as TT
 
 import Marvel.Ally.Allies.AgeOfApocalypseBasicCampaign
@@ -45,7 +46,10 @@ allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
-  [ SomeAllyCard TT.tt55063, SomeAllyCard TT.tt55064, SomeAllyCard TT.tt55065, SomeAllyCard TT.tt55066
+  [ SomeAllyCard cw56002, SomeAllyCard cw56010, SomeAllyCard cw56019, SomeAllyCard cw56030, SomeAllyCard cw56041, SomeAllyCard cw56052, SomeAllyCard fne60007, SomeAllyCard fne60019, SomeAllyCard fne60020, SomeAllyCard fne60021, SomeAllyCard fne60022, SomeAllyCard fne60039
+  , SomeAllyCard wm58012, SomeAllyCard wm58013, SomeAllyCard wm58014, SomeAllyCard wm58015, SomeAllyCard wm58022, SomeAllyCard hc59008, SomeAllyCard hc59018, SomeAllyCard hc59019, SomeAllyCard hc59020, SomeAllyCard hc59025
+  , SomeAllyCard JL.jl61003, SomeAllyCard JL.jl61015, SomeAllyCard JL.jl61016, SomeAllyCard JL.jl61017, SomeAllyCard JL.jl61025, SomeAllyCard JL.jl61038, SomeAllyCard JL.jl62002, SomeAllyCard JL.jl62012, SomeAllyCard JL.jl62013, SomeAllyCard JL.jl62014, SomeAllyCard JL.jl62020, SomeAllyCard JL.jl62021
+  , SomeAllyCard TT.tt55063, SomeAllyCard TT.tt55064, SomeAllyCard TT.tt55065, SomeAllyCard TT.tt55066
   , SomeAllyCard fw53002, SomeAllyCard fw53015, SomeAllyCard fw53017, SomeAllyCard fw53018, SomeAllyCard fw53035, SomeAllyCard fw53036, SomeAllyCard fw54003, SomeAllyCard fw54012, SomeAllyCard fw54013, SomeAllyCard fw54032
   , SomeAllyCard aosP50002, SomeAllyCard aosP50012, SomeAllyCard aosP50013, SomeAllyCard aosP50022, SomeAllyCard aosP50023, SomeAllyCard aosP50036, SomeAllyCard aosP50054, SomeAllyCard aosP50091, SomeAllyCard aosP50105b, SomeAllyCard aosP50106b, SomeAllyCard aosP50107b, SomeAllyCard aosP50108b
   , SomeAllyCard tChallaShuri, SomeAllyCard manifoldShuri, SomeAllyCard anekaShuri, SomeAllyCard ayoShuri, SomeAllyCard okoyeShuri, SomeAllyCard whiteWolfShuri, SomeAllyCard scarletSpiderSilk, SomeAllyCard spiderByteSilk, SomeAllyCard madameWebSilk, SomeAllyCard spiderMan2099Silk, SomeAllyCard spiderWomanSilk

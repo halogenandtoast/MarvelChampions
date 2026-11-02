@@ -38,19 +38,24 @@ cardsWhere inPack inSet = do
     fmap catMaybes $ for cards $ withObject "card" \c -> do
       pack' <- c .: "packCode"
       set <- c .:? "setCode"
-      if inPack pack' && inSet set
+      typ <- c .: "type"
+      let playerOnly = pack' `elem` ["cw", "fne"]
+          isPlayer = (typ :: Text) `elem` ["hero", "alter_ego", "ally", "event", "support", "upgrade", "resource", "player_side_scheme"]
+      if inPack pack' && inSet set && (not playerOnly || isPlayer)
         then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> pure set)
         else pure Nothing
 
 -- | The packs implemented, by MarvelCDB pack code.
 packs :: [Text]
-packs = ["tt", "aos", "bp", "silk", "falcon", "winter", "magneto", "ncrawler", "iceman", "jubilee", "aoa", "deadpool", "x23", "angel", "psylocke", "hood", "next_evol", "mojo", "rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
+packs = ["cw", "wonder_man", "hercules", "fne", "jj", "luke_cage", "tt", "aos", "bp", "silk", "falcon", "winter", "magneto", "ncrawler", "iceman", "jubilee", "aoa", "deadpool", "x23", "angel", "psylocke", "hood", "next_evol", "mojo", "rogue", "gambit", "storm", "phoenix", "cyclops", "core", "cap", "msm", "bkw", "thor", "drs", "hlk", "trors", "twc", "toafk", "ant", "wsp", "qsv", "scw", "stld", "gam", "gmw", "drax", "vnm", "mts", "nebu", "warm", "valk", "vision", "sm", "nova", "ironheart", "spiderham", "spdr", "mut_gen", "wolv"]
 
 -- | The sets of a pack implemented so far: of The Rise of Red Skull, its two heroes and
 -- their nemesis sets and the aspect and basic cards (set-less), its scenarios, modular
 -- and campaign sets to come.
 inScope :: Text -> Maybe Text -> Bool
 inScope pack set = case pack of
+  "cw" -> maybe True (`elem` ["tigra", "hulkling"]) set
+  "fne" -> maybe True (`elem` ["daredevil", "echo", "daredevil_sense_deck"]) set
   "trors" -> maybe True (`elem` ["hawkeye", "hawkeye_nemesis", "spider_woman", "spider_woman_nemesis"]) set
   -- The Mad Titan's Shadow: the player side so far, its heroes, their nemesis sets and
   -- the set-less aspect and basic cards

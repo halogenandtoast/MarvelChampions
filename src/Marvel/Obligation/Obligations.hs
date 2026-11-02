@@ -1,4 +1,5 @@
 module Marvel.Obligation.Obligations (module X) where
+import Marvel.Obligation.Obligations.WonderHerculesPack as X
 import Marvel.Obligation.Obligations.AgentsOfShield as X
 import Marvel.Obligation.Obligations.Fw53029 as X
 import Marvel.Obligation.Obligations.Fw54027 as X

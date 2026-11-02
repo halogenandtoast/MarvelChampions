@@ -1,4 +1,6 @@
 module Marvel.SideScheme.SideSchemes (module X) where
+import Marvel.SideScheme.SideSchemes.CampaignPlayers as X
+import Marvel.SideScheme.SideSchemes.WonderHerculesPack as X
 import Marvel.SideScheme.SideSchemes.AgentsOfShield as X
 import Marvel.SideScheme.SideSchemes.Fw53031 as X
 import Marvel.SideScheme.SideSchemes.Fw53041 as X

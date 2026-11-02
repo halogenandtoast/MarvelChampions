@@ -1,5 +1,7 @@
 module Marvel.Event.Cards where
 
+import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
+import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
 
 import Marvel.Ability.Types qualified as AospAbility
@@ -137,6 +139,10 @@ import Marvel.Ability.Types qualified as NEAbility
 import Marvel.Keyword
 import Marvel.Boost ()
 import Marvel.EncounterSet
+import Marvel.WonderMan.Cards qualified as WM
+
+import Marvel.Hercules.Cards qualified as HC
+
 import Marvel.Prelude
 
 import Marvel.Cost.Types
@@ -161,7 +167,10 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ FalconWinter.fw53003, FalconWinter.fw53004, FalconWinter.fw53005, FalconWinter.fw53019, FalconWinter.fw54004, FalconWinter.fw54005, FalconWinter.fw54006, FalconWinter.fw54014, FalconWinter.fw54016, FalconWinter.fw54022, FalconWinter.fw54023
+  [ CampaignPlayers.cw56008, CampaignPlayers.cw56009, CampaignPlayers.cw56016, CampaignPlayers.cw56017, CampaignPlayers.cw56037, CampaignPlayers.cw56038, CampaignPlayers.cw56039, CampaignPlayers.cw56040, CampaignPlayers.cw56047, CampaignPlayers.cw56050, CampaignPlayers.fne60008, CampaignPlayers.fne60009, CampaignPlayers.fne60010, CampaignPlayers.fne60011, CampaignPlayers.fne60023, CampaignPlayers.fne60040a, CampaignPlayers.fne60040b, CampaignPlayers.fne60040c, CampaignPlayers.fne60041, CampaignPlayers.fne60048, CampaignPlayers.fne60049, CampaignPlayers.fne60050, CampaignPlayers.fne60055
+  , WM.wm58003, WM.wm58004, WM.wm58005, WM.wm58016, WM.wm58018, WM.wm58019, WM.wm58020, WM.wm58033, HC.hc59009, HC.hc59010, HC.hc59011, HC.hc59026
+  , JL.jl61004, JL.jl61005, JL.jl61006, JL.jl61019, JL.jl61026, JL.jl61027, JL.jl62003, JL.jl62004, JL.jl62005, JL.jl62006, JL.jl62015, JL.jl62022, JL.jl62023, JL.jl62034, JL.jl62035
+  , FalconWinter.fw53003, FalconWinter.fw53004, FalconWinter.fw53005, FalconWinter.fw53019, FalconWinter.fw54004, FalconWinter.fw54005, FalconWinter.fw54006, FalconWinter.fw54014, FalconWinter.fw54016, FalconWinter.fw54022, FalconWinter.fw54023
   , aosP50003, aosP50004, aosP50005, aosP50006, aosP50024, aosP50037, aosP50038, aosP50039
   , BlackPantherShuriPack.clawedStrikeShuri, BlackPantherShuriPack.ontheProwlShuri, BlackPantherShuriPack.wakandaForeverShuri, BlackPantherShuriPack.infiltrationShuri, BlackPantherShuriPack.heartofthePantherShuri, SilkPack.smoothasSilkSilk, SilkPack.swingingSilkKickSilk, SilkPack.wallcrawlSilk, SilkPack.stopHittingYourselfSilk, SilkPack.investigativeJournalismSilk, SilkPack.quickQuipSilk
   , nc48007, nc48008, nc48009, nc48010, nc48011, nc48016, nc48018, nc48031, nc48032
@@ -907,7 +916,7 @@ preemptiveStrike =
     }
 
 tackle :: CardDef
-tackle =
+tackle = reprintedAs ["56049"] $
   (event "05015" "Tackle" 3 HeroAction [Attack] [Physical] Protection)
     { cdAbilitySubTypes = [Ability.Attack]
     }
@@ -1043,7 +1052,7 @@ invulnerability = basicEvent "06021" "Invulnerability" 3 HeroAction [Superpower]
 
 -- | "Exhaust an ally you control" is part of its cost.
 teamwork :: CardDef
-teamwork =
+teamwork = reprintedAs ["59021"] $
   reprintedAs ["33017"] $ (event "06032" "Teamwork" 0 HeroInterrupt [Tactic] [Energy] Leadership)
     { cdResponseWindow = Just (WindowOneOf [MakesBasicAttack When You, MakesBasicThwart When You])
     , cdCriteria = SelfMatches You
@@ -1275,7 +1284,7 @@ momentOfTriumph = reprintedAs ["43017"] $
     }
 
 layDownTheLaw :: CardDef
-layDownTheLaw =
+layDownTheLaw = reprintedAs ["61018"] $
   (event "12031" "Lay Down the Law" 1 HeroResponse [Thwart] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
     , cdResponseWindow = Just (IdentityChangedAnyForm After You)
@@ -1289,7 +1298,7 @@ musterCourage =
     }
 
 assessTheSituation :: CardDef
-assessTheSituation = basicEvent "12033" "Assess the Situation" 0 Action [Tactic] [Mental]
+assessTheSituation = reprintedAs ["56053"] $  basicEvent "12033" "Assess the Situation" 0 Action [Tactic] [Mental]
 
 -- Wasp
 
@@ -1813,7 +1822,7 @@ subdue =
     }
 
 bringIt :: CardDef
-bringIt =
+bringIt = reprintedAs ["56015"] $
   (event "19030" "\"Bring It!\"" 0 HeroAction [] [Energy] Aggression)
     { cdLimit = Just (MaxPerPhase 1)
     }
@@ -2580,7 +2589,7 @@ thwipThwip = (event "31017" "Thwip Thwip!" 2 HeroAction [Superpower] [Mental] Pr
   }
 
 limitlessStamina :: CardDef
-limitlessStamina = (basicEvent "31023" "Limitless Stamina" 1 HeroAction [Superpower] [Physical])
+limitlessStamina = reprintedAs ["59027"] $ (basicEvent "31023" "Limitless Stamina" 1 HeroAction [Superpower] [Physical])
   { cdUnique = False
   , cdCriteria = SelfMatches (IdentityWithPrintedHitPoints $ AtLeast $ Static 14)
   , cdDeckLimit = Just 3
@@ -2622,7 +2631,7 @@ armorUp = (identityEvent "32010" "Armor Up" 0 AlterEgoInterrupt [Superpower] [Ph
 -- Mutant Genesis
 
 powerfulPunch :: CardDef
-powerfulPunch = reprintedAs ["48017"] $ (event "32014" "Powerful Punch" 2 HeroInterrupt [Attack, Defense] [Physical] Protection)
+powerfulPunch = reprintedAs ["60051"] $  reprintedAs ["48017"] $ (event "32014" "Powerful Punch" 2 HeroInterrupt [Attack, Defense] [Physical] Protection)
   { cdDeckLimit = Just 3
   , cdAbilitySubTypes = [Ability.Attack, Ability.Defense]
   , cdResponseWindow = Just (EnemyWouldAttack AnyEnemy AnyIdentity)
@@ -3270,7 +3279,7 @@ aerialIntervention = CardDef
   }
 
 taunt :: CardDef
-taunt = CardDef
+taunt = reprintedAs ["56048"] $  CardDef
   { cdCardCode = "42016"
   , cdName = "Taunt"
   , cdCost = Just 1
@@ -3303,7 +3312,7 @@ taunt = CardDef
   }
 
 bombsAway :: CardDef
-bombsAway = CardDef
+bombsAway = reprintedAs ["58017"] $ CardDef
   { cdCardCode = "42029"
   , cdName = "Bombs Away"
   , cdCost = Just 2

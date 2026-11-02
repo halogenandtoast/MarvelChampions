@@ -8,6 +8,8 @@
 -- Stored games and exports keep the engine's own JSON; this is only ever sent.
 module Marvel.Game.Public (publicGame, publicGameFor, owedFor, describeChoice, GameView (..), ChoiceView (..)) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Key qualified as Key
 import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Prelude
 import Marvel.Boost (BoostIcon (Star), boostCount)
@@ -29,7 +31,7 @@ import Marvel.Ally.Types qualified as Ally
 import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.AlterEgo.Types qualified as AlterEgo ()
 import Marvel.Attachment.Types (Attachment, Attrs (..))
-import Marvel.Obligation.Types (Attrs (..), getObligationDisplayThreat, getObligationDisplayCounters)
+import Marvel.Obligation.Types (Attrs (..), getObligationDisplayThreat, getObligationDisplayCounters, getObligationDisplayExhausted)
 import Marvel.Attack qualified as Attack
 import Marvel.Campaign qualified as Campaign
 import Marvel.Campaign (Campaign (..), CampaignMode)
@@ -238,6 +240,10 @@ data PlayerView = PlayerView
   -- ^ encounter cards attached to their hero
   , obligations :: [ObligationView]
   -- ^ the obligations in their play area
+  , senseDeck :: [CardView]
+  , tuckedPlayerCards :: [CardView]
+  , laborDeckSize :: Maybe Int
+  , giftDeckSize :: Maybe Int
   , weatherDeckSize :: Maybe Int
   -- ^ Storm's separate deck stays facedown
   , invocation :: Maybe InvocationView
@@ -282,7 +288,7 @@ data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text,
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural, resourceSlots :: [Resource], occupiedSlots :: [Int], heldCardsFacedown :: Int, threat :: Natural}
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural, resourceSlots :: [Resource], occupiedSlots :: [Int], heldCardsFacedown :: Int, threat :: Natural, attachedTo :: Maybe CardView}
   -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver); facedown,
   -- a Spectrum energy form she is not in (its owner's, not secret)
   deriving stock (Show, Generic)
@@ -350,7 +356,7 @@ data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, n
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ObligationView = ObligationView {tuckedCards :: [CardView], id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int, threat :: Natural, counters :: Natural}
+data ObligationView = ObligationView {tuckedCards :: [CardView], id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int, threat :: Natural, counters :: Natural, exhausted :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -661,10 +667,14 @@ gameView seesHand g = do
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , obligations =
-            [ ObligationView (map (cardView . EncounterCard) a.obligationHeldEncounterCards) a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards) (getObligationDisplayThreat o) (getObligationDisplayCounters o)
+            [ ObligationView (map (cardView . EncounterCard) a.obligationHeldEncounterCards) a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards) (getObligationDisplayThreat o) (getObligationDisplayCounters o) (getObligationDisplayExhausted o)
             | o <- HashMap.elems (gameObligations g), let a = toAttrs o
             , a.obligationOwner == Just (toId p), isNothing a.obligationSideScheme
             ]
+        , senseDeck = map (cardView . PlayerCard) (identityStoredValues "campaignSenseCards" p)
+        , tuckedPlayerCards = map (cardView . PlayerCard) (identityStoredValues "campaignEchoCards" p)
+        , laborDeckSize = if toBaseCardCode (toCardCode p) == "59001" then Just (length (identityStoredValues "laborDeck" p :: [EncounterCard])) else Nothing
+        , giftDeckSize = if toBaseCardCode (toCardCode p) == "59001" then Just (length (identityStoredValues "giftDeck" p :: [PlayerCard])) else Nothing
         , weatherDeckSize = length <$> a.playerIdentityWeatherDeck
         , invocation =
             invocationDeckOf p <&> \d ->
@@ -704,11 +714,11 @@ gameView seesHand g = do
         }
   supportView (s :: Support) =
     let a = toAttrs s
-        faceup = toCardCode a.supportCardDef == "38028"
+        faceup = a.supportHeldCardsFaceup || toCardCode a.supportCardDef == "38028"
      in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted (if toCardCode a == "46008" then 0 else a.supportUses) (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards] (map (cardView . EncounterCard) a.supportHeldEncounterCards) (if toCardCode a == "46008" then a.supportUses else 0)
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a `elem` ["34007", "49006", "50035a", "50035b"] then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a `elem` ["34007", "49006"] then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0) (if toCardCode a `elem` ["50035a", "50035b"] then a.upgradeUses else 0)
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a `elem` ["34007", "49006", "50035a", "50035b"] then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a `elem` ["34007", "49006"] then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0) (if toCardCode a `elem` ["50035a", "50035b"] then a.upgradeUses else 0) (cardView <$> (a.upgradeAttachedCard >>= cardInPlay g))
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
@@ -1011,3 +1021,14 @@ idText a = case toJSON a of
   String t -> t
   other -> tshow other
 
+
+-- Separate identity decks remain on their physical face across form changes.
+identityStoredValues :: FromJSON a => Text -> PlayerIdentity -> [a]
+identityStoredValues key player = concatMap (readValues . toJSON) (HashMap.elems $ playerIdentitySides $ toAttrs player)
+ where
+  readValues = \case
+    Object obj -> case KeyMap.lookup (Key.fromText key) obj of
+      Just value -> case fromJSON value of Success values -> values; _ -> []
+      Nothing -> concatMap readValues (KeyMap.elems obj)
+    Array arr -> concatMap readValues (toList arr)
+    _ -> []
