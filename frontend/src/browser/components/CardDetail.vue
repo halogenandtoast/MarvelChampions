@@ -36,7 +36,7 @@ const faceGroups = computed(() => {
 const faceLabel = (c: Card, group: { faces: { card: Card }[] }) =>
   group.faces.some((f) => /scheme$/.test(f.card.type))
     ? /^\d+[AB]$/.test(c.stage ?? '') ? c.stage! : c.code.slice(-1).toUpperCase()
-    : (c.traits?.at(-1) ?? c.name)
+    : (c.traits?.at(-1) ?? (/[ab]$/.test(c.code) ? c.code.slice(-1).toUpperCase() : c.name))
 
 const facts = computed(() => {
   const c = shown.value
@@ -49,7 +49,7 @@ const facts = computed(() => {
   rows.push({ label: t('browser.card.facts.code'), value: c.code })
   return rows
 })
-const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}`)
+const source = computed(() => shown.value.sourceUrl ?? `https://marvelcdb.com/card/${shown.value.code}`)
 </script>
 
 <template>
@@ -113,7 +113,10 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
 
         <CardStats :card="shown" />
 
-        <section v-if="shown.text" class="block"><CardText :text="shown.text" /></section>
+        <section v-if="shown.text" class="block">
+          <p v-if="shown.ocr && !shown.ocr.verified" class="flavor">{{ $t('browser.card.unverifiedOcr') }}</p>
+          <CardText :text="shown.text" />
+        </section>
         <section v-if="shown.backText" class="block block--back">
           <h3 class="block-title">{{ shown.backName ?? $t('browser.card.reverse') }}</h3>
           <CardText :text="shown.backText" />
@@ -127,7 +130,7 @@ const marvelcdb = computed(() => `https://marvelcdb.com/card/${shown.value.code}
           </template>
         </dl>
         <p class="links">
-          <a class="button button--ghost" :href="marvelcdb" target="_blank" rel="noreferrer">{{ $t('browser.card.viewOnMarvelcdb') }} ↗</a>
+          <a class="button button--ghost" :href="source" target="_blank" rel="noreferrer">{{ $t(shown.sourceUrl ? 'browser.card.viewSource' : 'browser.card.viewOnMarvelcdb') }} ↗</a>
         </p>
       </div>
     </article>

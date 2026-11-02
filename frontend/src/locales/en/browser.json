@@ -107,6 +107,8 @@
     "stage": "Stage {stage}",
     "reverse": "Other side",
     "viewOnMarvelcdb": "View on MarvelCDB",
+    "viewSource": "View source scan",
+    "unverifiedOcr": "Unverified OCR. Check the scan for symbols, numbers and exact wording.",
     "facts": {
       "pack": "Pack",
       "set": "Set",

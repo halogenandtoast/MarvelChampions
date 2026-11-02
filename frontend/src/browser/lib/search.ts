@@ -51,7 +51,7 @@ const haystacks = new WeakMap<Card, string>()
 function haystack(card: Card): string {
   let value = haystacks.get(card)
   if (value === undefined) {
-    value = normalize([card.name, card.subname ?? '', ...(card.traits ?? []), card.text ?? '', card.backText ?? '', card.setName ?? ''].join(' '))
+    value = normalize([card.name, card.subname ?? '', ...(card.traits ?? []), card.text ?? '', card.backText ?? '', card.setName ?? '', card.packName].join(' '))
     haystacks.set(card, value)
   }
   return value

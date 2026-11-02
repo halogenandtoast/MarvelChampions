@@ -157,6 +157,15 @@ def main(argv):
         ],
         "cards": sorted(cards.values(), key=lambda c: (c.get("packOrder") or 999, c.get("position") or 0, c["code"])),
     }
+    # Locally imported packs remain available when the MarvelCDB index is rebuilt.
+    for path in sorted((ROOT / "data" / "cards").glob("*.json")):
+        custom = json.loads(path.read_text())
+        existing = {c["code"] for c in out["cards"]}
+        collisions = existing.intersection(c["code"] for c in custom["cards"])
+        if collisions:
+            raise ValueError(f"Duplicate card codes in {path}: {sorted(collisions)}")
+        out["packs"].extend(custom["packs"])
+        out["cards"].extend(custom["cards"])
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
     print(f"wrote {len(out['cards'])} cards in {len(out['packs'])} packs to {OUT}")
 

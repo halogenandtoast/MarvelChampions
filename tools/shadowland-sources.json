@@ -1,0 +1,695 @@
+{
+  "source": "https://drive.google.com/drive/folders/1-p53LqODOLy6RS89H718cvz0kKCwnoPG",
+  "sets": [
+    {
+      "id": "1O7VTv10jjD66bl2KAqJoPVha9_t5MA3K",
+      "name": "1. Shadows in the Night",
+      "files": [
+        {
+          "id": "1AsJ854h_XplXsBjmIpfUHtkGUhC1Axl5",
+          "name": "1_A Barricade of Blades_Main Scheme_Side A.tif",
+          "code": "shadowland-1-001a",
+          "originalBytes": 18135720
+        },
+        {
+          "id": "1GJHFuGyMMpGIChMv0MuLubHVc7iVIfOV",
+          "name": "1_A Barricade of Blades_Main Scheme_Side B.tif",
+          "code": "shadowland-1-001b",
+          "originalBytes": 18183720
+        },
+        {
+          "id": "17Re-ndY23MazeBouMM-IjudgIJo-7173",
+          "name": "2_Fortress Lockdown_Main Scheme_Side A.tif",
+          "code": "shadowland-1-002a",
+          "originalBytes": 18108128
+        },
+        {
+          "id": "1-hIKNGeywioFHTFonhnYR_b6dx-fhDAm",
+          "name": "2_Fortress Lockdown_Main Scheme_Side B.tif",
+          "code": "shadowland-1-002b",
+          "originalBytes": 18065528
+        },
+        {
+          "id": "1HWamLXM3sFy4S2W0qJ765XWUZNMssCiY",
+          "name": "3_The Street Below_Environment_Side A.tif",
+          "code": "shadowland-1-003a",
+          "originalBytes": 18069860
+        },
+        {
+          "id": "19T9Gv0eWec-hIhIxIK2ccDDbwIDRJHPd",
+          "name": "3_The Street Below_Environment_Side B.tif",
+          "code": "shadowland-1-003b",
+          "originalBytes": 18034356
+        },
+        {
+          "id": "1xryrNjGOkgq8UL7t6-7nk5UqqTC86D0e",
+          "name": "4_The Street Below_Environment_Side A.tif",
+          "code": "shadowland-1-004a",
+          "originalBytes": 18159588
+        },
+        {
+          "id": "1yux3B3hAPQiRzrlN-3lTQPTHpopFkHRn",
+          "name": "4_The Street Below_Environment_Side B.tif",
+          "code": "shadowland-1-004b",
+          "originalBytes": 18128836
+        },
+        {
+          "id": "1I6a4S4EEf5MSFzAQZAfJHC0DnWkiK7_Q",
+          "name": "5_Black Tarantula_Minion.tif",
+          "code": "shadowland-1-005",
+          "originalBytes": 18102088
+        },
+        {
+          "id": "1ohjf6zrO2EoDu68Bg7wm2WZ8VRBz5vE7",
+          "name": "6_Ghost Maker_Minion.tif",
+          "code": "shadowland-1-006",
+          "originalBytes": 18071528
+        },
+        {
+          "id": "1fgdns5VOBb6OeYmTCjrZbTiZ_8zEkci1",
+          "name": "7_Sealed Entrance_Side Scheme.tif",
+          "code": "shadowland-1-007",
+          "originalBytes": 18168244
+        },
+        {
+          "id": "1xbZfI7ksJhHk0HkEU1oipAPFNQh0FVHw",
+          "name": "8_Strategic Positioning__Side Scheme.tif",
+          "code": "shadowland-1-008",
+          "originalBytes": 18131984
+        },
+        {
+          "id": "1OB-_21Ksi2vELgtgTWNSqzK6F5OXtO97",
+          "name": "9_Surround the Fortress_Side Scheme.tif",
+          "code": "shadowland-1-009",
+          "originalBytes": 18120040
+        },
+        {
+          "id": "1bRjfOLOunQsmYxWpVlp_efxr_HwUHVih",
+          "name": "10_Chaos in Hell's Kitchen_Treachery.tif",
+          "code": "shadowland-1-010",
+          "originalBytes": 18046964
+        },
+        {
+          "id": "16GEaB_opPim1oZIovm45GIbuVTRWvErK",
+          "name": "11_Chaos in Hell's Kitchen_Treachery.tif",
+          "code": "shadowland-1-011",
+          "originalBytes": 18047020
+        },
+        {
+          "id": "1uJFIu1oen_XUHCgiHhItYMv4200ynH6s",
+          "name": "12_Moonlit Silhouette_Treachery.tif",
+          "code": "shadowland-1-012",
+          "originalBytes": 18138576
+        },
+        {
+          "id": "1U6ElH2fWdSg-_dLhlOLgeXgfnRWb2LRh",
+          "name": "13_Moonlit Silhouette_Treachery.tif",
+          "code": "shadowland-1-013",
+          "originalBytes": 18138528
+        }
+      ]
+    },
+    {
+      "id": "12RYet14FUzsLL6sOgRr6caOz-AO0cB-N",
+      "name": "2. Shadow Labyrinth",
+      "files": [
+        {
+          "id": "16BE8sXNd0w02cwySk0kxrHZ7hd8KRtyC",
+          "name": "1_Shifting Corridors_Villain_Side A.tif",
+          "code": "shadowland-2-001a",
+          "originalBytes": 18152684
+        },
+        {
+          "id": "1an53ObeUmaaL437Nmllo-z8dkrJ0MElT",
+          "name": "2_Into the Labyrinth_main Scheme_Side A.tif",
+          "code": "shadowland-2-002a",
+          "originalBytes": 18226616
+        },
+        {
+          "id": "1ziQnfpceFbeZG8qgItQJu2MeDUXEmV41",
+          "name": "2_Into the Labyrinth_main Scheme_Side B.tif",
+          "code": "shadowland-2-002b",
+          "originalBytes": 18053848
+        },
+        {
+          "id": "1U1IT3HyIEnD6jnM9XCOT3s0qrEZztgiC",
+          "name": "3_Chamber of Vile Secrets_Main Scheme_Side A.tif",
+          "code": "shadowland-2-003a",
+          "originalBytes": 18126824
+        },
+        {
+          "id": "1tHTEbopBt_4y1L4e-v7pCDwp-iPEQ5P_",
+          "name": "3_Chamber of Vile Secrets_Main Scheme_Side B.tif",
+          "code": "shadowland-2-003b",
+          "originalBytes": 18030948
+        },
+        {
+          "id": "1wIi-GwpnqZS5DTgY-GjfeoHrJ2O25Tmu",
+          "name": "4_Whisper in the Dark_Attachment.tif",
+          "code": "shadowland-2-004",
+          "originalBytes": 18210904
+        },
+        {
+          "id": "1KflPid9w0W0y_VDWb6NnUjXA_mP_foVO",
+          "name": "5_Lord Deathstrike_Minion.tif",
+          "code": "shadowland-2-005",
+          "originalBytes": 18091764
+        },
+        {
+          "id": "1JqXJpOdzfVVMfAdHt_Bj6_K-ixQOG_Tp",
+          "name": "6_Dead End_Side Scheme_Side Scheme.tif",
+          "code": "shadowland-2-006",
+          "originalBytes": 18049776
+        },
+        {
+          "id": "13FT1ftrMybO9GXqazZiKta5iJtmRPDUl",
+          "name": "7_Hall of Hidden Doors_Side Scheme.tif",
+          "code": "shadowland-2-007",
+          "originalBytes": 18200856
+        },
+        {
+          "id": "1j_n_lKQr8sbp-ci-CognPsLd1jCxvU5b",
+          "name": "8_No Time to Think!_Treachery.tif",
+          "code": "shadowland-2-008",
+          "originalBytes": 18055144
+        },
+        {
+          "id": "1M4GH5JOXCuJ_n69vHgGPhTxUVLLdA5fv",
+          "name": "9_No Time to Think!_Treachery.tif",
+          "code": "shadowland-2-009",
+          "originalBytes": 18055148
+        },
+        {
+          "id": "1LGHnUKwSh1kF4x7x18FKu-85slwwcvRa",
+          "name": "10_Sudden Shift_Treachery.tif",
+          "code": "shadowland-2-010",
+          "originalBytes": 18125624
+        },
+        {
+          "id": "10oItdQMCsz06G54jFrT5RszbCQDD6atH",
+          "name": "11_Sudden Shift_Treachery.tif",
+          "code": "shadowland-2-011",
+          "originalBytes": 18125588
+        }
+      ]
+    },
+    {
+      "id": "1ANCuhGwpdS0HrBuzHiklkvd4K9jmxZjP",
+      "name": "3. Heart of Shadow",
+      "files": [
+        {
+          "id": "1EnEmyadHaiIZlrpGwKkoSxkNVeqIty9T",
+          "name": "1_Krahllak_Villain.tif",
+          "code": "shadowland-3-001",
+          "originalBytes": 18167684
+        },
+        {
+          "id": "1jdQp7T9I0fR3fT3ZnaRztfoKEYV49Vnz",
+          "name": "2_Krahllak_Villain.tif",
+          "code": "shadowland-3-002",
+          "originalBytes": 18114220
+        },
+        {
+          "id": "1c4MBuiMJqe8nBwvh-nT57b6z1DykcFM8",
+          "name": "3_Krahllak_Villain.tif",
+          "code": "shadowland-3-003",
+          "originalBytes": 18080628
+        },
+        {
+          "id": "1cfHLT8M-Er9cHrxkIqAnqDapD88F30gE",
+          "name": "4_Dark Invitation_Main Scheme_Side B.tif",
+          "code": "shadowland-3-004b",
+          "originalBytes": 18109508
+        },
+        {
+          "id": "1KeOhollDqcdBBd8BoRw_YNV0v3E1frBO",
+          "name": "4_Dark Invitation_Main Scheme.tif",
+          "code": "shadowland-3-004a",
+          "originalBytes": 18197176
+        },
+        {
+          "id": "1KU0EU4KVy8GmH2so_Ulfc1iZY-1fFOoK",
+          "name": "5_Beast be Praised_Main Scheme_Side A.tif",
+          "code": "shadowland-3-005a",
+          "originalBytes": 18170444
+        },
+        {
+          "id": "1F01KpMVQ-yhLi3K-3o0S5QmuWhq4XdO7",
+          "name": "5_Beast be Praised_Main Scheme_Side B.tif",
+          "code": "shadowland-3-005b",
+          "originalBytes": 18079296
+        },
+        {
+          "id": "1HyGWP3WCpgR38O_crIiKho8YtAmQGCNc",
+          "name": "6_Dark Shroud_Attachment.tif",
+          "code": "shadowland-3-006",
+          "originalBytes": 18122596
+        },
+        {
+          "id": "1VCq9KGtk89h589iYyDRNkrDknIya_q40",
+          "name": "7_fear Projection_Attachment.tif",
+          "code": "shadowland-3-007",
+          "originalBytes": 18190656
+        },
+        {
+          "id": "14KF8CtUX3ilKYiItrJSDgCLA71LrB1Py",
+          "name": "8_Mark of the Wicked_Attachment.tif",
+          "code": "shadowland-3-008",
+          "originalBytes": 18219740
+        },
+        {
+          "id": "1kncQgoj4AYS_U2WOWqhNzVr-WngY-w3V",
+          "name": "9_Pull of Power_Attachment.tif",
+          "code": "shadowland-3-009",
+          "originalBytes": 18073668
+        },
+        {
+          "id": "1Ly5NHjUPEv0QNGAVn_s6C1-7FhTzofcY",
+          "name": "10_Fist_Minion.tif",
+          "code": "shadowland-3-010",
+          "originalBytes": 18046384
+        },
+        {
+          "id": "1hMmk1XtRiaKc79r5A4ic7x5dtveLYQDR",
+          "name": "11_Hellbride_Minion.tif",
+          "code": "shadowland-3-011",
+          "originalBytes": 18142792
+        },
+        {
+          "id": "10tssxatHkG6fC6Ukkt19uVpAAeZNNuR6",
+          "name": "12_Retainer_Minion.tif",
+          "code": "shadowland-3-012",
+          "originalBytes": 18117684
+        },
+        {
+          "id": "1WP4CqR_z0kGy07R8zS4KOFypBhTx-Sc3",
+          "name": "13_Snakeroot Elders_Minion.tif",
+          "code": "shadowland-3-013",
+          "originalBytes": 18023336
+        },
+        {
+          "id": "13EQ3SLeKl6klllIRN3_1GkEevlHP6i7q",
+          "name": "14_Veil of Nightmares_Side Scheme.tif",
+          "code": "shadowland-3-014",
+          "originalBytes": 18201840
+        },
+        {
+          "id": "1--v3483VGD6PiXGg26RbnD6Dq7CR3UDp",
+          "name": "15_Veil of Nightmares_Side Scheme.tif",
+          "code": "shadowland-3-015",
+          "originalBytes": 18201784
+        },
+        {
+          "id": "1YOR49LyTcQJEEzStiF1ibB31O45tMmW5",
+          "name": "16_Submit or Suffer_Treachery.tif",
+          "code": "shadowland-3-016",
+          "originalBytes": 18135660
+        },
+        {
+          "id": "1LTYFrN9GMtkdfac6IDZe_toCaIKXYkK6",
+          "name": "17_Submit or Suffer_Treachery.tif",
+          "code": "shadowland-3-017",
+          "originalBytes": 18135612
+        }
+      ]
+    },
+    {
+      "id": "1YeP0qbi9bz75Nw5QoSUgeeJRUqA48uat",
+      "name": "4. Ninja Swarm",
+      "files": [
+        {
+          "id": "1iX6n_98MjDOeU0ek_X6Dr3XmYY0fN1Hb",
+          "name": "1_Black Mountain_Minion.tif",
+          "code": "shadowland-4-001",
+          "originalBytes": 18122208
+        },
+        {
+          "id": "1tbDNruniRSt2o96bMwwc36mHwl6KbqG4",
+          "name": "2_Kirigi_Minion.tif",
+          "code": "shadowland-4-002",
+          "originalBytes": 18121440
+        },
+        {
+          "id": "1i7Wxll1131MDvLJUglDXUFrl68nenIaU",
+          "name": "3_Bo Staff Ninja_Minion.tif",
+          "code": "shadowland-4-003",
+          "originalBytes": 18215720
+        },
+        {
+          "id": "19ApOqcnPGYIHzTH9D-VvYvO0ZFxb2U4v",
+          "name": "4_Fukiya Ninja_Minion.tif",
+          "code": "shadowland-4-004",
+          "originalBytes": 18100372
+        },
+        {
+          "id": "188na3yOpMMLr3dRBgCm1bRguR3IuKTu8",
+          "name": "5_Katana Ninja_Minion.tif",
+          "code": "shadowland-4-005",
+          "originalBytes": 18085212
+        },
+        {
+          "id": "1-RFGXz-F1nDtJA4U7Bc7re__jF0Domzd",
+          "name": "6_Kusarigama Ninja_Minion.tif",
+          "code": "shadowland-4-006",
+          "originalBytes": 18109560
+        },
+        {
+          "id": "17e1DWWqJMNT6kP-EtniZdoOloBcpavRR",
+          "name": "7_Shuriken Ninja_Minion.tif",
+          "code": "shadowland-4-007",
+          "originalBytes": 18049460
+        },
+        {
+          "id": "1LX3M0KAAofXfe4uGSQpGEo9j3KXbMSIV",
+          "name": "8_Dancing Shadows_Side Scheme.tif",
+          "code": "shadowland-4-008",
+          "originalBytes": 18122944
+        },
+        {
+          "id": "1UUuLEyOM03mkQ6Hju3EiwdAPjCHZ58oB",
+          "name": "9_Countless Numbers_Treachery.tif",
+          "code": "shadowland-4-009",
+          "originalBytes": 18087656
+        }
+      ]
+    },
+    {
+      "id": "1LOUALOpSdn1WlBNeWayoZZQunXIbv84q",
+      "name": "5. Deadly Contraptions",
+      "files": [
+        {
+          "id": "1QQ_NJNJsalIDSMn_SnSjnB2HxpuiY1UR",
+          "name": "1_Nervous Jitters_Attachment.tif",
+          "code": "shadowland-5-001",
+          "originalBytes": 18147208
+        },
+        {
+          "id": "1BnYjtq0DWUReix343E2qI4MH6AmMJNhd",
+          "name": "2_Iron Monk_Minion.tif",
+          "code": "shadowland-5-002",
+          "originalBytes": 18150844
+        },
+        {
+          "id": "15Go37NT2toj6JIwVJ0SfezFOy8H72HZa",
+          "name": "3_Hall of Punishment_Side Scheme.tif",
+          "code": "shadowland-5-003",
+          "originalBytes": 18191868
+        },
+        {
+          "id": "1gd2cykovIVRFi8wE4-n0Hxt8oJBjd2XF",
+          "name": "4_Path of a Thousand Cuts_Side Scheme.tif",
+          "code": "shadowland-5-004",
+          "originalBytes": 18134480
+        },
+        {
+          "id": "1LSt-LtfBlXMqCFR0cWEyEX8n9Ivq-kEO",
+          "name": "5_Blinding Powder_Treacehry.tif",
+          "code": "shadowland-5-005",
+          "originalBytes": 18119476
+        },
+        {
+          "id": "1hVq0gr-h-w5lbn1s7T4VTG5L-tWuGCnV",
+          "name": "6_Caltrops_Treachery.tif",
+          "code": "shadowland-5-006",
+          "originalBytes": 18109216
+        },
+        {
+          "id": "1w_xlx7HltGNJrRD6wKX-7aHBiLtlGclA",
+          "name": "7_Flame Spout_Treachery.tif",
+          "code": "shadowland-5-007",
+          "originalBytes": 17962016
+        },
+        {
+          "id": "1yZ6x4sJjFVMBscTPmhPTEbOYb_eHv3_W",
+          "name": "8_Oil Slick_Treachery.tif",
+          "code": "shadowland-5-008",
+          "originalBytes": 18021496
+        },
+        {
+          "id": "1LT_jboUWDsHfODlnk9oXmAPSpiCnMQVc",
+          "name": "9_Poisin Darts_Treachery.tif",
+          "code": "shadowland-5-009",
+          "originalBytes": 18054376
+        },
+        {
+          "id": "1HwW5Jb1XC53xNVs-r8O55fkr_GwFImTX",
+          "name": "10_Pressure Plate_Treachery.tif",
+          "code": "shadowland-5-010",
+          "originalBytes": 18134824
+        },
+        {
+          "id": "1ybJZQFBwJHj_Wbap1XeN4EXKK3gD7L0m",
+          "name": "11_Tripwire_Treachery.tif",
+          "code": "shadowland-5-011",
+          "originalBytes": 18077032
+        }
+      ]
+    },
+    {
+      "id": "1HPXVIxTruP-KKtSOUvk69srs4thIZssc",
+      "name": "6. Dark Protege",
+      "files": [
+        {
+          "id": "1M6ZJV-jLfjYiZbkriHE-UoBnm4oTDy62",
+          "name": "1_Archpriestess_Villain_Side A.tif",
+          "code": "shadowland-6-001a",
+          "originalBytes": 18168320
+        },
+        {
+          "id": "1x8Qix6KTFHbVXcOYu3ZmSZkp5YahIQUr",
+          "name": "1_Archpriestess_Villain_Side B.tif",
+          "code": "shadowland-6-001b",
+          "originalBytes": 18130656
+        },
+        {
+          "id": "1K00uSIljDi_xVy_Wwj2PGw08pA1v3YAg",
+          "name": "2_Daredevil_Villain_Side A.tif",
+          "code": "shadowland-6-002a",
+          "originalBytes": 18127108
+        },
+        {
+          "id": "1PtdRUVfnNEJ1dZ6u5d7yvBvFIPqqrYpz",
+          "name": "2_Daredevil_Villain_Side B.tif",
+          "code": "shadowland-6-002b",
+          "originalBytes": 18118400
+        },
+        {
+          "id": "1BeXQwU3-fVZ4L2-Yv4Y3GeJAkOZL4tRy",
+          "name": "3_Elektra_Villain_Side A.tif",
+          "code": "shadowland-6-003a",
+          "originalBytes": 18190024
+        },
+        {
+          "id": "1lvM-QMlC_3felDQKVpyPlpfLGxiGdYzD",
+          "name": "3_Elektra_Villain_Side B.tif",
+          "code": "shadowland-6-003b",
+          "originalBytes": 18117880
+        },
+        {
+          "id": "1OYxzBT-BZc_c_3Ndq8MDBjCJrpEXaYKo",
+          "name": "4_Gorgon_Villain_Side A.tif",
+          "code": "shadowland-6-004a",
+          "originalBytes": 18044984
+        },
+        {
+          "id": "1anN1O9wFyN5Kh79DrO9iR7ykfSTOtr8B",
+          "name": "4_Gorgon_Villain_Side B.tif",
+          "code": "shadowland-6-004b",
+          "originalBytes": 18096928
+        },
+        {
+          "id": "1kw0wpRXHEemlsV54OGvJrrQS6r-kcVpR",
+          "name": "5_Lady Bullseye_Villain_Side A.tif",
+          "code": "shadowland-6-005a",
+          "originalBytes": 18154740
+        },
+        {
+          "id": "1gEqLkl6Vo4MjV1UkblkLeQUbXPxj_Jy-",
+          "name": "5_Lady Bullseye_Villain_Side B.tif",
+          "code": "shadowland-6-005b",
+          "originalBytes": 18156060
+        },
+        {
+          "id": "1n_AngpCCCYci3K_empgMxYDtiPbQYVtt",
+          "name": "6_White Tiger_Villain_Side A.tif",
+          "code": "shadowland-6-006a",
+          "originalBytes": 18118468
+        },
+        {
+          "id": "1UFS_H0ak4jZU1Bfk1qs_4DL1gqZDmXwD",
+          "name": "6_White Tiger_Villain_Side B.tif",
+          "code": "shadowland-6-006b",
+          "originalBytes": 18105632
+        },
+        {
+          "id": "1sjBggyhyoR6XgE_jOdMSL4rjYuoaX0zx",
+          "name": "7_Art of the Kill_Attachment.tif",
+          "code": "shadowland-6-007",
+          "originalBytes": 17957584
+        },
+        {
+          "id": "1rlmJYbpuZ81yEUGKr6JZoD_g2GU5tuZ4",
+          "name": "8_Krahllak's Blessing_Attachement.tif",
+          "code": "shadowland-6-008",
+          "originalBytes": 18102096
+        },
+        {
+          "id": "1iAm-WtTkJwQM6Fv6DmiOikpQFDsir1Lx",
+          "name": "9_Archpriestess_Minion.tif",
+          "code": "shadowland-6-009",
+          "originalBytes": 18118280
+        },
+        {
+          "id": "194xEtV1Qovv_s3q3lpXNP4OSBW_rVzsN",
+          "name": "10_Gorgon_Minion.tif",
+          "code": "shadowland-6-010",
+          "originalBytes": 18056728
+        },
+        {
+          "id": "1N7NBlLKdv5rppoGy5GWB5HQHEpUZIWEj",
+          "name": "11_Lady Bullseye_Minion.tif",
+          "code": "shadowland-6-011",
+          "originalBytes": 17992408
+        },
+        {
+          "id": "1HETGLthHCjt1kOx2-D6mXua2irI6QfsP",
+          "name": "12_White Tiger_Minion.tif",
+          "code": "shadowland-6-012",
+          "originalBytes": 18076528
+        },
+        {
+          "id": "1pwzyrjZwnHkxuIhoHT7yU0ouKdB5TxxV",
+          "name": "13_Rite of Offering_Side Scheme.tif",
+          "code": "shadowland-6-013",
+          "originalBytes": 18201708
+        },
+        {
+          "id": "1JBQn-dHmEFPfoTOM9bqDKQBxWcUh1sl4",
+          "name": "14_Shadow Plot_Side Scheme.tif",
+          "code": "shadowland-6-014",
+          "originalBytes": 18182368
+        },
+        {
+          "id": "1dFaK4tcrMihfDzct05uS20cyZwquL_Fm",
+          "name": "15_Darkness Within_Treacehry.tif",
+          "code": "shadowland-6-015",
+          "originalBytes": 18090892
+        },
+        {
+          "id": "1aGHQOth5FBf76gMDZAlrQG-X-lO7Q0qp",
+          "name": "16_Embraced by Darkness_Treachery.tif",
+          "code": "shadowland-6-016",
+          "originalBytes": 18091008
+        }
+      ]
+    },
+    {
+      "id": "1I5bfhq3o5Brr1dviaRBSDjSh29j4Dv3K",
+      "name": "7. Black Flower",
+      "files": [
+        {
+          "id": "17q276WvO2yK5XfVDCSLzcbqNWIPIgRSW",
+          "name": "1_Creeping Corruption_Upgrade_Side A.tif",
+          "code": "shadowland-7-001a",
+          "originalBytes": 18179216
+        },
+        {
+          "id": "11PN9MH3dxxzprr6y_cWYpANV0YG0orEu",
+          "name": "1_Creeping Corruption_Upgrade_Side B.tif",
+          "code": "shadowland-7-001b",
+          "originalBytes": 18132172
+        },
+        {
+          "id": "1qhSAJkNhayCevwhm2OF7q5wOnklSzzT2",
+          "name": "2_Creeping Corruption_Upgrade_Side A.tif",
+          "code": "shadowland-7-002a",
+          "originalBytes": 18179272
+        },
+        {
+          "id": "1bpZPLa3G7obA_aC1p7wFVZQ-SmlShZQP",
+          "name": "2_Creeping Corruption_Upgrade_Side B.tif",
+          "code": "shadowland-7-002b",
+          "originalBytes": 18132236
+        },
+        {
+          "id": "1dxuWVOjrtriQ98c6f19b0kC1xHgSTrEL",
+          "name": "3_Creeping Corruption_Upgrade_Side A.tif",
+          "code": "shadowland-7-003a",
+          "originalBytes": 18179272
+        },
+        {
+          "id": "1l3matKRAJxbebhIi2YL6-9a-eI8qruS1",
+          "name": "3_Creeping Corruption_Upgrade_Side B.tif",
+          "code": "shadowland-7-003b",
+          "originalBytes": 18132232
+        },
+        {
+          "id": "1RobEBgC3XhMwkShTLhILQ9cbtWVpxRxp",
+          "name": "4_Creeping Corruption_Upgrade_Side A.tif",
+          "code": "shadowland-7-004a",
+          "originalBytes": 18179272
+        },
+        {
+          "id": "1VQZ9zF7bufQUtuMvrnBGZcpPqxuiy9iR",
+          "name": "4_Creeping Corruption_Upgrade_Side B.tif",
+          "code": "shadowland-7-004b",
+          "originalBytes": 18132240
+        },
+        {
+          "id": "1M8QyoPaIuvPzNDXA-erxdj_3wzGiW2Vd",
+          "name": "5_Aka_Minion.tif",
+          "code": "shadowland-7-005",
+          "originalBytes": 18058304
+        },
+        {
+          "id": "1J27JTUvkYfqnGFHUDqwT6ZaC6qC2UWpy",
+          "name": "6_Tongue of the Beast_Minion.tif",
+          "code": "shadowland-7-006",
+          "originalBytes": 18069676
+        },
+        {
+          "id": "1YUYX4dDuy0oM6fBchlAChHowf2FG28Yv",
+          "name": "7_Binding Ritual_Side Scheme.tif",
+          "code": "shadowland-7-007",
+          "originalBytes": 18156712
+        },
+        {
+          "id": "1imFG1zKGCwKr3g2lkvigKCV6CGsAxn3V",
+          "name": "8_Roots of a Black Flower_Side Scheme.tif",
+          "code": "shadowland-7-008",
+          "originalBytes": 18141784
+        },
+        {
+          "id": "1XIJ69EKw-LhIa7XcLH6jtR65a5KvmNyj",
+          "name": "9_Roots of a Black Flower_Side Scheme.tif",
+          "code": "shadowland-7-009",
+          "originalBytes": 18141844
+        },
+        {
+          "id": "129ke2a8RxvWTLrmWEBoQ7HekMSCyZc2n",
+          "name": "10_Malediction_Treachery.tif",
+          "code": "shadowland-7-010",
+          "originalBytes": 18219688
+        },
+        {
+          "id": "1CLy3C0UvMiAjhnyoisYjvEjo1--qI2hA",
+          "name": "11_Malediction_Treachery.tif",
+          "code": "shadowland-7-011",
+          "originalBytes": 18219644
+        },
+        {
+          "id": "1iLB6eUWY4gGgKanjA-K5eYIZdA8SMHM3",
+          "name": "12_Invasive Thoughts_Treachery.tif",
+          "code": "shadowland-7-012",
+          "originalBytes": 18108564
+        },
+        {
+          "id": "1Dr4fAb4rI3gNUCTcNgRGAdm8UUF_0P8b",
+          "name": "13_Invasive Thoughts_Treachery.tif",
+          "code": "shadowland-7-013",
+          "originalBytes": 18108512
+        }
+      ]
+    }
+  ]
+}
