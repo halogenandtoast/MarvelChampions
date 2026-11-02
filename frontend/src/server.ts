@@ -17,6 +17,7 @@ export interface CardView {
 }
 
 export interface UpgradeView extends CardView {
+  attachedTo?: CardView | null
   threat?: number
   resourceSlots?: ("Energy" | "Mental" | "Physical" | "Wild")[]
   occupiedSlots?: number[]
@@ -124,6 +125,10 @@ export interface PlayerView {
   /** the obligations in their play area */
   obligations?: AttachmentView[]
   /** Storm's separate facedown Weather deck */
+  senseDeck?: CardView[]
+  tuckedPlayerCards?: CardView[]
+  laborDeckSize?: number | null
+  giftDeckSize?: number | null
   weatherDeckSize?: number | null
   /** Doctor Strange's Invocation deck: its top card is faceup */
   invocation?: { top: CardView | null; deckSize: number; discard: CardView[] } | null

@@ -92,7 +92,11 @@
     },
     "identityBoostCards": "Boost cards",
     "futurePastDeck": "Future Past deck",
-    "tuckedEncounterCards": "Tucked encounter cards"
+    "tuckedEncounterCards": "Tucked encounter cards",
+    "sense": "Sense deck",
+    "tuckedPlayerCards": "Tucked events",
+    "labor": "Labor deck",
+    "gift": "Gift deck"
   },
   "activeVillain": "Active",
   "areas": {
@@ -257,5 +261,6 @@
   "missionArea": "Mission area",
   "missionSucceeded": "Mission completed",
   "missionFailed": "Mission failed",
-  "missionAttempts": "Attempts: {count}/4"
+  "missionAttempts": "Attempts: {count}/4",
+  "attachedTo": "Attached to {name}"
 }

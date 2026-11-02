@@ -36,7 +36,7 @@ const stats = computed(() =>
     ] as const
   ).filter(([, v]) => v !== null && v !== undefined),
 )
-type TableCard = SupportView & Partial<Pick<UpgradeView, 'resourceSlots' | 'occupiedSlots' | 'heldCardsFacedown'>>
+type TableCard = SupportView & Partial<Pick<UpgradeView, 'resourceSlots' | 'occupiedSlots' | 'heldCardsFacedown' | 'attachedTo'>>
 const supports = computed((): TableCard[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])])
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number; heldCardsFacedown?: number }) =>
@@ -170,7 +170,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
           :damage="card.damage || 0"
           :threat="card.threat || null"
           :attached="facedown(card)"
-          :flag="card.facedown ? t('game.facedownCard') : null"
+          :flag="card.facedown ? t('game.facedownCard') : card.attachedTo ? t('game.attachedTo', { name: card.attachedTo.name }) : null"
           :class="{ 'facedown-upgrade': card.facedown }"
         />
       </div>
@@ -181,6 +181,10 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
         <Pile :label="t('game.piles.deck')" :back="player.deckTop ? null : 'player'" :cards="player.deckTop ? [player.deckTop] : null" :count="player.deckSize" :pile="`deck-${player.id}`" />
         <Pile :label="t('game.piles.discard')" :cards="player.discard ?? []" :pile="`discard-${player.id}`" />
         <Pile v-if="player.weatherDeckSize != null" :label="t('game.piles.weather')" back="player" :count="player.weatherDeckSize" />
+        <Pile v-if="player.senseDeck?.length" :label="t('game.piles.sense')" :cards="player.senseDeck" />
+        <Pile v-if="player.tuckedPlayerCards?.length" :label="t('game.piles.tuckedPlayerCards')" :cards="player.tuckedPlayerCards" />
+        <Pile v-if="player.laborDeckSize != null" :label="t('game.piles.labor')" back="encounter" :count="player.laborDeckSize" />
+        <Pile v-if="player.giftDeckSize != null" :label="t('game.piles.gift')" back="player" :count="player.giftDeckSize" />
         <template v-if="player.invocation">
           <Pile :label="t('game.piles.invocation')" :count="player.invocation.deckSize" :cards="player.invocation.top ? [player.invocation.top] : []" />
           <Pile :label="t('game.piles.invocationDiscard')" :cards="player.invocation.discard" />
