@@ -4307,6 +4307,20 @@ instance RunMessage Game where
           _ -> False
     pushAll $ if beganNested then following else map (inSimultaneousAttackContext (WithSimultaneousAttackContext cursor message)) following
     pure after
+  runMessage (WithThreatPlacementResult source original) g = do
+    let scheme = case original of
+          MainSchemeMessage sid (MainSchemePlaceThreat _) -> Just $ SchemeMainSchemeId sid
+          SideSchemeMessage sid (SideSchemePlaceThreat _) -> Just $ SchemeSideSchemeId sid
+          CardSpecific (MainSchemeRef sid) "resolveThreatPlacement" _ -> Just $ SchemeMainSchemeId sid
+          _ -> Nothing
+    before <- maybe (pure 0) getSchemeThreatAmount scheme
+    (after,following) <- runReaderT (captureQueueT $ dispatchGameMessage original g) (refreshTraits g)
+    now <- maybe (pure 0) (\target -> runReaderT (getSchemeThreatAmount target) (refreshTraits after)) scheme
+    let placed = subtractNatural before now
+    runQueueT $ do
+      pushAll $ map (reportingThreatPlacement source) following
+      for_ scheme $ \target -> when (placed > 0) $ cardSpecific source "threatPlaced" (target,placed)
+    pure after
   runMessage (ResolveEnemyDamage original) g = do
     dealt <- runReaderT (enemyDamageDealtWindows original) (refreshTraits g)
     (after, following) <- runReaderT (captureQueueT $ dispatchGameMessage original g) (refreshTraits g)

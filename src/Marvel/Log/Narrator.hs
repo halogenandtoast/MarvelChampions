@@ -57,6 +57,7 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  WithThreatPlacementResult _ message -> narrationFor message
   WithSimultaneousAttackContext _ message -> narrationFor message
   PrepareAllyDepartureByDefeat _ _ -> Nothing
   PrepareEnemyDamageGroup _ _ -> Nothing

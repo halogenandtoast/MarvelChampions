@@ -24,7 +24,7 @@ newtype LeaderTreachery = LeaderTreachery (Attrs Treachery)
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 leaderTreacheryDefinitions :: [CardDef]
-leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103,C.cw56146,C.cw56147,C.cw56176,C.cw56178,C.cw57009,C.cw57010]
+leaderTreacheryDefinitions = [C.cw56070,C.cw56071,C.cw56101,C.cw56102,C.cw56103,C.cw56146,C.cw56147,C.cw56176,C.cw56178,C.cw57009,C.cw57010,C.cw57011]
 
 leaderTreacheries :: [TreacheryCard LeaderTreachery]
 leaderTreacheries = map (treachery LeaderTreachery) leaderTreacheryDefinitions
@@ -99,8 +99,16 @@ instance RunMessage LeaderTreachery where
           traverse_ exhaust identities
           traverse_ exhaust allies
           when (null identities && null allies) $ gainSurge a
+        "57011" -> do
+          cards <- controlledCards you [AllyType,SupportType]
+          scored <- for cards $ \target -> (target,) . max 0 . fromMaybe 0 . (cdCost =<<) <$> getsGame (`abilityCardDef` target)
+          let highest = [(target,cost) | (target,cost) <- scored,cost == maximum (0 : map snd scored)]
+          chooseOne you [targeting target $ do
+            discardControlled target
+            cardSpecific a "gammaPlaceThreat" (fromIntegral cost :: Natural)
+            | (target,cost) <- highest]
         _ -> pure ()
-      pure $ LeaderTreachery a {treacheryResolver = Just you}
+      pure $ LeaderTreachery a {treacheryResolver = Just you,treacherySurge = treacherySurge a || toCardCode a == "57011"}
     WithDiscarded (isTarget a -> True) FromDeck (onlyPlayerCards -> cards) | toCardCode a == "56070" -> do
       let n = fromIntegral $ length [r | card <- cards,(PrintedResource,r) <- cdResources $ getCardDef card,r `elem` [Energy,Wild]]
       traverse_ (\you -> damageIdentity you a $ toDamage n FromAbility) (treacheryResolver a)
@@ -113,6 +121,12 @@ instance RunMessage LeaderTreachery where
       counters <- sum <$> (traverse getCountersOn =<< captainMarvelEnergy)
       leaderOfFamily E.CwCaptainMarvel >>= traverse_ (\vid -> healFrom a vid counters)
       pure e
+    CardSpecific (isTarget a -> True) "gammaPlaceThreat" (fromJSON -> Success (n :: Natural)) -> do
+      schemes <- selectList MainScheme
+      traverse_ (\scheme -> placeThreatOnReporting a scheme n) schemes
+      pure e
+    CardSpecific (isTarget a -> True) "threatPlaced" (fromJSON -> Success (SchemeMainSchemeId _,n :: Natural)) | toCardCode a == "57011",n > 0 ->
+      pure $ LeaderTreachery a {treacherySurge = False}
     Boost (CardSpecific (isTarget a -> True) "pheromonesAfterBoostStun" (fromJSON -> Success (you,old :: Natural))) -> do
       current <- getCharacterStatusCount (IdentityCharacter you) StunnedStatus
       when (current <= old) $ confuseIdentity you

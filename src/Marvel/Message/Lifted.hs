@@ -568,6 +568,12 @@ placeThreat = placeThreatFrom ThreatFromAbility
 placeThreatOn :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> scheme -> Natural -> m ()
 placeThreatOn source scheme n = toSource source `seq` placeThreat scheme n
 
+-- | Report positive actual placements to the source's "threatPlaced" step.
+-- A canceled or fully prevented placement reports nothing.
+placeThreatOnReporting :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> scheme -> Natural -> m ()
+placeThreatOnReporting source (toScheme -> scheme) n = when (n > 0) $
+  pushAll [CheckWindows [Window Would $ W.ThreatPlaced ThreatFromAbility scheme n],WithThreatPlacementResult (toSource source) $ threatPlacement scheme n]
+
 -- | Threat placed on the scheme by what the window says, the window first.
 placeThreatFrom :: (ReverseQueue m, IsScheme scheme) => ThreatSource -> scheme -> Natural -> m ()
 placeThreatFrom from (toScheme -> scheme) n =

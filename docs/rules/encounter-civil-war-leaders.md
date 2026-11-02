@@ -68,6 +68,10 @@ Venom Blast uses the number of skill counters Spider-Woman actually removes for 
 
 Inconspicuous offers a legal highest-cost controlled card to discard or Spider-Woman's scheme activation. Its boost counts every status card on the resolving identity. Eleven additional tests pass, for 178 focused Civil War examples.
 
+Gamma Slam completes the seventeen leader treacheries. It discards a highest-cost ally or support and uses its printed cost for threat. A reporting continuation follows the actual placement through threat interrupts and replacements. The card surges when no main-scheme threat was actually placed, including a zero-cost discard, no eligible card, or complete prevention. Partial prevention that leaves one threat does not cause surge. The wrapper preserves ordinary queue edits and narration.
+
+All five Gamma Slam cases pass, including Counterintelligence preventing all or part of its threat. The focused Civil War suite passes 183 examples; the complete unit suite passes 8,107 examples.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.

@@ -314,3 +314,65 @@ spec = describe "Leader treacheries" do
       resolve [RevealBoostCard inconspicuous (EnemyVillainId vid)]
       n <- getsGame $ maybe 0 (V.villainBoost . toAttrs) . lookup vid . gameVillains
       liftIO $ n `shouldBe` 3
+
+  it "Gamma Slam discards the highest-cost ally or support and places its cost as threat" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57001"
+      mansion <- putIntoPlay you "01091"
+      _ <- putIntoPlay you "01093"
+      before <- mainSchemeThreatNow
+      slam <- encounterCard C.cw57011
+      start [RevealEncounterCard you slam]
+      choose "discard the highest-cost support" (isTargetChoice $ supportIdOf mansion)
+      pass
+      mainSchemeThreatNow `shouldReturn` (before + 4)
+      dealtTo you `shouldReturn` []
+
+  it "Gamma Slam surges when there is no ally or support to discard" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57001"
+      [surged] <- stackEncounterDeck [M.hydraMercenary]
+      slam <- encounterCard C.cw57011
+      resolve [RevealEncounterCard you slam]
+      dealtTo you >>= (`shouldSatisfy` elem surged)
+
+  it "Gamma Slam surges after discarding a zero-cost support" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57001"
+      practice <- putIntoPlay you "17017"
+      [surged] <- stackEncounterDeck [M.hydraMercenary]
+      before <- mainSchemeThreatNow
+      slam <- encounterCard C.cw57011
+      start [RevealEncounterCard you slam]
+      choose "discard Target Practice" (isTargetChoice $ supportIdOf practice)
+      pass
+      mainSchemeThreatNow `shouldReturn` before
+      dealtTo you >>= (`shouldSatisfy` elem surged)
+
+  for_ [("01092",0,True),("01091",1,False)] $ \(code,remaining,surges) ->
+    it ("Gamma Slam checks actual threat after Counterintelligence: remaining " <> show remaining) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        _ <- withLeader "57001"
+        support <- putIntoPlay you code
+        intelligence <- putIntoPlay you "08017"
+        let uid = UpgradeId $ unCardId $ pcCardId intelligence
+        [surged] <- stackEncounterDeck [M.hydraMercenary]
+        before <- mainSchemeThreatNow
+        slam <- encounterCard C.cw57011
+        start [RevealEncounterCard you slam]
+        chooseIf (isLabel "$label.noResponse")
+        choose "discard the support" (isTargetChoice $ supportIdOf support)
+        choose "prevent Gamma Slam's threat" (isAbilityOf uid)
+        pass
+        mainSchemeThreatNow `shouldReturn` (before + remaining)
+        deals <- dealtTo you
+        liftIO $ (surged `elem` deals) `shouldBe` surges

@@ -510,6 +510,8 @@ data Message
   | DealEncounterCard IdentityId
   | RevealDealtEncounterCards
   | GainSurge Target
+  | -- | Report a positive placement to the source after prevention and replacement.
+    WithThreatPlacementResult Source Message
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId
   | DiscardedCard Card
@@ -765,6 +767,7 @@ data ReplaceKind = Swapped | Advanced
 -- the original message, while the continuation retains which windows have run.
 queuedMessage :: Message -> Message
 queuedMessage = \case
+  WithThreatPlacementResult _ original -> queuedMessage original
   PrepareEnemyDamage original -> queuedMessage original
   ResolveEnemyDamage original -> queuedMessage original
   WithSimultaneousAttackContext _ original -> queuedMessage original
@@ -774,6 +777,7 @@ queuedMessage = \case
 -- kinds normally. Canceling the raw damage therefore cancels its continuation.
 rewrapQueuedMessages :: Message -> [Message] -> [Message]
 rewrapQueuedMessages (WithSimultaneousAttackContext cursor original) = map (WithSimultaneousAttackContext cursor) . rewrapQueuedMessages original
+rewrapQueuedMessages (WithThreatPlacementResult source original) = map (reportingThreatPlacement source) . rewrapQueuedMessages original
 rewrapQueuedMessages wrapper = map $ case wrapper of
   PrepareEnemyDamage _ -> wrap PrepareEnemyDamage
   ResolveEnemyDamage _ -> wrap ResolveEnemyDamage
@@ -782,6 +786,13 @@ rewrapQueuedMessages wrapper = map $ case wrapper of
   wrap constructor message = case enemyDamageMessage message of
     Just _ -> constructor message
     Nothing -> message
+
+reportingThreatPlacement :: Source -> Message -> Message
+reportingThreatPlacement source message = case message of
+  MainSchemeMessage _ (MainSchemePlaceThreat _) -> WithThreatPlacementResult source message
+  SideSchemeMessage _ (SideSchemePlaceThreat _) -> WithThreatPlacementResult source message
+  CardSpecific (MainSchemeRef _) "resolveThreatPlacement" _ -> WithThreatPlacementResult source message
+  _ -> message
 
 enemyDamageMessage :: Message -> Maybe (EnemyId, Source, Damage)
 enemyDamageMessage = \case
@@ -797,6 +808,7 @@ enemyDamageMessage = \case
 -- A replacement may remove a child or insert several messages in its position.
 queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]
 queuedChildEdits message = case message of
+  WithThreatPlacementResult source original -> [(original,map $ reportingThreatPlacement source)]
   WithSimultaneousAttackContext cursor original -> [(original, map (WithSimultaneousAttackContext cursor))]
   PrepareAllyDepartureByDefeat _ departure ->
     [(departure, map (\replacement -> if replacement == departure then message else replacement))]
