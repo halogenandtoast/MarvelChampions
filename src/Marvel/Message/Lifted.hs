@@ -1075,7 +1075,18 @@ attackGains enemy k = push case toEnemy enemy of
 
 -- | "That minion attacks another enemy" (Moondragon).
 minionAttacksEnemy :: (ReverseQueue m, IsEnemy enemy) => MinionId -> enemy -> m ()
-minionAttacksEnemy mid = push . MinionMessage mid . MinionAttacksEnemy . toEnemy
+minionAttacksEnemy mid enemy = do
+  you <- getActivePlayerId
+  minionAttacksEnemyAs mid you enemy
+
+-- | An explicit enemy target, with the given player resolving boost abilities.
+minionAttacksEnemyAs :: (ReverseQueue m, IsEnemy enemy) => MinionId -> IdentityId -> enemy -> m ()
+minionAttacksEnemyAs mid you enemy = do
+  previous <- getActivePlayerId
+  enemyActivationAfterCurrent mid do
+    setActivePlayer you
+    minionStep mid (MinionAttacksEnemy $ toEnemy enemy)
+    setActivePlayer previous
 
 -- | "That enemy gets +X ATK for that attack" (or -X): the enemy's attack under way.
 changeAttack :: (ReverseQueue m, IsEnemy enemy) => enemy -> Int -> m ()

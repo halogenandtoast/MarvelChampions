@@ -181,14 +181,12 @@ runMinionMessage msg attrs = case msg of
     pure attrs {minionAttackTarget = Just (AllyCharacter allyId)}
   -- a stunned minion discards its stun instead (RR Stun)
   MinionAttacksEnemy enemy -> do
-    forbidden <- elem CannotActivate <$> getModifiers attrs
-    stunned <- isStunned attrs
-    if forbidden then pure attrs else if stunned
-      then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False
-      else do
-        checkWindows [W.Window W.When $ W.EnemyAttackOnEnemy (toEnemyId attrs) enemy]
-        minionStep (minionId attrs) (MinionAttackEnemyAfterInterrupt enemy)
-        pure attrs
+    present <- inAnyArea $ selectAny (MinionWithId $ minionId attrs)
+    targetPresent <- inAnyArea $ selectAny (EnemyWithId enemy)
+    when (present && targetPresent) $ do
+      you <- getActivePlayerId
+      minionStep (minionId attrs) (MinionAttacks you)
+    pure $ if present && targetPresent then attrs {minionAttackTarget = Just (toCharacter enemy)} else attrs
   MinionAttackEnemyAfterInterrupt enemy -> do
     present <- selectAny (MinionWithId $ minionId attrs)
     targetPresent <- selectAny (EnemyWithId enemy)
@@ -206,7 +204,7 @@ runMinionMessage msg attrs = case msg of
   MinionAttacks ident -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs
-    if forbidden then pure attrs else if stunned
+    if forbidden then pure attrs {minionAttackTarget = Nothing} else if stunned
       then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
         -- the attack is its activation against the player, from start to end, whether
@@ -219,14 +217,18 @@ runMinionMessage msg attrs = case msg of
         checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) ident]
         -- the attack is under way from when it is declared, as its would windows open
         attack' <- newAttack ident
-        pure $ attrs & attackingL ?~ attack'
+        pure $ attrs {minionActivationPlayer = Just ident} & attackingL ?~ attack'
   MinionBeginAttack ident -> do
     attack' <- keepingGains (minionAttacking attrs) <$> newAttack ident
     villainous <- isVillainous
     checkWindows [attackWindow W.When ident]
     suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
     when (villainous && not suppressBoost) $ dealBoost attrs
-    declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
+    case attackTarget ident of
+      VillainCharacter _ -> pure ()
+      MinionCharacter _ -> pure ()
+      AttachmentCharacter _ -> pure ()
+      _ -> declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
     minionStep (minionId attrs) MinionFlipBoostCards
     minionAttacked (minionId attrs)
     checkWindows [attackWindow W.After ident]
@@ -248,7 +250,7 @@ runMinionMessage msg attrs = case msg of
         placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
     pure $ attrs {minionSchemeRemoval = Nothing} & boostL .~ 0
-  MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
+  MinionEndAttack -> pure $ attrs {minionActivationPlayer = Nothing,minionAttackTarget = Nothing} & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
   MinionAttackBecomesDividedEvenly -> pure $ attrs & attackingL . _Just %~ \a -> a {attackDividedEvenly = True}
@@ -289,6 +291,9 @@ runMinionMessage msg attrs = case msg of
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
   attackWindow timing ident = W.Window timing $ case minionAttackTarget attrs of
     Just (AllyCharacter aid) -> W.EnemyAttackAlly (toEnemyId attrs) aid ident
+    Just (VillainCharacter vid) -> W.EnemyAttackOnEnemy (toEnemyId attrs) (EnemyVillainId vid)
+    Just (MinionCharacter mid) -> W.EnemyAttackOnEnemy (toEnemyId attrs) (EnemyMinionId mid)
+    Just (AttachmentCharacter aid) -> W.EnemyAttackOnEnemy (toEnemyId attrs) (EnemyAttachmentId aid)
     _ -> W.EnemyAttack (toEnemyId attrs) ident
   newAttack ident = do
     base <- getModifiedAttackSigned attrs

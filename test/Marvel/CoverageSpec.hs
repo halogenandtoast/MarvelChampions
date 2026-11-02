@@ -24,14 +24,14 @@ data PackCard = PackCard {code :: CardCode, name :: Text, cardType :: Text, _set
 
 -- | A pack's cards as MarvelCDB lists them.
 packCards :: Text -> IO [PackCard]
-packCards pack = cardsWhere (== pack) (inScope pack)
+packCards pack = cardsWhere True (== pack) (inScope pack)
 
 -- | The cards of the encounter set, by MarvelCDB set code.
 setCards :: Text -> IO [PackCard]
-setCards set = cardsWhere (const True) (== Just set)
+setCards set = cardsWhere False (const True) (== Just set)
 
-cardsWhere :: (Text -> Bool) -> (Maybe Text -> Bool) -> IO [PackCard]
-cardsWhere inPack inSet = do
+cardsWhere :: Bool -> (Text -> Bool) -> (Maybe Text -> Bool) -> IO [PackCard]
+cardsWhere restrictIncompletePacks inPack inSet = do
   json <- either error pure =<< eitherDecodeFileStrict' "frontend/public/data/cards.json"
   either error pure $ flip parseEither json $ withObject "cards" \o -> do
     cards <- o .: "cards"
@@ -39,7 +39,7 @@ cardsWhere inPack inSet = do
       pack' <- c .: "packCode"
       set <- c .:? "setCode"
       typ <- c .: "type"
-      let playerOnly = pack' `elem` ["cw", "fne"]
+      let playerOnly = restrictIncompletePacks && pack' `elem` ["cw", "fne"]
           isPlayer = (typ :: Text) `elem` ["hero", "alter_ego", "ally", "event", "support", "upgrade", "resource", "player_side_scheme"]
       if inPack pack' && inSet set && (not playerOnly || isPlayer)
         then Just <$> (PackCard <$> c .: "code" <*> c .: "name" <*> c .: "type" <*> pure set)
@@ -66,7 +66,10 @@ inScope pack set = case pack of
 -- set code.
 modularSets :: [Text]
 modularSets =
-  [ "the_hood"
+  [ "mighty_avengers"
+  , "the_initiative"
+  , "maria_hill_modular"
+  , "the_hood"
   , "risky_business"
   , "mutagen_formula"
   , "goblin_gimmicks"

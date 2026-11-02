@@ -206,7 +206,7 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ CwMA.cw56088, CwMA.cw56083, CwMA.cw56073, CwMA.cw56074, CwMA.cw56075, CwMA.cw56078, CwMA.cw56079, CN.enc56024, CN.enc56027, CN.enc56028, CN.enc56055, CN.enc60033, CN.enc60061, CN.enc60063
+      [ CwMA.cw56087, CwMA.cw56088, CwMA.cw56083, CwMA.cw56073, CwMA.cw56074, CwMA.cw56075, CwMA.cw56078, CwMA.cw56079, CN.enc56024, CN.enc56027, CN.enc56028, CN.enc56055, CN.enc60033, CN.enc60061, CN.enc60063
   , ronanKreeFanatic
   , WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
   , JL.jl61031, JL.jl62029, JL.jl62032, JL.jl62033

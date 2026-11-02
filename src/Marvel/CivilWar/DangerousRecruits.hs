@@ -32,3 +32,26 @@ instance RunMessage Bullseye where
         else chooseForEnemyTeam you a [targeting (AttachmentRef aid) (removeFromPlay aid) | aid <- attachments]
       pure e
     _ -> Bullseye <$> runMessage msg a
+
+
+newtype Venom = Venom (Attrs Minion)
+  deriving anyclass (IsMinion,HasAbilities)
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+
+venom :: MinionCard Venom
+venom = minion Venom C.cw56087 (Sch 1) (Atk 3) (HP 4)
+
+instance HasModifiersFor Venom where
+  getModifiersFor _ (MinionRef mid) (Venom a) | mid == minionId a = pure [KeywordModifier Piercing]
+  getModifiersFor _ _ _ = pure []
+
+instance RunMessage Venom where
+  runMessage msg e@(Venom a) = runQueueT $ case msg of
+    MinionMessage mid (RevealMinion you) | mid == minionId a -> do
+      friendlyLeaderFor you >>= \case
+        Just vid -> do
+          first <- asYou you (selectJust FirstPlayer)
+          minionAttacksEnemyAs mid first vid
+        Nothing -> minionActivatesAgainst mid you
+      pure e
+    _ -> Venom <$> runMessage msg a

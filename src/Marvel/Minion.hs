@@ -85,7 +85,7 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      $ map SomeMinionCard CwMA.minions <> [SomeMinionCard CwMH.mariaHill,SomeMinionCard CwDR.bullseye] <> [ SomeMinionCard CN.cn56024, SomeMinionCard CN.cn56027, SomeMinionCard CN.cn56028, SomeMinionCard CN.cn56055, SomeMinionCard CN.cn60033, SomeMinionCard CN.cn60061, SomeMinionCard CN.cn60063
+      $ map SomeMinionCard CwMA.minions <> [SomeMinionCard CwMH.mariaHill,SomeMinionCard CwDR.bullseye,SomeMinionCard CwDR.venom] <> [ SomeMinionCard CN.cn56024, SomeMinionCard CN.cn56027, SomeMinionCard CN.cn56028, SomeMinionCard CN.cn56055, SomeMinionCard CN.cn60033, SomeMinionCard CN.cn60061, SomeMinionCard CN.cn60063
   , SomeMinionCard KF.ronanKreeFanatic
   , SomeMinionCard wm58026, SomeMinionCard hc59036, SomeMinionCard hc59037, SomeMinionCard hc59042, SomeMinionCard hc59043, SomeMinionCard hc59044
   , SomeMinionCard JL.jl61031, SomeMinionCard JL.jl62029, SomeMinionCard JL.jl62032, SomeMinionCard JL.jl62033

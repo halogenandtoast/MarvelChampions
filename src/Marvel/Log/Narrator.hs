@@ -531,7 +531,13 @@ minionNarration mid = \case
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.engages" ["minion" ~> m, "player" ~> who]]
   MinionAttacksWithChange ident _ _ -> Just $ activation (MinionRef mid) ident "log.attacks" =<< selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
-  MinionAttacks ident -> Just $ activation (MinionRef mid) ident "log.attacks" =<< selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
+  MinionAttacks ident -> Just do
+    target <- getsGame $ \g -> Minion.minionAttackTarget . toAttrs =<< lookup mid (gameMinions g)
+    case target of
+      Just (VillainCharacter _) -> pure []
+      Just (MinionCharacter _) -> pure []
+      Just (AttachmentCharacter _) -> pure []
+      _ -> activation (MinionRef mid) ident "log.attacks" =<< selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
   MinionAttacksEnemy enemy -> Just $ whenRef (MinionRef mid) \m -> do
     stunned <- selectAny (EnemyWithId (EnemyMinionId mid) <> StunnedEnemy)
     whenRef (EnemyRef enemy) \e -> one $
