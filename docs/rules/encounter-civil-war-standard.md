@@ -1,0 +1,13 @@
+# Civil War Standard PvP
+
+The three treachery families are implemented in all four printings: Righteous Cause, Whatever It Takes, and Targeted Strike. Only the canonical copies contribute to encounter-set quantities, giving four physical treacheries. Choosing Sides and its Now It's Personal back remain pending, so Standard PvP is not yet a complete selectable encounter set.
+
+Righteous Cause makes the enemy leader scheme, with an additional boost card when the revealing team has more than one remaining player. Opponents and eliminated teammates do not count for that conditional; printed per-player values elsewhere still use the original team size. A deferred activation receives its extra boost immediately before that activation begins.
+
+Whatever It Takes attacks the revealing hero, or that player's friendly leader when they are in alter-ego. The latter uses native leader combat, with no player defender and with boost-card resolution owned by the defending leader's team.
+
+Targeted Strike gives the opponent a private search of the receiving team's top five encounter cards. The chosen card is dealt facedown and that team's deck is shuffled. Its boost ability gains icons for the players on the defending team. Gained icons are counted on that physical card, so ordinary boost-icon cancellation still works. Canceling its boost ability prevents those icons from being gained. Two physical copies do not count each other's icons.
+
+Rules checked: the Civil War team and leader-attack rules, and v1.8 Player Elimination, Search, Boost, and Boost Icon entries. A search for a newer Righteous Cause elimination exception found none; remaining players are used for its textual conditional.
+
+Verification: 26 behavior checks cover the printing aliases, team sizes, elimination, hero and leader attacks, private searches on independent decks, duplicate boost cards, Target Acquired, and Northstar. The focused Civil War suite passes 316 examples.

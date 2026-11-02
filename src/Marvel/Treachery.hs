@@ -2,6 +2,7 @@
 module Marvel.Treachery where
 
 import Marvel.CivilWar.LeaderTreacheries qualified as CW
+import Marvel.CivilWar.StandardTreacheries qualified as CWStandard
 import Marvel.CivilWar.VisionTreacheries qualified as CWVision
 import Marvel.CivilWar.AttackTreacheries qualified as CWAttack
 import Marvel.KreeFanatic qualified as KF
@@ -82,7 +83,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
   Just (SomeTreacheryCard a) -> f a
 
 allTreacheries :: HashMap CardCode SomeTreacheryCard
-allTreacheries = fromList $ [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
+allTreacheries = fromList $ [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
   (toFst someTreacheryCardCode)
   [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
   , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe

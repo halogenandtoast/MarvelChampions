@@ -174,6 +174,7 @@ import Marvel.WonderMan.Cards qualified as WM
 
 import Marvel.Hercules.Cards qualified as HC
 
+import Marvel.CivilWar.StandardTreacheries qualified as CWStandard
 import Marvel.Prelude
 
 
@@ -188,7 +189,7 @@ import Marvel.Name
 
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
-  (toFst toCardCode)
+  (toFst toCardCode) $ CWStandard.standardTreacheryDefinitions <>
   [ CW.cw56070,CW.cw56071,CW.cw56101,CW.cw56102,CW.cw56103,CW.cw56146,CW.cw56147,CW.cw56176,CW.cw57009,CW.cw57010,CW.cw57051,CW.cw57052,CW.cw57053,CW.cw56148,CW.cw56177,CW.cw56178,CW.cw57011
   , CN.enc56058, CN.enc60036, CN.enc60064
   , bringTheHammerDown, youDareOpposeMe

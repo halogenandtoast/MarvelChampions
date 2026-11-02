@@ -1,4 +1,4 @@
-module Marvel.CivilWar.TeamSpec (spec) where
+module Marvel.CivilWar.TeamSpec (spec,competitive,addSecondBoard) where
 
 import Control.Exception (evaluate)
 import Control.Monad.Random (evalRand)
