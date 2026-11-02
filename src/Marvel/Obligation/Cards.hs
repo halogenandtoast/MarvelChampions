@@ -169,6 +169,7 @@ import Marvel.WonderMan.Cards qualified as WM
 
 import Marvel.Hercules.Cards qualified as HC
 
+import Marvel.CivilWar.Cards qualified as CW
 import Marvel.Prelude
 
 
@@ -182,7 +183,7 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ CN.enc56023, CN.enc56054, CN.enc60032, CN.enc60060
+    [ CW.cw56106,CW.cw56114,CN.enc56023, CN.enc56054, CN.enc60032, CN.enc60060
   , WM.wm58025, HC.hc59004, HC.hc59035
   , JL.jl61030, JL.jl61033a, JL.jl61033b, JL.jl61033c, JL.jl62028
   , aos50134, aos50179

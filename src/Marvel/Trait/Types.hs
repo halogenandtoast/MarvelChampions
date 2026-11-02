@@ -3,7 +3,8 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Rescued
+  = Unregistered
+  | Rescued
   | Aim
   | Adaptoid
   | DoraMilaje

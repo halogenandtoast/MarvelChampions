@@ -11,6 +11,7 @@ import Marvel.MainScheme.Types qualified as Main
 import Marvel.Minion.Cards qualified as M
 import Marvel.Treachery.Cards qualified as T
 import Marvel.SideScheme.Cards qualified as S
+import Marvel.Trait qualified as Trait
 import Marvel.Modifier
 import TestImport
 
@@ -261,7 +262,7 @@ spec = describe "Civil War main schemes" do
       sid <- replaceScheme "56121b"
       scheme <- getsGame $ fromMaybe (error "missing main scheme") . lookup sid . gameMainSchemes
       let legacy = case toJSON scheme of
-            Object o -> Object $ foldr KeyMap.delete o ["mainSchemeHeldEncounterCards","mainSchemeHeldCardsFacedown","_withMetadata"]
+            Object o -> Object $ foldr KeyMap.delete o ["mainSchemeHeldEncounterCards","mainSchemeHeldCardsFacedown","_withMetadata","cwMainLeader","cwUnregisteredCards"]
             value -> value
       case fromJSON @Main.MainScheme legacy of
         Error err -> liftIO $ expectationFailure err
@@ -395,6 +396,9 @@ spec = describe "Civil War main schemes" do
       choose "resolve Superhero Jailbreak" (isAbilityOf sid)
       choose "discard for the first player first" (isTargetChoice p)
       getsGame (length . gameMinions) `shouldReturn` 0
+      view <- liftIO . publicGame =<< getGame
+      let previews = [code | Object root <- [view],Just (Object questions) <- [KeyMap.lookup "question" root],Object question <- KeyMap.elems questions,Just (Array choices) <- [KeyMap.lookup "choices" question],Object choice <- toList choices,Just code <- [KeyMap.lookup "code" choice]]
+      liftIO $ previews `shouldMatchList` [toJSON $ toCardCode M.vulture,toJSON $ toCardCode M.hydraMercenary]
       choose "put the second player's minion into play first" (isTargetChoice q)
       minions <- getsGame $ HashMap.elems . gameMinions
       liftIO $ [(toCardCode $ getCardDef minion,minionEngagedIdentity $ toAttrs minion) | minion <- minions] `shouldMatchList` [(toCardCode M.vulture,p),(toCardCode M.hydraMercenary,q)]
@@ -457,3 +461,159 @@ spec = describe "Civil War main schemes" do
       choose "choose the second minion after loading" $ \case CardLabel code _ -> code == toCardCode M.weaponsRunner;_ -> False
       map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player1 tg) `shouldReturn` [toCardCode M.hydraMercenary]
       map toCardCode . playerIdentityEncounterCards <$> playerAttrs (player2 tg) `shouldReturn` [toCardCode M.weaponsRunner]
+
+  for_ [C.cw56106,C.cw56114] $ \def ->
+    it (show (toCardCode def) <> " grants Unregistered to its owner's identity and can be discarded by paying an identity-specific card in alter-ego") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        card <- encounterCard def
+        resolve [RevealEncounterCard you card]
+        let oid = ObligationId $ unCardId $ ecCardId card
+        getGainedTraits you >>= (`shouldSatisfy` member Trait.Unregistered)
+        clearHand you
+        basic <- putInHand you "01088"
+        offers (isAbilityOf (ObligationRef oid)) `shouldReturn` False
+        signature <- putInHand you "01005"
+        choose "discard the obligation" (isAbilityOf (ObligationRef oid))
+        choose "discard an identity-specific card as the cost" (isTargetChoice signature)
+        pass
+        handOf you >>= (`shouldSatisfy` elem basic)
+        getGainedTraits you >>= (`shouldSatisfy` not . member Trait.Unregistered)
+        encounterDiscardCodes >>= (`shouldSatisfy` elem (toCardCode def))
+
+  for_ [C.cw56106,C.cw56114] $ \def ->
+    it (show (toCardCode def) <> " makes Hunting Rebel Heroes damage an already-Unregistered hero") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        _ <- replaceScheme "56097b"
+        getGainedTraits you >>= (`shouldSatisfy` member Trait.Unregistered)
+        card <- encounterCard def
+        resolve [RevealEncounterCard you card]
+        damageOf you `shouldReturn` 2
+        another <- encounterCard T.hardToKeepDown
+        resolve [RevealEncounterCard you another]
+        damageOf you `shouldReturn` 2
+
+  it "Hunting Rebel Heroes gives only heroes Unregistered and does not damage an alter-ego for Unregistered Super" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      changeForm p
+      _ <- replaceScheme "56097b"
+      getGainedTraits p >>= (`shouldSatisfy` member Trait.Unregistered)
+      getGainedTraits q >>= (`shouldSatisfy` not . member Trait.Unregistered)
+      card <- encounterCard C.cw56106
+      resolve [RevealEncounterCard q card]
+      getGainedTraits q >>= (`shouldSatisfy` member Trait.Unregistered)
+      damageOf p `shouldReturn` 0
+      damageOf q `shouldReturn` 0
+
+  it "Government Contractor starts with three fixed threat plus hinder and grants every identity Unregistered" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      changeForm p
+      card <- encounterCard C.cw56120
+      resolve [RevealEncounterCard p card]
+      sideSchemeThreat (SideSchemeId $ unCardId $ ecCardId card) `shouldReturn` 5
+      getGainedTraits p >>= (`shouldSatisfy` member Trait.Unregistered)
+      getGainedTraits q >>= (`shouldSatisfy` member Trait.Unregistered)
+
+  it "Hunting Rebel Heroes damages each current hero when Government Contractor is revealed" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      changeForm p
+      _ <- replaceScheme "56097b"
+      card <- encounterCard C.cw56120
+      resolve [RevealEncounterCard p card]
+      damageOf p `shouldReturn` 2
+      damageOf q `shouldReturn` 0
+
+  it "only the owner can pay Unregistered Super's alter-ego action" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      card <- encounterCard C.cw56106
+      resolve [RevealEncounterCard p card]
+      _ <- putInHand q "01035"
+      endTurn
+      offers (isAbilityOf $ ObligationRef $ ObligationId $ unCardId $ ecCardId card) `shouldReturn` False
+      getGainedTraits p >>= (`shouldSatisfy` member Trait.Unregistered)
+
+  it "each revealed Unregistered Super triggers Hunting Rebel Heroes independently" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- replaceScheme "56097b"
+      first <- encounterCard C.cw56106
+      second <- encounterCard C.cw56114
+      resolve [RevealEncounterCard you first,RevealEncounterCard you second]
+      damageOf you `shouldReturn` 4
+      getAccelerationCount `shouldReturn` 2
+
+  it "discarding one of two Unregistered Supers preserves the other's trait and acceleration icon" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      first <- encounterCard C.cw56106
+      second <- encounterCard C.cw56114
+      resolve [RevealEncounterCard you first,RevealEncounterCard you second]
+      clearHand you
+      signature <- putInHand you "01005"
+      choose "discard the first obligation" (isAbilityOf $ ObligationRef $ ObligationId $ unCardId $ ecCardId first)
+      choose "pay its identity-specific card cost" (isTargetChoice signature)
+      pass
+      getGainedTraits you >>= (`shouldSatisfy` member Trait.Unregistered)
+      getAccelerationCount `shouldReturn` 1
+      encounterDiscardCodes >>= (`shouldSatisfy` elem (toCardCode C.cw56106))
+      encounterDiscardCodes >>= (`shouldSatisfy` notElem (toCardCode C.cw56114))
+
+  it "Hunting Rebel Heroes damages both heroes when one Government Contractor is revealed" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      changeForm p
+      resolve [IdentityMessage q $ ChangedToForm A]
+      _ <- replaceScheme "56097b"
+      card <- encounterCard C.cw56120
+      resolve [RevealEncounterCard p card]
+      damageOf p `shouldReturn` 2
+      damageOf q `shouldReturn` 2
+
+  it "putting Government Contractor into play does not count as revealing a trait-granting card" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- replaceScheme "56097b"
+      card <- encounterCard C.cw56120
+      resolve [PutEncounterCardIntoPlay you card]
+      sideSchemeThreat (SideSchemeId $ unCardId $ ecCardId card) `shouldReturn` 4
+      damageOf you `shouldReturn` 0
+      resolve [RevealEncounterCard you card]
+      damageOf you `shouldReturn` 2
+
+  it "preserves Guerilla Warfare's leader reference when loading the earlier optional-metadata format" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      sid <- replaceScheme "56201b"
+      vid <- villainIdNow
+      scheme <- getsGame $ fromMaybe (error "missing Guerilla Warfare") . lookup sid . gameMainSchemes
+      let legacy = case toJSON scheme of
+            Object o -> Object $ KeyMap.insert "_withMetadata" (toJSON vid) $ KeyMap.delete "cwMainLeader" $ KeyMap.delete "cwUnregisteredCards" o
+            value -> value
+      case fromJSON @Main.MainScheme legacy of
+        Error err -> liftIO $ expectationFailure err
+        Success restored -> withGame_ $ entitiesL . mainSchemesL . ix sid .~ restored
+      resolve [VillainMessage vid VillainBecomeTough]
+      mainSchemeThreat `shouldReturn` 1

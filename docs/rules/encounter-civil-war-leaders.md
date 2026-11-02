@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and nineteen main-scheme faces across Civil War and Synthezoid Smackdown. Scenario registration remains pending Hunting Rebel Heroes, modular sets, and complete scenario setup.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twenty active main-scheme faces across Civil War and Synthezoid Smackdown. Unregistered Super and Government Contractor are also implemented because Hunting Rebel Heroes depends on them. Scenario registration remains pending complete modular sets and scenario setup.
 
 ## Leaders and combat
 
@@ -58,6 +58,10 @@ Superhero Jailbreak discards one encounter card for each player before putting t
 
 Searched facedown cards open the ordinary would-be-dealt window. Aerial Recon can prevent a searched card's deal, leaving it in the searched area. Its cancellation also recognizes an explicitly selected encounter deck.
 
+Hunting Rebel Heroes gives heroes Unregistered and responds when another revealed card grants that trait to heroes, including heroes who were already Unregistered. Each Unregistered Super remains in its revealing player's play area, grants the trait to that identity, and contributes its printed acceleration icon. Only its owner can use the alter-ego action, paying an identity-specific card from hand as a cost. Government Contractor starts with three fixed threat plus hinder 1 per player and grants every identity the trait.
+
+Trait-granting reveals record their affected heroes by the revealed card's physical ID. This avoids unrelated forced prompts, preserves independent copies, and excludes alter-egos and the opposite board. Putting Government Contractor into play without revealing it grants the trait without triggering Hunting Rebel Heroes. Saved main schemes load both the former optional leader metadata and the newer record metadata. Jailbreak's entry-order choices display the corresponding discarded minion beside its recipient.
+
 ## Rules checked
 
 The local v1.8 entries for Target, Interrupt, Replacement Effect, Damage, Tough, and Retaliate govern these interactions. Searches for newer card-specific rulings found no exception to the defensive or targeting rules above.
@@ -72,4 +76,4 @@ The official [Rules Reference update](https://www.fantasyflightgames.com/mission
 
 ## Verification
 
-The full unit run passes 8,198 examples. The prior selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther; it predates the searched-card deal window and duplicate-entry guard. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.
+The full unit run passes 8,212 examples; the focused Civil War run passes 287. The selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther, including the searched-card deal window and duplicate-entry guard. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.

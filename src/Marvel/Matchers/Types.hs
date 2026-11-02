@@ -440,6 +440,7 @@ newtype EncounterCardMatcher = NemesisSetFor IdentityId
 
 data BasicEncounterCardMatcher
   = AnyEncounterCard
+  | EncounterCardWithId CardId
   | EncounterCardMatching CardMatcher
   | EncounterCardWithBoostIcons
   | -- | a star in its boost field: a "Boost" ability

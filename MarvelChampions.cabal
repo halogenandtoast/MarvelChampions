@@ -577,6 +577,7 @@ library
       Marvel.CivilWar.MainSchemes
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.Types
+      Marvel.CivilWar.Unregistered
       Marvel.CivilWar.VisionTreacheries
       Marvel.Cost
       Marvel.Cost.Types

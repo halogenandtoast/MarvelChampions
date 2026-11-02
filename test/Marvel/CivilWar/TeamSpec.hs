@@ -151,6 +151,21 @@ spec = describe "Civil War team boundaries" do
       liftIO $ hpBefore - hpAfter `shouldBe` 4
       getActivePlayerId `shouldReturn` player1 tg
 
+  it "does not trigger Hunting Rebel Heroes for an Unregistered Super revealed on the opposite board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      _ <- addSecondBoard tg
+      changeForm p
+      resolve [IdentityMessage q $ ChangedToForm A]
+      old <- fromMaybe (error "missing local scheme") . headMay <$> getMainSchemesIn (CW.teamArea CW.Registration)
+      resolve [ReplaceMainScheme old "56097b"]
+      card <- encounterCard C.cw56106
+      resolve [RevealEncounterCard q card]
+      damageOf p `shouldReturn` 0
+      damageOf q `shouldReturn` 0
+
   it "resolves Guerilla Warfare on an inactive board when Mass Increase stuns its leader during a cross-board attack" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

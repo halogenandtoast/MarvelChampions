@@ -15,6 +15,7 @@ import Marvel.Obligation.Obligations.Mojo
 import Marvel.Obligation.Obligations.MojoGenres
 import Marvel.Obligation.Obligations.MutantGenesisCampaign
 import Marvel.CampaignPlayers.Obligations qualified as CN
+import Marvel.CivilWar.Unregistered qualified as CW
 import Marvel.Prelude
 
 import Marvel.Card
@@ -35,7 +36,7 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
   Just (SomeObligationCard a) -> f a
 
 allObligations :: HashMap CardCode SomeObligationCard
-allObligations = fromList $ map
+allObligations = fromList $ [(toCardCode card,SomeObligationCard card) | card <- CW.unregisteredSupers] <> map
   (toFst someObligationCardCode)
   [ SomeObligationCard CN.cn56023, SomeObligationCard CN.cn56054, SomeObligationCard CN.cn60032, SomeObligationCard CN.cn60060
   , SomeObligationCard wm58025, SomeObligationCard hc59004, SomeObligationCard hc59035
