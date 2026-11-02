@@ -575,6 +575,7 @@ library
       Marvel.CivilWar.LeaderSideSchemes
       Marvel.CivilWar.LeaderTreacheries
       Marvel.CivilWar.MainSchemes
+      Marvel.CivilWar.MightyAvengers
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.StandardTreacheries
       Marvel.CivilWar.Types
@@ -2881,6 +2882,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.LeaderSpec
       Marvel.CivilWar.LeaderTreacherySpec
       Marvel.CivilWar.MainSchemeSpec
+      Marvel.CivilWar.MightyAvengersSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.TeamSpec
       Marvel.CivilWar.VisionTreacherySpec

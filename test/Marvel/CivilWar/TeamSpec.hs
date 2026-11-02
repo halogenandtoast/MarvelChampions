@@ -260,6 +260,11 @@ spec = describe "Civil War team boundaries" do
       liftIO $ after `shouldBe` before
       enemyMatches StunnedEnemy (EnemyVillainId attacker) `shouldReturn` True
       getAttachedCharacter aid `shouldReturn` Nothing
+      resolve [RemoveStatus (VillainRef attacker) StunnedStatus]
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      secondAttack <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      resolve secondAttack
+      getsGame (unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains) `shouldReturn` (before - 3)
 
   for_ [False,True] $ \eliminated ->
     it ("Self-propelled Glide protects a cross-board leader with its physical team eliminated: " <> show eliminated) do
