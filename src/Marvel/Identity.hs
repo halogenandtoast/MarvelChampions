@@ -866,17 +866,22 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ playerIdentityBoostCards (villainStep vid . VillainDealtBoost)
       pure $ PlayerIdentity attrs {playerIdentityBoostCards = []}
     BeginTurn -> do
-      -- before anything else is done in the turn
-      checkWindows [W.Window W.When $ W.TurnBegan playerIdentityId]
-      checkWindows [W.Window W.After $ W.TurnBegan playerIdentityId]
-      takeTurn pid
-      pure $ PlayerIdentity $ attrs & passedL .~ False
+      finished <- getsGame (`competitiveBoardFinishedFor` playerIdentityId)
+      if finished then pure $ PlayerIdentity $ attrs & passedL .~ True else do
+        checkWindows [W.Window W.When $ W.TurnBegan playerIdentityId]
+        checkWindows [W.Window W.After $ W.TurnBegan playerIdentityId]
+        takeTurn pid
+        pure $ PlayerIdentity $ attrs & passedL .~ False
     CheckIfPassed -> do
-      unless playerIdentityPassed (takeTurn pid)
+      unless playerIdentityPassed do
+        finished <- getsGame (`competitiveBoardFinishedFor` playerIdentityId)
+        if finished then identityStep playerIdentityId EndedTurn else takeTurn pid
       pure pid
     PlayerTurnOption -> do
-      choices <- getChoices pid
-      chooseOnePrompted playerIdentityId "$label.yourTurn" $ map pure (EndTurn : choices)
+      finished <- getsGame (`competitiveBoardFinishedFor` playerIdentityId)
+      if finished then unless playerIdentityPassed (identityStep playerIdentityId EndedTurn) else do
+        choices <- getChoices pid
+        chooseOnePrompted playerIdentityId "$label.yourTurn" $ map pure (EndTurn : choices)
       pure pid
     -- "when your turn ends" is answered before it does
     EndedTurn -> do

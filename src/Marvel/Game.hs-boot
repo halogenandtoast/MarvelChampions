@@ -523,3 +523,5 @@ canPlaySearchedCardWithReduction :: (HasGame m, HasQueue m) => IdentityId -> Nat
 getAllyPhysicalCard :: HasGame m => AllyId -> m (Maybe Card)
 
 allyMatchesAtDefeat :: HasGame m => AllyMatcher -> AllyId -> m Bool
+
+competitiveBoardFinishedFor :: Game -> IdentityId -> Bool

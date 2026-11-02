@@ -564,6 +564,28 @@ getPhasePlayers = do
     Just c | isJust (CW.teamOutcome c $ CW.phaseTeam $ CW.competitivePhase c) -> pure []
     Just c -> getsGame $ filter (`elem` CW.teamPlayers c (CW.phaseTeam $ CW.competitivePhase c)) . gamePlayerOrder
 
+competitiveBoardFinishedFor :: Game -> IdentityId -> Bool
+competitiveBoardFinishedFor g you = isJust $ do
+  c <- gameCompetition g
+  team <- CW.playerTeam c you
+  CW.teamOutcome c team
+
+competitivePhaseStoppedFor :: Game -> IdentityId -> Bool
+competitivePhaseStoppedFor g you = competitiveBoardFinishedFor g you
+  && maybe False (\c -> CW.playerTeam c you == Just (CW.phaseTeam $ CW.competitivePhase c)) (gameCompetition g)
+
+competitiveFinishedPhaseQuestion :: Game -> IdentityId -> Question -> Bool
+competitiveFinishedPhaseQuestion g you question
+  | not (competitivePhaseStoppedFor g you) = False
+  | otherwise = case question of
+      QuestionLabel label _ inner ->
+        (label == "$label.yourTurn" && gamePhase g == PlayerPhase)
+          || (label == "$label.chooseMinionToActivate" && gamePhase g == VillainPhase)
+          || competitiveFinishedPhaseQuestion g you inner
+      Read _ inner -> competitiveFinishedPhaseQuestion g you inner
+      Searched _ inner -> competitiveFinishedPhaseQuestion g you inner
+      _ -> False
+
 getPhaseAreas :: HasGame m => m [Area]
 getPhaseAreas = do
   competitive <- getCompetition
@@ -1793,6 +1815,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     resolveVillainActivationAfterWould vid $
       if hero then VillainAttacks you else VillainSchemesAgainst you
     pure g
+  CardSpecific GameRef "resolveCurrentVillainActivation" (fromJSON -> Success you) | competitivePhaseStoppedFor g you -> pure g
   CardSpecific GameRef "resolveCurrentVillainActivation" (fromJSON -> Success you) -> do
     villain <- asYou you $ selectOne Matchers.ActiveVillain
     case villain of
@@ -4271,6 +4294,10 @@ instance RunMessage Game where
           push $ RemoveFromPlayAfterWindow (UpgradeRef uid)
           for_ [card | PlayerCard card <- [toCard upgrade]] $ \card -> cardSpecific owner "fneSenseReturned" card
           pure g
+  runMessage (IdentityMessage you step) g
+    | gamePhase g == VillainPhase
+    , competitivePhaseStoppedFor g you
+    , step `elem` [VillainAndMinionsActivate,MinionsActivate,RevealEncounterCards] = pure g
   runMessage msg@(BeginPhase VillainPhase) g = do
     modifiers <- getModifiers GameRef
     if SkipNextVillainPhase `elem` modifiers then runQueueT do
@@ -5719,7 +5746,8 @@ competitiveAbilityAllowed g you ability
   | Nothing <- gameCompetition g = True
   | Just c <- gameCompetition g
   , any phaseWindow (concat $ take 1 $ gameWindows g)
-  , CW.playerTeam c you /= Just (CW.phaseTeam $ CW.competitivePhase c) = False
+  , CW.playerTeam c you /= Just (CW.phaseTeam $ CW.competitivePhase c)
+      || isJust (CW.teamOutcome c $ CW.phaseTeam $ CW.competitivePhase c) = False
   | otherwise = local source || maybe False (local . IdentityRef) (cardController g ability) || crossLeaderResponse
  where
   source = refocus $ abilitySource ability
@@ -5808,6 +5836,7 @@ runGameMessagesWith before = go (0 :: Int)
       | otherwise ->
           pop >>= \case
             Nothing -> pure ()
+            Just (Ask ident asked) | competitiveFinishedPhaseQuestion g ident asked -> go (n + 1)
             Just (Ask ident asked) | not (HashMap.member ident $ gamePlayers g), not (competitiveReplyChoice g ident asked) -> go (n + 1)
             Just (IdentityMessage ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
             Just (Ask ident asked) -> do

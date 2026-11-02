@@ -1,6 +1,7 @@
 module Marvel.Scenario.Types where
 
 import Marvel.CivilWar.Types (CompetitionSetup)
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.Trait qualified as MojoTrait
 import Marvel.Prelude
 import Marvel.AgeOfApocalypse.MissionTypes
@@ -476,15 +477,20 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         identityStep p BeginTurn
       endPhase PlayerPhase
       pure attrs
-    EndPhase PlayerPhase -> do
-      players <- getPhasePlayers
+    EndPhase PlayerPhase -> attrs <$ cardSpecific GameRef "scenarioFinishPlayerPhase" ()
+    CardSpecific GameRef "scenarioFinishPlayerPhase" _ -> do
+      competitive <- getCompetition
+      living <- getAllPlayers
+      let players = case competitive of
+            Nothing -> living
+            Just c -> filter (\you -> CW.playerTeam c you == Just (CW.phaseTeam $ CW.competitivePhase c)) living
+          finished = maybe False (\c -> isJust $ CW.teamOutcome c $ CW.phaseTeam $ CW.competitivePhase c) competitive
       for_ players \ident -> do
         setActivePlayer ident
-        identityStep ident DiscardCards
+        unless finished $ identityStep ident DiscardCards
         identityStep ident DrawOrDiscardToHandLimit
       for_ players (`identityStep` ReadyCards)
       for_ (take 1 players) setActivePlayer
-      competitive <- getCompetition
       if isJust competitive then cardSpecific GameRef "cwAdvancePhase" () else beginPhase VillainPhase
       pure attrs
     EndPhase VillainPhase -> do
@@ -495,26 +501,35 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- icons deal its players more encounter cards
     BeginPhase VillainPhase -> do
       players <- getPhasePlayers
+      unless (null players) do
+        accelerateMainScheme
+        checkWindows [W.Window W.After W.VillainThreatStepFinished]
+        villainPhaseStep StepEnemiesActivate
+        cardSpecific GameRef "scenarioActivatePhasePlayers" ()
+        villainPhaseStep StepDealEncounterCards
+        cardSpecific GameRef "scenarioDealPhaseEncounterCards" ()
+        villainPhaseStep StepRevealEncounterCards
+        revealDealtEncounterCards
+        passFirstPlayer
+      endPhase VillainPhase
+      competitive <- getCompetition
+      unless (isJust competitive) endRound
+      pure attrs
+    CardSpecific GameRef "scenarioActivatePhasePlayers" _ -> do
+      players <- getPhasePlayers
+      for_ players $ \p -> do
+        setActivePlayer p
+        identityStep p VillainAndMinionsActivate
+      pure attrs
+    CardSpecific GameRef "scenarioDealPhaseEncounterCards" _ -> do
+      players <- getPhasePlayers
       areas <- getPhaseAreas
       hazards <- for areas \area -> do
         here <- filterM (fmap ((== areaId area) . areaId) . getAreaOf) players
         n <- fromIntegral <$> getHazardCountIn (areaId area)
         pure $ if null here then [] else take n (cycle here)
-      accelerateMainScheme
-      checkWindows [W.Window W.After W.VillainThreatStepFinished]
-      villainPhaseStep StepEnemiesActivate
-      for_ players \p -> do
-        setActivePlayer p
-        identityStep p VillainAndMinionsActivate
-      villainPhaseStep StepDealEncounterCards
-      for_ players dealEncounterCard
-      for_ (concat hazards) dealEncounterCard
-      villainPhaseStep StepRevealEncounterCards
-      revealDealtEncounterCards
-      passFirstPlayer
-      endPhase VillainPhase
-      competitive <- getCompetition
-      unless (isJust competitive) endRound
+      traverse_ dealEncounterCard players
+      traverse_ dealEncounterCard (concat hazards)
       pure attrs
     -- each player in turn reveals the cards dealt them, until none remain
     RevealDealtEncounterCards -> do

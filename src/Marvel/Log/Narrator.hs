@@ -422,8 +422,10 @@ identityNarration ident = \case
         one $ toned Good $ action [ikeyPart "log.takesControlOf" ["player" ~> who, "card" ~> PlayerCard card]]
       else pure []
   BeginTurn -> Just do
-    who <- playerRef' ident
-    one $ structure [ikeyPart "log.turn" ["player" ~> who]]
+    finished <- getsGame (`competitiveBoardFinishedFor` ident)
+    if finished then pure [] else do
+      who <- playerRef' ident
+      one $ structure [ikeyPart "log.turn" ["player" ~> who]]
   PlayedCard card _ -> Just do
     who <- playerRef' ident
     one $ action [ikeyPart "log.plays" ["player" ~> who, "card" ~> PlayerCard card]]

@@ -12,7 +12,8 @@ import Marvel.Minion.Cards qualified as M
 import Marvel.MainScheme.Types qualified as Main
 import Marvel.Keyword qualified as K
 import Marvel.EncounterSet qualified as E
-import Marvel.Hp (unHp)
+import Marvel.Hp (HP (..),unHp)
+import Marvel.CivilWar.LeaderSpec (withLeader)
 import Marvel.SideScheme.Cards qualified as S
 import Marvel.Game.Public (publicGameFor)
 import Marvel.Matchers
@@ -438,13 +439,92 @@ spec = describe "Civil War team boundaries" do
   it "gives resistance its reply before resolving a registration victory" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do
-      resolve [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Registration,CW.EnemyLeaderDefeated)]
-      endTurn
+      start [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Registration,CW.EnemyLeaderDefeated)]
       getsGame gameState `shouldReturn` InProgress
       getPhasePlayers `shouldReturn` [player2 tg]
-      resolve [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Resistance,CW.EnemyLeaderDefeated)]
-      endTurn
+      start [CardSpecific GameRef "cwFinishBoard" $ toJSON (CW.Resistance,CW.EnemyLeaderDefeated)]
       getsGame gameState `shouldReturn` Finished CompetitiveDraw
+
+  it "ends the winning player's turn, skips their teammate's queued turn, and completes both players' hand refill and readying" do
+    tg <- competitive ["spider-man","she-hulk","captain-marvel","iron-man"]
+    inGame tg do
+      let p = player1 tg
+          teammate = seats tg !! 1
+          reply = seats tg !! 2
+      changeForm p
+      clearHand p
+      clearHand teammate
+      vid <- withLeader "56060"
+      _ <- addSecondBoard tg
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(V.Villain leader) -> V.Villain $ V.overVillainAttrs (\a -> a {V.villainHp = HP 1}) leader
+      messages <- L.runQueueT $ L.capture $ L.exhaust teammate
+      resolve messages
+      choose "make the winning basic attack" $ \case UseAbility ability -> abilitySource ability == IdentityRef p && abilityIndex ability == 301;_ -> False
+      choose "defeat the final leader stage" (isTargetChoice vid)
+      fmap fst <$> asked `shouldReturn` Just reply
+      isExhaustedNow p `shouldReturn` False
+      isExhaustedNow teammate `shouldReturn` False
+      length <$> handOf p `shouldReturn` 5
+      length <$> handOf teammate `shouldReturn` 6
+      playerIdentityPassed <$> playerAttrs p `shouldReturn` True
+      playerIdentityPassed <$> playerAttrs teammate `shouldReturn` True
+      getPhasePlayers `shouldReturn` drop 2 (seats tg)
+      getActiveVillainIn (CW.teamArea CW.Registration) `shouldReturn` Just vid
+
+  it "skips all queued activations and encounter deals when the threat step completes a competitive main scheme" do
+    tg <- competitive ["spider-man","she-hulk","captain-marvel","iron-man"]
+    inGame tg do
+      let p = player1 tg
+          reply = seats tg !! 2
+      _ <- addSecondBoard tg
+      old <- fromMaybe (error "missing registration main scheme") . headMay <$> getMainSchemesIn (CW.teamArea CW.Registration)
+      resolve [ReplaceMainScheme old "56124b"]
+      sid <- fromMaybe (error "missing final main scheme") . headMay <$> getMainSchemesIn (CW.teamArea CW.Registration)
+      resolve [MainSchemeMessage sid $ MainSchemePlaceThreat 16]
+      _ <- stackEncounterDeck (replicate 12 M.hydraMercenary)
+      endTurn
+      endTurn
+      changeForm reply
+      clearHand reply
+      endTurn
+      endTurn
+      let decline = whenM (offers isNoResponse) $ choose "decline optional responses" isNoResponse >> decline
+      decline
+      getsGame (fmap Main.getMainSchemeThreat . lookup sid . gameMainSchemes) `shouldReturn` Just 18
+      playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` []
+      playerIdentityEncounterCards <$> playerAttrs (seats tg !! 1) `shouldReturn` []
+      competition <- getCompetition
+      liftIO $ fmap CW.competitivePhase competition `shouldBe` Just CW.ResistanceVillainPhase
+      liftIO $ fmap (\c -> CW.teamOutcome c CW.Registration) competition `shouldBe` Just (Just CW.MainSchemeCompleted)
+      fmap fst <$> asked `shouldReturn` Just reply
+
+  it "drops the remaining phase minion-activation question when Energy Barrier defeats the enemy leader during a minion attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      vid <- withLeader "56060"
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(V.Villain leader) -> V.Villain $ V.overVillainAttrs (\a -> a {V.villainHp = HP 1}) leader
+      barrier <- putIntoPlay p "05017"
+      firstCard <- encounterCard M.weaponsRunner
+      resolve [PutEncounterCardIntoPlay p firstCard]
+      let first = minionOf firstCard
+      _ <- addMinion p M.hydraMercenary
+      _ <- stackEncounterDeck (replicate 12 M.hydraMercenary)
+      endTurn
+      endTurn
+      let decline = whenM (offers isNoResponse) $ choose "decline optional responses" isNoResponse >> decline
+      decline
+      choose "defend the villain attack" isDefend
+      decline
+      choose "activate the first minion" (isTargetChoice first)
+      chooseIf (isLabel "$label.noDefender")
+      choose "use Energy Barrier" (isAbilityOf $ upgradeIdOf barrier)
+      choose "redirect the damage to the leader" (isTargetChoice vid)
+      pass
+      getsGame gameState `shouldReturn` Finished RegistrationWon
+      damageOf p `shouldReturn` 0
+      playerIdentityEncounterCards <$> playerAttrs p `shouldReturn` []
 
   it "passes only the active team's first-player token" do
     tg <- competitive ["spider-man","she-hulk","captain-marvel","iron-man"]
