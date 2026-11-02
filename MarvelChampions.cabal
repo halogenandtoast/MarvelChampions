@@ -568,6 +568,7 @@ library
       Marvel.Choice
       Marvel.CivilWar.AttackTreacheries
       Marvel.CivilWar.Cards
+      Marvel.CivilWar.DangerousRecruits
       Marvel.CivilWar.Helpers
       Marvel.CivilWar.Initiative
       Marvel.CivilWar.IronManAttachments
@@ -2877,6 +2878,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
       Marvel.CivilWar.AttackTreacherySpec
+      Marvel.CivilWar.DangerousRecruitsSpec
       Marvel.CivilWar.InitiativeSpec
       Marvel.CivilWar.IronManSpec
       Marvel.CivilWar.LeaderAttachmentSpec
