@@ -3121,6 +3121,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.GroundedTimingSpec
       Marvel.Rules.HeroPackMechanicsSpec
       Marvel.Rules.HeroPackPublicSpec
+      Marvel.Rules.IdentitySaveSpec
       Marvel.Rules.IronheartMechanicsSpec
       Marvel.Rules.MagikTopDeckSpec
       Marvel.Rules.MutantGenesisLabeledAbilitiesSpec

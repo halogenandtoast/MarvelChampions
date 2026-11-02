@@ -107,11 +107,63 @@
   "age-of-apocalypse.webp": {
     "campaign": "Age of Apocalypse",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc45-image0500.webp",
-    "product": "https://www.fantasyflightgames.com/product/age-of-apocalypse/"
+    "product": "https://www.fantasyflightgames.com/product/age-of-apocalypse/",
+    "perspective": {
+      "from": [
+        [
+          111,
+          79
+        ],
+        [
+          463,
+          29
+        ],
+        [
+          461,
+          378
+        ],
+        [
+          132,
+          474
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    },
+    "cropAfterPerspective": {
+      "x": 0,
+      "y": 0,
+      "width": 750,
+      "height": 790,
+      "resizeWidth": 771,
+      "resizeHeight": 827
+    }
   },
   "agents-of-shield.webp": {
     "campaign": "Agents of S.H.I.E.L.D.",
     "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc50-image0500.webp",
-    "productPage": "https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/products/agents-shield/"
+    "productPage": "https://www.fantasyflightgames.com/en/products/marvel-champions-the-card-game/products/agents-shield/",
+    "perspective": {
+      "from": [
+        [
+          70,
+          92
+        ],
+        [
+          470,
+          39
+        ],
+        [
+          450,
+          409
+        ],
+        [
+          99,
+          487
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    }
   }
 }

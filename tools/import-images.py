@@ -57,6 +57,14 @@ def walk(card):
         yield from walk(card["linked_card"])
 
 
+def explicit_main_scheme_faces(card):
+    return (
+        card["type_code"] == "main_scheme"
+        and Path(card.get("imagesrc", "")).stem == card["code"] + "a"
+        and bool(card.get("backimagesrc"))
+    )
+
+
 def load_cards(path):
     cards = {}
     for c in json.load(open(path)):
@@ -65,6 +73,12 @@ def load_cards(path):
     # url -> codes that use that image
     refs = {}
     for code, c in cards.items():
+        # Newer scans name the printed A/B faces explicitly. The bare engine
+        # code still denotes the playable B face, not imagesrc's setup face.
+        if explicit_main_scheme_faces(c):
+            refs.setdefault(c["imagesrc"], set()).add(code + "a")
+            refs.setdefault(c["backimagesrc"], set()).update([code, code + "b"])
+            continue
         if c.get("imagesrc"):
             refs.setdefault(c["imagesrc"], set()).add(code)
         if c.get("backimagesrc"):
@@ -298,9 +312,10 @@ def main():
     for code, src in aliases.items():
         if src in manifest:
             manifest[code] = dict(manifest[src], alias_of=src)
-    # main schemes: marvelcdb's Xb.png is X's back (the A side) but card Xb is the B side == X.png
+    # Legacy main schemes: X.png is B and backimagesrc is A. Explicit A/B
+    # filenames were already assigned their printed faces by load_cards.
     for code, c in cards.items():
-        if c.get("backimagesrc") and c["type_code"] == "main_scheme" and code + "a" in cards and code in manifest:
+        if c.get("backimagesrc") and c["type_code"] == "main_scheme" and not explicit_main_scheme_faces(c) and code + "a" in cards and code in manifest:
             manifest[code + "b"] = dict(manifest[code], alias_of=code)
     for code, (src, rot) in OVERRIDES.items():
         manifest[code] = {"source": src, "rotate": rot, "override": True}

@@ -22,7 +22,7 @@ instance HasModifiersFor Hero where
 
 instance FromJSON Hero where
   parseJSON = withObject "Hero" $ \o -> do
-    cardDef <- o .: "heroCardDef"
+    cardDef <- o .: "heroCardDef" <|> (o .: "campaignHeroAttrs" >>= (.: "heroCardDef"))
     withHeroCardCode (cdCardCode cardDef)
       $ \(_ :: HeroCard a) -> Hero <$> parseJSON @a (Object o)
 

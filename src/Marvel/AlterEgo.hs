@@ -12,7 +12,7 @@ import Marvel.Card.Def
 
 instance FromJSON AlterEgo where
   parseJSON = withObject "AlterEgo" $ \o -> do
-    cardDef <- o .: "alterEgoCardDef"
+    cardDef <- o .: "alterEgoCardDef" <|> (o .: "campaignAlterEgoAttrs" >>= (.: "alterEgoCardDef"))
     withAlterEgoCardCode (cdCardCode cardDef)
       $ \(_ :: AlterEgoCard a) -> AlterEgo <$> parseJSON @a (Object o)
 
