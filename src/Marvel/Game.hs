@@ -6397,7 +6397,8 @@ gameSelectUpgrade m = do
 gameSelectAttachment ::
   (HasGame m) => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectAttachment m = do
-  attachments <- HashMap.elems <$> getsGame gameAttachments
+  snapshot <- getGame
+  attachments <- inCompetitiveAreaOnlyOrExplicit (explicitAttachmentTargets snapshot m) (AttachmentRef . toId) . HashMap.elems =<< getsGame gameAttachments
   result <- filterM (matchFilter m) attachments
   pure $ HashSet.fromList $ map toId result
  where
@@ -9027,3 +9028,13 @@ explicitSideSchemeTargets = \case
   SideSchemeMatchAll matchers -> concatMap explicitSideSchemeTargets matchers
   LeftPlaySideScheme matcher -> explicitSideSchemeTargets matcher
   _ -> []
+
+explicitAttachmentTargets :: Game -> AttachmentMatcher -> [Target]
+explicitAttachmentTargets game = \case
+  AttachmentWithId aid -> [AttachmentRef aid]
+  AttachmentOnEnemy enemy -> onEnemy enemy
+  AttachmentOnEnemyWithHeroAbility enemy -> onEnemy enemy
+  AttachmentMatches matchers -> concatMap (explicitAttachmentTargets game) matchers
+  _ -> []
+ where
+  onEnemy enemy = [AttachmentRef aid | (aid,attachment) <- HashMap.toList (gameAttachments game), Attachment.attachmentEnemy (toAttrs attachment) == Just enemy]

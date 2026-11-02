@@ -568,6 +568,7 @@ library
       Marvel.Choice
       Marvel.CivilWar.Cards
       Marvel.CivilWar.Helpers
+      Marvel.CivilWar.IronManAttachments
       Marvel.CivilWar.Leaders
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.Types
@@ -2864,6 +2865,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.NextEvolutionSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
+      Marvel.CivilWar.IronManSpec
       Marvel.CivilWar.LeaderSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CoverageSpec

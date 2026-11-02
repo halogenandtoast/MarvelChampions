@@ -191,6 +191,9 @@ spec = describe "Civil War team boundaries" do
       energy <- encounterCard C.cw56098
       let aid = AttachmentId $ unCardId $ ecCardId energy
       resolve [SetActivePlayer (player2 tg),ReplaceVillain defender "56092" Swapped,VillainMessage defender SetVillainHp,RevealEncounterCard (player2 tg) energy,PlaceCounters (AttachmentRef aid) 3,SetActivePlayer (player1 tg)]
+      selectList (AttachmentIs C.cw56098) `shouldReturn` []
+      selectList (AttachmentWithId aid) `shouldReturn` [aid]
+      selectList (AttachmentOnEnemy $ EnemyVillainId defender) `shouldReturn` [aid]
       _ <- stackEncounterDeck [M.hydraMercenary,M.hydraMercenary]
       before <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! attacker) . gameVillains
       messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender

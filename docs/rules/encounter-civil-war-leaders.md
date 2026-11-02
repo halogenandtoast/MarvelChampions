@@ -18,6 +18,16 @@ ATK-based event damage is recorded separately from basic attacks and flat damage
 
 The official [Rules Reference update](https://www.fantasyflightgames.com/mission-updates/) explains retaliate's Forced Response timing. The local v1.8 text is in `glossary-p-r.md`, “Retaliate X”.
 
+## Iron Man's encounter attachments
+
+Powered Gauntlets, Rocket Boots, Mark V Helmet, Arc Reactor, and Mark V Armor are implemented. Their Tech traits contribute to Iron Man's capped SCH bonus; printed boost abilities reveal and attach the relevant cards. Resource payments after a basic attack discard the four removable equipment cards.
+
+Mark V Armor's printed “would … instead” wording is handled as a damage replacement, despite its Forced Response heading. Damage that survives prevention is placed entirely on the Armor, which is discarded at five or more damage without spilling excess onto Iron Man. Tough resolves first. This follows the replacement timing described in the local Rules Reference; no specific ruling changing that heading was found.
+
+Competitive attachment searches stay on the current board unless they explicitly name an attachment or its host. This allows effects targeting the friendly leader across the table without exposing unrelated opposing attachments to ordinary searches.
+
+The focused Civil War suite passes 98 examples, including eleven Iron Man equipment and setup cases.
+
 ## Verification
 
 The complete unit suite passes: 8,011 examples. A two-seed smoke run with Spider-Man and Black Panther against Rhino, Klaw, and Kang passes all 25 selected games, including standard/expert variants. Leader tests cover both stage progressions, phase-limited immunity, Shield timing, ATK events and overkill, dead-attacker Energy Channel handling, Finesse, both mass forms, Superhuman Strength, and save/load during a response choice.

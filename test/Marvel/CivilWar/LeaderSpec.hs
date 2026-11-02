@@ -1,4 +1,4 @@
-module Marvel.CivilWar.LeaderSpec (spec) where
+module Marvel.CivilWar.LeaderSpec (spec,withLeader,leaderHp,attachmentIdOf) where
 
 import Control.Monad (replicateM_)
 import Marvel.CivilWar.Cards qualified as C
