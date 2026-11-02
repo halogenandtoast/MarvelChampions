@@ -71,3 +71,13 @@ teamForBoard vid = do
   competitive <- getCompetition
   area <- getAreaOfTarget vid
   pure $ competitive *> if area == CW.teamArea CW.Registration then Just CW.Registration else Just CW.Resistance
+
+-- | The defending leader's team resolves the boost card as "you". Its first
+-- player remains the chooser even if their own board has already finished.
+leaderAttacksLeader :: ReverseQueue m => VillainId -> VillainId -> m ()
+leaderAttacksLeader attacker defender = do
+  team <- leaderBelongsTo defender
+  competition <- getCompetition
+  case (competition,team) of
+    (Just c,Just own) -> villainAttacksCharacter attacker (CW.teamFirstPlayer c own) (VillainCharacter defender)
+    _ -> pure ()

@@ -852,6 +852,16 @@ enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
   EnemyMinionId mid -> MinionMessage mid (MinionAttacksAlly ident ally)
   EnemyAttachmentId _ -> CheckWindows []
 
+-- | An explicit character attack, with boost effects resolved by the given player.
+-- Activations triggered during another activation wait for it to finish.
+villainAttacksCharacter :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> m ()
+villainAttacksCharacter vid you target = do
+  previous <- getActivePlayerId
+  enemyActivationAfterCurrent vid do
+    setActivePlayer you
+    villainStep vid (VillainAttacksCharacter you $ toCharacter target)
+    setActivePlayer previous
+
 -- | The enemy's attack is defended by the character.
 enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
 enemyDefendedBy enemy character = do

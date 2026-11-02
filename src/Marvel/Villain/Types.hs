@@ -101,6 +101,7 @@ instance RunMessage Villain where
       VillainAttacksGaining you _ -> Just (Just you)
       VillainAttacksWithAdditionalBoostCards you _ -> Just (Just you)
       VillainAttacksAlly you _ -> Just (Just you)
+      VillainAttacksCharacter you _ -> Just (Just you)
       VillainSchemesAgainst you -> Just (Just you)
       VillainSchemes -> Just Nothing
       _ -> Nothing
@@ -473,6 +474,9 @@ runVillainMessage msg attrs = case msg of
     checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
+  VillainAttacksCharacter ident character -> do
+    resolveVillainActivationAfterWould vid (VillainAttacks ident)
+    pure attrs {villainAttackTarget = Just character}
   VillainAttacksAlly ident allyId -> do
     resolveVillainActivationAfterWould vid (VillainAttacks ident)
     pure attrs {villainAttackTarget = Just (AllyCharacter allyId)}
@@ -584,7 +588,10 @@ runVillainMessage msg attrs = case msg of
       dealActivationBoost
       unless (NoActivationBoostCard `elem` modifiers) $
         replicateM_ (fromIntegral $ villainAttackAdditionalBoostCards attrs) (dealBoost attrs)
-    declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
+    case attackTarget ident of
+      VillainCharacter _ -> pure ()
+      MinionCharacter _ -> pure ()
+      _ -> declareDefense ident vid (if DefendedByAllyIfAble `elem` modifiers then AllyIfAble else AnyDefense)
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainAttacked
     checkWindows [attackWindow W.After ident]
@@ -595,6 +602,8 @@ runVillainMessage msg attrs = case msg of
     unless (NoActivationBoostCard `elem` modifiers) $ dealBoost attrs
   attackWindow timing ident = W.Window timing $ case villainAttackTarget attrs of
     Just (AllyCharacter aid) -> W.EnemyAttackAlly (toEnemyId attrs) aid ident
+    Just (VillainCharacter target) -> W.EnemyAttackOnEnemy (toEnemyId attrs) (EnemyVillainId target)
+    Just (MinionCharacter target) -> W.EnemyAttackOnEnemy (toEnemyId attrs) (EnemyMinionId target)
     _ -> W.EnemyAttack (toEnemyId attrs) ident
   attackTarget ident = fromMaybe (IdentityCharacter ident) (villainAttackTarget attrs)
   newAttack ident = do

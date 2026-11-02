@@ -25,6 +25,7 @@ import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
 import Marvel.Area (Area (..), DeckKey (InfinityStoneDeckKey), Pile (..))
 import Marvel.Card
+import Marvel.Attack (Attack (attackCharacter))
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.EncounterCard (allEncounterCards)
 import Marvel.PlayerCard (allPlayerCards)
@@ -486,8 +487,8 @@ villainNarration vid = \case
   VillainAttacks ident -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> StunnedEnemy)) $ activation (VillainRef vid) ident "log.attacks" True
   VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
   VillainAttacksGaining ident _ -> villainNarration vid (VillainAttacks ident)
-  VillainBeginAttack ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
-  VillainBeginAttackWithoutBoost ident -> Just $ activation (VillainRef vid) ident "log.attacks" False
+  VillainBeginAttack ident -> Just $ villainAttackNarration vid ident
+  VillainBeginAttackWithoutBoost ident -> Just $ villainAttackNarration vid ident
   VillainSchemes -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> ConfusedEnemy)) $ schemes (VillainRef vid) True
   VillainBeginScheme -> Just $ schemes (VillainRef vid) False
   VillainDamaged source dmg | damageAmount dmg > 0 -> Just do
@@ -630,6 +631,15 @@ simply key target = whenRef target \t -> one $ mechanic [ikeyPart key ["target" 
 
 whenRef :: (HasGame m) => Target -> (LogRef -> m [LogEntry]) -> m [LogEntry]
 whenRef target f = maybe (pure []) f =<< refFor target
+
+-- The activation player resolves the boost; its character target can be another leader.
+villainAttackNarration :: HasGame m => VillainId -> IdentityId -> m [LogEntry]
+villainAttackNarration vid ident = do
+  target <- getsGame $ \g -> (fmap attackCharacter . Villain.villainAttackDetails) =<< lookup vid (gameVillains g)
+  case target of
+    Just character -> whenRef (VillainRef vid) $ \enemy -> whenRef (characterRef character) $ \who ->
+      one $ mechanic [ikeyPart "log.attacks" ["enemy" ~> enemy,"player" ~> who]]
+    Nothing -> activation (VillainRef vid) ident "log.attacks" False
 
 -- | An enemy activating against a player, or shaking off the status that stops it.
 activation :: (HasGame m) => Target -> IdentityId -> Text -> Bool -> m [LogEntry]

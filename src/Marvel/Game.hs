@@ -2099,7 +2099,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- a player eliminated after their turn was queued (damage at the end of a phase) is
   -- passed over
   SetActivePlayer ident
-    | HashMap.member ident (gamePlayers g) -> pure $ g & activePlayerL .~ ident
+    | HashMap.member ident (gamePlayers g)
+      || maybe False (\c -> ident `elem` [CW.teamFirstPlayer c CW.Registration,CW.teamFirstPlayer c CW.Resistance]) gameCompetition -> pure $ g & activePlayerL .~ ident
     | otherwise -> pure g
   BeginPhase phase -> do
     checkWindows [W.Window W.When $ W.PhaseBegan phase]
@@ -2361,6 +2362,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             retaliates = sum [n | Retaliate n <- keywords]
         when (retaliates > 0 && not (attackRanged attack || AttacksIgnoreRetaliate `elem` attackerModifiers)) $
           dealDamage (attackEnemy attack) mid (toDamage retaliates FromRetaliate)
+      VillainCharacter vid -> for_ (lookup vid $ gameVillains g) $ \_ -> do
+        attackerModifiers <- getModifiers (attackSource attack)
+        unless (attackRanged attack || AttacksIgnoreRetaliate `elem` attackerModifiers) $
+          villainStep vid $ VillainRetaliates (toCharacter $ attackEnemy attack)
       _ -> pure ()
     pure g
   CardSpecific GameRef "redirectVillainAttackToCharacter" (fromJSON -> Success (vid, character)) -> do

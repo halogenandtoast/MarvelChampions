@@ -6,6 +6,11 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.CivilWar.Cards qualified as C
+import Marvel.CivilWar.Helpers qualified as CWHelp
+import Marvel.Message.Lifted qualified as L
+import Marvel.Minion.Cards qualified as M
+import Marvel.MainScheme.Types qualified as Main
+import Marvel.Keyword qualified as K
 import Marvel.EncounterSet qualified as E
 import Marvel.Hp (unHp)
 import Marvel.SideScheme.Cards qualified as S
@@ -129,6 +134,67 @@ spec = describe "Civil War team boundaries" do
       liftIO $ fmap CW.competitivePhase competition `shouldBe` Just CW.RegistrationPlayerPhase
       getActivePlayerId `shouldReturn` player1 tg
       getsGame gameRound `shouldReturn` (roundBefore + 1)
+
+  it "resolves a leader attack with a boost card and no declared defender" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      attacker <- villainIdNow
+      defender <- addSecondBoard tg
+      _ <- addMinion (player1 tg) M.armoredGuard
+      _ <- stackEncounterDeck [S.breakinAndTakin]
+      hpBefore <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      waiting <- openQuestion
+      start messages
+      openQuestion `shouldReturn` waiting
+      hpAfter <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      liftIO $ hpBefore - hpAfter `shouldBe` 4
+      getActivePlayerId `shouldReturn` player1 tg
+
+  it "resolves boost-card 'you' as the defending leader's first player" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      defender <- villainIdNow
+      attacker <- addSecondBoard tg
+      _ <- stackEncounterDeck [M.hydraHunter,S.breakinAndTakin]
+      let threatOnBoard team = do
+            schemes <- getMainSchemesIn (CW.teamArea team)
+            getsGame $ \g -> sum [Main.getMainSchemeThreat scheme | sid <- schemes, Just scheme <- [lookup sid $ gameMainSchemes g]]
+      ownThreat <- threatOnBoard CW.Registration
+      otherThreat <- threatOnBoard CW.Resistance
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      resolve messages
+      threatOnBoard CW.Registration `shouldReturn` ownThreat
+      threatOnBoard CW.Resistance `shouldReturn` (otherThreat + 1)
+      getActivePlayerId `shouldReturn` player1 tg
+
+  for_ [("answers a leader attack with retaliate",False,1),("respects ranged against a leader's retaliate",True,0)] $ \(description,ranged,expectedDamage) ->
+    it description do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        attacker <- villainIdNow
+        defender <- addSecondBoard tg
+        _ <- stackEncounterDeck [S.breakinAndTakin]
+        effects <- L.runQueueT $ L.capture do
+          L.lastingModifiers defender (SourceEntity $ VillainRef defender) [KeywordModifier $ K.Retaliate 1] False
+          when ranged $ L.lastingModifiers attacker (SourceEntity $ VillainRef attacker) [KeywordModifier K.Ranged] False
+        resolve effects
+        messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+        resolve messages
+        villainDamageNow `shouldReturn` expectedDamage
+
+  it "spends stun instead of attacking the other leader" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      attacker <- villainIdNow
+      defender <- addSecondBoard tg
+      resolve [GiveStatus (VillainRef attacker) StunnedStatus]
+      hpBefore <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      resolve messages
+      hpAfter <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
+      liftIO $ hpAfter `shouldBe` hpBefore
+      enemyMatches StunnedEnemy (EnemyVillainId attacker) `shouldReturn` False
 
   it "keeps an eliminated team's board separate during the reply" do
     tg <- competitive ["spider-man","captain-marvel"]
