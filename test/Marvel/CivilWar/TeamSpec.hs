@@ -183,6 +183,25 @@ spec = describe "Civil War team boundaries" do
         resolve messages
         villainDamageNow `shouldReturn` expectedDamage
 
+  it "resolves Energy Channel across boards after the first leader attack finishes" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      attacker <- villainIdNow
+      defender <- addSecondBoard tg
+      energy <- encounterCard C.cw56098
+      let aid = AttachmentId $ unCardId $ ecCardId energy
+      resolve [SetActivePlayer (player2 tg),ReplaceVillain defender "56092" Swapped,VillainMessage defender SetVillainHp,RevealEncounterCard (player2 tg) energy,PlaceCounters (AttachmentRef aid) 3,SetActivePlayer (player1 tg)]
+      _ <- stackEncounterDeck [M.hydraMercenary,M.hydraMercenary]
+      before <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! attacker) . gameVillains
+      messages <- L.runQueueT $ L.capture $ CWHelp.leaderAttacksLeader attacker defender
+      resolve messages
+      after <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! attacker) . gameVillains
+      liftIO $ before - after `shouldBe` 3
+      getCountersOn aid `shouldReturn` 0
+      getActivePlayerId `shouldReturn` player1 tg
+      getEnemyAttack (EnemyVillainId attacker) `shouldReturn` Nothing
+      getEnemyAttack (EnemyVillainId defender) `shouldReturn` Nothing
+
   it "spends stun instead of attacking the other leader" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do
@@ -195,6 +214,44 @@ spec = describe "Civil War team boundaries" do
       hpAfter <- getsGame $ unHp . V.villainHp . toAttrs . (HashMap.! defender) . gameVillains
       liftIO $ hpAfter `shouldBe` hpBefore
       enemyMatches StunnedEnemy (EnemyVillainId attacker) `shouldReturn` False
+
+  for_ [("retaliate first",98000),("the printed response first",1)] $ \(description,firstIndex) ->
+    it ("orders " <> description <> " with Sebastian Shaw's forced response") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        mid <- addMinion you M.sebastianShaw
+        effects <- L.runQueueT $ L.capture $ L.lastingModifiers mid (MinionEntity $ MinionWithId mid) [KeywordModifier $ K.Retaliate 1] False
+        resolve effects
+        choose "make a basic attack" $ \case UseAbility a -> abilityIndex a == 301; _ -> False
+        choose "attack Sebastian Shaw" (isTargetChoice mid)
+        let indexed index = \case UseAbility a -> abilitySource a == MinionRef mid && abilityIndex a == index; _ -> False
+        offers (indexed 98000) `shouldReturn` True
+        offers (indexed 1) `shouldReturn` True
+        choose "resolve the selected forced response" (indexed firstIndex)
+        pass
+        -- A lone keyword resolves automatically; the remaining printed response
+        -- still needs its acknowledgement if retaliate was chosen first.
+        when (firstIndex == 98000) $ choose "resolve Shaw" (indexed 1)
+        pass
+        damageOf you `shouldReturn` 1
+        minionDamageOf mid `shouldReturn` Just 0
+        getsGame (maybe False (minionTough . toAttrs) . lookup mid . gameMinions) `shouldReturn` False
+
+  it "does not retroactively trigger retaliate gained during an after-attack response" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      mid <- addMinion you M.sebastianShaw
+      choose "make a basic attack" $ \case UseAbility a -> abilityIndex a == 301; _ -> False
+      choose "attack Sebastian Shaw" (isTargetChoice mid)
+      effects <- L.runQueueT $ L.capture $ L.lastingModifiers mid (MinionEntity $ MinionWithId mid) [KeywordModifier $ K.Retaliate 1] False
+      resolve effects
+      choose "resolve Shaw" $ \case UseAbility a -> abilitySource a == MinionRef mid && abilityIndex a == 1; _ -> False
+      pass
+      damageOf you `shouldReturn` 0
 
   it "keeps an eliminated team's board separate during the reply" do
     tg <- competitive ["spider-man","captain-marvel"]
@@ -247,8 +304,30 @@ spec = describe "Civil War team boundaries" do
       otherLeader <- addSecondBoard tg
       enemyMatches AnyEnemy (EnemyVillainId otherLeader) `shouldReturn` False
       enemyMatches (EnemyWithId $ EnemyVillainId otherLeader) (EnemyVillainId otherLeader) `shouldReturn` True
+      selectList (EnemyWithId $ EnemyVillainId otherLeader) `shouldReturn` [EnemyVillainId otherLeader]
+      selectList (VillainWithId otherLeader) `shouldReturn` [otherLeader]
       identityMatches AnyIdentity (player2 tg) `shouldReturn` False
       identityMatches (IdentityWithId $ player2 tg) (player2 tg) `shouldReturn` True
+
+  it "allows named cards and schemes across boards without widening ordinary queries" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- addSecondBoard tg
+      ally <- putIntoPlay (player2 tg) "01084"
+      upgrade <- putIntoPlay (player2 tg) "01093"
+      minion <- addMinion (player2 tg) M.hydraMercenary
+      scheme <- encounterCard S.crowdControl
+      resolve [SetActivePlayer (player2 tg),RevealEncounterCard (player2 tg) scheme,SetActivePlayer (player1 tg)]
+      selectList AnyAlly `shouldReturn` []
+      selectList (AllyWithId $ allyIdOf ally) `shouldReturn` [allyIdOf ally]
+      selectList (UpgradeNamed "Tenacity") `shouldReturn` []
+      selectList (UpgradeWithId $ upgradeIdOf upgrade) `shouldReturn` [upgradeIdOf upgrade]
+      selectList AnyMinion `shouldReturn` []
+      selectList (MinionWithId minion) `shouldReturn` [minion]
+      let sid = SideSchemeId $ unCardId $ ecCardId scheme
+      selectList (SideSchemeWithId sid) `shouldReturn` [sid]
+      mains <- getMainSchemesIn (CW.teamArea CW.Resistance)
+      for_ mains $ \mid -> selectList (SchemeWithId $ SchemeMainSchemeId mid) `shouldReturn` [SchemeMainSchemeId mid]
 
   it "does not offer an opposing hero's basic powers" do
     tg <- competitive ["spider-man","captain-marvel"]

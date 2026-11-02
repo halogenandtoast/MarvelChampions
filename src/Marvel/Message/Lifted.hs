@@ -862,6 +862,15 @@ villainAttacksCharacter vid you target = do
     villainStep vid (VillainAttacksCharacter you $ toCharacter target)
     setActivePlayer previous
 
+-- | The explicit character attack also gains the listed keywords as it begins.
+villainAttacksCharacterGaining :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> [Keyword] -> m ()
+villainAttacksCharacterGaining vid you target keywords = do
+  previous <- getActivePlayerId
+  enemyActivationAfterCurrent vid do
+    setActivePlayer you
+    villainStep vid (VillainAttacksCharacterGaining you (toCharacter target) keywords)
+    setActivePlayer previous
+
 -- | The enemy's attack is defended by the character.
 enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
 enemyDefendedBy enemy character = do

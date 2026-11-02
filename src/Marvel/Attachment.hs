@@ -59,6 +59,7 @@ import Marvel.Attachment.Attachments
 import Marvel.Attachment.Cards qualified as Cards
 import Marvel.Card.Builder ()
 import Marvel.Attachment.Types
+import Marvel.CivilWar.SignatureAttachments qualified as CW
 import Marvel.Card
 import Marvel.Id
 
@@ -76,7 +77,7 @@ withAttachmentCardCode cCode f = case lookup cCode allAttachments of
 
 allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
-  fromList $
+  fromList $ [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <>
     map
       (toFst someAttachmentCardCode)
       [ SomeAttachmentCard CN.cn56026, SomeAttachmentCard CN.cn56057, SomeAttachmentCard CN.cn60035

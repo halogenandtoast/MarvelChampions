@@ -102,6 +102,7 @@ instance RunMessage Villain where
       VillainAttacksWithAdditionalBoostCards you _ -> Just (Just you)
       VillainAttacksAlly you _ -> Just (Just you)
       VillainAttacksCharacter you _ -> Just (Just you)
+      VillainAttacksCharacterGaining you _ _ -> Just (Just you)
       VillainSchemesAgainst you -> Just (Just you)
       VillainSchemes -> Just Nothing
       _ -> Nothing
@@ -391,6 +392,7 @@ runVillainMessage msg attrs = case msg of
       | otherwise -> do
         when (damageAmount damage > 0) $ do
           recordPlayerAttackDamage (toEnemyId attrs) source damage
+          attackDealtDamageTo source damage vid
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
           ( not infinite && not held && subtractNatural
@@ -474,6 +476,9 @@ runVillainMessage msg attrs = case msg of
     checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
+  VillainAttacksCharacterGaining ident character keywords -> do
+    resolveVillainActivationAfterWould vid (VillainAttacksGaining ident keywords)
+    pure attrs {villainAttackTarget = Just character}
   VillainAttacksCharacter ident character -> do
     resolveVillainActivationAfterWould vid (VillainAttacks ident)
     pure attrs {villainAttackTarget = Just character}

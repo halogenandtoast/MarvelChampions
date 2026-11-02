@@ -1,9 +1,12 @@
 module Marvel.CivilWar.Helpers where
 
 import Marvel.Prelude
+import Data.List (find)
 import Marvel.Card
+import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.Game.Source
+import Marvel.EncounterSet (EncounterSet)
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -81,3 +84,25 @@ leaderAttacksLeader attacker defender = do
   case (competition,team) of
     (Just c,Just own) -> villainAttacksCharacter attacker (CW.teamFirstPlayer c own) (VillainCharacter defender)
     _ -> pure ()
+
+civilWarDef :: CardCode -> CardDef
+civilWarDef code = fromMaybe (error $ "missing Civil War definition: " <> show code) $ find ((== code) . toCardCode) C.civilWarDefinitions
+
+playersAtLeader :: HasGame m => VillainId -> m [IdentityId]
+playersAtLeader vid = do
+  board <- getAreaOfTarget vid
+  filterM (fmap (== board) . getAreaOfTarget) =<< getAllPlayers
+
+firstPlayerAtLeader :: HasGame m => VillainId -> m IdentityId
+firstPlayerAtLeader vid = do
+  competition <- getCompetition
+  board <- getAreaOfTarget vid
+  case competition of
+    Just c -> pure $ CW.teamFirstPlayer c $ if board == CW.teamArea CW.Registration then CW.Registration else CW.Resistance
+    Nothing -> fromMaybe <$> getActivePlayerId <*> (headMay <$> playersAtLeader vid)
+
+leaderOfFamily :: HasGame m => EncounterSet -> m (Maybe VillainId)
+leaderOfFamily family = do
+  enemies <- concatMapM (selectList . EnemyIs)
+    [def | def <- C.civilWarDefinitions, cdCardType def == VillainType, cdEncounterSet def == Just family]
+  pure $ headMay [vid | EnemyVillainId vid <- enemies]

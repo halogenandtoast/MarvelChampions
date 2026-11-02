@@ -31,6 +31,7 @@ data VillainMessage
   | VillainAttacks IdentityId
   | -- | an explicit character target; enemy targets allow no declared defender
     VillainAttacksCharacter IdentityId CharacterId
+  | VillainAttacksCharacterGaining IdentityId CharacterId [Keyword]
   | -- | it attacks the player, the attack given no boost card (Escaped Convict)
     VillainAttacksWithoutBoost IdentityId
   | -- | it attacks the player, the attack gaining the keywords as it is declared

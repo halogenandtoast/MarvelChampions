@@ -87,7 +87,9 @@ spec = describe "Four hero damage timing" do
       -- effect cannot retroactively make the completed attack deal damage.
       runNow $ damageIdentity p GameRef $ toDamage 2 FromAbility
       pass
-      choose "retaliate first" (isLabel "$label.resolveRetaliate")
+      choose "retaliate first" (isLabeledAbility "$label.resolveRetaliate")
+      choose "Riposte damage" (isAbilityOf $ EventRef $ EventId $ unCardId $ pcCardId riposte)
+      choose "Tiger Shark gains tough" (isAbilityOf mid)
       pass
       damageOf p `shouldReturn` 2
       minionDamageOf mid `shouldReturn` Just 4

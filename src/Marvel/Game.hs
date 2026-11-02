@@ -1305,6 +1305,10 @@ inPlayRef g card =
 
 runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = runQueueT $ case msg of
+  CardSpecific GameRef "resolveKeywordRetaliate" (fromJSON -> Success (enemy,attacker)) -> do
+    amount <- retaliationAmount enemy
+    when (amount > 0) $ retaliate (characterRef enemy) attacker amount
+    pure g
   CardSpecific GameRef "icemanDelayedFrostbite" (fromJSON -> Success (you :: IdentityId, enemy :: EnemyId)) -> do
     cards <- filter ((== "46002") . toCardCode) <$> getSetAsidePlayerCards
     present <- selectAny (EnemyWithId enemy)
@@ -1315,18 +1319,30 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       cardSpecific GameRef "ncResolveAttackCompletion"
         (you, enemy, retaliation, [effect | effect <- delayed, playerIdentityAttackDamageTaken (toAttrs player) <= before])
     pure g
+  CardSpecific GameRef "resolveDelayedAttackDamage" (fromJSON -> Success (enemy :: EnemyId,source :: Source,amount :: Natural)) -> do
+    present <- inAnyArea $ selectAny $ EnemyWithId enemy
+    when present $ dealDamage enemy source (toDamage amount FromAbility)
+    pure g
   CardSpecific GameRef "ncResolveAttackCompletion" (fromJSON -> Success (you :: IdentityId, enemy :: EnemyId, retaliation :: Bool, effects :: [(Source,Natural)])) -> do
-    case lookup you (gamePlayers g) of
-      Nothing -> pure g
-      Just player -> do
-        n <- if retaliation then sum . map (\case Retaliate amount -> amount; _ -> 0) <$> getModifiedKeywords player else pure 0
-        let continue ret rest = cardSpecific GameRef "ncResolveAttackCompletion" (you, enemy, ret, rest :: [(Source,Natural)])
-        let choices =
-              [labeled "$label.resolveRetaliate" (identityStep you (IdentityRetaliate enemy) >> continue False effects) | n > 0]
-              <> [targeting source (dealDamage enemy source (toDamage amount FromAbility) >> continue retaliation rest)
-                 | ((source,amount),rest) <- removeEach effects]
-        unless (null choices) $ chooseOrRunOne you choices
-        pure g
+    pending <- isQueued (attackCompletionWindowFor enemy)
+    n <- if retaliation then retaliationAmount (IdentityCharacter you) else pure 0
+    if pending then do
+      let completion = [W.Window W.After $ W.RetaliationPending (IdentityCharacter you) (toCharacter enemy) | n > 0]
+            <> [W.Window W.After $ W.DelayedAttackDamagePending you enemy source amount | (source,amount) <- effects]
+      replaceMatchingMessage (\case CheckWindows windows -> [CheckWindows $ nub $ completion <> windows]; other -> [other]) (attackCompletionWindowFor enemy)
+      pure g
+    else do
+      case lookup you (gamePlayers g) of
+        Nothing -> pure g
+        Just player -> do
+          n <- if retaliation then sum . map (\case Retaliate amount -> amount; _ -> 0) <$> getModifiedKeywords player else pure 0
+          let continue ret rest = cardSpecific GameRef "ncResolveAttackCompletion" (you, enemy, ret, rest :: [(Source,Natural)])
+          let choices =
+                [labeled "$label.resolveRetaliate" (retaliate (IdentityRef you) (toCharacter enemy) n >> continue False effects) | n > 0]
+                <> [targeting source (dealDamage enemy source (toDamage amount FromAbility) >> continue retaliation rest)
+                   | ((source,amount),rest) <- removeEach effects]
+          unless (null choices) $ chooseOrRunOne you choices
+          pure g
 
   CardSpecific GameRef key (fromJSON -> Success (mid :: MinionId, you :: IdentityId))
     | key `elem` ["ncDealMinionAndPass", "ncDealMinionAsEncounter"] -> do
@@ -2354,14 +2370,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   CardSpecific GameRef "enemyCharacterAttackRetaliation" (fromJSON -> Success attack) -> do
     case attackCharacter attack of
-      MinionCharacter mid -> for_ (lookup mid $ gameMinions g) $ \minion -> do
-        blanked <- isBlanked mid
-        modifiers <- getModifiers (MinionRef mid)
+      MinionCharacter mid -> for_ (lookup mid $ gameMinions g) $ \_ -> do
         attackerModifiers <- getModifiers (attackSource attack)
-        let keywords = (if blanked then [] else toList $ cdKeywords $ getCardDef minion) <> [keyword | KeywordModifier keyword <- modifiers]
-            retaliates = sum [n | Retaliate n <- keywords]
-        when (retaliates > 0 && not (attackRanged attack || AttacksIgnoreRetaliate `elem` attackerModifiers)) $
-          dealDamage (attackEnemy attack) mid (toDamage retaliates FromRetaliate)
+        unless (attackRanged attack || AttacksIgnoreRetaliate `elem` attackerModifiers) $
+          minionStep mid $ MinionRetaliates (toCharacter $ attackEnemy attack)
       VillainCharacter vid -> for_ (lookup vid $ gameVillains g) $ \_ -> do
         attackerModifiers <- getModifiers (attackSource attack)
         unless (attackRanged attack || AttacksIgnoreRetaliate `elem` attackerModifiers) $
@@ -3740,6 +3752,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           labeled "$label.noResponse" (checkWindowsFor rest windows)
             : map respond as
               <> [pure $ TargetLabel (toRef c) [PlayCard c mwindow, again] | (c, mwindow) <- cs]
+      ([keyword],_,_) | engineAttackResponse keyword -> do
+        resolve $ UseAbility (keyword & choicesL <>~ [again])
       (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
     pure g
   DeclareDefense ident enemyId defensePriority -> do
@@ -4201,6 +4215,27 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage message@(CheckWindows windows) g
+    | Just enemy <- headMay [enemy | W.Window W.After window <- windows, enemy <- case window of
+        W.HeroDefends _ attacker -> [attacker]
+        W.AllyDefendedAgainst _ attacker -> [attacker]
+        _ -> []] = do
+        pending <- isQueued (attackCompletionWindowFor enemy)
+        if pending then do
+          replaceMatchingMessage (\case CheckWindows after -> [CheckWindows $ nub $ windows <> after]; other -> [other]) (attackCompletionWindowFor enemy)
+          pure g
+        else dispatchGameMessage message g
+  runMessage message g | Just (enemy,attacker) <- keywordRetaliation message = do
+    amount <- retaliationAmount enemy
+    queue <- withQueue (toSnd id)
+    let (before,remaining) = break (attackCompletionFor enemy attacker) queue
+    case if amount > 0 then remaining else [] of
+      first : after | CheckWindows windows <- queuedMessage first -> do
+        let (adjacent,rest) = span (attackCompletionFor enemy attacker) after
+            joined = nub $ windows <> concat [ws | message <- adjacent, CheckWindows ws <- [queuedMessage message]] <> [W.Window W.After $ W.RetaliationPending enemy attacker]
+        withQueue_ $ const $ before <> rewrapQueuedMessages first [CheckWindows joined] <> rest
+        pure g
+      _ -> dispatchGameMessage message g
   runMessage msg g
     | Just uid <- senseUpgradeDeparture msg
     , Just upgrade <- lookup uid (gameUpgrades g)
@@ -5595,11 +5630,12 @@ getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
 -- reject irrelevant ability types/windows before asking for that expensive work.
 getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
 getAbilitiesForMatching ident matches = do
+  keywordAbilities <- (<>) <$> retaliationAbilities <*> delayedAttackDamageAbilities
   candidates <- getsGame \g -> filter (\a -> not (isMissionTarget g $ refocus $ abilitySource a) && maybe True (== ident) (abilityController g a) && unhelped g a && competitiveAbilityAllowed g ident a
-    && (abilitySubType a /= Just Ability.Defense || not (isDefendingOtherSimultaneousAttack ident g))) (getAbilities g)
+    && (abilitySubType a /= Just Ability.Defense || not (isDefendingOtherSimultaneousAttack ident g))) (getAbilities g <> keywordAbilities)
   permitted <- canResolvePlayerCardAbilities ident
   snapshot <- getGame
-  let playerAbility a = not (isIdentity (abilitySource a) && abilityIndex a == 100) &&
+  let playerAbility a = not (engineAttackResponse a) && not (isIdentity (abilitySource a) && abilityIndex a == 100) &&
         maybe False ((`elem` [HeroType, AlterEgoType, AllyType, SupportType, UpgradeType, EventType, ResourceType, PlayerSideSchemeType]) . cdCardType) (abilityCardDef snapshot (refocus $ abilitySource a))
   abilities <- filterM matches $ if permitted then candidates else filter (not . playerAbility) candidates
   filterM (\a -> if printed a then do
@@ -5613,7 +5649,7 @@ getAbilitiesForMatching ident matches = do
     else pure True) abilities
  where
   -- a blank text box leaves the game's own abilities: basic powers and changing form
-  printed a = abilityType a /= Basic && not (isIdentity (abilitySource a) && abilityIndex a == 100)
+  printed a = not (engineAttackResponse a) && abilityType a /= Basic && not (isIdentity (abilitySource a) && abilityIndex a == 100)
   isIdentity = \case
     IdentityRef _ -> True
     _ -> False
@@ -5630,9 +5666,18 @@ competitiveAbilityAllowed g you ability
   | Just c <- gameCompetition g
   , any phaseWindow (concat $ take 1 $ gameWindows g)
   , CW.playerTeam c you /= Just (CW.phaseTeam $ CW.competitivePhase c) = False
-  | otherwise = local source || maybe False (local . IdentityRef) (cardController g ability)
+  | otherwise = local source || maybe False (local . IdentityRef) (cardController g ability) || crossLeaderResponse
  where
   source = refocus $ abilitySource ability
+  crossLeaderResponse = isForcedAbility ability
+    && maybe False ((`elem` [VillainType,MinionType,AttachmentType]) . cdCardType) (abilityCardDef g source)
+    && maybe False (`elem` crossedLeaders) host
+  host = case source of
+    AttachmentRef aid -> enemyRef <$> (Attachment.attachmentEnemy . toAttrs =<< lookup aid (gameAttachments g))
+    _ -> Just source
+  crossedLeaders = concat
+    [[enemyRef attacker,enemyRef defender] | W.Window _ (W.EnemyAttackOnEnemy attacker defender) <- concat (take 1 $ gameWindows g), areaOf attacker /= areaOf defender]
+  areaOf enemy = areaId <$> areaOfTarget g (enemyRef enemy)
   here = areaId <$> areaOfTarget g (IdentityRef you)
   local target = (areaId <$> areaOfTarget g target) == here
   phaseWindow (W.Window _ event) = case event of
@@ -6211,7 +6256,7 @@ gameSelectEncounterCard m = case m of
 
 gameSelectAlly :: (HasGame m) => AllyMatcher -> m (HashSet AllyId)
 gameSelectAlly m = do
-  allies <- inYourAreaOnly (AllyRef . toId) . HashMap.elems =<< getsGame gameAllies
+  allies <- inCompetitiveAreaOrExplicit (explicitAllyTargets m) (AllyRef . toId) . HashMap.elems =<< getsGame gameAllies
   result <- filterM (matchFilter m) allies
   pure $ HashSet.fromList $ map toId result
  where
@@ -6298,7 +6343,7 @@ gameSelectSupportUnscoped = \case
 
 gameSelectUpgrade :: (HasGame m) => UpgradeMatcher -> m (HashSet UpgradeId)
 gameSelectUpgrade m = do
-  upgrades <- inCompetitiveAreaOnly (UpgradeRef . toId) . HashMap.elems =<< getsGame gameUpgrades
+  upgrades <- inCompetitiveAreaOnlyOrExplicit (explicitUpgradeTargets m) (UpgradeRef . toId) . HashMap.elems =<< getsGame gameUpgrades
   result <- filterM (matchFilter m) upgrades
   pure $ HashSet.fromList $ map toId result
  where
@@ -6383,13 +6428,13 @@ gameSelectEnvironment m = do
 -- TODO: Chase them down looks at removed
 gameSelectEnemy :: (HasGame m) => EnemyMatcher -> m (HashSet EnemyId)
 gameSelectEnemy m = do
-  villains <- inYourAreaOnly (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
-  minions <- inYourAreaOnly (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
-  removedVillains <-
+  villains <- inCompetitiveAreaOrExplicit (explicitEnemyTargets m) (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
+  minions <- inCompetitiveAreaOrExplicit (explicitEnemyTargets m) (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
+  removedVillains <- inCompetitiveAreaOnlyOrExplicit (explicitEnemyTargets m) (VillainRef . toId) =<<
     if includeRemoved
       then HashMap.elems <$> getsGame (view (removedEntitiesL . villainsL))
       else pure []
-  removedMinions <-
+  removedMinions <- inCompetitiveAreaOnlyOrExplicit (explicitEnemyTargets m) (MinionRef . toId) =<<
     if includeRemoved
       then HashMap.elems <$> getsGame (view (removedEntitiesL . minionsL))
       else pure []
@@ -6552,7 +6597,7 @@ gameSelectEnemy m = do
 
 gameSelectVillain :: (HasGame m) => VillainMatcher -> m (HashSet VillainId)
 gameSelectVillain m = do
-  villains <- inYourAreaOnly (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
+  villains <- inCompetitiveAreaOrExplicit (explicitVillainTargets m) (VillainRef . toId) . HashMap.elems =<< getsGame gameVillains
   -- removedVillains <- toList <$> getsGame (view (removedEntitiesL . villainsL))
   -- result <- filterM (matchFilter m) (villains <> removedVillains)
   result <- filterM (matchFilter m) villains
@@ -6573,8 +6618,8 @@ gameSelectVillain m = do
 
 gameSelectMinion :: (HasGame m) => MinionMatcher -> m (HashSet MinionId)
 gameSelectMinion m = do
-  minions <- inYourAreaOnly (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
-  removedMinions <- case m of
+  minions <- inCompetitiveAreaOrExplicit (explicitMinionTargets m) (MinionRef . toId) . HashMap.elems =<< getsGame gameMinions
+  removedMinions <- inCompetitiveAreaOnlyOrExplicit (explicitMinionTargets m) (MinionRef . toId) =<< case m of
     LeftPlayMinion _ -> HashMap.elems <$> getsGame (view (removedEntitiesL . minionsL))
     _ -> pure []
   result <- filterM (matchFilter m) (minions <> removedMinions)
@@ -6635,7 +6680,7 @@ gameSelectTreachery = \case
     pure $ HashSet.fromList $ map toId treacheries
 
 gameSelectScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
-gameSelectScheme m = fmap HashSet.fromList . inYourAreaOnly SchemeRef . HashSet.toList =<< gameSelectAnyScheme m
+gameSelectScheme m = fmap HashSet.fromList . inCompetitiveAreaOrExplicit (explicitSchemeTargets m) SchemeRef . HashSet.toList =<< gameSelectAnyScheme m
 
 -- | The schemes matching, in any area.
 gameSelectAnyScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)
@@ -6771,8 +6816,8 @@ gameSelectCountScheme aggregate matcher = do
 gameSelectSideScheme ::
   (HasGame m) => SideSchemeMatcher -> m (HashSet SideSchemeId)
 gameSelectSideScheme m = do
-  sideSchemes <- inYourAreaOnly (SideSchemeRef . toId) . HashMap.elems =<< getsGame gameSideSchemes
-  removedSideSchemes <- case m of
+  sideSchemes <- inCompetitiveAreaOrExplicit (explicitSideSchemeTargets m) (SideSchemeRef . toId) . HashMap.elems =<< getsGame gameSideSchemes
+  removedSideSchemes <- inCompetitiveAreaOnlyOrExplicit (explicitSideSchemeTargets m) (SideSchemeRef . toId) =<< case m of
     LeftPlaySideScheme _ -> HashMap.elems <$> getsGame (view (removedEntitiesL . sideSchemesL))
     _ -> pure []
   result <- filterM (matchFilter m) (sideSchemes <> removedSideSchemes)
@@ -7737,7 +7782,7 @@ getAttachmentIdentity aid = getsGame $ \g -> Attachment.attachmentIdentity . toA
 -- printed traits alone never do. Basic powers handle their own status cards.
 labeledAbilityTypes :: Game -> Ability -> [Ability.AbilitySubType]
 labeledAbilityTypes g ab
-  | abilityType ab == Basic = []
+  | abilityType ab == Basic || engineAttackResponse ab = []
   | otherwise = nub $ maybe [] cdAbilitySubTypes (abilityCardDef g $ refocus $ abilitySource ab)
       <> maybeToList (abilitySubType ab)
 
@@ -8818,3 +8863,167 @@ findPlayerCardsForEntry you code = asYou you do
       allowed c = pcCardId c `notElem` live && (not (cdUnique $ getCardDef c)
         || not (any (uniqueMatch (title $ cdName $ getCardDef c, maybe [] pure $ subtitle $ cdName $ getCardDef c)) unique))
   filterM (\c -> if allowed c then playerCardEntryAllowed (c {pcController = Just you}) else pure False) candidates
+
+-- RR1.8: keyword Forced Responses share the attack's occurrence with card abilities.
+keywordRetaliation :: Message -> Maybe (CharacterId,CharacterId)
+keywordRetaliation = \case
+  VillainMessage vid (VillainRetaliates attacker) -> Just (VillainCharacter vid,attacker)
+  MinionMessage mid (MinionRetaliates attacker) -> Just (MinionCharacter mid,attacker)
+  IdentityMessage you (IdentityRetaliate enemy) -> Just (IdentityCharacter you,toCharacter enemy)
+  AllyMessage aid (AllyRetaliates enemy _) -> Just (AllyCharacter aid,toCharacter enemy)
+  _ -> Nothing
+
+attackCompletionFor :: CharacterId -> CharacterId -> Message -> Bool
+attackCompletionFor target attacker message = case queuedMessage message of
+  CheckWindows windows -> any completion windows
+  _ -> False
+ where
+  isTarget enemy = toCharacter enemy == target
+  isAttacker enemy = toCharacter enemy == attacker
+  completion (W.Window W.After window) = case (attacker,window) of
+    (IdentityCharacter you,W.IdentityAttack who enemy) -> you == who && isTarget enemy
+    (IdentityCharacter you,W.PlayerAttackResolved _ who enemies) -> you == who && any isTarget enemies
+    (IdentityCharacter you,W.MadeBasicAttack who) -> you == who
+    (IdentityCharacter you,W.MadeBasicAttackAgainst who enemy) -> you == who && isTarget enemy
+    (AllyCharacter aid,W.AllyAttack who enemy) -> aid == who && isTarget enemy
+    (AllyCharacter aid,W.AllyAttackCompletedAgainst who enemies) -> aid == who && any isTarget enemies
+    (AllyCharacter aid,W.PlayerAttackResolved (AllyRef who) _ enemies) -> aid == who && any isTarget enemies
+    (_,W.EnemyAttackOnEnemy other enemy) -> isTarget enemy && isAttacker other
+    (_,W.EnemyAttack enemy you) -> target == IdentityCharacter you && isAttacker enemy
+    (_,W.EnemyAttackAlly enemy aid _) -> target == AllyCharacter aid && isAttacker enemy
+    (_,W.AllyDefendedAgainst aid enemy) -> target == AllyCharacter aid && isAttacker enemy
+    _ -> False
+  completion _ = False
+
+retaliationAmount :: HasGame m => CharacterId -> m Natural
+retaliationAmount character = do
+  snapshot <- getGame
+  let present = case character of
+        IdentityCharacter you -> HashMap.member you (gamePlayers snapshot)
+        AllyCharacter aid -> HashMap.member aid (gameAllies snapshot)
+        VillainCharacter vid -> HashMap.member vid (gameVillains snapshot)
+        MinionCharacter mid -> HashMap.member mid (gameMinions snapshot)
+        AttachmentCharacter aid -> HashMap.member aid (gameAttachments snapshot)
+      target = characterRef character
+  if not present then pure 0 else do
+    blanked <- isBlanked target
+    modifiers <- getModifiers target
+    let printed = if blanked then [] else maybe [] (toList . cdKeywords) (abilityCardDef snapshot target)
+        modify (KeywordModifier keyword) = (keyword :)
+        modify (LoseKeyword keyword) = filter (/= keyword)
+        modify _ = id
+    pure $ sum [n | Retaliate n <- foldr modify printed modifiers]
+
+retaliationAbilities :: HasGame m => m [Ability]
+retaliationAbilities = do
+  windows <- getsGame $ concat . take 1 . gameWindows
+  fmap catMaybes $ for [(target,attacker) | W.Window W.After (W.RetaliationPending target attacker) <- windows] $ \(target,attacker) -> do
+    amount <- retaliationAmount target
+    let matching = W.WindowOneOf $ case sourceEnemy (toSource $ characterRef target) of
+          Just enemy -> [W.EnemyWasAttacked W.After (EnemyWithId enemy),W.IdentityAttacked W.After AnyIdentity (EnemyWithId enemy),W.AllyAttacked W.After AnyAlly (EnemyWithId enemy)]
+          Nothing -> case sourceEnemy (toSource $ characterRef attacker) of
+            Just enemy -> [W.EnemyAttackedAnyTarget W.After (EnemyWithId enemy)]
+              <> [W.AllyDefendsAgainst W.After (AllyWithId aid) (EnemyWithId enemy) | AllyCharacter aid <- [target]]
+            Nothing -> []
+        response = Ability.label "$label.resolveRetaliate" $ Ability.windowAbility (characterRef target) 98000 matching Ability.ForcedResponse NoCost
+          (Run [CardSpecific GameRef "resolveKeywordRetaliate" $ toJSON (target,attacker)])
+    pure $ if amount > 0 then Just response else Nothing
+
+-- Explicit references add only their named entities to an otherwise local query.
+inCompetitiveAreaOrExplicit :: HasGame m => [Target] -> (a -> Target) -> [a] -> m [a]
+inCompetitiveAreaOrExplicit explicit ref entities = do
+  local <- inYourAreaOnly ref entities
+  competitive <- getCompetition
+  pure $ if isNothing competitive then local else
+    [entity | entity <- entities, ref entity `elem` (explicit <> map ref local)]
+
+explicitEnemyTargets :: EnemyMatcher -> [Target]
+explicitEnemyTargets = \case
+  EnemyWithId enemy -> [enemyRef enemy]
+  EnemyMatches matchers -> concatMap explicitEnemyTargets matchers
+  DefeatedEnemy matcher -> explicitEnemyTargets matcher
+  _ -> []
+
+explicitVillainTargets :: VillainMatcher -> [Target]
+explicitVillainTargets = \case
+  VillainWithId vid -> [VillainRef vid]
+  VillainMatches matchers -> concatMap explicitVillainTargets matchers
+  _ -> []
+
+attackCompletionWindowFor :: EnemyId -> Message -> Bool
+attackCompletionWindowFor enemy = \case
+  CheckWindows windows -> any (\case
+    W.Window W.After (W.EnemyAttack attacker _) -> enemy == attacker
+    W.Window W.After (W.EnemyAttackAlly attacker _ _) -> enemy == attacker
+    W.Window W.After (W.EnemyAttackOnEnemy attacker _) -> enemy == attacker
+    _ -> False) windows
+  _ -> False
+
+-- Cap's Shield checks use of ATK, including ATK-based attack events (FFG,
+-- December 17, 2025). Flat damage attacks and attacks using only allies' ATK do not.
+sourceATKAttackIdentity :: HasGame m => Source -> m (Maybe IdentityId)
+sourceATKAttackIdentity source = do
+  snapshot <- getGame
+  let hero you = case lookup you (gamePlayers snapshot) of Just identity | isHero identity -> Just you; _ -> Nothing
+  pure $ case source of
+    IdentityRef you -> hero you
+    EventRef eid -> do
+      event <- lookup eid (gameEvents snapshot)
+      let attrs = toAttrs event
+          code = canonicalCardCode $ eventCardDef attrs
+          you = eventController attrs
+          contributes = IdentityCharacter you `elem` paymentExhaustedCharacters (eventPaidWith attrs)
+      guard $ code `elem` ["01077","10002","19007","19014","21016","21062","25018","29017","32045","35023","58005"] || (code == "23032" && contributes)
+      hero you
+    _ -> Nothing
+
+engineAttackResponse :: Ability -> Bool
+engineAttackResponse ability = abilityIndex ability >= 98000 && abilityIndex ability < 99000
+
+delayedAttackDamageAbilities :: HasGame m => m [Ability]
+delayedAttackDamageAbilities = do
+  windows <- getsGame $ concat . take 1 . gameWindows
+  pure
+    [ Ability.label (countLabel "dealDamageToAnEnemy" amount) $ Ability.windowAbility source (98001 + index)
+        (W.EnemyAttackedAnyTarget W.After $ EnemyWithId enemy) Ability.ForcedResponse NoCost
+        (Run [CardSpecific GameRef "resolveDelayedAttackDamage" $ toJSON (enemy,source,amount)])
+    | (index,(_,enemy,source,amount)) <- zip [0..] [(you,enemy,source,amount) | W.Window W.After (W.DelayedAttackDamagePending you enemy source amount) <- windows]
+    ]
+
+inCompetitiveAreaOnlyOrExplicit :: HasGame m => [Target] -> (a -> Target) -> [a] -> m [a]
+inCompetitiveAreaOnlyOrExplicit explicit ref entities = do
+  competitive <- getCompetition
+  if isNothing competitive then pure entities else inCompetitiveAreaOrExplicit explicit ref entities
+
+explicitAllyTargets :: AllyMatcher -> [Target]
+explicitAllyTargets = \case
+  AllyWithId aid -> [AllyRef aid]
+  AllyMatches matchers -> concatMap explicitAllyTargets matchers
+  _ -> []
+
+explicitUpgradeTargets :: UpgradeMatcher -> [Target]
+explicitUpgradeTargets = \case
+  UpgradeWithId uid -> [UpgradeRef uid]
+  UpgradeMatches matchers -> concatMap explicitUpgradeTargets matchers
+  UpgradeOneOf matchers -> concatMap explicitUpgradeTargets matchers
+  _ -> []
+
+explicitMinionTargets :: MinionMatcher -> [Target]
+explicitMinionTargets = \case
+  MinionWithId mid -> [MinionRef mid]
+  MinionMatches matchers -> concatMap explicitMinionTargets matchers
+  LeftPlayMinion matcher -> explicitMinionTargets matcher
+  _ -> []
+
+explicitSchemeTargets :: SchemeMatcher -> [Target]
+explicitSchemeTargets = \case
+  SchemeWithId sid -> [SchemeRef sid]
+  SchemeMatches matchers -> concatMap explicitSchemeTargets matchers
+  _ -> []
+
+explicitSideSchemeTargets :: SideSchemeMatcher -> [Target]
+explicitSideSchemeTargets = \case
+  SideSchemeWithId sid -> [SideSchemeRef sid]
+  SideSchemeMatchAll matchers -> concatMap explicitSideSchemeTargets matchers
+  LeftPlaySideScheme matcher -> explicitSideSchemeTargets matcher
+  _ -> []

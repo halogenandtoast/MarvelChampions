@@ -147,10 +147,15 @@ instance RunMessage WmHcUpgrade where
     AbortPayment acid -> do
       card <- getActiveCostCard acid
       if (pcCardId <$> card) == hollywoodUsedFor meta then pure $ WmHcUpgrade $ attrs `With` meta {hollywoodUsedFor = Nothing} else pure u
-    RanAbility you (isTarget attrs -> True) 1 _ _ | toCardCode attrs == "59013" -> do
+    RanAbility you (isTarget attrs -> True) 1 windows _ | toCardCode attrs == "59013" -> do
       n <- giftCount you
+      for_ [enemy | W.HeroDefends who enemy <- windows, who == you] $ \enemy ->
+        afterMatching (\case
+          VillainMessage vid VillainEndAttack -> enemy == EnemyVillainId vid
+          MinionMessage mid MinionEndAttack -> enemy == EnemyMinionId mid
+          _ -> False) (cardSpecific attrs "hcGauntletsEnded" ())
       pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = n}
-    IdentityMessage who (AttackDefended _ _ _) | who == upgradeController attrs && toCardCode attrs == "59013" -> pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = 0}
+    CardSpecific (isTarget attrs -> True) "hcGauntletsEnded" _ | toCardCode attrs == "59013" -> pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = 0}
     RanAbility you (isTarget attrs -> True) 1 windows _ -> do
       case toCardCode attrs of
         "58002" -> do

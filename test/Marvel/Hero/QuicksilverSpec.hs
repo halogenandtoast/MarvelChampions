@@ -118,8 +118,8 @@ spec = describe "Quicksilver" do
         asHero p
         attackVillain p
         choose "Super Speed" isSuperSpeed
+        _ <- stackEncounterDeck [Treacheries.imTough]
         runNow [BeginPhase VillainPhase]
-        rhinoAttacks p
         choose "defend" isDefend
         choose "Super Speed, again" isSuperSpeed
         isExhaustedNow p `shouldReturn` False

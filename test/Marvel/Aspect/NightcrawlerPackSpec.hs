@@ -111,7 +111,7 @@ spec = describe "Nightcrawler pack" do
     inGame tg do
       let p = player1 tg
       asHero p
-      m <- addMinion p Minions.tigerShark
+      m <- addMinion p Minions.tombstone
       under <- putInHand p "48015"
       playOn under m []
       pass
@@ -121,6 +121,23 @@ spec = describe "Nightcrawler pack" do
       pass
       minionDamageOf m `shouldReturn` Just 4
       damageOf p `shouldReturn` 0
+
+  it "resolves Tiger Shark's forced tough before the optional Under Control response" do
+    tg <- testGame ["nightcrawler"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      m <- addMinion p Minions.tigerShark
+      under <- putInHand p "48015"
+      playOn under m []
+      pass
+      runNow [MinionMessage m (MinionAttacks p)]
+      choose "defend" isDefend
+      offers (isAbilityOfCard under) `shouldReturn` False
+      choose "Tiger Shark gains tough" (isAbilityOf m)
+      choose "Under Control" (isAbilityOfCard under)
+      pass
+      minionDamageOf m `shouldReturn` Just 0
 
   it "Under Control does not respond to an undefended attack" do
     tg <- testGame ["nightcrawler"]
@@ -162,6 +179,9 @@ spec = describe "Nightcrawler pack" do
       choose "defend" isDefend
       playWith riposte [resource]
       pass
+      choose "Riposte damage" (isAbilityOf $ EventRef $ EventId $ unCardId $ pcCardId riposte)
+      choose "Tiger Shark gains tough" (isAbilityOf m)
+      pass
       damageOf p `shouldReturn` 0
       minionDamageOf m `shouldReturn` Just 3
       getModifiers p >>= (`shouldSatisfy` notElem (DefenseModifier 2))
@@ -174,7 +194,7 @@ spec = describe "Nightcrawler pack" do
       scheme <- putIntoPlay p "48020"
       let sid = schemeIdOf scheme
       sideSchemeThreat sid `shouldReturn` 5
-      m <- addMinion p Minions.tigerShark
+      m <- addMinion p Minions.tombstone
       runNow [MinionMessage m (MinionAttacks p)]
       choose "Nightcrawler defends" isDefend
       choose "Astonishing X-Men response" (isAbilityOf sid)
@@ -330,7 +350,12 @@ spec = describe "Nightcrawler pack" do
         choose "defend" isDefend
         playWith riposte [resource]
         if retaliateFirst
-          then choose "retaliate first" (isLabel "$label.resolveRetaliate")
-          else choose "Riposte first" (isTargetChoice $ EventRef $ EventId $ unCardId $ pcCardId riposte)
+          then do
+            choose "retaliate first" (isLabeledAbility "$label.resolveRetaliate")
+            choose "Riposte second" (isAbilityOf $ EventRef $ EventId $ unCardId $ pcCardId riposte)
+          else do
+            choose "Riposte first" (isAbilityOf $ EventRef $ EventId $ unCardId $ pcCardId riposte)
+            choose "retaliate second" (isLabeledAbility "$label.resolveRetaliate")
+        choose "Tiger Shark gains tough" (isAbilityOf m)
         pass
         minionDamageOf m `shouldReturn` Just expected

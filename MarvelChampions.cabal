@@ -568,6 +568,8 @@ library
       Marvel.Choice
       Marvel.CivilWar.Cards
       Marvel.CivilWar.Helpers
+      Marvel.CivilWar.Leaders
+      Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.Types
       Marvel.Cost
       Marvel.Cost.Types
@@ -2862,6 +2864,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.NextEvolutionSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
+      Marvel.CivilWar.LeaderSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec

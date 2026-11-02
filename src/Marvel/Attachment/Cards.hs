@@ -141,6 +141,7 @@ import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Hercules.Cards qualified as HC
 
 import Marvel.Prelude
+import Marvel.CivilWar.Cards qualified as CWDefs
 
 
 import Marvel.Boost
@@ -156,7 +157,7 @@ import Marvel.Trait qualified as Trait
 
 allAttachments :: HashMap CardCode CardDef
 allAttachments =
-  fromList $
+  fromList $ [(toCardCode def,def) | def <- [CWDefs.cw56098,CWDefs.cw56143,CWDefs.cw56174,CWDefs.cw57007,CWDefs.cw57046a,CWDefs.cw57046b]] <>
     map
       (toFst toCardCode)
       [ CN.enc56026, CN.enc56057, CN.enc60035

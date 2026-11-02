@@ -80,6 +80,7 @@ runMinionMessage msg attrs = case msg of
       | otherwise -> do
         when (damageAmount damage > 0) $ do
           recordPlayerAttackDamage (toEnemyId attrs) source damage
+          attackDealtDamageTo source damage (minionId attrs)
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when (damageAmount damage + minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers) do
           let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)

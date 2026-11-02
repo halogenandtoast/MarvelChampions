@@ -72,6 +72,9 @@ windowMatches matcher w source = case matcher of
   BasicAttackDamagedEnemy matcher' -> case windowType w of
     BasicAttackDamaged you enemies | windowTiming w == After && notNull enemies -> identityMatches matcher' you
     _ -> pure False
+  EnemyDamagedUsingATK who target -> case windowType w of
+    AttackUsingATKDamaged you enemies | windowTiming w == After -> (&&) <$> identityMatches who you <*> anyM (enemyMatches target) enemies
+    _ -> pure False
   AllyAttackDamagedEnemy allyMatcher enemyMatcher -> case windowType w of
     AllyAttackDamaged aid enemy confused | windowTiming w == After -> do
       matchesAlly <- allyMatches allyMatcher aid

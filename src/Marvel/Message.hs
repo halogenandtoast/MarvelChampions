@@ -241,7 +241,11 @@ recordPlayerAttackDamage enemy source damage = when (damageAmount damage > 0 && 
     EnemyVillainId v -> VillainCharacter v
     EnemyMinionId m -> MinionCharacter m
     EnemyAttachmentId a -> AttachmentCharacter a
-  replaceMatchingMessage (mapWindow confused) isCompletion
+  atkUser <- sourceATKAttackIdentity source
+  case (source,atkUser) of
+    (EventRef _,Just you) -> pushAll [CardSpecific (refocus source) "recordATKDamage" $ toJSON (you,enemy)]
+    _ -> pure ()
+  replaceMatchingMessage (mapWindow confused atkUser) isCompletion
  where
   isAttack = case damageSource damage of
     FromPlayerAttack _ -> True
@@ -252,18 +256,23 @@ recordPlayerAttackDamage enemy source damage = when (damageAmount damage > 0 && 
     CheckWindows ws -> any completion ws
     _ -> False
   completion (Window After w) = case (source, w) of
+    (IdentityRef you, W.PlayerAttackResolved (IdentityRef who) _ _) -> you == who
     (IdentityRef you, W.MadeBasicAttack who) -> you == who
     (AllyRef aid, W.AllyAttack who _) -> aid == who
     (AllyRef aid, W.AllyAttackCompletedAgainst who _) -> aid == who
     _ -> False
   completion _ = False
-  mapWindow confused (CheckWindows ws) = [CheckWindows $ map update ws <> case source of
+  mapWindow confused atkUser (CheckWindows ws) = [CheckWindows $ map update ws
+    <> [Window After $ W.AttackUsingATKDamaged you [enemy] | Just you <- [atkUser], IdentityRef _ <- [source], not (any (hasATK you) ws)] <> case source of
     IdentityRef you -> [Window After $ W.BasicAttackDamaged you [enemy] | not (any (hasBasic you) ws)]
     AllyRef aid -> [Window After $ W.AllyAttackDamaged aid enemy confused | not (any (hasAllyEnemy aid) ws)]
     _ -> []]
-  mapWindow _ message = [message]
+  mapWindow _ _ message = [message]
+  update (Window timing (W.AttackUsingATKDamaged who enemies)) = Window timing $ W.AttackUsingATKDamaged who (nub $ enemies <> [enemy])
   update (Window timing (W.BasicAttackDamaged who enemies)) | source == IdentityRef who = Window timing $ W.BasicAttackDamaged who (nub $ enemies <> [enemy])
   update window = window
+  hasATK you (Window _ (W.AttackUsingATKDamaged who _)) = you == who
+  hasATK _ _ = False
   hasBasic you (Window _ (W.BasicAttackDamaged who _)) = who == you
   hasBasic _ _ = False
   hasAllyEnemy aid (Window _ (W.AllyAttackDamaged who target _)) = who == aid && target == enemy

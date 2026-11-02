@@ -451,7 +451,7 @@ spec = describe "Fear No Evil player cards" do
       energy <- putInHand p "01088"
       choose "Cloak" (cardAbility cloak)
       payWith [energy]
-      choose "the other player's Dagger" (isTargetChoice dagger)
+      -- The sole eligible physical copy enters automatically.
       pass
       attrs <- allyIn "60021"
       allyController attrs `shouldBe` p

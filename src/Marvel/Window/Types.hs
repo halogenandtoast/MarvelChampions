@@ -51,6 +51,7 @@ data WindowMatcher
   | MakesRangedAttack WindowTiming IdentityMatcher
   | MakesKeywordAttack WindowTiming IdentityMatcher [Keyword]
   | BasicAttackDamagedEnemy IdentityMatcher
+  | EnemyDamagedUsingATK IdentityMatcher EnemyMatcher
   | AllyAttackDamagedEnemy AllyMatcher EnemyMatcher
   | CardsDiscardedFromPlayerDeck IdentityMatcher
   | EncounterCardDiscardedFromDeck CardMatcher
@@ -326,6 +327,9 @@ data WindowType
   | EnemyAttackAlly EnemyId AllyId IdentityId
   | EnemyAttack EnemyId IdentityId
   | EnemyAttackOnEnemy EnemyId EnemyId
+  | -- | Retaliate participates in the same Forced Response occurrence as the attack.
+    RetaliationPending CharacterId CharacterId
+  | DelayedAttackDamagePending IdentityId EnemyId Source Natural
   | -- | the damage an enemy's attack dealt the character
     EnemyAttacksAndDamages EnemyId CharacterId Natural
   | VillainSchemeResolved VillainId Natural
@@ -368,6 +372,7 @@ data WindowType
   | MakingFriendlyKeywordAttack IdentityId Source CharacterId [Keyword]
   | FriendlyPlayerAttack IdentityId CharacterId
   | BasicAttackDamaged IdentityId [EnemyId]
+  | AttackUsingATKDamaged IdentityId [EnemyId]
   | AllyAttackDamaged AllyId EnemyId Bool
   | MadeBasicAttackAgainst IdentityId EnemyId
   | DefeatedSideScheme SideSchemeId

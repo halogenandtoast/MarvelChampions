@@ -42,6 +42,7 @@ import Marvel.Keyword qualified as MGKeyword
 import Marvel.GameValue.Types qualified as MGValue ()
 import Marvel.Boost qualified as MGBoost ()
 import Marvel.Prelude
+import Marvel.CivilWar.Cards qualified as CWDefs
 
 import Marvel.Cost.Types (Cost (NoCost))
 
@@ -53,7 +54,7 @@ import Marvel.Trait
 import Marvel.Keyword
 
 allVillainCards :: [CardDef]
-allVillainCards =
+allVillainCards = filter ((== VillainType) . cdCardType) CWDefs.civilWarDefinitions <>
   [ TT.tt55001, TT.tt55002, TT.tt55003, TT.tt55027a, TT.tt55027b, TT.tt55029a, TT.tt55029b, TT.tt55030a, TT.tt55030b, TT.tt55031a, TT.tt55031b, TT.tt55032a, TT.tt55032b
   , aos50064, aos50065, aos50066, aos50086a, aos50086b, aos50103a, aos50103b, aos50129a, aos50129b, aos50165a, aos50165b, aos50166a, aos50166b
   , unus1, unus2, unus3, warA, warB, famineA, famineB, pestilenceA, pestilenceB, deathA, deathB, apocalypse1, apocalypse2, apocalypse3, apocalypse4, darkBeast1, darkBeast2, darkBeast3, enSabahNurBiomorph1, enSabahNurCyberpath1, enSabahNurGiant1, enSabahNurBiomorph2, enSabahNurCyberpath2, enSabahNurGiant2, enSabahNurBiomorph3, enSabahNurCyberpath3, enSabahNurGiant3
