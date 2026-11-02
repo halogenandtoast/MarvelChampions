@@ -6,7 +6,7 @@ The native implementation covers the six leaders' 24 stages, 21 attachment faces
 
 Normal games use stages I–II; expert games use III–IV. Advancing to the final stage deals each player on that board an encounter card and prevents further damage to the leader for the phase. In competitive play, final defeat records the board's result and retains the leader through the opposing team's reply.
 
-The handlers cover Iron Man's capped Tech-based SCH, Captain Marvel's defeat counters, Captain America's Shield response, Spider-Woman's Finesse attack bonus, She-Hulk's form-change damage, and Vision's mass-form flip after the threat step. Iron Man's setup search and shuffle explicitly use his encounter deck even when the opponent makes the choice.
+The handlers cover Iron Man's capped Tech-based SCH, Captain Marvel's defeat counters, Captain America's Shield response, Spider-Woman's Finesse attack bonus, She-Hulk's form-change damage, and Vision's mass-form flip after the threat step. Vision's form flip is a Forced Response in a shared window after step 1 of the villain phase, so it can be ordered with main-scheme responses. In competitive games, only the active board participates in this phase window. Iron Man's setup search and shuffle explicitly use his encounter deck even when the opponent makes the choice.
 
 Retaliate shares the attack's Forced Response occurrence with encounter responses. Temporary retaliate from Gauntlets of Hercules lasts through attack completion. Defense response windows and delayed defense damage join that occurrence, preserving forced-before-optional timing. Riposte can be ordered alongside an enemy's Forced Response. Cap's Shield does not return when an attack deals no damage.
 

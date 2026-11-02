@@ -7,7 +7,6 @@ import Marvel.Keyword qualified as K
 import Marvel.Matchers
 import Marvel.Modifier
 import Marvel.Message.Lifted qualified as L
-import Marvel.Phase (VillainPhaseStep (..))
 import Marvel.Minion.Cards qualified as M
 import Marvel.Treachery.Cards qualified as T
 import Marvel.SideScheme.Cards qualified as S
@@ -299,7 +298,9 @@ spec = describe "Civil War leaders" do
       card <- encounterCard C.cw57046a
       resolve [RevealEncounterCard (player1 tg) card]
       getModifiers (VillainRef vid) >>= (`shouldSatisfy` elem (AttackModifier 1))
-      resolve [VillainPhaseStep StepEnemiesActivate]
+      _ <- stackEncounterDeck [M.hydraMercenary,M.hydraMercenary]
+      endTurn
+      choose "flip Vision after the threat step" (isAbilityOf vid)
       let aid = attachmentIdOf card
       code <- getsGame $ fmap (toCardCode . getCardDef) . lookup aid . gameAttachments
       liftIO $ code `shouldBe` Just "57046b"

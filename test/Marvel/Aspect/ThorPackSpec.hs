@@ -3,6 +3,10 @@ module Marvel.Aspect.ThorPackSpec (spec) where
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Game.Public (publicGame)
+import Marvel.MainScheme.Types qualified as Main
+import Marvel.Matchers (EntityMatcher (SourceEntity))
+import Marvel.Message.Lifted qualified as L
+import Marvel.Modifier (Modifier (TargetThreatReduction))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
@@ -328,6 +332,21 @@ spec = describe "The Thor pack's aspect and basic cards" do
         another <- putInHand p "06031"
         _ <- traverse (putInHand p) ["01088", "01089"]
         offers (isPlay another) `shouldReturn` False
+
+    it "publishes its modified target and clamps target reductions at zero" do
+      tg <- thor
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        m <- mainSchemeId
+        _ <- inPlay p "06031" ["01088", "01089"]
+        view <- liftIO . publicGame =<< getGame
+        let targets = [target | Object root <- [view],Just (Array schemes) <- [KeyMap.lookup "mainSchemes" root],Object scheme <- toList schemes,Just target <- [KeyMap.lookup "targetThreat" scheme]]
+        liftIO $ targets `shouldBe` [Number 11]
+        effects <- L.runQueueT $ L.capture $ L.lastingModifiers m (SourceEntity $ MainSchemeRef m) [TargetThreatReduction 20] False
+        resolve effects
+        scheme <- getsGame $ fromMaybe (error "missing scheme") . HashMap.lookup m . gameMainSchemes
+        Main.getThreshold (toAttrs scheme) `shouldReturn` 0
 
     it "is attached to the main scheme, and discarded as that scheme leaves play" do
       -- Klaw's first main scheme advances to a second

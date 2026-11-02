@@ -65,11 +65,13 @@ const heroes = computed(() => Math.max(1, (game.players ?? []).length))
 
 // the threat that completes a scheme, printed per hero unless fixed
 const target = (scheme: SchemeView) => {
+  if (typeof scheme.targetThreat === 'number') return scheme.targetThreat
   const card = cards.card(scheme.code)
   if (typeof card?.threat !== 'number') return null
   return card.threatFixed ? card.threat : card.threat * heroes.value
 }
 const escalation = (scheme: SchemeView) => {
+  if (typeof scheme.escalationThreat === 'number') return scheme.escalationThreat
   const card = cards.card(scheme.code)
   if (typeof card?.escalationThreat !== 'number') return null
   return card.escalationThreatFixed ? card.escalationThreat : card.escalationThreat * heroes.value

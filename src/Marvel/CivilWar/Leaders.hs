@@ -8,6 +8,7 @@ import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.Helpers
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.Cost
+import Marvel.Criteria
 import Marvel.Damage
 import Marvel.EncounterSet qualified as E
 import Marvel.Entity
@@ -17,7 +18,6 @@ import Marvel.Hp
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Phase
 import Marvel.Query
 import Marvel.Question (runAbility)
 import Marvel.Ref
@@ -55,6 +55,8 @@ instance HasAbilities CivilWarLeader where
     <> case leaderFamily a of
       E.CwCaptainMarvel -> [windowAbility a 2 (W.CharacterDefeatedByEnemyAttack W.After $ EnemyWithId $ toEnemyId a) ForcedResponse NoCost (runAbility a 2)]
       E.CwSpiderWoman -> [windowAbility a 2 (W.EnemyAttackedAnyTarget W.When $ EnemyWithId $ toEnemyId a) ForcedInterrupt NoCost (runAbility a 2)]
+      E.CwVision -> [limitedWindowAbility a 4 W.AfterVillainThreatStep ForcedResponse
+        (AnyCriteria [AttachmentExists $ AttachmentOnEnemy (toEnemyId a) <> AttachmentIs form | form <- [C.cw57046a,C.cw57046b]]) NoCost (runAbility a 4)]
       E.CwSheHulk -> [windowAbility a 2 (W.IdentityChangedToForm W.After HeroIdentity) ForcedResponse NoCost (runAbility a 2)]
       _ -> []
 
@@ -109,10 +111,8 @@ instance RunMessage CivilWarLeader where
           you <- firstPlayerAtLeader (villainId a)
           chooseOnePromptedAbout you "$label.resolveForcedResponse" a [targeting a $ giveStatus (villainId a) ToughStatus]
       pure e
-    VillainPhaseStep StepEnemiesActivate | leaderFamily a == E.CwVision -> do
-      blanked <- isBlanked a
-      unless blanked $ selectList (AttachmentIs C.cw57046a <> AttachmentOnEnemy (toEnemyId a)) >>= traverse_ (\aid -> forcedResponse a $ cardSpecific aid "cwFlipMass" ())
-      unless blanked $ selectList (AttachmentIs C.cw57046b <> AttachmentOnEnemy (toEnemyId a)) >>= traverse_ (\aid -> forcedResponse a $ cardSpecific aid "cwFlipMass" ())
+    RanAbility _ (isTarget a -> True) 4 _ _ -> do
+      flipLeaderMassForm (toEnemyId a)
       pure e
     _ -> CivilWarLeader <$> runMessage msg a
 

@@ -489,6 +489,15 @@ spec = describe "Civil War team boundaries" do
       choose "draw three cards" (isLabel $ countLabel "drawCards" 3)
       length <$> alliesWith "01084" `shouldReturn` 1
 
+  for_ [("two",["spider-man","captain-marvel"],7,1),("four",["spider-man","captain-marvel","black-panther","she-hulk"],14,2)] $ \(description,heroes,threshold,acceleration) ->
+    it ("publishes threat targets and acceleration for each team in a " <> description <> " player competition") do
+      tg <- competitive heroes
+      inGame tg do
+        _ <- addSecondBoard tg
+        view <- liftIO . publicGameFor (const True) =<< getGame
+        let stats = [(target,rate) | Object root <- [view],Just (Array schemes) <- [KeyMap.lookup "mainSchemes" root],Object scheme <- toList schemes,Just target <- [KeyMap.lookup "targetThreat" scheme],Just rate <- [KeyMap.lookup "escalationThreat" scheme]]
+        liftIO $ stats `H.shouldMatchList` [(toJSON (threshold :: Natural),toJSON (acceleration :: Natural)),(toJSON (6 * acceleration),toJSON acceleration)]
+
   it "prevents playing a unique ally that matches the friendly leader" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

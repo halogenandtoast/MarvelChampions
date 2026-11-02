@@ -134,6 +134,7 @@ data WindowMatcher
   | MinionWouldLeavePlay MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
+  | AfterVillainThreatStep
   | PhaseBegins WindowTiming Phase
   | PhaseEnds WindowTiming Phase
   | EnemyDefeatedWithUpgrade WindowTiming CardDef DamageMatcher
@@ -321,6 +322,7 @@ data WindowType
   | MinionEnteredPlay MinionId
   | SideSchemeEnteredPlay SideSchemeId
   | EncounterCardResolved IdentityId EncounterCard
+  | VillainThreatStepFinished
   | PhaseBegan Phase
   | PhaseEnded Phase
   | -- | the enemy took this damage, from this source: none a tough status card prevented

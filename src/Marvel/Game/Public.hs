@@ -18,6 +18,7 @@ import Data.Functor.Identity (runIdentity)
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
+import Data.Text qualified as Text
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
@@ -43,6 +44,7 @@ import Marvel.Hand
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game
+import Marvel.GameValue (fromGameValue)
 import Marvel.Hero.Heroes.DoctorStrange (InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Hero.Types qualified as HeroTypes ()
@@ -421,6 +423,8 @@ data SchemeView = SchemeView
   -- ^ the player cards attached to it faceup (Odin on Odin's Torment): a main scheme's
   -- held cards
   , accelerationTokens :: Natural
+  , targetThreat :: Maybe Natural
+  , escalationThreat :: Maybe Natural
   , glider :: Bool
   , exhausted :: Bool
   }
@@ -506,6 +510,7 @@ gameView seesHand g = do
       missionAllyIds = maybe [] missionAllies missionState
       missionMinionIds = maybe [] missionMinions missionState
       missionSchemeId = missionScheme <$> missionState
+  mainSchemes <- traverse mainSchemeView (HashMap.elems $ gameMainSchemes g)
   schemes <- traverse sideSchemeView [x | x <- HashMap.elems $ gameSideSchemes g, Just (toId x) /= missionSchemeId]
   minions <- traverse minionView [x | x <- HashMap.elems $ gameMinions g, toId x `notElem` missionMinionIds]
   uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g, toId a `notElem` map snd (gameAosHostages g), toId a `notElem` missionAllyIds]
@@ -563,7 +568,7 @@ gameView seesHand g = do
       , seats = gameSeats g
       , players
       , villains
-      , mainSchemes = map mainSchemeView (HashMap.elems $ gameMainSchemes g)
+      , mainSchemes = mainSchemes
       , sideSchemes = schemes
       , minions
       , mission
@@ -865,19 +870,28 @@ gameView seesHand g = do
         , attachments = attachmentsIn a.minionAttachments
         , upgrades = upgradesOn \u -> u.upgradeAttachedEnemy == Just (EnemyMinionId a.minionId)
         }
-  mainSchemeView (s :: MainScheme) =
+  mainSchemeView (s :: MainScheme) = inElementArea s do
+    threshold <- MainScheme.getThreshold (toAttrs s)
+    acceleration <- fromIntegral <$> fromGameValue (mainSchemeAcceleration $ toAttrs s)
     let a = toAttrs s
         code = toCardCode a.mainSchemeCardDef
         awaitingSetup = any (\case
           QuestionLabel "$label.setupMainScheme" (Just target) _ -> target == toTarget a.mainSchemeId
           _ -> False) (HashMap.elems $ gameQuestion g)
-        face = if awaitingSetup then CardCode (unCardCode code <> "a") else code
+        face = if awaitingSetup then setupFace code else code
         tokensHere = a.mainSchemeAccelerationTokens + maybe 0 areaAccelerationTokens (areaOfTarget g $ MainSchemeRef a.mainSchemeId)
-     in SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere a.mainSchemeHasGlider False
+    pure $ SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] 0 [] (map (cardView . PlayerCard) a.mainSchemeHeldCards) tokensHere (Just threshold) (Just acceleration) a.mainSchemeHasGlider False
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s
-    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) ([cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) ([cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens Nothing Nothing False a.sideSchemeExhausted
+
+-- Civil War stores the active B face explicitly; older schemes use an unsuffixed code.
+setupFace :: CardCode -> CardCode
+setupFace code = CardCode $ case Text.unsnoc (unCardCode code) of
+  Just (base,'b') -> base <> "a"
+  Just (_,'a') -> unCardCode code
+  _ -> unCardCode code <> "a"
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)

@@ -202,6 +202,7 @@ windowMatches matcher w source = case matcher of
   RemovesLastThreat identityMatcher -> case windowType w of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident
     _ -> pure False
+  AfterVillainThreatStep -> pure $ windowTiming w == After && windowType w == VillainThreatStepFinished
   PhaseBegins timing phase -> pure $ windowTiming w == timing && windowType w == PhaseBegan phase
   PhaseEnds timing phase -> pure $ windowTiming w == timing && windowType w == PhaseEnded phase
   PlayThis timing -> case windowType w of

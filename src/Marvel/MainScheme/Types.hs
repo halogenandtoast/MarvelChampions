@@ -286,4 +286,5 @@ getThreshold :: (HasGame m) => Attrs MainScheme -> m Natural
 getThreshold attrs = do
   printed <- fromIntegral <$> fromGameValue (mainSchemeThreshold attrs)
   modifiers <- getModifiers attrs
-  pure $ printed + sum [x | TargetThreatModifier x <- modifiers]
+  pure $ subtractNatural (sum [x | TargetThreatReduction x <- modifiers])
+    (printed + sum [x | TargetThreatModifier x <- modifiers])

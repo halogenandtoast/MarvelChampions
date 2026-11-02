@@ -5750,6 +5750,7 @@ competitiveAbilityAllowed g you ability
   here = areaId <$> areaOfTarget g (IdentityRef you)
   local target = (areaId <$> areaOfTarget g target) == here
   phaseWindow (W.Window _ event) = case event of
+    W.VillainThreatStepFinished -> True
     W.PhaseBegan _ -> True
     W.PhaseEnded _ -> True
     _ -> False

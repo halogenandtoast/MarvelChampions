@@ -496,6 +496,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
         n <- fromIntegral <$> getHazardCountIn (areaId area)
         pure $ if null here then [] else take n (cycle here)
       accelerateMainScheme
+      checkWindows [W.Window W.After W.VillainThreatStepFinished]
       villainPhaseStep StepEnemiesActivate
       for_ players \p -> do
         setActivePlayer p

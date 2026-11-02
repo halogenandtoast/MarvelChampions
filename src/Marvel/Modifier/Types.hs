@@ -168,6 +168,7 @@ data Modifier
     InfiniteHitPoints
   | -- | to the target threat of a scheme
     TargetThreatModifier Natural
+  | TargetThreatReduction Natural
   | BasicThwartModifierForTrait Trait Natural
   | -- | the cards matching cost this many more resources to play
     AdditionalResourceCost CardMatcher Natural

@@ -210,6 +210,8 @@ export interface MinionView extends CardView {
 }
 
 export interface SchemeView extends CardView {
+  targetThreat?: number | null
+  escalationThreat?: number | null
   exhausted?: boolean
   threat: number
   accelerationTokens?: number
