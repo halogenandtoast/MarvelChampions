@@ -186,3 +186,14 @@ Precedence (RR "The Golden Rules"): card text / scenario rules > Rules Reference
 
 - [Trickster Takeover](scenario-trickster-takeover.md): Enchantress, God of Lies
   (Single Group Mode), Trickster Magic; [FFG MC55 rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf).
+
+## New hero and player-card rules
+
+| Product | Rules |
+|---|---|
+| Wonder Man | [Rules and rulings](hero-wonder-man.md) |
+| Hercules | [Rules and rulings](hero-hercules.md) |
+| Jessica Jones | [Rules and rulings](hero-jessica-jones.md) |
+| Luke Cage | [Rules and rulings](hero-luke-cage.md) |
+| Civil War player cards | [Rules and scope](player-civil-war.md) |
+| Fear No Evil player cards | [Rules and scope](player-fear-no-evil.md) |
