@@ -1,5 +1,24 @@
 module Marvel.Obligation.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet ()
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait ()
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -157,7 +176,11 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ nc48026
+    [ aos50134, aos50179
+  , FalconWinter.fw53029, FalconWinter.fw54027
+  , aosP50029, aosP50059
+  , BlackPantherShuriPack.tChallasShadowShuri, SilkPack.silkSenseOverloadSilk
+  , nc48026
   , hotHeaded
   , Jubilee.jubilee47023
   , oldGrievances
@@ -1151,3 +1174,77 @@ nc48026 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+-- Agents of Shield players
+
+aosP50029 :: CardDef
+aosP50029 = CardDef
+  { cdCardCode = "50029"
+  , cdName = "Press Conference"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50059 :: CardDef
+aosP50059 = CardDef
+  { cdCardCode = "50059"
+  , cdName = "Discovered"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.ObligationType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aos50134 :: CardDef
+aos50134 = AosEncounter.aos50134
+
+aos50179 :: CardDef
+aos50179 = AosEncounter.aos50179

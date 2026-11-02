@@ -1,4 +1,10 @@
 module Marvel.Support.Supports (module X) where
+import Marvel.Support.Supports.Fw53006 as X
+import Marvel.Support.Supports.Fw53007 as X
+import Marvel.Support.Supports.Fw53020 as X
+import Marvel.Support.Supports.Fw53021 as X
+import Marvel.Support.Supports.Fw53037 as X
+import Marvel.Support.Supports.Fw54007 as X
 
 import Marvel.Support.Supports.Nc48003 as X
 
@@ -207,3 +213,33 @@ import Marvel.Support.Supports.ChildrenOfTheAtom as X
 -- Magneto
 
 import Marvel.Support.Supports.IceWall as X
+
+import Marvel.Support.Supports.TheElephantsTrunkShuri as X
+
+import Marvel.Support.Supports.QueenRamondaShuri as X
+
+import Marvel.Support.Supports.TheRaftShuri as X
+
+import Marvel.Support.Supports.DoraMilajeShuri as X
+
+import Marvel.Support.Supports.TargetSpotterShuri as X
+
+import Marvel.Support.Supports.AlbertMoonSilk as X
+
+import Marvel.Support.Supports.JJonahJamesonSilk as X
+
+import Marvel.Support.Supports.DrSinclairSilk as X
+
+-- Agents of Shield players
+import Marvel.Support.Supports.AosP50008 as X
+import Marvel.Support.Supports.AosP50009 as X
+import Marvel.Support.Supports.AosP50015 as X
+import Marvel.Support.Supports.AosP50017 as X
+import Marvel.Support.Supports.AosP50018 as X
+import Marvel.Support.Supports.AosP50019 as X
+import Marvel.Support.Supports.AosP50020 as X
+import Marvel.Support.Supports.AosP50028 as X
+import Marvel.Support.Supports.AosP50040 as X
+import Marvel.Support.Supports.AosP50041 as X
+import Marvel.Support.Supports.AosP50055 as X
+import Marvel.Support.Supports.AosP50056 as X

@@ -15,6 +15,7 @@ import Marvel.Campaign.MadTitansShadow (runTitanStep)
 import Marvel.Campaign.SinisterMotives (runSinisterStep)
 import Marvel.Campaign.MutantGenesis (runMutantGenesisStep)
 import Marvel.Campaign.NextEvolution (runNextEvolutionStep)
+import Marvel.Campaign.AgentsOfShield (runShieldStep)
 import Marvel.Campaign.AgeOfApocalypse (runApocalypseStep)
 import Marvel.Card
 import Marvel.Deck
@@ -39,6 +40,7 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case c.kind of
  SinisterMotives -> runSinisterStep c step
  MutantGenesis -> runMutantGenesisStep c step
  NextEvolution -> runNextEvolutionStep c step
+ AgentsOfShieldCampaign -> runShieldStep c step
  AgeOfApocalypseCampaign -> runApocalypseStep c step
  RiseOfRedSkull -> case step of
   CampaignChoices -> do

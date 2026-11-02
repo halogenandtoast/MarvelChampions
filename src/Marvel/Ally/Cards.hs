@@ -1,5 +1,23 @@
 module Marvel.Ally.Cards where
 
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet
+import Marvel.Keyword qualified as AospKeyword
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName
+import Marvel.Resource.Types qualified as AospResource
+import Marvel.Trait qualified as AospTrait
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -164,7 +182,10 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ nc48002, nc48012, nc48013, nc48021
+  [ FalconWinter.fw53002, FalconWinter.fw53015, FalconWinter.fw53017, FalconWinter.fw53018, FalconWinter.fw53035, FalconWinter.fw53036, FalconWinter.fw54003, FalconWinter.fw54012, FalconWinter.fw54013, FalconWinter.fw54032
+  , aosP50002, aosP50012, aosP50013, aosP50022, aosP50023, aosP50036, aosP50054, aosP50091, aosP50105b, aosP50106b, aosP50107b, aosP50108b
+  , BlackPantherShuriPack.tChallaShuri, BlackPantherShuriPack.manifoldShuri, BlackPantherShuriPack.anekaShuri, BlackPantherShuriPack.ayoShuri, BlackPantherShuriPack.okoyeShuri, BlackPantherShuriPack.whiteWolfShuri, SilkPack.scarletSpiderSilk, SilkPack.spiderByteSilk, SilkPack.madameWebSilk, SilkPack.spiderMan2099Silk, SilkPack.spiderWomanSilk
+  , nc48002, nc48012, nc48013, nc48021
   , Jubilee.jubilee47002, Jubilee.jubilee47011, Jubilee.jubilee47012, Jubilee.jubilee47018
   , snowClone
   , sharkGirl
@@ -608,10 +629,10 @@ winterSoldierBuckyBarnes =
   identityAlly "08002" ("Winter Soldier" <:> "Bucky Barnes") 4 [Avenger, Spy] [Wild]
 
 agentCoulson :: CardDef
-agentCoulson = ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
+agentCoulson = reprintedAs ["50047"] $ ally "08011" "Agent Coulson" 3 [Shield, Spy] [Mental] Justice
 
 quakeDaisyJohnson :: CardDef
-quakeDaisyJohnson =
+quakeDaisyJohnson = reprintedAs ["50048"] $
   ally "08012" ("Quake" <:> "Daisy Johnson") 2 [Avenger, Shield] [Energy] Justice
 
 ladySif :: CardDef
@@ -778,7 +799,7 @@ novaPrimeRichardRider :: CardDef
 novaPrimeRichardRider = identityAlly "17002" ("Nova Prime" <:> "Richard Rider") 5 [Aerial, NovaCorps] [Wild]
 
 adamWarlock :: CardDef
-adamWarlock = ally "17011" "Adam Warlock" 3 [Aerial, Mystic] [Physical] Leadership
+adamWarlock = reprintedAs ["53014"] $ ally "17011" "Adam Warlock" 3 [Aerial, Mystic] [Physical] Leadership
 
 betaRayBill :: CardDef
 betaRayBill = ally "17012" "Beta Ray Bill" 5 [Asgard] [Physical] Leadership
@@ -1066,7 +1087,7 @@ agent13SharonCarterSinisterMotives = reprintedAs ["29022"] $ (basicAlly "27046" 
     }
 
 dumDumDugan :: CardDef
-dumDumDugan = (basicAlly "27047" "Dum Dum Dugan" 5 [Shield] [Physical])
+dumDumDugan = reprintedAs ["50021"] $ (basicAlly "27047" "Dum Dum Dugan" 5 [Shield] [Physical])
     { cdDeckLimit = Just 1
     }
 
@@ -1077,7 +1098,7 @@ ghostSpiderGwenStacy = (basicAlly "27048" ("Ghost-Spider" <:> "Gwen Stacy") 3 [W
     }
 
 spiderManPeterParkerSinisterMotives :: CardDef
-spiderManPeterParkerSinisterMotives = (basicAlly "27049" ("Spider-Man" <:> "Peter Parker") 3 [WebWarrior] [Mental])
+spiderManPeterParkerSinisterMotives = reprintedAs ["52022"] $ (basicAlly "27049" ("Spider-Man" <:> "Peter Parker") 3 [WebWarrior] [Mental])
     { cdDeckLimit = Just 1
     , cdKeywords = fromList [Requirement [Energy, Mental, Physical]]
     }
@@ -1119,7 +1140,7 @@ brawnAmadeusChoIronheart = (identityAlly "29004" ("Brawn" <:> "Amadeus Cho") 4 [
   }
 
 cloud9 :: CardDef
-cloud9 = (ally "29014" ("Cloud 9" <:> "Abby Boylen") 3 [Aerial, Champion] [Mental] Leadership)
+cloud9 = reprintedAs ["53016"] $ (ally "29014" ("Cloud 9" <:> "Abby Boylen") 3 [Aerial, Champion] [Mental] Leadership)
   { cdDeckLimit = Just 1
   }
 
@@ -3255,4 +3276,402 @@ nc48021 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Agents of Shield players
+
+aosP50002 :: CardDef
+aosP50002 = CardDef
+  { cdCardCode = "50002"
+  , cdName = "Nick Fury"
+  , cdCost = Just 4
+  , cdTraits = fromList [AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50012 :: CardDef
+aosP50012 = CardDef
+  { cdCardCode = "50012"
+  , cdName = "Victoria Hand"
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Leadership
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50013 :: CardDef
+aosP50013 = CardDef
+  { cdCardCode = "50013"
+  , cdName = AospName.Name "Slingshot" (Just "Yo-Yo Rodriguez")
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Spy]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Leadership
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50022 :: CardDef
+aosP50022 = CardDef
+  { cdCardCode = "50022"
+  , cdName = "Grant Ward"
+  , cdCost = Just 0
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Spy]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50023 :: CardDef
+aosP50023 = CardDef
+  { cdCardCode = "50023"
+  , cdName = "Melinda May"
+  , cdCost = Just 4
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Spy]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50036 :: CardDef
+aosP50036 = CardDef
+  { cdCardCode = "50036"
+  , cdName = "Maria Hill"
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50054 :: CardDef
+aosP50054 = reprintedAs ["54021"] $ CardDef
+  { cdCardCode = "50054"
+  , cdName = "Nick Fury, Sr."
+  , cdCost = Just 4
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Soldier]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50091 :: CardDef
+aosP50091 = CardDef
+  { cdCardCode = "50091"
+  , cdName = "Rescued Captive"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Civilian]
+  , cdKeywords = fromList [AospKeyword.Victory (-1)]
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.AosBatroc
+  , cdEncounterSetQuantity = Just 4
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50105b :: CardDef
+aosP50105b = CardDef
+  { cdCardCode = "50105b"
+  , cdName = "Flying Inhuman"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Aerial, AospTrait.Inhuman, AospTrait.Rescued]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.AosModok
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50106b :: CardDef
+aosP50106b = CardDef
+  { cdCardCode = "50106b"
+  , cdName = "Psionic Inhuman"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Inhuman, AospTrait.Psionic, AospTrait.Rescued]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.AosModok
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50107b :: CardDef
+aosP50107b = CardDef
+  { cdCardCode = "50107b"
+  , cdName = "Sarah Garza"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Inhuman, AospTrait.Rescued, AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.AosModok
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50108b :: CardDef
+aosP50108b = CardDef
+  { cdCardCode = "50108b"
+  , cdName = "Strong Inhuman"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Inhuman, AospTrait.Rescued]
+  , cdKeywords = fromList [AospKeyword.Toughness]
+  , cdCardType = AospCard.AllyType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.AosModok
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
   }

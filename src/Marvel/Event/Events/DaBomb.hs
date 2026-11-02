@@ -36,7 +36,7 @@ instance RunMessage DaBomb where
       amount <- getEncounterIconCount
       enemies <- selectList AnyEnemy
       heroes <- selectList HeroIdentity
-      let enemyCharacters = map (\case EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid) enemies
+      let enemyCharacters = map (\case EnemyVillainId vid -> VillainCharacter vid; EnemyMinionId mid -> MinionCharacter mid; EnemyAttachmentId aid -> AttachmentCharacter aid) enemies
       damageCharacters attrs (toDamage amount FromAbility) (enemyCharacters <> map IdentityCharacter heroes)
       pure e
     _ -> DaBomb <$> runMessage msg attrs

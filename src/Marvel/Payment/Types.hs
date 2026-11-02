@@ -37,6 +37,7 @@ data Payment
   | -- | a contributor chooses the type of their own wild resource
     ContributedWildPayment IdentityId Resource
   | ResourcePaymentFromCard ExtendedCardMatcher
+  | ResourcePaymentFromPlayerCard PlayerCard
   | DiscardHandCardPayment Card
   | -- | A physical card spent to generate resources, separate from discard costs.
     SpentCardPayment PlayerCard
@@ -143,6 +144,16 @@ paymentDiscards p = [c | DiscardHandCardPayment c <- payments p]
 
 paymentSpentCards :: Payment -> [PlayerCard]
 paymentSpentCards p = [c | SpentCardPayment c <- payments p]
+
+-- A resource ability records its activator before its receipt. Retain that
+-- spender independently of the physical card's owner/controller (as-if-in-hand).
+paymentSpentCardsWithPayers :: IdentityId -> Payment -> [(IdentityId, PlayerCard)]
+paymentSpentCardsWithPayers fallback = go fallback . payments
+ where
+  go _ [] = []
+  go _ (GeneratedByPayment who : rest) = go who rest
+  go who (SpentCardPayment card : rest) = (who, card) : go who rest
+  go who (_ : rest) = go who rest
 
 -- | The encounter cards discarded from the top of the deck to pay.
 paymentEncounterDiscards :: Payment -> [Card]

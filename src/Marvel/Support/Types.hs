@@ -55,6 +55,7 @@ instance Entity Support where
     , supportExhausted :: Bool
     , supportUses :: Natural
     , supportDiscardIfNoUses :: Bool
+    , supportHeldEncounterCards :: [EncounterCard]
     , supportHeldCards :: [PlayerCard]
     -- ^ cards attached here facedown
     , supportCanPlayHeldEvents :: Bool
@@ -71,6 +72,7 @@ instance Entity Support where
     SupportExhausted :: Field Support Bool
     SupportUses :: Field Support Natural
     SupportDiscardIfNoUses :: Field Support Bool
+    SupportHeldEncounterCards :: Field Support [EncounterCard]
     SupportHeldCards :: Field Support [PlayerCard]
   field fld s =
     let SupportAttrs {..} = toAttrs s
@@ -81,12 +83,15 @@ instance Entity Support where
           SupportExhausted -> supportExhausted
           SupportUses -> supportUses
           SupportDiscardIfNoUses -> supportDiscardIfNoUses
+          SupportHeldEncounterCards -> supportHeldEncounterCards
           SupportHeldCards -> supportHeldCards
   toId = supportId . toAttrs
   toAttrs (Support a) = toSupportAttrs a
 
 instance FromJSON (Attrs Support) where
-  parseJSON = withObject "SupportAttrs" $ \o ->
+  parseJSON = withObject "SupportAttrs" $ \original ->
+    let o = KeyMap.insertWith (\_ old -> old) "supportHeldEncounterCards" (toJSON ([] :: [EncounterCard])) original
+     in
     genericParseJSON defaultOptions $ Object $
       if KeyMap.member "supportCanPlayHeldEvents" o then o
       else KeyMap.insert "supportCanPlayHeldEvents" (Bool False) o
@@ -167,6 +172,7 @@ support f cardDef =
             , supportExhausted = False
             , supportUses = 0
             , supportDiscardIfNoUses = False
+            , supportHeldEncounterCards = []
             , supportHeldCards = []
             , supportCanPlayHeldEvents = False
             , supportThreat = 0
@@ -178,6 +184,15 @@ instance IsRef (Attrs Support) where
 
 instance RunMessage (Attrs Support) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "movedThreatToSupport" (fromJSON -> Success amount) -> pure a {supportThreat = supportThreat a + amount}
+    CardSpecific (isTarget a -> True) "holdEncounterCard" (fromJSON -> Success card) -> pure a {supportHeldEncounterCards = supportHeldEncounterCards a <> [card]}
+    CardSpecific (isTarget a -> True) "releaseEncounterCard" (fromJSON -> Success card) -> pure a {supportHeldEncounterCards = filter (/= card) (supportHeldEncounterCards a)}
+    RemoveFromPlay target | isTarget a target -> do
+      traverse_ discardCard (supportHeldEncounterCards a)
+      pure a {supportHeldEncounterCards = []}
+    RemoveFromGame target | isTarget a target -> do
+      traverse_ discardCard (supportHeldEncounterCards a)
+      pure a {supportHeldEncounterCards = []}
     CardSpecific (isTarget a -> True) "holdFacedownCard" (fromJSON -> Success card) ->
       pure a {supportCanPlayHeldEvents = False, supportHeldCards = supportHeldCards a <> [card]}
     CardSpecific (isTarget a -> True) "releaseHeldCard" (fromJSON -> Success card) ->
@@ -199,6 +214,7 @@ instance RunMessage (Attrs Support) where
       first <- selectOne FirstPlayer
       for_ first $ \new -> when (new /= supportController a) $ supportStep (supportId a) (SupportChangedController new)
       pure a
+    PlaceCounters target n | target == toRef a -> pure $ a & usesL +~ n
     RemoveCounters target n | target == toRef a -> do
       when (supportUses a > 0 && n >= supportUses a && supportDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n

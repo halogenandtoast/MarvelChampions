@@ -1,5 +1,23 @@
 module Marvel.Event.Cards where
 
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility
+import Marvel.Aspect qualified as AospAspect
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet ()
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource
+import Marvel.Trait qualified as AospTrait
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -143,7 +161,10 @@ import Marvel.Window
 allEvents :: HashMap CardCode CardDef
 allEvents = fromList $ concatMap
   toCardCodePairs
-  [ nc48007, nc48008, nc48009, nc48010, nc48011, nc48016, nc48018, nc48031, nc48032
+  [ FalconWinter.fw53003, FalconWinter.fw53004, FalconWinter.fw53005, FalconWinter.fw53019, FalconWinter.fw54004, FalconWinter.fw54005, FalconWinter.fw54006, FalconWinter.fw54014, FalconWinter.fw54016, FalconWinter.fw54022, FalconWinter.fw54023
+  , aosP50003, aosP50004, aosP50005, aosP50006, aosP50024, aosP50037, aosP50038, aosP50039
+  , BlackPantherShuriPack.clawedStrikeShuri, BlackPantherShuriPack.ontheProwlShuri, BlackPantherShuriPack.wakandaForeverShuri, BlackPantherShuriPack.infiltrationShuri, BlackPantherShuriPack.heartofthePantherShuri, SilkPack.smoothasSilkSilk, SilkPack.swingingSilkKickSilk, SilkPack.wallcrawlSilk, SilkPack.stopHittingYourselfSilk, SilkPack.investigativeJournalismSilk, SilkPack.quickQuipSilk
+  , nc48007, nc48008, nc48009, nc48010, nc48011, nc48016, nc48018, nc48031, nc48032
   , Jubilee.jubilee47006, Jubilee.jubilee47007a, Jubilee.jubilee47007b, Jubilee.jubilee47007c, Jubilee.jubilee47008a, Jubilee.jubilee47008b, Jubilee.jubilee47008c, Jubilee.jubilee47009, Jubilee.jubilee47014, Jubilee.jubilee47015, Jubilee.jubilee47021, Jubilee.jubilee47022, Jubilee.jubilee47028, Jubilee.jubilee47029
   , arcticAttack
   , iceBlast
@@ -2294,7 +2315,7 @@ whatDoesntKillMe = (event "27016" "What Doesn't Kill Me" 2 HeroAction [] [Physic
     }
 
 acrossTheSpiderVerse :: CardDef
-acrossTheSpiderVerse = (basicEvent "27018" "Across the Spider-Verse" 2 HeroAction [] [Wild])
+acrossTheSpiderVerse = reprintedAs ["52023"] $ (basicEvent "27018" "Across the Spider-Verse" 2 HeroAction [] [Wild])
     { cdDeckLimit = Just 1
     , cdAbilityCost = ExhaustCardsWithTraitCost WebWarrior 1 1
     , cdCriteria = ExtendedCardExists (InDiscardOf You (BasicCardMatches (CardWithType AllyType <> CardWithTrait WebWarrior)))
@@ -2343,7 +2364,7 @@ homelandIntervention = (event "27042" "Homeland Intervention" 0 Action [Shield, 
     }
 
 globalLogistics :: CardDef
-globalLogistics = (event "27043" "Global Logistics" 0 Action [Shield, Tactic] [Physical] Justice)
+globalLogistics = reprintedAs ["50049"] $ (event "27043" "Global Logistics" 0 Action [Shield, Tactic] [Physical] Justice)
     { cdDeckLimit = Just 3
     , cdAbilityCost = ExhaustCardsWithTraitCost Shield 1 1
     }
@@ -2395,7 +2416,7 @@ noQuarter = (event "28013" "No Quarter" 2 HeroAction [Attack] [Mental] Aggressio
   }
 
 oneByOne :: CardDef
-oneByOne = (event "28014" "One by One" 1 HeroAction [Attack] [Energy] Aggression)
+oneByOne = reprintedAs ["54015"] $ (event "28014" "One by One" 1 HeroAction [Attack] [Energy] Aggression)
   { cdAbilitySubTypes = [Ability.Attack]
   , cdCriteria = canAttack
   , cdDeckLimit = Just 3
@@ -2814,7 +2835,7 @@ superpowerAdaptation :: CardDef
 superpowerAdaptation = (identityEvent "38009" "Superpower Adaptation" 0 HeroAction [Superpower] [Mental]) { cdDeckLimit = Just 3 }
 
 notToday :: CardDef
-notToday = (event "38016" "Not Today!" 1 HeroInterrupt [Defense] [Mental] Protection) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (HeroDefended When You AnyEnemy) }
+notToday = reprintedAs ["52015"] $ (event "38016" "Not Today!" 1 HeroInterrupt [Defense] [Mental] Protection) { cdDeckLimit = Just 3, cdAbilitySubTypes = [Ability.Defense], cdResponseWindow = Just (HeroDefended When You AnyEnemy) }
 
 -- NeXt Evolution: Cable
 
@@ -5039,4 +5060,270 @@ nc48032 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Agents of Shield players
+
+aosP50003 :: CardDef
+aosP50003 = CardDef
+  { cdCardCode = "50003"
+  , cdName = "All-Points Bulletin"
+  , cdCost = Just 2
+  , cdTraits = fromList [AospTrait.Tactic]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.SupportExists (AospMatch.SupportMatches [AospMatch.SupportWithTrait AospTrait.Shield,AospMatch.SupportControlledBy AospMatch.You])
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50004 :: CardDef
+aosP50004 = CardDef
+  { cdCardCode = "50004"
+  , cdName = "On the Double"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.SupportExists (AospMatch.SupportMatches [AospMatch.SupportWithTrait AospTrait.Shield,AospMatch.SupportControlledBy AospMatch.You,AospMatch.SupportWithExhaustion True])
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50005 :: CardDef
+aosP50005 = CardDef
+  { cdCardCode = "50005"
+  , cdName = "Reinforcements"
+  , cdCost = Just 1
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.Action
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.SupportExists (AospMatch.SupportMatches [AospMatch.SupportWithTrait AospTrait.Shield,AospMatch.SupportControlledBy AospMatch.You])
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50006 :: CardDef
+aosP50006 = CardDef
+  { cdCardCode = "50006"
+  , cdName = "The Hard Call"
+  , cdCost = Just 2
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.DiscardControlledCardCost (AospCard.CardWithType AospCard.SupportType <> AospCard.CardWithTrait AospTrait.Shield)
+  }
+
+aosP50024 :: CardDef
+aosP50024 = CardDef
+  { cdCardCode = "50024"
+  , cdName = "Super Spies"
+  , cdCost = Just 0
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Wild)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Just ("Maria Hill", "Nick Fury")
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50037 :: CardDef
+aosP50037 = CardDef
+  { cdCardCode = "50037"
+  , cdName = "Concentrated Fire"
+  , cdCost = Just 2
+  , cdTraits = fromList [AospTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = [AospAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = canAttack
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50038 :: CardDef
+aosP50038 = CardDef
+  { cdCardCode = "50038"
+  , cdName = "Covert Surveillance"
+  , cdCost = Just 1
+  , cdTraits = fromList [AospTrait.Thwart]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = [AospAbility.Thwart]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.SchemeExists AospMatch.ThwartableScheme
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50039 :: CardDef
+aosP50039 = CardDef
+  { cdCardCode = "50039"
+  , cdName = "Spray Fire"
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Attack]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EventType
+  , cdAbilityType = Just AospAbility.HeroAction
+  , cdAbilitySubTypes = [AospAbility.Attack]
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = canAttack
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
   }

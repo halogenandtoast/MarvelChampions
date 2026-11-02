@@ -7,6 +7,7 @@ import Marvel.Id
 
 data Damage = Damage
   { damageAmount :: Natural
+  , damageDealtAmount :: Maybe Natural
   , damagePrevention :: Natural
   -- ^ prevention applied after incoming enemy damage modifiers and caps
   , damageIndirect :: Bool
@@ -24,6 +25,7 @@ data Damage = Damage
 
 instance FromJSON Damage where
   parseJSON = withObject "Damage" $ \o -> genericParseJSON defaultOptions $ Object $
+    KeyMap.insertWith (\_ existing -> existing) "damageDealtAmount" Null $
     KeyMap.insertWith (\_ existing -> existing) "damagePrevention" (toJSON (0 :: Natural)) $
     KeyMap.insertWith (\_ existing -> existing) "damageIndirect" (Bool False) o
 
@@ -44,6 +46,7 @@ toDamage :: Natural -> DamageSource -> Damage
 toDamage n source =
   Damage
     { damageAmount = n
+    , damageDealtAmount = Nothing
     , damagePrevention = 0
     , damageIndirect = False
     , damageOverkill = False

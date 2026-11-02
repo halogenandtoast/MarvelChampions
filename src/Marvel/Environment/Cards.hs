@@ -1,5 +1,20 @@
 module Marvel.Environment.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait ()
+import Marvel.Window.Types qualified as AospWindow ()
+
 
 
 import Marvel.Hood.Cards (hoodCardDef)
@@ -61,7 +76,9 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
+  [ aos50090a, aos50090b, aos50105a, aos50106a, aos50107a, aos50108a, aos50109, aos50110, aos50111, aos50112, aos50131a, aos50131b, aos50181a, aos50182a, aos50183a
+  , aosP50032
+  , pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon
   , hood24049, hood24049b, hood24049a, hood24060, hood24061, hood24062, hood24063
       , ne40081a, ne40081b, ne40190b, ne40191b, ne40192b, ne40193b, ne40194b, ne40195b
   , mojo39003a, mojo39003b, mojo39004a, mojo39004b, mojo39026a, mojo39026b, mojo39035, mojo39041, mojo39047, mojo39053, mojo39060, mojo39066
@@ -1145,3 +1162,83 @@ blueAreaOfTheMoon = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+-- Agents of Shield players
+
+aosP50032 :: CardDef
+aosP50032 = CardDef
+  { cdCardCode = "50032"
+  , cdName = "Controlled Innocents"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.EnvironmentType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Just AospSet.MariaHillNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aos50090a :: CardDef
+aos50090a = AosEncounter.aos50090a
+
+aos50090b :: CardDef
+aos50090b = AosEncounter.aos50090b
+
+aos50105a :: CardDef
+aos50105a = AosEncounter.aos50105a
+
+aos50106a :: CardDef
+aos50106a = AosEncounter.aos50106a
+
+aos50107a :: CardDef
+aos50107a = AosEncounter.aos50107a
+
+aos50108a :: CardDef
+aos50108a = AosEncounter.aos50108a
+
+aos50109 :: CardDef
+aos50109 = AosEncounter.aos50109
+
+aos50110 :: CardDef
+aos50110 = AosEncounter.aos50110
+
+aos50111 :: CardDef
+aos50111 = AosEncounter.aos50111
+
+aos50112 :: CardDef
+aos50112 = AosEncounter.aos50112
+
+aos50131a :: CardDef
+aos50131a = AosEncounter.aos50131a
+
+aos50131b :: CardDef
+aos50131b = AosEncounter.aos50131b
+
+aos50181a :: CardDef
+aos50181a = AosEncounter.aos50181a
+
+aos50182a :: CardDef
+aos50182a = AosEncounter.aos50182a
+
+aos50183a :: CardDef
+aos50183a = AosEncounter.aos50183a

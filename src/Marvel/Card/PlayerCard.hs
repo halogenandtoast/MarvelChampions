@@ -20,6 +20,9 @@ import Marvel.Id (CharacterId (IdentityCharacter))
 instance HasResources PlayerCard where
   resourcesFor x mc
     | Just x == mc = pure []
+    | canonicalCardCode (getCardDef x) == "50014" = do
+        more <- maybe (pure []) organizationalSupportPotential (pcController x <|> pcOwner x)
+        pure $ printedResources (getCardDef x) <> more
     | otherwise = do
         modifiers <- getModifiers x
         holder <- getSourceController (toSource x)

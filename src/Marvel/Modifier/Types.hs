@@ -4,7 +4,7 @@ import Marvel.Prelude
 import Marvel.Ref (Target)
 
 import Marvel.Card.Id (CardId)
-import Marvel.Id (EnemyId, CharacterId)
+import Marvel.Id (EnemyId, CharacterId, AttachmentId)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
 import Marvel.Cost.Types (Cost)
@@ -14,7 +14,10 @@ import Marvel.Keyword
 import Marvel.Trait.Types
 
 data Modifier
-  = OnlyIdentityCanDefend IdentityId
+  = PaidWithCyberneticArm
+  | AllyBasicPowerAdditionalCost Cost
+  | AttackDamageReductionUnlessAerialOrRanged Natural
+  | OnlyIdentityCanDefend IdentityId
   | QuickstrikeWhenEngaging IdentityId
   | IgnoreBoostCards
   | MinionAttackConsequentialDamageReduction Natural
@@ -59,6 +62,7 @@ data Modifier
   | SideSchemeThwartConsequentialReduction Natural
   | NoThwartConsequentialDamage
   | PlayTopOfDeckAsHand
+  | DefendWithoutExhausting
   | CanLookAtTopOfEncounterDeck
   | PrintedResourcesAs Resource
   | DividesBasicAttackEvenly
@@ -77,6 +81,7 @@ data Modifier
   | DefenseModifierAgainst EnemyId Natural
   | AttacksCannotBeDefended
   | ReplaceHeroAttackWithDiscardAndStun Target
+  | OnlyAttackAttachment AttachmentId
   | CannotAttackEnemy EnemyId
   | CannotAttackVillain
   | CannotThwartScheme SchemeId
@@ -104,6 +109,7 @@ data Modifier
   | -- | prevents all attacks/defenses, including labeled abilities (Intangible)
     CannotAttack
   | CannotActivate
+  | CannotBasicDefend
   | CannotDefend
   | -- | reduce each instance of consequential damage, to a minimum of zero
     ConsequentialDamageReduction Natural
@@ -166,6 +172,7 @@ data Modifier
     ThreatCannotBeRemoved
   | -- | a scheme threat cannot be removed from by thwarting (Held Hostage)
     ThreatCannotBeRemovedByThwarting
+  | RemovedThreatPlacedOnMinion
   | ThreatCannotBeRemovedByHeroOrAlly
   | -- | an identity that stays exhausted when it would ready
     CannotReady

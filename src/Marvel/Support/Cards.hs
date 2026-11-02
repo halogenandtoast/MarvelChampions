@@ -1,5 +1,23 @@
 module Marvel.Support.Cards where
 
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet ()
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource
+import Marvel.Trait qualified as AospTrait
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -150,7 +168,10 @@ import Marvel.Matchers
 allSupports :: HashMap CardCode CardDef
 allSupports = fromList $ concatMap
   toCardCodePairs
-  [ nc48003
+  [ FalconWinter.fw53006, FalconWinter.fw53007, FalconWinter.fw53020, FalconWinter.fw53021, FalconWinter.fw53037, FalconWinter.fw54007
+  , aosP50008, aosP50009, aosP50015, aosP50017, aosP50018, aosP50019, aosP50020, aosP50028, aosP50040, aosP50041, aosP50055, aosP50056
+  , BlackPantherShuriPack.theElephantsTrunkShuri, BlackPantherShuriPack.queenRamondaShuri, BlackPantherShuriPack.theRaftShuri, BlackPantherShuriPack.doraMilajeShuri, BlackPantherShuriPack.targetSpotterShuri, SilkPack.albertMoonSilk, SilkPack.jJonahJamesonSilk, SilkPack.drSinclairSilk
+  , nc48003
   , iceWall
   , asteroidM, wontStayDown, childrenOfTheAtom
   , missionTeamFront, missionTeamFinished
@@ -372,7 +393,7 @@ surveillanceTeam = reprintedAs ["27045", "08016"] $
   support "01064" "Surveillance Team" 2 [Shield] [Mental] Justice
 
 theTriskellion :: CardDef
-theTriskellion = unique
+theTriskellion = reprintedAs ["53022"] $ unique
   $ support "01073" "The Triskelion" 1 [Location, Shield] [Energy] Leadership
 
 medTeam :: CardDef
@@ -551,7 +572,7 @@ munitionsBunker :: CardDef
 munitionsBunker = deckLimited 1 $ identitySupport "23003" "Munitions Bunker" 2 [Location, Shield] [Physical]
 
 commandTeam :: CardDef
-commandTeam = deckLimited 3 $ support "23016" "Command Team" 2 [Shield] [Energy] Leadership
+commandTeam = reprintedAs ["50016"] $ deckLimited 3 $ support "23016" "Command Team" 2 [Shield] [Energy] Leadership
 
 vigilanteTraining :: CardDef
 vigilanteTraining = deckLimited 2 $ support "23033" "Vigilante Training" 1 [Condition] [Mental] Justice
@@ -620,7 +641,7 @@ governmentLiaison = (basicSupport "27054" "Government Liaison" 2 [Shield, Person
     }
 
 skyDestroyer :: CardDef
-skyDestroyer = (basicSupport "27055" "Sky-Destroyer" 3 [Shield, Vehicle] [Energy])
+skyDestroyer = reprintedAs ["50057"] $ (basicSupport "27055" "Sky-Destroyer" 3 [Shield, Vehicle] [Energy])
     { cdUnique = True
     , cdDeckLimit = Just 1
     }
@@ -1407,4 +1428,402 @@ nc48003 = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Agents of Shield players
+
+aosP50008 :: CardDef
+aosP50008 = CardDef
+  { cdCardCode = "50008"
+  , cdName = "Support Staff"
+  , cdCost = Just 1
+  , cdTraits = fromList [AospTrait.Persona, AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50009 :: CardDef
+aosP50009 = CardDef
+  { cdCardCode = "50009"
+  , cdName = "The Iliad"
+  , cdCost = Just 6
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50015 :: CardDef
+aosP50015 = CardDef
+  { cdCardCode = "50015"
+  , cdName = "Agents of S.H.I.E.L.D."
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Team]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AospAspect.Leadership
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MaxTraitPerPlayerUnderAnyControl AospTrait.Team 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50017 :: CardDef
+aosP50017 = CardDef
+  { cdCardCode = "50017"
+  , cdName = "The Circe"
+  , cdCost = Just 6
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Leadership
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50018 :: CardDef
+aosP50018 = CardDef
+  { cdCardCode = "50018"
+  , cdName = "The Bellerophon"
+  , cdCost = Just 6
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Aggression
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50019 :: CardDef
+aosP50019 = CardDef
+  { cdCardCode = "50019"
+  , cdName = "The Douglass"
+  , cdCost = Just 6
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Justice
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50020 :: CardDef
+aosP50020 = CardDef
+  { cdCardCode = "50020"
+  , cdName = "The Pericles"
+  , cdCost = Just 6
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Protection
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50028 :: CardDef
+aosP50028 = CardDef
+  { cdCardCode = "50028"
+  , cdName = "Front Organization"
+  , cdCost = Just 0
+  , cdTraits = fromList [AospTrait.Location]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Just (MaxPerPlayerUnderAnyControl 1)
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50040 :: CardDef
+aosP50040 = CardDef
+  { cdCardCode = "50040"
+  , cdName = "Fury's Flying Car"
+  , cdCost = Just 2
+  , cdTraits = fromList [AospTrait.Aerial, AospTrait.Tech, AospTrait.Vehicle]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Energy)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50041 :: CardDef
+aosP50041 = CardDef
+  { cdCardCode = "50041"
+  , cdName = "Safe House #221"
+  , cdCost = Just 1
+  , cdTraits = fromList [AospTrait.Location, AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50055 :: CardDef
+aosP50055 = CardDef
+  { cdCardCode = "50055"
+  , cdName = "Jemma Simmons"
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Persona, AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50056 :: CardDef
+aosP50056 = CardDef
+  { cdCardCode = "50056"
+  , cdName = "Leo Fitz"
+  , cdCost = Just 3
+  , cdTraits = fromList [AospTrait.Persona, AospTrait.Shield]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SupportType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Just AospAspect.Neutral
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
   }

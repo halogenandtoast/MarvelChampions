@@ -321,6 +321,7 @@ runScenarioMessage msg attrs = case msg of
     | scenarioId attrs == "39012a", MojoTrait.Show `member` cdTraits (getCardDef ec) -> do
         let key = NamedDeckKey "mojoShow"
         pure $ leaves ec attrs & pileL key %~ \(Pile d x) -> Pile (d <> [ec]) x
+  CardSpecific GameRef "removeEncounterCardFromPiles" (fromJSON -> Success (ec :: EncounterCard)) -> pure $ leaves ec attrs
   DiscardedCard (EncounterCard ec) -> do
     let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
     pure $
@@ -467,6 +468,10 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       beginPhase PlayerPhase
       pure attrs
     DealEncounterCard ident -> do
+      checkWindows [W.Window W.Would $ W.EncounterCardBeingDealt ident]
+      fromDeck key $ cardSpecific GameRef "fwActuallyDealEncounterCard" ident
+      pure attrs
+    CardSpecific GameRef "fwActuallyDealEncounterCard" (fromJSON -> Success ident) -> do
       (ecs, attrs') <- drawEncounterCard attrs
       for_ ecs (identityStep ident . DealtEncounterCard)
       pure attrs'

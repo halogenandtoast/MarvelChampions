@@ -3,7 +3,23 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = BooingCrowd
+  = Rescued
+  | Aim
+  | Adaptoid
+  | DoraMilaje
+  | Redeemed
+  | Therapist
+  | Thunderbolt
+  | AgentOfAtlas
+  | SerpentSociety
+  | BoardMember
+  | Leviathan
+  | AIM
+  | Low
+  | High
+  | Unmasked
+  | BatrocsBrigade
+  | BooingCrowd
   | Dimension
   | Tracker
   | Prelate

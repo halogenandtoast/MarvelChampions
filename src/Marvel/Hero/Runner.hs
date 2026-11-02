@@ -9,7 +9,7 @@ import Marvel.Prelude
 
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Cost.Types
-import Marvel.Card.Def ()
+import Marvel.Card.Def (CardDef (cdCardCode))
 import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Entity
@@ -78,6 +78,18 @@ instance RunMessage Hero where
 
 instance RunMessage (Attrs Hero) where
   runMessage msg a = runQueueT $ case msg of
+    CardSpecific (isTarget a -> True) "basicThwartAgainst" (fromJSON -> Success (scheme, bonus :: Natural, thwOnly :: Natural)) -> do
+      let ident = heroIdentityId a
+      active <- getsGame (`abilityCardDef` IdentityRef ident)
+      when (fmap cdCardCode active == Just (cdCardCode $ heroCardDef a)) do
+        thw <- (+ (bonus + thwOnly)) <$> getCharacterThwartAgainstScheme (IdentityCharacter ident) scheme
+        atk <- (+ bonus) <$> getModifiedAttack a
+        withAttack <- elem ThwartWithAttack <$> getModifiers (schemeTarget scheme)
+        assault <- schemeHasKeyword scheme Assault
+        if assault then basicThwartOf scheme a atk else if withAttack && atk /= thw
+          then chooseOne ident [labeled "$label.thwartWithThw" (basicThwartOf scheme a thw), labeled "$label.thwartWithAtk" (basicThwartOf scheme a atk)]
+          else basicThwartOf scheme a thw
+      pure a
     IdentityMessage ident (SideMessage msg') | ident == heroIdentityId a ->
       case msg' of
         -- the interrupts to making a basic attack or thwart come first: what they add to
@@ -133,18 +145,10 @@ instance RunMessage (Attrs Hero) where
           thw <- (+ bonus) <$> getModifiedThwart a
           atk <- (+ bonus) <$> getModifiedAttack a
           -- a scheme thwarted with ATK instead of THW, as The Red House allows
-          choices <- for schemes \scheme -> do
-            thw <- (+ bonus) <$> getCharacterThwartAgainstScheme (IdentityCharacter ident) scheme
-            withAttack <- elem ThwartWithAttack <$> getModifiers (schemeTarget scheme)
-            assault <- schemeHasKeyword scheme Assault
-            pure $ targeting (schemeTarget scheme) $
-              if assault then basicThwartOf scheme a atk else if withAttack && atk /= thw
-                then
-                  chooseOne ident
-                    [ labeled "$label.thwartWithThw" (basicThwartOf scheme a thw)
-                    , labeled "$label.thwartWithAtk" (basicThwartOf scheme a atk)
-                    ]
-                else basicThwartOf scheme a thw
+          let choices = [targeting (schemeTarget scheme) $ do
+                checkWindows [W.Window W.When $ W.MadeBasicThwartAgainst ident scheme]
+                cardSpecific a "basicThwartAgainst" (scheme, bonus, 0 :: Natural)
+                | scheme <- schemes]
           -- threat that may be divided among schemes, each of them thwarted
           divides <- elem DividesBasicThwart <$> getModifiers a
           let divided = [labeled "$label.divideThreat" (basicThwartDivided ident a thw atk) | divides, length schemes > 1]
@@ -154,7 +158,8 @@ instance RunMessage (Attrs Hero) where
         Defended enemy -> do
           forbidden <- any (\case OnlyIdentityCanDefend who -> who /= ident; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemy)
           unless forbidden do
-            exhaust ident
+            free <- elem DefendWithoutExhausting <$> getModifiers (IdentityRef ident)
+            unless free $ exhaust ident
             enemyDefendedBy enemy (IdentityCharacter ident)
             checkWindows [W.Window W.When $ W.HeroDefends ident enemy, W.Window W.When $ W.MadeBasicDefense ident enemy]
             defenseApplied ident enemy

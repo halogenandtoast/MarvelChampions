@@ -4,6 +4,7 @@ module Marvel.Villain.Cards where
 
 
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost ()
@@ -50,7 +51,8 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards =
-  [ unus1, unus2, unus3, warA, warB, famineA, famineB, pestilenceA, pestilenceB, deathA, deathB, apocalypse1, apocalypse2, apocalypse3, apocalypse4, darkBeast1, darkBeast2, darkBeast3, enSabahNurBiomorph1, enSabahNurCyberpath1, enSabahNurGiant1, enSabahNurBiomorph2, enSabahNurCyberpath2, enSabahNurGiant2, enSabahNurBiomorph3, enSabahNurCyberpath3, enSabahNurGiant3
+  [ aos50064, aos50065, aos50066, aos50086a, aos50086b, aos50103a, aos50103b, aos50129a, aos50129b, aos50165a, aos50165b, aos50166a, aos50166b
+  , unus1, unus2, unus3, warA, warB, famineA, famineB, pestilenceA, pestilenceB, deathA, deathB, apocalypse1, apocalypse2, apocalypse3, apocalypse4, darkBeast1, darkBeast2, darkBeast3, enSabahNurBiomorph1, enSabahNurCyberpath1, enSabahNurGiant1, enSabahNurBiomorph2, enSabahNurCyberpath2, enSabahNurGiant2, enSabahNurBiomorph3, enSabahNurCyberpath3, enSabahNurGiant3
   , ne40070a, ne40070b, ne40071a, ne40071b, ne40072a, ne40072b, ne40073a, ne40073b, ne40074a, ne40074b, ne40075a, ne40075b, ne40076a, ne40076b, ne40118, ne40119, ne40120, ne40136, ne40137, ne40138, ne40163, ne40164, ne40165
   , mojo39001a, mojo39001b, mojo39012a, mojo39012b, mojo39013a, mojo39013b, mojo39014a, mojo39014b, mojo39022, mojo39023, mojo39024
   , mgSabretooth60, mgSabretooth61, mgSabretooth62, mgSentinel84, mgSentinel85, mgSentinel86, mgMasterMold09, mgMasterMold10, mgMasterMold11, mgAvalancheA, mgAvalancheB, mgBlobA, mgBlobB, mgPyroA, mgPyroB, mgToadA, mgToadB, mgMagneto38, mgMagneto39, mgMagneto40, smSandman1, smSandman2, smSandman3, smVenom1, smVenom2, smVenom3, smMysterio1, smMysterio2, smMysterio3, smDoctorOctopus1, smElectro1, smHobgoblin1, smKravenTheHunter1, smScorpion1, smVulture1, smVenomGoblin1, smVenomGoblin2, smVenomGoblin3
@@ -2714,3 +2716,42 @@ enSabahNurGiant3 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+aos50064 :: CardDef
+aos50064 = AosEncounter.aos50064
+
+aos50065 :: CardDef
+aos50065 = AosEncounter.aos50065
+
+aos50066 :: CardDef
+aos50066 = AosEncounter.aos50066
+
+aos50086a :: CardDef
+aos50086a = AosEncounter.aos50086a
+
+aos50086b :: CardDef
+aos50086b = AosEncounter.aos50086b
+
+aos50103a :: CardDef
+aos50103a = AosEncounter.aos50103a
+
+aos50103b :: CardDef
+aos50103b = AosEncounter.aos50103b
+
+aos50129a :: CardDef
+aos50129a = AosEncounter.aos50129a
+
+aos50129b :: CardDef
+aos50129b = AosEncounter.aos50129b
+
+aos50165a :: CardDef
+aos50165a = AosEncounter.aos50165a
+
+aos50165b :: CardDef
+aos50165b = AosEncounter.aos50165b
+
+aos50166a :: CardDef
+aos50166a = AosEncounter.aos50166a
+
+aos50166b :: CardDef
+aos50166b = AosEncounter.aos50166b

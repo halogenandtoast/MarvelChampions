@@ -90,6 +90,7 @@ deckBuildingError d
   | not (aspectsBalanced d) = Just "error.unbalancedAspects"
   | toBaseCardCode d.hero == CardCode "21031" && not avatarOfLife = Just "error.avatarOfLife"
   | toBaseCardCode d.hero == CardCode "33001" && not cyclopsAspects = Just "error.cyclopsAspects"
+  | toBaseCardCode d.hero == CardCode "50001" && not mariaAspects = Just "error.mariaHillSupports"
   | toBaseCardCode d.hero == CardCode "40001" && not cableAspects = Just "error.cableAspects"
   | not withinCopyLimits = Just "error.deckCopyLimit"
   | not teamUpIdentity = Just "error.teamUpIdentity"
@@ -106,6 +107,14 @@ deckBuildingError d
   cableAspects = case map T.toLower d.aspects of
     [] -> length (nub [a | def <- includedDefs, cdCardType def /= PlayerSideSchemeType, Just a <- [cdAspect def], a /= Neutral]) <= 1
     [chosen] -> all (\def -> cdCardType def == PlayerSideSchemeType || case cdAspect def of Nothing -> True; Just Neutral -> True; Just aspect -> T.toLower (tshow aspect) == chosen) includedDefs
+    _ -> False
+  mariaAspects = case map T.toLower d.aspects of
+    [chosen] ->
+      let off = [(def,n) | (def,n) <- defs, n > 0, Just aspect <- [cdAspect def], aspect /= Neutral, T.toLower (tshow aspect) /= chosen]
+          grouped = HashMap.fromListWith (+) [(canonicalCardCode def,n) | (def,n) <- off]
+          allowed (def,_) = cdCardType def == SupportType && Trait.Shield `member` cdTraits def
+          full (def,_) = HashMap.lookup (canonicalCardCode def) grouped == Just (fromIntegral $ fromMaybe (if cdUnique def then 1 else 3) $ cdDeckLimit def)
+       in null off || (length (nub [title $ cdName def | (def,_) <- off]) == 3 && all allowed off && all full off)
     _ -> False
   includedDefs = [def | (def, n) <- defs, n > 0]
   cyclopsCardAllowed chosen def = case cdAspect def of
@@ -259,7 +268,13 @@ lists them (decklists 1 to 5), and the hero packs' decks.
 -}
 starterDecks :: [(Text, DeckList)]
 starterDecks =
-  [ ("jubilee", DeckList "47001a" ["justice"] $ tally ["47002", "47003", "47004", "47005", "47006", "47007a", "47007b", "47007c", "47008a", "47008b", "47008c", "47009", "47010a", "47010b", "47010c", "47011", "47012", "47013", "47013", "47013", "47014", "47014", "47014", "47015", "47015", "47015", "47016", "47017", "47017", "47018", "47019", "47019", "47019", "47020", "47020", "47020", "47021", "47021", "47021", "47022"])
+  [ ("winter-soldier", DeckList "54001a" ["aggression"] $ tally ["54002", "54003", "54004", "54004", "54005", "54005", "54005", "54006", "54006", "54007", "54008", "54008", "54009", "54010", "54011", "54012", "54013", "54014", "54014", "54014", "54015", "54015", "54015", "54016", "54016", "54016", "54017", "54017", "54017", "54018", "54019", "54020", "54020", "54020", "54021", "54022", "54023", "54024", "54025", "54026"])
+  , ("falcon", DeckList "53001a" ["leadership"] $ tally ["53002", "53003", "53003", "53004", "53004", "53005", "53005", "53006", "53007", "53008", "53009", "53010", "53011", "53012", "53013", "53014", "53015", "53016", "53017", "53018", "53019", "53019", "53019", "53020", "53020", "53020", "53021", "53021", "53021", "53022", "53023", "53024", "53024", "53024", "53025", "53026", "53027", "53028", "53028", "53028"])
+  , ("silk", DeckList "52001a" ["protection"] $ tally ["52002", "52002", "52003", "52003", "52003", "52004", "52004", "52005", "52006", "52007", "52008", "52009", "52010", "52011", "52012", "52013", "52014", "52015", "52015", "52015", "52016", "52016", "52016", "52017", "52018", "52018", "52018", "52019", "52019", "52019", "52020", "52020", "52020", "52021", "52022", "52023", "52024", "52025", "52026", "52027"])
+  , ("black-panther-shuri", DeckList "51001a" ["justice"] $ tally ["51002", "51003", "51003", "51004", "51004", "51005", "51006", "51006", "51007", "51008", "51009", "51010", "51011", "51012", "51013", "51014", "51015", "51015", "51015", "51016", "51017", "51018", "51019", "51019", "51019", "51020", "51020", "51020", "51021", "51021", "51021", "51022", "51023", "51024", "51025", "51026", "51027", "51028", "51029", "51030"])
+  , ("nick-fury", DeckList "50034a" ["justice"] $ tally ["50035a", "50036", "50037", "50037", "50038", "50038", "50038", "50039", "50039", "50040", "50041", "50042", "50043", "50044", "50045", "50046", "50047", "50048", "50049", "50049", "50049", "50050", "50050", "50050", "50051", "50051", "50051", "50052", "50052", "50052", "50053", "50053", "50053", "50054", "50055", "50056", "50057", "50058", "50058", "50058"])
+  , ("maria-hill", DeckList "50001a" ["leadership"] $ tally ["50002", "50003", "50003", "50004", "50004", "50005", "50005", "50005", "50006", "50007", "50007", "50008", "50009", "50010", "50011", "50012", "50013", "50014", "50014", "50014", "50015", "50015", "50015", "50016", "50016", "50016", "50017", "50018", "50019", "50020", "50021", "50022", "50023", "50024", "50025", "50026", "50027", "50028", "50028", "50028"])
+  , ("jubilee", DeckList "47001a" ["justice"] $ tally ["47002", "47003", "47004", "47005", "47006", "47007a", "47007b", "47007c", "47008a", "47008b", "47008c", "47009", "47010a", "47010b", "47010c", "47011", "47012", "47013", "47013", "47013", "47014", "47014", "47014", "47015", "47015", "47015", "47016", "47017", "47017", "47018", "47019", "47019", "47019", "47020", "47020", "47020", "47021", "47021", "47021", "47022"])
   , ("spider-man", starter "01001a" "justice" $ ["01002", "01003", "01003", "01004", "01004", "01005", "01005", "01005", "01006", "01007", "01007", "01008", "01008", "01009", "01009"] <> ["01058", "01059", "01060", "01060", "01061", "01061", "01062", "01062", "01063", "01063", "01064", "01064", "01065", "01065"])
   , ("captain-marvel", starter "01010a" "leadership" $ ["01011", "01012", "01012", "01012", "01013", "01013", "01013", "01014", "01014", "01015", "01016", "01017", "01017", "01018", "01018"] <> ["01066", "01067", "01068", "01069", "01069", "01070", "01070", "01071", "01071", "01072", "01072", "01073", "01074", "01074"])
   , ("she-hulk", starter "01019a" "aggression" $ ["01020", "01021", "01022", "01022", "01023", "01023", "01024", "01024", "01024", "01025", "01026", "01027", "01027", "01028", "01028"] <> aggression)

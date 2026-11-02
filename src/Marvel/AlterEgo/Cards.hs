@@ -1,5 +1,23 @@
 module Marvel.AlterEgo.Cards where
 
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet ()
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -118,7 +136,10 @@ import Marvel.Trait
 allAlterEgoCards :: [CardDef]
 allAlterEgoCards =
 
-    [ nc48001b
+    [ FalconWinter.fw53001b, FalconWinter.fw54001b
+  , aosP50001b, aosP50034b
+  , BlackPantherShuriPack.shuriAlterEgo, SilkPack.cindyMoon
+  , nc48001b
   , Jubilee.jubilee47001b
   , bobbyDrake
   , erikLehnsherr
@@ -732,4 +753,72 @@ nc48001b = CardDef
   , cdDoubleWildResources = False
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
+  }
+
+-- Agents of Shield players
+
+aosP50001b :: CardDef
+aosP50001b = CardDef
+  { cdCardCode = "50001b"
+  , cdName = "Maria Hill"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Spy]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50034b :: CardDef
+aosP50034b = CardDef
+  { cdCardCode = "50034b"
+  , cdName = "Nick Fury"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Shield, AospTrait.Soldier, AospTrait.Spy]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.AlterEgoType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 1
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
   }

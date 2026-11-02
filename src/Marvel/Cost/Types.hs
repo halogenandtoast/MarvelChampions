@@ -62,6 +62,7 @@ data Cost
   | SameResourcesCost Natural
   | -- | exhaust an upgrade the payer controls, chosen among those matching
     ExhaustUpgradeCost UpgradeMatcher
+  | ExhaustUpgradesMatchingCost UpgradeMatcher Natural Natural
   | ExhaustSupportCost SupportMatcher
   | -- | return an upgrade the payer controls, chosen among those matching, to hand
     ReturnUpgradeToHandCost UpgradeMatcher
@@ -107,6 +108,7 @@ data Cost
   | -- | exhaust between the given minimum and maximum number of ready cards the
     -- payer controls with this trait, including identities, allies, supports and upgrades
     ExhaustCardsWithTraitCost Trait Natural Natural
+  | ExhaustCharactersWithThwartGreaterThanCost EnemyId
   | ExhaustControlledCardsCost Natural
   | -- | discard encounter cards until a minion is discarded, and put it into play
     -- engaged with the payer
@@ -179,6 +181,7 @@ costResources (DiscardHandCardsCost _ _) = []
 costResources (DiscardRandomHandCardsCost _) = []
 costResources (DiscardRandomHandCardsMatchingCost _ _) = []
 costResources (ExhaustSupportCost _) = []
+costResources (ExhaustUpgradesMatchingCost _ _ _) = []
 costResources (ExhaustUpgradeCost _) = []
 costResources (ReturnUpgradeToHandCost _) = []
 costResources (ReturnAllyToHandCost _) = []
@@ -202,6 +205,7 @@ costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources (ExhaustCharacterCost _) = []
 costResources (ExhaustCardsWithTraitCost _ _ _) = []
+costResources (ExhaustCharactersWithThwartGreaterThanCost _) = []
 costResources (ExhaustControlledCardsCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []
 costResources RevealEncounterTreacheryCost = []

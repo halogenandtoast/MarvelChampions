@@ -5,7 +5,39 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = SauronSet
+  = BlackPantherShuriNemesis
+  | BlackPantherShuriObligation
+  | SilkNemesis
+  | SilkObligation
+  | ExtremeRiskSet
+  | GrowingStrongSet
+  | FalconNemesis
+  | WinterSoldierNemesis
+  | TechnoSet
+  | WhiteoutSet
+  | MariaHillNemesis
+  | MariaHillObligation
+  | NickFuryNemesis
+  | NickFuryObligation
+  | AosBlackWidow
+  | AosBatroc
+  | AosModok
+  | AosThunderbolts
+  | AosBaronZemo
+  | AosAimAbduction
+  | AosAimScience
+  | AosBatrocsBrigade
+  | AosScientistSupreme
+  | AosGravitationalPull
+  | AosHardSound
+  | AosPaleLittleSpider
+  | AosPowerOfTheAtom
+  | AosSupersonic
+  | AosTheLeaper
+  | AosShield
+  | AosExecutiveBoard
+  | AosEvidence
+  | SauronSet
   | Sabretooth | Brotherhood | Mystique | ProjectWideawake | ZeroTolerance | Sentinels | MasterMold | MansionAttack | Magneto | Acolytes | FuturePast
   | AoaCampaign
   | AoaBasicCampaign
@@ -232,7 +264,10 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ SauronSet, HellfireSet, ArcadeSet, CrazyGangSet
+  [ ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
+  , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme
+  , AosGravitationalPull, AosHardSound, AosPaleLittleSpider, AosPowerOfTheAtom, AosSupersonic, AosTheLeaper
+  , SauronSet, HellfireSet, ArcadeSet, CrazyGangSet
   , AoaInfinites, AoaDystopianNightmare, AoaHounds, AoaPrelates, AoaDarkRiders, AoaBlueMoon, AoaGenosha, AoaSavageLand, AoaCelestialTech, AoaClanAkkaba
   , MilitaryGrade, MutantSlayers, NastyBoys, BlackTomCassidy, HopeSummersSet, FlightSet, SuperStrengthSet, TelepathySet, ExtremeMeasures, MutantInsurrection
   , Crime, Fantasy, Horror, SciFi, Sitcom, Western, LongshotSet
@@ -311,6 +346,12 @@ modularSets =
 
 getNemesisSet :: CardCode -> EncounterSet
 getNemesisSet cardCode = case toBaseCardCode cardCode of
+  "50001" -> MariaHillNemesis
+  "50034" -> NickFuryNemesis
+  "51001" -> BlackPantherShuriNemesis
+  "52001" -> SilkNemesis
+  "53001" -> FalconNemesis
+  "54001" -> WinterSoldierNemesis
   "46001" -> IcemanNemesis
   "47001" -> JubileeNemesis
   "48001" -> NightcrawlerNemesis

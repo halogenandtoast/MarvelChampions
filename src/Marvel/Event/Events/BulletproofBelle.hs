@@ -28,6 +28,7 @@ instance RunMessage BulletproofBelle where
       let attacker = case enemy of
             EnemyVillainId v -> VillainCharacter v
             EnemyMinionId m -> MinionCharacter m
+            EnemyAttachmentId aid -> AttachmentCharacter aid
       when (host == Just attacker) do
         preventAttackDamage enemy
         becomeTough you

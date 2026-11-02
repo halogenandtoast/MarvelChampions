@@ -1,5 +1,24 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait ()
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -168,9 +187,13 @@ import Marvel.GameValue.Types (GameValue (PerPlayer))
 import Marvel.Name
 
 allSideSchemes :: HashMap CardCode CardDef
-allSideSchemes = fromList $ map
-  (toFst toCardCode)
-  [ nc48020, nc48028, nc48033
+allSideSchemes = fromList $ concatMap
+  toCardCodePairs
+  [ aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
+  , FalconWinter.fw53031, FalconWinter.fw53041, FalconWinter.fw54029, FalconWinter.fw54036
+  , aosP50031, aosP50061
+  , BlackPantherShuriPack.goingUndercoverShuri, BlackPantherShuriPack.showofEmpathyShuri, BlackPantherShuriPack.manipulatedMUSICShuri, BlackPantherShuriPack.playingforKeepsShuri, SilkPack.gettheScoopSilk, SilkPack.theGreatHuntSilk, SilkPack.growInvulnerableSilk
+  , nc48020, nc48028, nc48033
   , Jubilee.jubilee47003, Jubilee.jubilee47016, Jubilee.jubilee47025, Jubilee.jubilee47031, Jubilee.jubilee47032, Jubilee.jubilee47033
   , keepUpThePressure
   , playingWithFire
@@ -1769,7 +1792,7 @@ cable40020 :: CardDef
 cable40020 = (sideScheme "40020" "Establish Perimeter" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Energy)], cdAspect = Just NE.Protection, cdKeywords = fromList [NE.Victory 0] }
 
 cable40027 :: CardDef
-cable40027 = (sideScheme "40027" "Build Support" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Mental)], cdAspect = Just NE.Neutral, cdKeywords = fromList [NE.Victory 0] }
+cable40027 = reprintedAs ["51026"] $ (sideScheme "40027" "Build Support" [] CableNemesis 1) { cdUnique = True, cdDeckLimit = Just 1, cdEncounterSet = Nothing, cdCardType = NE.PlayerSideSchemeType, cdCost = Just 1, cdResources = [(NE.PrintedResource, NE.Mental)], cdAspect = Just NE.Neutral, cdKeywords = fromList [NE.Victory 0] }
 
 cable40033 :: CardDef
 cable40033 = (sideScheme "40033" "Back to the Future" [NE.Boost, NE.Boost] CableNemesis 1) { cdUnique = False, cdDeckLimit = Just 1 }
@@ -4450,3 +4473,131 @@ nc48033 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+-- Agents of Shield players
+
+aosP50031 :: CardDef
+aosP50031 = CardDef
+  { cdCardCode = "50031"
+  , cdName = "Army of the Controlled"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.MariaHillNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 1
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50061 :: CardDef
+aosP50061 = CardDef
+  { cdCardCode = "50061"
+  , cdName = "Acquire Infinity Formula"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.SideSchemeType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.NickFuryNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aos50074 :: CardDef
+aos50074 = AosEncounter.aos50074
+
+aos50075 :: CardDef
+aos50075 = AosEncounter.aos50075
+
+aos50081 :: CardDef
+aos50081 = AosEncounter.aos50081
+
+aos50085 :: CardDef
+aos50085 = AosEncounter.aos50085
+
+aos50095 :: CardDef
+aos50095 = AosEncounter.aos50095
+
+aos50101 :: CardDef
+aos50101 = AosEncounter.aos50101
+
+aos50121 :: CardDef
+aos50121 = AosEncounter.aos50121
+
+aos50122 :: CardDef
+aos50122 = AosEncounter.aos50122
+
+aos50127 :: CardDef
+aos50127 = AosEncounter.aos50127
+
+aos50135 :: CardDef
+aos50135 = AosEncounter.aos50135
+
+aos50136 :: CardDef
+aos50136 = AosEncounter.aos50136
+
+aos50140 :: CardDef
+aos50140 = AosEncounter.aos50140
+
+aos50146 :: CardDef
+aos50146 = AosEncounter.aos50146
+
+aos50150 :: CardDef
+aos50150 = AosEncounter.aos50150
+
+aos50154 :: CardDef
+aos50154 = AosEncounter.aos50154
+
+aos50159 :: CardDef
+aos50159 = AosEncounter.aos50159
+
+aos50162 :: CardDef
+aos50162 = AosEncounter.aos50162
+
+aos50173 :: CardDef
+aos50173 = AosEncounter.aos50173
+
+aos50174 :: CardDef
+aos50174 = AosEncounter.aos50174
+
+aos50180 :: CardDef
+aos50180 = AosEncounter.aos50180

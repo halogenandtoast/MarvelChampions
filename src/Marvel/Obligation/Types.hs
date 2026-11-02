@@ -54,6 +54,7 @@ instance Entity Obligation where
     { obligationId :: ObligationId
     , obligationCardDef :: CardDef
     , obligationSurge :: Bool
+    , obligationHeldEncounterCards :: [EncounterCard]
     , obligationHeldCards :: [PlayerCard]
     -- ^ player cards facedown under it, discarded with it
     , obligationSideScheme :: Maybe SideSchemeId
@@ -66,6 +67,7 @@ instance Entity Obligation where
     ObligationId :: Field Obligation ObligationId
     ObligationCardDef :: Field Obligation CardDef
     ObligationSurge :: Field Obligation Bool
+    ObligationHeldEncounterCards :: Field Obligation [EncounterCard]
     ObligationHeldCards :: Field Obligation [PlayerCard]
     ObligationOwner :: Field Obligation (Maybe IdentityId)
   field fld o =
@@ -74,6 +76,7 @@ instance Entity Obligation where
           ObligationId -> obligationId
           ObligationCardDef -> obligationCardDef
           ObligationSurge -> obligationSurge
+          ObligationHeldEncounterCards -> obligationHeldEncounterCards
           ObligationHeldCards -> obligationHeldCards
           ObligationOwner -> obligationOwner
   toId = obligationId . toAttrs
@@ -128,6 +131,7 @@ obligation f cardDef =
             { obligationId = mid
             , obligationCardDef = cardDef
             , obligationSurge = False
+            , obligationHeldEncounterCards = []
             , obligationHeldCards = []
             , obligationSideScheme = Nothing
             , obligationOwner = Nothing
@@ -150,10 +154,11 @@ instance HasCardDef (Attrs Obligation) where
 
 instance FromJSON (Attrs Obligation) where
   parseJSON = withObject "ObligationAttrs" $ \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ old -> old) "obligationSideScheme" Null o)
+    genericParseJSON defaultOptions (Object $ KeyMap.insertWith (\_ old -> old) "obligationHeldEncounterCards" (toJSON ([] :: [EncounterCard])) $ KeyMap.insertWith (\_ old -> old) "obligationSideScheme" Null o)
 
 instance RunMessage (Attrs Obligation) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "holdEncounterCard" (fromJSON -> Success card) | target == toRef attrs -> pure attrs {obligationHeldEncounterCards = obligationHeldEncounterCards attrs <> [card]}
     CardSpecific target "cableAttachSideScheme" (fromJSON -> Success sid) | target == toRef attrs -> pure attrs {obligationSideScheme = Just sid}
     AddToVictoryDisplay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
     RemoveFromPlay (SideSchemeRef sid) | obligationSideScheme attrs == Just sid -> attrs <$ removeFromPlay attrs
@@ -167,6 +172,7 @@ instance RunMessage (Attrs Obligation) where
       ResolvedObligation identityId -> do
         active <- obligationIsInPlay (obligationId attrs)
         when active do
+          for_ (obligationHeldEncounterCards attrs) discardCard
           for_ (obligationHeldCards attrs) discardCard
           removeFromGame attrs
           discardCard attrs
@@ -176,6 +182,7 @@ instance RunMessage (Attrs Obligation) where
     GainSurge target | isTarget attrs target -> pure $ attrs & surgeL .~ True
     -- the cards under it go to their owners' discard piles as it leaves play
     RemoveFromPlay target | isTarget attrs target -> do
+      for_ (obligationHeldEncounterCards attrs) discardCard
       for_ (obligationHeldCards attrs) discardCard
       pure $ attrs & heldCardsL .~ []
     _ -> pure attrs

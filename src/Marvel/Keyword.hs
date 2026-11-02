@@ -39,6 +39,8 @@ data Keyword
     Patrol
   | -- | it cannot be stunned or confused
     Stalwart
+  | Vulnerable
+  | SuitForm
   | Steady
   | -- | while a player resolves it, the others cannot help them
     Peril

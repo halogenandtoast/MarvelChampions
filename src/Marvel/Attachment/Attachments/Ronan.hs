@@ -36,6 +36,7 @@ onItsEnemy :: Attrs Attachment -> Target -> Bool
 onItsEnemy a target = case attachmentEnemy a of
   Just (EnemyVillainId vid) -> target == VillainRef vid
   Just (EnemyMinionId mid) -> target == MinionRef mid
+  Just (EnemyAttachmentId aid) -> target == AttachmentRef aid
   Nothing -> False
 
 universalWeapon :: AttachmentCard UniversalWeapon

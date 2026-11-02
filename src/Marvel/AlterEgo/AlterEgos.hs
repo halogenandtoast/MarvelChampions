@@ -1,4 +1,6 @@
 module Marvel.AlterEgo.AlterEgos (module X) where
+import Marvel.AlterEgo.AlterEgos.Fw53001b as X
+import Marvel.AlterEgo.AlterEgos.Fw54001b as X
 
 import Marvel.AlterEgo.AlterEgos.Nc48001b as X
 
@@ -126,3 +128,11 @@ import Marvel.AlterEgo.AlterEgos.ErikLehnsherr as X
 -- Magneto
 
 import Marvel.AlterEgo.AlterEgos.BobbyDrake as X
+
+import Marvel.AlterEgo.AlterEgos.ShuriAlterEgo as X
+
+import Marvel.AlterEgo.AlterEgos.CindyMoon as X
+
+-- Agents of Shield players
+import Marvel.AlterEgo.AlterEgos.AosP50001b as X
+import Marvel.AlterEgo.AlterEgos.AosP50034b as X

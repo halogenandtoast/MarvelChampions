@@ -99,8 +99,8 @@ smOldGrudge :: AttachmentCard SmModularsAttachment
 smOldGrudge = attachment smModularsAttachment Cards.smOldGrudge
 
 instance HasModifiersFor SmModularsAttachment where
-  getModifiersFor _ (VillainRef vid) (SmModularsAttachment (attrs `With` _))
-    | attachmentEnemy attrs == Just (EnemyVillainId vid) = pure $ case toCardCode attrs of
+  getModifiersFor _ target (SmModularsAttachment (attrs `With` _))
+    | Just enemy <- attachmentEnemy attrs, target == enemyRef enemy, toCardCode attrs /= "27172" = pure $ case toCardCode attrs of
         "27137" -> [AttackModifier 1]
         "27138" -> [AttackModifier 1]
         "27139" -> [AttackModifier 1]
@@ -164,7 +164,12 @@ instance RunMessage SmModularsAttachment where
       pure $ SmModularsAttachment ((attrs & countersL .~ (if toCardCode attrs `elem` ["27137", "27138", "27139"] then 2 else 0)) `With` meta)
     AttachmentMessage aid (RevealAttachment you) | aid == attachmentId attrs, toCardCode attrs == "27166" -> a <$ attachToIdentity aid you
     RanAbility you (isTarget attrs -> True) 1 _ _ | toCardCode attrs == "27136" -> do
-      for_ (attachmentEnemy attrs) $ \case EnemyVillainId vid -> villainActivatesAgainst vid you; _ -> pure ()
+      for_ (attachmentEnemy attrs) $ \case
+        EnemyVillainId vid -> villainActivatesAgainst vid you
+        EnemyMinionId mid -> do
+          hero <- identityMatches HeroIdentity you
+          if hero then enemyAttacks mid you else minionSchemesAgainst mid you
+        EnemyAttachmentId _ -> pure ()
       pure a
     RanAbility you (isTarget attrs -> True) 1 _ _ | toCardCode attrs == "27137" -> do
       upgrades <- selectList (UnexhaustedUpgrade <> UpgradeControlledBy (IdentityWithId you))

@@ -36,6 +36,7 @@ instance HasModifiersFor VibrationResistance where
     isEnemy = \case
       EnemyVillainId vid -> target == VillainRef vid
       EnemyMinionId mid -> target == MinionRef mid
+      EnemyAttachmentId aid -> target == AttachmentRef aid
   getModifiersFor _ _ _ = pure []
 
 -- | Hero Action: exhaust your hero → discard this card.

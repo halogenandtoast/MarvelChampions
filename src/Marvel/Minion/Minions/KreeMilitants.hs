@@ -54,6 +54,7 @@ instance RunMessage KreeLieutenant where
       whenM (attacking enemy) case enemy of
         EnemyVillainId vid -> addBoost vid 3
         EnemyMinionId mid -> minionStep mid (MinionAddBoost 3)
+        EnemyAttachmentId _ -> pure ()
       pure e
     _ -> KreeLieutenant <$> runMessage msg attrs
 

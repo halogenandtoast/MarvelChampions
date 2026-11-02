@@ -1,5 +1,6 @@
 module Marvel.MainScheme.MainSchemes (module X) where
 
+import Marvel.MainScheme.MainSchemes.AgentsOfShield as X
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus as X
 
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen as X

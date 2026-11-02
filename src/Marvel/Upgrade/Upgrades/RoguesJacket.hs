@@ -29,6 +29,7 @@ instance HasModifiersFor RoguesJacket where
       Just (AllyCharacter _) -> pure [ThwartModifier 1]
       Just (MinionCharacter _) -> pure [AttackModifier 1]
       Just (VillainCharacter _) -> pure [AttackModifier 1]
+      Just (AttachmentCharacter _) -> pure []
       Nothing -> pure []
   getModifiersFor _ _ _ = pure []
 

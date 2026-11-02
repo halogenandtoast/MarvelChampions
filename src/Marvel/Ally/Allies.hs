@@ -1,4 +1,14 @@
 module Marvel.Ally.Allies (module X) where
+import Marvel.Ally.Allies.Fw53002 as X
+import Marvel.Ally.Allies.Fw53015 as X
+import Marvel.Ally.Allies.Fw53017 as X
+import Marvel.Ally.Allies.Fw53018 as X
+import Marvel.Ally.Allies.Fw53035 as X
+import Marvel.Ally.Allies.Fw53036 as X
+import Marvel.Ally.Allies.Fw54003 as X
+import Marvel.Ally.Allies.Fw54012 as X
+import Marvel.Ally.Allies.Fw54013 as X
+import Marvel.Ally.Allies.Fw54032 as X
 
 import Marvel.Ally.Allies.Nc48021 as X
 
@@ -370,3 +380,39 @@ import Marvel.Ally.Allies.Glob as X
 import Marvel.Ally.Allies.ShadowcatIceman as X
 
 import Marvel.Ally.Allies.Beak as X
+
+import Marvel.Ally.Allies.TChallaShuri as X
+
+import Marvel.Ally.Allies.ManifoldShuri as X
+
+import Marvel.Ally.Allies.AnekaShuri as X
+
+import Marvel.Ally.Allies.AyoShuri as X
+
+import Marvel.Ally.Allies.OkoyeShuri as X
+
+import Marvel.Ally.Allies.WhiteWolfShuri as X
+
+import Marvel.Ally.Allies.ScarletSpiderSilk as X
+
+import Marvel.Ally.Allies.SpiderByteSilk as X
+
+import Marvel.Ally.Allies.MadameWebSilk as X
+
+import Marvel.Ally.Allies.SpiderMan2099Silk as X
+
+import Marvel.Ally.Allies.SpiderWomanSilk as X
+
+-- Agents of Shield players
+import Marvel.Ally.Allies.AosP50002 as X
+import Marvel.Ally.Allies.AosP50012 as X
+import Marvel.Ally.Allies.AosP50013 as X
+import Marvel.Ally.Allies.AosP50022 as X
+import Marvel.Ally.Allies.AosP50023 as X
+import Marvel.Ally.Allies.AosP50036 as X
+import Marvel.Ally.Allies.AosP50054 as X
+import Marvel.Ally.Allies.AosP50091 as X
+import Marvel.Ally.Allies.AosP50105b as X
+import Marvel.Ally.Allies.AosP50106b as X
+import Marvel.Ally.Allies.AosP50107b as X
+import Marvel.Ally.Allies.AosP50108b as X

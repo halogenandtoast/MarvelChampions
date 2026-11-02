@@ -6,6 +6,7 @@ module Marvel.Payment
 import Marvel.Prelude
 
 import Marvel.Card.Def
+import Marvel.Card.PlayerCard ()
 import Marvel.Game.Source
 import Marvel.Identity.Types
 import Marvel.Payment.Types
@@ -29,6 +30,9 @@ paymentResources payment = case paymentActualResources payment of
     tough <- project PlayerIdentityTough ident
     extra <- project PlayerIdentityAdditionalTough ident
     pure $ replicate (fromIntegral $ (if tough then 1 else 0) + extra) Physical
+  generated (ResourcePaymentFromPlayerCard card) = do
+    context <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
+    resourcesFor card context
   generated (ResourcePayment r) = pure [r]
   generated (WildPayment r) = pure [r]
   generated (ContributedWildPayment _ r) = pure [r]

@@ -67,6 +67,7 @@ data CampaignLog = CampaignLog
   -- ^ The Mad Titan's Shadow's log ("docs/rules/campaign-mad-titans-shadow.md")
   , mutantGenesis :: MutantGenesisLog
   , apocalypse :: ApocalypseLog
+  , shield :: ShieldLog
   , nextEvolution :: NextEvolutionLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
@@ -190,6 +191,44 @@ noSinisterLog = SinisterLog [] 0 [] [] Nothing [] Nothing
 -- are temporary additions to the current game.
 -- | Mission results persist even when the scenario has to be replayed. A selected
 -- mission is recorded by scenario number so retries cannot reroll it.
+-- | Hidden evidence is stored with the deterministic game, and redacted by the API.
+data ShieldLog = ShieldLog
+  { hiddenEvidence :: [CardCode]
+  , evidenceEnvelope :: [CardCode]
+  , earnedEvidence :: [CardCode]
+  , boardSecrets :: [(CardCode, Natural)]
+  , betrayedBoard :: [CardCode]
+  , widowRemaining :: Natural
+  , rescuedCaptives :: Natural
+  , adaptoidEnvironments :: [CardCode]
+  , survivingThunderbolts :: [CardCode]
+  , accusation :: [CardCode]
+  , evidenceVictories :: Natural
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass ToJSON
+
+noShieldLog :: ShieldLog
+noShieldLog = ShieldLog [] [] [] [] [] 0 0 [] [] [] 0
+
+instance FromJSON ShieldLog where
+  parseJSON = withObject "ShieldLog" \o -> ShieldLog
+    <$> o .:? "hiddenEvidence" .!= []
+    <*> o .:? "evidenceEnvelope" .!= []
+    <*> o .:? "earnedEvidence" .!= []
+    <*> o .:? "boardSecrets" .!= []
+    <*> o .:? "betrayedBoard" .!= []
+    <*> o .:? "widowRemaining" .!= 0
+    <*> o .:? "rescuedCaptives" .!= 0
+    <*> o .:? "adaptoidEnvironments" .!= []
+    <*> o .:? "survivingThunderbolts" .!= []
+    <*> o .:? "accusation" .!= []
+    <*> o .:? "evidenceVictories" .!= 0
+  omittedField = Just noShieldLog
+
+redactCampaign :: Campaign -> Campaign
+redactCampaign c = c {campaignLog = c.campaignLog {shield = c.campaignLog.shield {hiddenEvidence = [], evidenceEnvelope = []}}}
+
 data ApocalypseLog = ApocalypseLog
   { missions :: [(Int, CardCode)]
   , successfulMissions :: [CardCode]
@@ -251,6 +290,13 @@ nextEvolutionSchemes =
 -- It must be chosen again on replay even if its reverse was earned in the lost game.
 retainNextEvolutionRetryChoice :: Campaign -> Campaign -> Campaign
 retainNextEvolutionRetryChoice previous current
+  | previous.kind == AgentsOfShieldCampaign, current.kind == AgentsOfShieldCampaign =
+      let before = previous.campaignLog.shield
+          now = current.campaignLog.shield
+          retained = if scenarioNumber previous == 5 && previous.mode == StandardCampaign
+            then before {hiddenEvidence = [], evidenceEnvelope = [], earnedEvidence = [], accusation = []}
+            else if null before.hiddenEvidence then before {hiddenEvidence = now.hiddenEvidence, evidenceEnvelope = now.evidenceEnvelope} else before
+      in previous {campaignLog = previous.campaignLog {shield = retained}}
   | previous.kind == AgeOfApocalypseCampaign, current.kind == AgeOfApocalypseCampaign =
       let n = previous.completed + 1
           chosen = filter ((== n) . fst) current.campaignLog.apocalypse.missions
@@ -312,7 +358,7 @@ mutantRoleAspects = \case
   Peacekeeper -> [Justice, Leadership]
 
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign | AgentsOfShieldCampaign
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -350,7 +396,8 @@ data CampaignStepKind
 
 -- | What a scenario writes in the log, the player named by their identity's code.
 data CampaignRecord
-  = RecordHitPoints CardCode Natural
+  = RecordShieldLog ShieldLog
+  | RecordHitPoints CardCode Natural
   | RecordExperimentalWeapons [CardCode]
   | RecordDelayCounters Natural
   | RecordEngagedWithMinions CardCode
@@ -438,6 +485,7 @@ campaignScenarios = \case
   MutantGenesis -> ["32060", "32084", "32109", "32121a", "32138"]
   NextEvolution -> ["40077", "40103", "40118", "40136", "40163"]
   AgeOfApocalypseCampaign -> ["45059", "45081a", "45101b", "45118", "45184a"]
+  AgentsOfShieldCampaign -> ["50064", "50086a", "50103a", "50129a", "50165a"]
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -498,6 +546,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , shield = noShieldLog
           , apocalypse = noApocalypseLog
           , nextEvolution = noNextEvolutionLog
           , mutantGenesis = noMutantGenesisLog {mutantPlayers = [MutantPlayer (toHeroCardCode i) Nothing | kind == MutantGenesis, i <- identities]}
@@ -591,6 +640,7 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
 recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordShieldLog shieldLog -> c {campaignLog = c.campaignLog {shield = shieldLog}}
   RecordCampaignLost -> c {lost = True}
   RecordApocalypseMission n code -> aoa \l -> l {missions = filter ((/= n) . fst) l.missions <> [(n, code)]}
   RecordApocalypseMissionSuccess code -> aoa \l -> l {successfulMissions = nub (l.successfulMissions <> [code])}

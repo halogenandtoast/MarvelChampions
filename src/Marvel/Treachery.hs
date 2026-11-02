@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.Treachery.Treacheries.AgentsOfShield qualified as AosEncounter
 import Marvel.Treachery.Treacheries.AgeOfApocalypseUnus
 
 import Marvel.Treachery.Treacheries.AgeOfApocalypseStandardIII
@@ -74,7 +75,11 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
 allTreacheries :: HashMap CardCode SomeTreacheryCard
 allTreacheries = fromList $ map
   (toFst someTreacheryCardCode)
-  [ SomeTreacheryCard nc48030, SomeTreacheryCard nc48038
+  [ SomeTreacheryCard AosEncounter.aos50076, SomeTreacheryCard AosEncounter.aos50077, SomeTreacheryCard AosEncounter.aos50078, SomeTreacheryCard AosEncounter.aos50079, SomeTreacheryCard AosEncounter.aos50082, SomeTreacheryCard AosEncounter.aos50096, SomeTreacheryCard AosEncounter.aos50097, SomeTreacheryCard AosEncounter.aos50102, SomeTreacheryCard AosEncounter.aos50123, SomeTreacheryCard AosEncounter.aos50124, SomeTreacheryCard AosEncounter.aos50128, SomeTreacheryCard AosEncounter.aos50137, SomeTreacheryCard AosEncounter.aos50138, SomeTreacheryCard AosEncounter.aos50141, SomeTreacheryCard AosEncounter.aos50142, SomeTreacheryCard AosEncounter.aos50147, SomeTreacheryCard AosEncounter.aos50151, SomeTreacheryCard AosEncounter.aos50155, SomeTreacheryCard AosEncounter.aos50160, SomeTreacheryCard AosEncounter.aos50163, SomeTreacheryCard AosEncounter.aos50164, SomeTreacheryCard AosEncounter.aos50175, SomeTreacheryCard AosEncounter.aos50176, SomeTreacheryCard AosEncounter.aos50177, SomeTreacheryCard AosEncounter.aos50184a, SomeTreacheryCard AosEncounter.aos50184b, SomeTreacheryCard AosEncounter.aos50184c
+  , SomeTreacheryCard fw53033, SomeTreacheryCard fw53042, SomeTreacheryCard fw54037
+  , SomeTreacheryCard aosP50033, SomeTreacheryCard aosP50063
+  , SomeTreacheryCard theScreamShuri, SomeTreacheryCard extremeRiskShuri, SomeTreacheryCard huntingtheSpiderBrideSilk, SomeTreacheryCard growingStrongSilk, SomeTreacheryCard titanicProportionsSilk
+  , SomeTreacheryCard nc48030, SomeTreacheryCard nc48038
   , SomeTreacheryCard theEyeOfSauron
   , SomeTreacheryCard burnIceman
   , SomeTreacheryCard elaborateTrap

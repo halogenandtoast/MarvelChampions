@@ -1,4 +1,6 @@
 module Marvel.Hero.Heroes (module X) where
+import Marvel.Hero.Heroes.Fw53001a as X
+import Marvel.Hero.Heroes.Fw54001a as X
 
 import Marvel.Hero.Heroes.Nc48001a as X
 
@@ -131,3 +133,11 @@ import Marvel.Hero.Heroes.MagnetoHero as X
 -- Magneto
 
 import Marvel.Hero.Heroes.IcemanHero as X
+
+import Marvel.Hero.Heroes.BlackPantherShuri as X
+
+import Marvel.Hero.Heroes.SilkHero as X
+
+-- Agents of Shield players
+import Marvel.Hero.Heroes.AosP50001a as X
+import Marvel.Hero.Heroes.AosP50034a as X

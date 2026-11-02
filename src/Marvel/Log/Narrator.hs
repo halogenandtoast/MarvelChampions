@@ -519,7 +519,8 @@ minionNarration mid = \case
   MinionAttackEnemyAfterInterrupt {} -> Nothing
   MinionSchemesAgainst {} -> Nothing
   MinionSchemeAgainstEnded -> Nothing
-  MinionSchemes -> Just $ schemes (MinionRef mid) =<< selectAny (EnemyWithId (EnemyMinionId mid) <> ConfusedEnemy)
+  MinionSchemes -> Just $ whenM' (selectAny (EnemyWithId (EnemyMinionId mid) <> ConfusedEnemy)) $ schemes (MinionRef mid) True
+  MinionBeginScheme -> Just $ schemes (MinionRef mid) False
   MinionDamaged source dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False ((.minionTough) . toAttrs) . lookup mid . gameMinions
     incoming <- incomingEnemyDamage (EnemyMinionId mid) source dmg
@@ -690,6 +691,7 @@ refFor = \case
   ObligationRef x -> byId RefObligation x gameObligations getCardDef
   EnemyRef (EnemyVillainId x) -> refFor (VillainRef x)
   EnemyRef (EnemyMinionId x) -> refFor (MinionRef x)
+  EnemyRef (EnemyAttachmentId x) -> refFor (AttachmentRef x)
   SchemeRef (SchemeMainSchemeId x) -> refFor (MainSchemeRef x)
   SchemeRef (SchemeSideSchemeId x) -> refFor (SideSchemeRef x)
   CharacterRef c -> refFor case c of
@@ -697,6 +699,7 @@ refFor = \case
     AllyCharacter x -> AllyRef x
     VillainCharacter x -> VillainRef x
     MinionCharacter x -> MinionRef x
+    AttachmentCharacter x -> AttachmentRef x
   _ -> pure Nothing
  where
   byId :: (HasGame m, ToJSON i, Hashable i) => LogRefKind -> i -> (Game -> HashMap i a) -> (a -> CardDef) -> m (Maybe LogRef)

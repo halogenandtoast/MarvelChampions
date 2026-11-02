@@ -13,7 +13,7 @@ import Marvel.Card.Def
       CardType(MinionType, SideSchemeType),
       HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
+import Marvel.Modifier.Types (Modifier (CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, AllyBasicPowerAdditionalCost, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
 import Marvel.Keyword (Keyword (Permanent))
 
 import Data.List qualified as L
@@ -64,6 +64,7 @@ resourcePaymentCard payer source = do
     EnvironmentRef (EnvironmentId x) -> Just $ CardId x
     CharacterRef c -> sourceId $ characterRef c
     EnemyRef (EnemyMinionId mid) -> sourceId $ MinionRef mid
+    EnemyRef (EnemyAttachmentId aid) -> sourceId $ AttachmentRef aid
     EnemyRef (EnemyVillainId vid) -> sourceId $ VillainRef vid
     SchemeRef (SchemeMainSchemeId sid) -> sourceId $ MainSchemeRef sid
     SchemeRef (SchemeSideSchemeId sid) -> sourceId $ SideSchemeRef sid
@@ -105,6 +106,9 @@ getAbilityCost a = case abilitySource a of
   IdentityRef ident | abilityType a == Basic, Q.Attack `elem` abilityChoices a -> do
     modifiers <- getModifiers ident
     pure $ abilityCost a <> mconcat [c | BasicAttackAdditionalCost c <- modifiers]
+  AllyRef aid | abilityType a == Basic -> do
+    modifiers <- getModifiers (AllyRef aid)
+    pure $ abilityCost a <> mconcat [cost | AllyBasicPowerAdditionalCost cost <- modifiers]
   _ -> pure $ abilityCost a
 
 -- | Whether the player can pay the cost, besides its resources when it is a card's: a
@@ -233,6 +237,13 @@ canAffordCost identityId source cost = do
       coversResources (costResources c) <$> (concatMapM (`resourcesFor` context) . filter notPlaying =<< getAvailablePaymentSources identityId)
     ExhaustAlliesMatchingCost matcher n ->
       (>= n) <$> selectListCount (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
+    ExhaustCharactersWithThwartGreaterThanCost enemy -> do
+      ready <- readyCharacterCandidates identityId AnyCharacter
+      total <- sum <$> traverse getCharacterThwart ready
+      target <- getEnemyScheme enemy
+      pure $ total > target
+    ExhaustUpgradesMatchingCost matcher minimumCount _ ->
+      (>= minimumCount) <$> selectListCount (matcher <> UnexhaustedUpgrade <> UpgradeControlledBy (IdentityWithId identityId))
     ExhaustCharacterCost matcher -> notNull <$> readyCharacterCandidates identityId matcher
     ResolveSettingSpecialCost -> canResolveSettingSpecial identityId
     ReadyAllyCost matcher -> do

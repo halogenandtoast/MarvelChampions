@@ -109,6 +109,8 @@ instance Entity Minion where
     , minionFacedownCard :: Maybe PlayerCard
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
     , minionAttachedTo :: Maybe MinionId
+    , minionSchemeReplacesAttack :: Bool
+    , minionSchemeRemoval :: Maybe IdentityId
     , minionActivationPlayer :: Maybe IdentityId
     , minionAttackTarget :: Maybe CharacterId
     -- ^ the character its coming attack is against, when not the player's identity
@@ -283,6 +285,8 @@ minion f cardDef sch atk hp =
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
             , minionAttachedTo = Nothing
+            , minionSchemeReplacesAttack = False
+            , minionSchemeRemoval = Nothing
             , minionActivationPlayer = Nothing
             , minionAttackTarget = Nothing
             , minionBoostCards = []
@@ -323,7 +327,7 @@ getModifiedKeywords attrs = do
 instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
-      KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
+      KeyMap.insertWith (\_ old -> old) "minionSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "minionSchemeRemoval" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
       [("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).

@@ -50,6 +50,7 @@ getAttackedCharacter [] = Nothing
 getAttackedCharacter (IdentityAttack _ enemy : _) = Just $ case enemy of
   EnemyVillainId vid -> VillainCharacter vid
   EnemyMinionId mid -> MinionCharacter mid
+  EnemyAttachmentId aid -> AttachmentCharacter aid
 getAttackedCharacter (FriendlyPlayerAttack _ character : _) = Just character
 getAttackedCharacter (FriendlyCharacterAttack (IdentityCharacter _) target : _) = Just (IdentityCharacter target)
 getAttackedCharacter (_ : windows) = getAttackedCharacter windows

@@ -10,6 +10,7 @@ data CharacterId
   | AllyCharacter AllyId
   | VillainCharacter VillainId
   | MinionCharacter MinionId
+  | AttachmentCharacter AttachmentId
   deriving stock (Show, Eq, Ord, Generic)
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
@@ -22,7 +23,7 @@ newtype VillainId = VillainId UUID
 newtype MinionId = MinionId {unMinionId :: UUID}
   deriving newtype (Show, Eq, Ord, Random, Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 
-data EnemyId = EnemyVillainId VillainId | EnemyMinionId MinionId
+data EnemyId = EnemyVillainId VillainId | EnemyMinionId MinionId | EnemyAttachmentId AttachmentId
   deriving stock (Show, Eq, Ord, Generic)
   deriving anyclass (Hashable, ToJSON, FromJSON, ToJSONKey, FromJSONKey)
 

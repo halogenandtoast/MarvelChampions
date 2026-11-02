@@ -56,5 +56,6 @@ instance RunMessage Jormungand where
           inPlay <- selectAny (VillainWithId vid)
           when inPlay $ changeVillainHitPoints vid . negate . (4 *) =<< getStartingPlayerCount
         EnemyMinionId _ -> pure ()
+        EnemyAttachmentId _ -> pure ()
       Jormungand <$> runMessage msg attrs
     _ -> Jormungand <$> runMessage msg attrs

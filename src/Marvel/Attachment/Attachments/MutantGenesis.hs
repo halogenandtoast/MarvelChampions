@@ -84,6 +84,7 @@ instance HasModifiersFor MutantGenesisAttachment where
         recipient <- case enemy of
           EnemyVillainId attached -> pure $ Just attached
           EnemyMinionId _ -> selectOne ActiveVillain
+          EnemyAttachmentId _ -> pure Nothing
         let stat = case toCardCode a of
               "32094" -> [AttackModifier 1]
               "32095" -> [SchemeModifier 1]
@@ -193,7 +194,7 @@ instance RunMessage MutantGenesisAttachment where
         cardSpecific GameRef "mgAttachTopSentinel" (mid, c)
         when tough $ giveStatus mid ToughStatus
         | mid <- minions])
-    enemyCharacter = \case EnemyVillainId v -> VillainCharacter v; EnemyMinionId m -> MinionCharacter m
+    enemyCharacter = \case EnemyVillainId v -> VillainCharacter v; EnemyMinionId m -> MinionCharacter m; EnemyAttachmentId aid -> AttachmentCharacter aid
     attachMinion you matcher tough = do
       minions <- selectList matcher
       valid <- filterM (\mid -> do

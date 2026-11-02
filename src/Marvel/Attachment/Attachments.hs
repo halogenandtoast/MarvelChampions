@@ -1,4 +1,9 @@
 module Marvel.Attachment.Attachments (module X) where
+import Marvel.Attachment.Attachments.AgentsOfShield as X
+import Marvel.Attachment.Attachments.Fw53039 as X
+import Marvel.Attachment.Attachments.Fw53040 as X
+import Marvel.Attachment.Attachments.Fw54030 as X
+import Marvel.Attachment.Attachments.Fw54035 as X
 
 import Marvel.Attachment.Attachments.Nc48029 as X
 
@@ -234,3 +239,5 @@ import Marvel.Attachment.Attachments.PoolIzed as X
 import Marvel.Attachment.Attachments.PyrosFlamethrower as X
 
 import Marvel.Attachment.Attachments.LifeDrain as X
+
+import Marvel.Attachment.Attachments.EnergyTruncheonShuri as X

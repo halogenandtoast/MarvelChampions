@@ -19,7 +19,7 @@ import Marvel.Deck (unDeck)
 
 import Marvel.Hand (unHand)
 
-import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard, PlayerIdentityWeatherDeck))
+import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard, PlayerIdentityLastDefense, PlayerIdentityTuckedEncounterCards, PlayerIdentityWeatherDeck))
 
 import Marvel.Projection
 
@@ -46,7 +46,7 @@ import Marvel.Game.Source as X (canMoveSchemeThreatFrom)
 import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Modifier.Types
-    ( Modifier(CannotLeavePlay, AttacksAgainstGainKeyword,
+    ( Modifier(RemovedThreatPlacedOnMinion, CannotLeavePlay, AttacksAgainstGainKeyword,
                ThwartWithAttack, KeywordModifier, AdditionalReadyCost,
                CannotChangeEnergyForm, CannotChangeMassForm,
                AttacksCannotBeDefended, OnlyIdentityCanDefend,
@@ -603,6 +603,7 @@ enemyBecomesTough :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 enemyBecomesTough enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainBecomeTough
   EnemyMinionId mid -> MinionMessage mid MinionBecomeTough
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | Counters placed on, or removed from, an environment, main scheme, attachment or
 -- identity card.
@@ -826,6 +827,7 @@ enemyAttacksAlly :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> Al
 enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttacksAlly ident ally)
   EnemyMinionId mid -> MinionMessage mid (MinionAttacksAlly ident ally)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | The enemy's attack is defended by the character.
 enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
@@ -835,6 +837,7 @@ enemyDefendedBy enemy character = do
   when allowed $ push case toEnemy enemy of
     EnemyVillainId vid -> VillainMessage vid (VillainDefendedBy character)
     EnemyMinionId mid -> MinionMessage mid (MinionDefendedBy character)
+    EnemyAttachmentId _ -> CheckWindows []
 
 -- | Resolve this particular attack, then report its final attack snapshot (or
 -- Nothing if no attack occurred) to the source's "attackCompleted" step.
@@ -848,6 +851,7 @@ enemyAttacks :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
 enemyAttacks enemy ident = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttacks ident)
   EnemyMinionId mid -> MinionMessage mid (MinionAttacks ident)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | The villain attacks the player, the attack gaining the keywords as it is declared
 -- (Avatar of Death: "that attack gains overkill and piercing").
@@ -1001,12 +1005,14 @@ addEnemyBoost :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m ()
 addEnemyBoost enemy n = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAddBoost n)
   EnemyMinionId mid -> MinionMessage mid (MinionAddBoost n)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | "The attack gains overkill" (piercing, ranged): the enemy's attack under way.
 attackGains :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
 attackGains enemy k = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackGains k)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackGains k)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | "That minion attacks another enemy" (Moondragon).
 minionAttacksEnemy :: (ReverseQueue m, IsEnemy enemy) => MinionId -> enemy -> m ()
@@ -1017,12 +1023,14 @@ changeAttack :: (ReverseQueue m, IsEnemy enemy) => enemy -> Int -> m ()
 changeAttack enemy n = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainAttackChanged n)
   EnemyMinionId mid -> MinionMessage mid (MinionAttackChanged n)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | "Prevent all damage from this attack": the enemy's attack under way.
 preventAttackDamage :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 preventAttackDamage enemy = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid VillainAttackDamagePrevented
   EnemyMinionId mid -> MinionMessage mid MinionAttackDamagePrevented
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | "Cancel that attack", as a defense, from the window as the enemy initiates it
 -- (Grasping Tendrils): no boost card is dealt and no damage done, and the hero is the one
@@ -1214,13 +1222,16 @@ attachmentRemoved = push . AttachmentRemoved
 
 -- | The attachment is attached to the enemy ('AttachedToEnemy').
 attachTo :: (ReverseQueue m, IsEnemy enemy) => AttachmentId -> enemy -> m ()
-attachTo attachment = push . AttachmentMessage attachment . AttachedToEnemy . toEnemy
+attachTo attachment enemy = do
+  checkWindows [W.Window W.Would $ W.AttachmentAttachingToEnemy attachment (toEnemy enemy)]
+  attachmentStep attachment (AttachedToEnemy $ toEnemy enemy)
 
 -- | The enemy is told the attachment is attached to it.
 attachedTo :: (ReverseQueue m, IsEnemy enemy) => enemy -> AttachmentId -> m ()
 attachedTo enemy attachment = push case toEnemy enemy of
   EnemyVillainId vid -> VillainMessage vid (AttachedToVillain attachment)
   EnemyMinionId mid -> MinionMessage mid (AttachedToMinion attachment)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | The attachment card is put into play attached to the enemy, without being revealed:
 -- "attach that card to Zola's Mutate".
@@ -1262,6 +1273,7 @@ attachToCharacter aid c = case toCharacter c of
   IdentityCharacter i -> attachToIdentity aid i
   VillainCharacter v -> attachTo aid v
   MinionCharacter m -> attachTo aid m
+  AttachmentCharacter _ -> pure ()
   AllyCharacter a -> attachToAlly aid a
 
 -- * The Milano and the Power Stone (The Galaxy's Most Wanted)
@@ -1445,6 +1457,13 @@ discardFor ident target zone lo = push . IdentityMessage ident . DiscardFor (toT
 discardTopOfDeck :: (ReverseQueue m) => IdentityId -> Natural -> m ()
 discardTopOfDeck ident = discardFrom ident FromDeck
 
+-- | Costs and host cleanup discard by game rules, not by a card effect.
+frameworkDiscard :: ReverseQueue m => m () -> m ()
+frameworkDiscard body = do
+  cardSpecific GameRef "beginFrameworkDiscard" ()
+  body
+  cardSpecific GameRef "endFrameworkDiscard" ()
+
 -- | The card goes to its discard pile.
 discardCard :: (ReverseQueue m, IsCard card) => card -> m ()
 discardCard = push . DiscardedCard . toCard
@@ -1486,6 +1505,7 @@ upgradeAttachedTo :: (ReverseQueue m, IsCharacter character) => character -> Upg
 upgradeAttachedTo character u = push case toCharacter character of
   AllyCharacter ally -> AllyMessage ally (AttachedUpgradeToAlly u)
   MinionCharacter mid -> MinionMessage mid (AttachedUpgradeToMinion u)
+  AttachmentCharacter _ -> CheckWindows []
   VillainCharacter vid -> VillainMessage vid (AttachedUpgradeToVillain u)
   IdentityCharacter _ -> error "an upgrade on an identity is controlled, not attached"
 
@@ -1981,6 +2001,7 @@ activationAfter :: (ReverseQueue m) => EnemyId -> VillainId -> m () -> m ()
 activationAfter enemy v body = do
   msgs <- capture body
   attacking <- case enemy of
+    EnemyAttachmentId _ -> pure False
     EnemyVillainId e -> isJust <$> getVillainAttack e
     EnemyMinionId _ -> pure True
   let ends = \case
@@ -2328,6 +2349,17 @@ cancelBoostEffect card = replaceMatchingMessage replace matchesMessage
     _ -> False
   matches uid = CardId uid == toCardId card
 
+-- | The queued damage still awaiting resolution for a friendly character.
+pendingCharacterDamage :: (HasQueue m, IsCharacter character) => character -> m (Maybe (Source, Damage))
+pendingCharacterDamage (toCharacter -> character) = withQueue \q -> (q, headMay $ mapMaybe matching $ concatMap queuedMessageLeaves q)
+ where
+  matching = \case
+    IdentityMessage ident (IdentityDamaged source damage)
+      | character == IdentityCharacter ident -> Just (source, damage)
+    AllyMessage aid (AllyDamaged source damage)
+      | character == AllyCharacter aid -> Just (source, damage)
+    _ -> Nothing
+
 -- | The queued attack damage still awaiting resolution for a friendly character.
 pendingCharacterAttackDamage :: (HasQueue m, IsCharacter character) => character -> m (Maybe (Source, Damage))
 pendingCharacterAttackDamage (toCharacter -> character) = withQueue \q -> (q, headMay $ mapMaybe matching q)
@@ -2635,6 +2667,7 @@ makeAttackIndirect :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
 makeAttackIndirect enemy = case toEnemy enemy of
   EnemyVillainId vid -> villainStep vid VillainAttackBecomesIndirect
   EnemyMinionId mid -> minionStep mid MinionAttackBecomesIndirect
+  EnemyAttachmentId _ -> pure ()
 
 -- | Faceup player cards on a minion, discarded with it when it leaves play.
 attachPlayerCardToMinion :: (ReverseQueue m) => MinionId -> PlayerCard -> m ()
@@ -2702,6 +2735,7 @@ enemyActivationBonus :: (ReverseQueue m, IsEnemy enemy) => enemy -> Natural -> m
 enemyActivationBonus enemy n = case toEnemy enemy of
   EnemyVillainId vid -> villainStep vid (VillainActivationBonus n)
   EnemyMinionId mid -> minionStep mid (MinionAddBoost n)
+  EnemyAttachmentId _ -> pure ()
 
 -- | The source of the attack whose damage is waiting behind its interrupt window.
 currentPlayerAttackSource :: (ReverseQueue m) => IdentityId -> m (Maybe Source)
@@ -2768,6 +2802,7 @@ healFrom source character n = do
     IdentityCharacter ident -> identityStep ident (IdentityHealed n)
     AllyCharacter aid -> allyStep aid (AllyHealed n)
     MinionCharacter mid -> minionStep mid (MinionHealed n)
+    AttachmentCharacter _ -> pure ()
     VillainCharacter vid -> villainStep vid (VillainHealed n)
 
 -- | Wrapped scheme, enemy and character IDs name the same element as their concrete IDs.
@@ -2808,6 +2843,7 @@ redirectAttackDamage :: (ReverseQueue m, IsEnemy enemy, IsEnemy other) => enemy 
 redirectAttackDamage enemy other = case toEnemy enemy of
   EnemyVillainId vid -> villainStep vid (VillainAttackDamageRedirected $ toEnemy other)
   EnemyMinionId mid -> minionStep mid (MinionAttackDamageRedirected $ toEnemy other)
+  EnemyAttachmentId _ -> pure ()
 
 minionSchemesAgainst :: ReverseQueue m => MinionId -> IdentityId -> m ()
 minionSchemesAgainst mid = minionStep mid . MinionSchemesAgainst
@@ -2830,7 +2866,8 @@ moveSchemeThreat source from to n = when (from /= to && n > 0) do
       case from of
         SchemeMainSchemeId sid -> mainSchemeStep sid (MainSchemeThreatRemoved (toSource source) amount)
         SchemeSideSchemeId sid -> sideSchemeStep sid (SideSchemeThreatRemoved (toSource source) amount)
-      placeThreat to amount
+      redirected <- elem RemovedThreatPlacedOnMinion <$> getModifiers (schemeRef from)
+      unless redirected $ placeThreat to amount
 
 -- The replacement is resolved as the scheme resolves; retain the event, its thwart
 -- context and resource effects until the resulting removal has finished.
@@ -2916,6 +2953,7 @@ preventEnemyDamage enemy n = do
           removeAllTough $ case enemy of
             EnemyVillainId vid -> VillainCharacter vid
             EnemyMinionId mid -> MinionCharacter mid
+            EnemyAttachmentId aid -> AttachmentCharacter aid
         cancelEnemyDamage enemy
       else replaceMatchingMessage prevent $ \case
         VillainMessage vid (VillainDamaged _ _) -> enemy == EnemyVillainId vid
@@ -2951,7 +2989,7 @@ cancelVillainDefeat vid = do
     _ -> False
 
 redirectEnemyAttackToAlly :: ReverseQueue m => EnemyId -> IdentityId -> AllyId -> m ()
-redirectEnemyAttackToAlly enemy _you aid = cardSpecific (enemyRef enemy) "neRedirectAttackToAlly" aid
+redirectEnemyAttackToAlly enemy you aid = cardSpecific (enemyRef enemy) "neRedirectAttackToAlly" (you,aid)
 
 attachDefeatedMinionToAlly :: ReverseQueue m => MinionId -> AllyId -> m ()
 attachDefeatedMinionToAlly mid aid = cardSpecific GameRef "neAttachDefeatedMinion" (mid, aid)
@@ -3122,3 +3160,202 @@ giveCardAsBoost card enemy = cardSpecific GameRef "giveCardAsBoost" (toCard card
 -- | One activation without a newly dealt boost card, including status replacements.
 enemyActivatesWithoutBoost :: (ReverseQueue m, IsRef source, IsEnemy enemy) => source -> enemy -> IdentityId -> m ()
 enemyActivatesWithoutBoost source enemy you = cardSpecific GameRef "enemyActivatesWithoutBoost" (toSource source, toEnemy enemy, you)
+
+-- | Tucked encounter cards retain their physical identity and are out of play.
+tuckedEncounterCards :: HasGame m => IdentityId -> m [EncounterCard]
+tuckedEncounterCards = project PlayerIdentityTuckedEncounterCards
+
+tuckEncounterCard :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+tuckEncounterCard you card = do
+  cardSpecific GameRef "removeEncounterCardFromPiles" card
+  checkWindows [Window Would $ W.WouldTuckEncounterCard you card]
+  cardSpecific you "tuckEncounterCard" card
+
+discardTuckedEncounterCard :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+discardTuckedEncounterCard you = cardSpecific you "discardTuckedEncounterCard"
+
+tuckTopEncounterCard :: ReverseQueue m => IdentityId -> m ()
+tuckTopEncounterCard you = getEncounterDeck >>= traverse_ (tuckEncounterCard you) . headMay
+
+addToTargetedBasicThwart :: (HasQueue m) => IdentityId -> Natural -> m ()
+addToTargetedBasicThwart you bonus = replaceMatchingMessage raise matches
+ where
+  matches (CardSpecific (IdentityRef who) "basicThwartAgainst" _) = who == you
+  matches _ = False
+  raise (CardSpecific target "basicThwartAgainst" (fromJSON -> Success (scheme :: SchemeId, general :: Natural, thwOnly :: Natural))) = [CardSpecific target "basicThwartAgainst" (toJSON (scheme, general, thwOnly + bonus))]
+  raise msg = [msg]
+
+-- | Replace a pending facedown encounter-card deal before drawing its card.
+cancelDealtEncounterCard :: ReverseQueue m => IdentityId -> m ()
+cancelDealtEncounterCard you = insteadOf (\case CardSpecific GameRef "fwActuallyDealEncounterCard" (fromJSON -> Success other) -> you == other; _ -> False) (pure ())
+
+getIdentityDefenseForLastAttack :: HasGame m => IdentityId -> m Natural
+getIdentityDefenseForLastAttack = project PlayerIdentityLastDefense
+
+-- | Cancel only the scheme waiting after its would-scheme window.
+cancelPendingEnemyScheme :: (ReverseQueue m, IsEnemy enemy) => enemy -> m ()
+cancelPendingEnemyScheme (toEnemy -> enemy) = insteadOf matches (pure ())
+ where
+  matches (VillainMessage vid VillainBeginScheme) = enemy == EnemyVillainId vid
+  matches (MinionMessage mid MinionBeginScheme) = enemy == EnemyMinionId mid
+  matches _ = False
+
+replacePendingAttackWithScheme :: (ReverseQueue m, IsEnemy enemy) => enemy -> IdentityId -> m ()
+replacePendingAttackWithScheme (toEnemy -> enemy) you = do
+  cancelEnemyActivation enemy
+  cardSpecific (enemyRef enemy) "schemeReplacesAttack" True
+  case enemy of
+    EnemyVillainId vid -> villainSchemesAgainst vid you
+    EnemyMinionId mid -> minionSchemesAgainst mid you
+    EnemyAttachmentId _ -> pure ()
+
+-- | Attach the linked physical card to a minion without paying its printed cost.
+attachSetAsideUpgradeToMinion :: ReverseQueue m => IdentityId -> CardCode -> MinionId -> m ()
+attachSetAsideUpgradeToMinion you code mid = do
+  cards <- getSetAsidePlayerCards
+  for_ (headMay [card | card <- cards, toCardCode card == code, pcOwner card `elem` [Nothing, Just you]]) $ \card -> do
+    putIntoPlay you (card {pcOwner = Just you, pcController = Just you})
+    upgradeStep (UpgradeId $ unCardId $ pcCardId card) (UpgradeAttachedToEnemy $ EnemyMinionId mid)
+
+-- | Exchange one assigned facedown boost card with the encounter deck's top card.
+swapFacedownBoostWithTop :: (ReverseQueue m, IsEnemy enemy) => enemy -> EncounterCard -> EncounterCard -> m ()
+swapFacedownBoostWithTop enemy old replacement = do
+  removeFromGame (CardIdRef $ ecCardId replacement)
+  cardSpecific (enemyRef $ toEnemy enemy) "fwReplaceBoost" (old, replacement)
+  putOnTopOfEncounterDeck [old]
+
+-- | An encounter effect's discard is distinct from spending a tucked card by a player effect.
+discardTuckedEncounterCardFromEncounter :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+discardTuckedEncounterCardFromEncounter you = cardSpecific you "discardTuckedEncounterCardFromEncounter"
+
+-- | Tuck caused by an encounter effect, bypassing player-card tuck replacement interrupts.
+tuckEncounterCardFromEncounter :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+tuckEncounterCardFromEncounter you card = do
+  cardSpecific GameRef "removeEncounterCardFromPiles" card
+  cardSpecific you "tuckEncounterCard" card
+
+-- Append to Marvel.Message.Lifted under ally basic power helpers.
+modifyAllyBasicAttack :: HasQueue m => AllyId -> (Damage -> Damage) -> m ()
+modifyAllyBasicAttack aid change = replaceMatchingMessage apply matches
+ where
+  matches = \case
+    AllyMessage who (AllyAttackLands _ _) -> who == aid
+    AllyMessage who (AllyEvenAttackLands _ _) -> who == aid
+    _ -> False
+  apply = \case
+    AllyMessage who (AllyAttackLands enemy damage) -> [AllyMessage who (AllyAttackLands enemy $ change damage)]
+    AllyMessage who (AllyEvenAttackLands damage shares) -> [AllyMessage who (AllyEvenAttackLands (change damage) shares)]
+    other -> [other]
+
+-- | Redirect attachment plumbing before its pending attach resolves (Fixer).
+redirectAttachmentTo :: HasQueue m => AttachmentId -> MinionId -> m ()
+redirectAttachmentTo attachment minion = replaceMatchingMessage change matches
+ where
+  matches = \case
+    AttachmentMessage aid (AttachedToEnemy _) -> aid == attachment
+    VillainMessage _ (AttachedToVillain aid) -> aid == attachment
+    _ -> False
+  change = \case
+    AttachmentMessage aid (AttachedToEnemy _) -> [AttachmentMessage aid (AttachedToEnemy $ EnemyMinionId minion)]
+    VillainMessage _ (AttachedToVillain _) -> []
+    msg -> [msg]
+
+-- | Change the target of this pending attack, keeping its source, damage and
+-- completion. A future attack selected by a card-specific step is untouched.
+redirectPlayerAttackToEnemy :: ReverseQueue m => IdentityId -> Source -> EnemyId -> EnemyId -> m ()
+redirectPlayerAttackToEnemy you source old new = withQueue_ $ map rewrite
+ where
+  damage from d | from == source = case new of
+    EnemyAttachmentId aid -> AttachmentMessage aid $ AttachmentDamaged $ damageAmount d
+    EnemyMinionId mid -> MinionMessage mid $ MinionDamaged from d
+    EnemyVillainId vid -> VillainMessage vid $ VillainDamaged from d
+  damage from d = case old of
+    EnemyAttachmentId aid -> AttachmentMessage aid $ AttachmentDamaged $ damageAmount d
+    EnemyMinionId mid -> MinionMessage mid $ MinionDamaged from d
+    EnemyVillainId vid -> VillainMessage vid $ VillainDamaged from d
+  retaliation c = case new of
+    EnemyAttachmentId _ -> CheckWindows []
+    EnemyMinionId mid -> MinionMessage mid $ MinionRetaliates c
+    EnemyVillainId vid -> VillainMessage vid $ VillainRetaliates c
+  rewrite = \case
+    VillainMessage vid (VillainDamaged from d) | old == EnemyVillainId vid && from == source -> damage from d
+    MinionMessage mid (MinionDamaged from d) | old == EnemyMinionId mid && from == source -> damage from d
+    VillainMessage vid (VillainRetaliates c) | old == EnemyVillainId vid -> retaliation c
+    MinionMessage mid (MinionRetaliates c) | old == EnemyMinionId mid -> retaliation c
+    AllyMessage aid (AllyAttackLands enemy d) | source == AllyRef aid && enemy == old -> AllyMessage aid $ AllyAttackLands new d
+    AllyMessage aid (AllyAttackConsequentialAgainst enemies) | source == AllyRef aid -> AllyMessage aid $ AllyAttackConsequentialAgainst (map target enemies)
+    EventMessage eid (EventAttacked who enemy ranged) | source == EventRef eid && who == you && enemy == old -> EventMessage eid $ EventAttacked who new ranged
+    CardSpecific GameRef "playerAttackDamageBeforeTarget" (fromJSON -> Success (who,from,enemy,d)) | who == you && from == source && enemy == old -> CardSpecific GameRef "playerAttackDamageBeforeTarget" $ toJSON (who,from,new,d :: Damage)
+    PrepareEnemyDamage inner -> PrepareEnemyDamage $ rewrite inner
+    ResolveEnemyDamage inner -> ResolveEnemyDamage $ rewrite inner
+    WithSimultaneousAttackContext cursor inner -> WithSimultaneousAttackContext cursor $ rewrite inner
+    Simultaneously messages -> Simultaneously $ map rewrite messages
+    CheckWindows windows -> CheckWindows $ map window windows
+    CheckWindowsFor players windows -> CheckWindowsFor players $ map window windows
+    other -> other
+  target enemy = if enemy == old then new else enemy
+  window w = w {windowType = case windowType w of
+    W.IdentityAttack who enemy | who == you -> W.IdentityAttack who $ target enemy
+    W.IdentityAttackTarget who enemy | who == you -> W.IdentityAttackTarget who $ target enemy
+    W.MadeBasicAttackAgainst who enemy | who == you -> W.MadeBasicAttackAgainst who $ target enemy
+    W.AllyAttack aid enemy | source == AllyRef aid -> W.AllyAttack aid $ target enemy
+    W.AllyAttackCompletedAgainst aid enemies | source == AllyRef aid -> W.AllyAttackCompletedAgainst aid $ map target enemies
+    W.PlayerAttackResolved from who enemies | from == source && who == you -> W.PlayerAttackResolved from who $ map target enemies
+    W.MakingRangedAttack who from enemy | from == source && who == you -> W.MakingRangedAttack who from $ target enemy
+    W.MakingKeywordAttack who from enemy keywords basic | from == source && who == you -> W.MakingKeywordAttack who from (target enemy) keywords basic
+    other -> other}
+
+-- | A discarded encounter attachment enters play on a character without being revealed.
+attachEncounterToCharacter :: ReverseQueue m => EncounterCard -> CharacterId -> m ()
+attachEncounterToCharacter card character = do
+  first <- selectJust FirstPlayer
+  withTheVillain first (attachEncounterCard card)
+  attachToCharacter (AttachmentId $ unCardId $ ecCardId card) character
+
+-- | The condition loses stalwart but replaces a stun or confuse before the
+-- status can be given, so vulnerable does not also discard its host.
+absorbStatusWithSolidSound :: ReverseQueue m => EnemyId -> m Bool
+absorbStatusWithSolidSound enemy = do
+  attachments <- selectList $ AttachmentOnEnemy enemy
+  matching <- filterM (\aid -> maybe False ((== "50144") . toCardCode) <$> getsGame (`abilityCardDef` AttachmentRef aid)) attachments
+  for_ (headMay matching) removeFromPlay
+  pure $ notNull matching
+
+-- | Move actual removable threat, with effects that change its destination respected.
+moveSchemeThreatToSupport :: (ReverseQueue m, IsRef source) => source -> SchemeId -> SupportId -> Natural -> m ()
+moveSchemeThreatToSupport source from sid n = do
+  allowed <- canMoveSchemeThreatFrom source from
+  when allowed $ do
+    available <- selectCount Matchers.SchemeThreat (SchemeWithId from)
+    let amount = min n available
+    redirected <- elem RemovedThreatPlacedOnMinion <$> getModifiers (schemeRef from)
+    when (amount > 0) $ do
+      case from of
+        SchemeMainSchemeId main -> mainSchemeStep main (MainSchemeThreatRemoved (toSource source) amount)
+        SchemeSideSchemeId side -> sideSchemeStep side (SideSchemeThreatRemoved (toSource source) amount)
+      unless redirected $ cardSpecific sid "movedThreatToSupport" amount
+
+-- | Swap two physical encounter cards; this is neither a discard nor a tuck effect.
+swapIdentityTuckedEncounterCard :: ReverseQueue m => IdentityId -> EncounterCard -> EncounterCard -> m ()
+swapIdentityTuckedEncounterCard you incoming outgoing = do
+  cardSpecific GameRef "removeEncounterCardFromPiles" incoming
+  cardSpecific you "swapTuckedEncounterCard" (incoming,outgoing)
+
+removeEncounterCardFromPiles :: ReverseQueue m => EncounterCard -> m ()
+removeEncounterCardFromPiles = cardSpecific GameRef "removeEncounterCardFromPiles"
+
+-- | Replace the pending discard from play, before its entity leaves.
+preventCardDiscardFromPlay :: (ReverseQueue m, IsCard card) => card -> m ()
+preventCardDiscardFromPlay card = cancelMatchingMessage $ \case
+  DiscardedCard other -> toCardId other == toCardId (toCard card)
+  RemoveFromPlayAfterWindow target -> matches target
+  ResolveAllyLeavingPlay _ aid _ _ -> matches (AllyRef aid)
+  CardSpecific GameRef "afterDiscardFromPlay" (fromJSON -> Success other) -> toCardId (other :: Card) == toCardId (toCard card)
+  _ -> False
+ where
+  matches target = case target of
+    AllyRef aid -> unAllyId aid == unCardId (toCardId (toCard card))
+    SupportRef sid -> unSupportId sid == unCardId (toCardId (toCard card))
+    UpgradeRef uid -> unUpgradeId uid == unCardId (toCardId (toCard card))
+    SideSchemeRef sid -> unSideSchemeId sid == unCardId (toCardId (toCard card))
+    _ -> False

@@ -41,11 +41,8 @@ instance RunMessage BeatCop where
       schemes <- selectList ThwartableScheme
       chooseOne ident
         [ targeting scheme do
-          thwartScheme scheme attrs 1
-          cardSpecific attrs "threatMoved" ()
+          moveSchemeThreatToSupport attrs scheme (supportId attrs) 1
         | scheme <- schemes
         ]
       pure c
-    CardSpecific (isTarget attrs -> True) "threatMoved" _ ->
-      pure $ BeatCop attrs {supportThreat = supportThreat attrs + 1}
     _ -> BeatCop <$> runMessage msg attrs

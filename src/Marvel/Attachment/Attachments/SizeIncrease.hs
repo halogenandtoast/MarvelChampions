@@ -37,6 +37,7 @@ instance HasModifiersFor SizeIncrease where
     isEnemy = \case
       EnemyVillainId vid -> target == VillainRef vid
       EnemyMinionId mid -> target == MinionRef mid
+      EnemyAttachmentId aid -> target == AttachmentRef aid
   getModifiersFor _ _ _ = pure []
 
 -- | Forced Response: After attached enemy activates, remove 1 size counter from here: its
@@ -52,6 +53,7 @@ instance HasAbilities SizeIncrease where
     schemed = \case
       EnemyVillainId vid -> W.VillainSchemed After (VillainWithId vid)
       EnemyMinionId mid -> MinionHasSchemed After (MinionWithId mid)
+      EnemyAttachmentId _ -> WindowOneOf []
 
 -- | Attach to Yellowjacket, if able. If you cannot, attach to the villain. Uses (3 size
 -- counters): with none left it is discarded.

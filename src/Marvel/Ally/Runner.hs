@@ -78,6 +78,13 @@ instance RunMessage (Attrs Ally) where
     CardSpecific (isTarget a -> True) "ncDefenseComplete" (fromJSON -> Success (enemy :: EnemyId, before :: Natural)) -> do
       when (allyDamage a <= before) $ checkWindows [W.Window W.After $ W.AllyDefendedWithoutTakingDamage (allyId a) enemy]
       pure a
+    CardSpecific (isTarget a -> True) "basicDefensePaid" (fromJSON -> Success enemyId) -> do
+      forbidden <- any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
+      unless forbidden do
+        exhaust (allyId a)
+        enemyDefendedBy enemyId (AllyCharacter $ allyId a)
+        checkWindows [W.Window W.When $ W.AllyDefendedAgainst (allyId a) enemyId]
+      pure a
     CardSpecific (isTarget a -> True) "readyWithCostPaid" _ -> pure a {allyExhausted = False}
     CardSpecific (isTarget a -> True) "defeatedByConsequential" _ -> do
       present <- selectAny (AllyWithId $ allyId a)
@@ -274,21 +281,15 @@ instance RunMessage (Attrs Ally) where
         when (consequential > 0) $ damageCharacter ident a (toDamage consequential FromConsequential)
         pure a
       AllyDefended enemyId -> do
-        forbidden <- any (\case OnlyIdentityCanDefend _ -> True; AttacksCannotBeDefended -> True; _ -> False) <$> getModifiers (enemyRef enemyId)
-        unless forbidden do
-          exhaust ident
-          enemyDefendedBy enemyId (AllyCharacter ident)
-          checkWindows [W.Window W.When $ W.AllyDefendedAgainst ident enemyId]
+        costs <- mapMaybe (\case AllyBasicPowerAdditionalCost cost -> Just cost; _ -> Nothing) <$> getModifiers a
+        if null costs then cardSpecific a "basicDefensePaid" enemyId
+          else payCostThen (allyController a) a (mconcat costs) [CardSpecific (toRef a) "basicDefensePaid" (toJSON enemyId)]
         pure a
       AllyHealed n -> pure $ a & damageL %~ subtractNatural n
       AllyWasAttacked attack' -> do
-        hitPoints <- getModifiedHitPoints a
         modifiers <- getModifiers a
         let
           reduced = subtractNatural (sum [n | AttackDamageReduction n <- modifiers]) (attackDamageDealt attack')
-          overkill = subtractNatural
-            (subtractNatural (allyDamage a) hitPoints)
-            reduced
         -- an attack dealing indirect damage (Starshark) has it divided among the
         -- characters the ally's controller controls, overkill having none past it
         when (attackDamageDealt attack' > 0) $
@@ -298,12 +299,7 @@ instance RunMessage (Attrs Ally) where
               then divideAttackDamage (allyController a) (attackSource attack') ((attackDamageTo attack' (attackDamageDealt attack')) {damageOverkill = attackOverkill attack'})
               else if attackIndirect attack'
               then dealIndirectAttackDamage (allyController a) (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
-              else damageCharacter ident (attackSource attack') (attackDamageTo attack' (attackDamageDealt attack'))
-        -- the excess is the attack's damage to the controller: "when you would take
-        -- damage" answers it, as it does the attack's own
-        when (attackOverkill attack' && overkill > 0 && not (attackIndirect attack' || attackDividedEvenly attack')) do
-          let excess = toDamage overkill FromAttack
-          damageCharacter (allyController a) (attackSource attack') excess
+              else damageCharacter ident (attackSource attack') ((attackDamageTo attack' (attackDamageDealt attack')) {damageOverkill = attackOverkill attack', damageRanged = attackRanged attack'})
         -- retaliate, if it is still in play after the attack, and the attack not ranged
         blanked <- isBlanked a
         let keywords = (if blanked then [] else toList $ cdKeywords $ allyCardDef a) <> [k | KeywordModifier k <- modifiers]

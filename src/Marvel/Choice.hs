@@ -214,6 +214,7 @@ resolveChoice ident = \case
           enemyAsRef = case target of
             EnemyRef (EnemyVillainId vid) -> VillainRef vid
             EnemyRef (EnemyMinionId mid) -> MinionRef mid
+            EnemyRef (EnemyAttachmentId aid) -> AttachmentRef aid
             t -> t
           attackReduction = case enemyAsRef of
             VillainRef _ -> pure 0 -- applied after tough in Villain.reducedDamage
@@ -239,7 +240,9 @@ resolveChoice ident = \case
                 + if fromAttack then sum [n | AttackDamageTakenModifier n <- targetModifiers] else 0
             targetKeywords = [k | AttacksAgainstGainKeyword k <- targetModifiers, fromAttack]
             attackHas keyword = KeywordModifier keyword `elem` attackKeywords || keyword `elem` targetKeywords
-        reduction <- if fromAttack then attackReduction else pure 0
+        ordinaryReduction <- if fromAttack then attackReduction else pure 0
+        conditional <- conditionalAttackReduction enemyAsRef source damage'
+        let reduction = ordinaryReduction + conditional
         cap <- if fromAttack then attackCap else pure Nothing
         let
           incoming = damageAmount damage' + bonus + sum [n | AttackDamageToEnemyModifier e n <- attackKeywords, e == enemy, damageAmount damage' > 0]
@@ -247,6 +250,7 @@ resolveChoice ident = \case
           reduced = subtractNatural reduction increased
           damage = damage'
             { damageAmount = maybe reduced (min reduced) cap
+            , damageDealtAmount = Just incoming
             , damagePiercing = damagePiercing damage' || attackHas Piercing
             , damageOverkill = damageOverkill damage' || attackHas Overkill
             , damageRanged = damageRanged damage' || attackHas Ranged
@@ -254,6 +258,7 @@ resolveChoice ident = \case
           enemy = case target of
             VillainRef vid -> EnemyVillainId vid
             MinionRef mid -> EnemyMinionId mid
+            AttachmentRef aid -> EnemyAttachmentId aid
             EnemyRef e -> e
             _ -> error "can not damage target"
           attacked = case damageSource damage of
@@ -302,6 +307,7 @@ resolveChoice ident = \case
               EnemyVillainId vid ->
                 [VillainMessage vid $ VillainDamaged source damage]
               EnemyMinionId mid -> [MinionMessage mid $ MinionDamaged source damage]
+              EnemyAttachmentId aid -> [AttachmentMessage aid $ AttachmentDamaged $ damageAmount damage]
           )
             <> attacked
   -- threat removed is a thwart (RR "Thwart") only by a basic thwart or an ability labeled
@@ -318,24 +324,28 @@ resolveChoice ident = \case
     forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
     let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) eligible else eligible
         f target = ThwartScheme target source n
-    pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x]]
+    pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x] | notNull schemes]
   PlaceThreat _source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
     pure $ concatMap (`placeThreatOn` n) schemes
   ChooseHeal n characterMatcher -> do
     characters <- selectList characterMatcher
     let f character = Heal character n
-    pure [Ask ident $ ChooseOne [TargetLabel (characterRef x) [f x] | x <- characters]]
+    pure [Ask ident $ ChooseOne [TargetLabel (characterRef x) [f x] | x <- characters] | notNull characters]
   ChooseDamage source damage enemyMatcher -> do
-    enemies <- filterM (canSourceDamageEnemy source) =<< selectList (enemyMatcher <> DamageableEnemy)
+    normal <- selectList (enemyMatcher <> DamageableEnemy)
+    let isAttack = case damageSource damage of FromPlayerAttack _ -> True; FromAllyAttack _ -> True; _ -> False
+    extra <- if isAttack then attackableAttachmentTargets (enemyMatcher <> AttackableBy (IdentityWithId ident)) else pure []
+    enemies <- filterM (canSourceDamageEnemy source) $ normal <> filter (`notElem` normal) extra
     let f target = DamageEnemy target source damage
-    pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- enemies, let target = enemyRef x], ClearRemoved]
+    pure $ [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- enemies, let target = enemyRef x] | notNull enemies] <> [ClearRemoved]
   Stun target source -> case target of
     VillainRef vid -> pure [VillainMessage vid $ VillainStunned source]
     MinionRef mid -> pure [MinionMessage mid $ MinionStunned source]
     EnemyRef eid -> case eid of
       EnemyVillainId vid -> pure [VillainMessage vid $ VillainStunned source]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionStunned source]
+      EnemyAttachmentId _ -> pure []
     _ -> error "can not stun target"
   Confuse target source -> case target of
     VillainRef vid -> pure [VillainMessage vid $ VillainConfused source]
@@ -343,6 +353,7 @@ resolveChoice ident = \case
     EnemyRef eid -> case eid of
       EnemyVillainId vid -> pure [VillainMessage vid $ VillainConfused source]
       EnemyMinionId mid -> pure [MinionMessage mid $ MinionConfused source]
+      EnemyAttachmentId _ -> pure []
     _ -> error "can not confuse target"
   Recover -> do
     forbidden <- elem CannotRecover <$> getModifiers (IdentityRef ident)
@@ -354,14 +365,16 @@ resolveChoice ident = \case
       AllyCharacter ident' -> [AllyMessage ident' $ AllyHealed n]
       VillainCharacter ident' -> [VillainMessage ident' $ VillainHealed n]
       MinionCharacter ident' -> [MinionMessage ident' $ MinionHealed n]
+      AttachmentCharacter _ -> []
   DamageCharacter characterId source damage -> do
+    conditional <- conditionalAttackReduction (characterRef characterId) source damage
     modifiers <- getModifiers (characterRef characterId)
     let isAttack = case damageSource damage of
           FromAttack -> True
           FromPlayerAttack _ -> True
           FromAllyAttack _ -> True
           _ -> False
-        reduction = if isAttack then sum [n | AttackDamageReduction n <- modifiers] else 0
+        reduction = conditional + if isAttack then sum [n | AttackDamageReduction n <- modifiers] else 0
         reduced = damage {damageAmount = subtractNatural reduction (damageAmount damage)}
     case characterId of
       IdentityCharacter ident' -> do
@@ -371,6 +384,7 @@ resolveChoice ident = \case
       -- enemy reductions are applied by their own damage pipeline
       VillainCharacter ident' -> choiceMessages ident (DamageEnemy (VillainRef ident') source damage)
       MinionCharacter ident' -> choiceMessages ident (DamageEnemy (MinionRef ident') source damage)
+      AttachmentCharacter aid -> choiceMessages ident (DamageEnemy (AttachmentRef aid) source damage)
   Attack -> pure [IdentityMessage ident $ SideMessage Attacked]
   Thwart -> pure [IdentityMessage ident $ SideMessage Thwarted]
   Defend enemyId ->

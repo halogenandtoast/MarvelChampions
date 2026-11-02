@@ -47,8 +47,10 @@ instance Entity PlayerIdentity where
     , playerIdentityUpgrades :: HashSet UpgradeId
     , playerIdentityExhausted :: Bool
     , playerIdentityEncounterCards :: [EncounterCard]
+    , playerIdentityTuckedEncounterCards :: [EncounterCard]
     , playerIdentityBoostCards :: [EncounterCard]
     -- ^ facedown boost cards on this identity, distinct from dealt encounter cards
+    , playerIdentityLastDefense :: Natural
     , playerIdentityDamageReduction :: Natural
     , playerIdentityStunned :: Bool
     , playerIdentityConfused :: Bool
@@ -84,7 +86,9 @@ instance Entity PlayerIdentity where
     PlayerIdentityUpgrades :: Field PlayerIdentity (HashSet UpgradeId)
     PlayerIdentityExhausted :: Field PlayerIdentity Bool
     PlayerIdentityEncounterCards :: Field PlayerIdentity [EncounterCard]
+    PlayerIdentityTuckedEncounterCards :: Field PlayerIdentity [EncounterCard]
     PlayerIdentityBoostCards :: Field PlayerIdentity [EncounterCard]
+    PlayerIdentityLastDefense :: Field PlayerIdentity Natural
     PlayerIdentityDamageReduction :: Field PlayerIdentity Natural
     PlayerIdentityStunned :: Field PlayerIdentity Bool
     PlayerIdentityConfused :: Field PlayerIdentity Bool
@@ -113,7 +117,9 @@ instance Entity PlayerIdentity where
     PlayerIdentityUpgrades -> playerIdentityUpgrades
     PlayerIdentityExhausted -> playerIdentityExhausted
     PlayerIdentityEncounterCards -> playerIdentityEncounterCards
+    PlayerIdentityTuckedEncounterCards -> playerIdentityTuckedEncounterCards
     PlayerIdentityBoostCards -> playerIdentityBoostCards
+    PlayerIdentityLastDefense -> playerIdentityLastDefense
     PlayerIdentityDamageReduction -> playerIdentityDamageReduction
     PlayerIdentityStunned -> playerIdentityStunned
     PlayerIdentityConfused -> playerIdentityConfused

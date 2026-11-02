@@ -26,7 +26,10 @@ allUpgrades :: HashMap CardCode SomeUpgradeCard
 allUpgrades = fromList $ map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
-  [ SomeUpgradeCard nc48004, SomeUpgradeCard nc48005, SomeUpgradeCard nc48006, SomeUpgradeCard nc48014, SomeUpgradeCard nc48015
+  [ SomeUpgradeCard fw53008, SomeUpgradeCard fw53009, SomeUpgradeCard fw53010, SomeUpgradeCard fw53011, SomeUpgradeCard fw53012, SomeUpgradeCard fw53013, SomeUpgradeCard fw53023, SomeUpgradeCard fw53024, SomeUpgradeCard fw53034, SomeUpgradeCard fw54002, SomeUpgradeCard fw54008, SomeUpgradeCard fw54009, SomeUpgradeCard fw54010, SomeUpgradeCard fw54011, SomeUpgradeCard fw54017, SomeUpgradeCard fw54018, SomeUpgradeCard fw54019, SomeUpgradeCard fw54020, SomeUpgradeCard fw54033
+  , SomeUpgradeCard aosP50010, SomeUpgradeCard aosP50011, SomeUpgradeCard aosP50035a, SomeUpgradeCard aosP50035b, SomeUpgradeCard aosP50042, SomeUpgradeCard aosP50043, SomeUpgradeCard aosP50044, SomeUpgradeCard aosP50045, SomeUpgradeCard aosP50046, SomeUpgradeCard aosP50050, SomeUpgradeCard aosP50051, SomeUpgradeCard aosP50052, SomeUpgradeCard aosP50058
+  , SomeUpgradeCard ajaAdannaShuri, SomeUpgradeCard kimoyoBeadsShuri, SomeUpgradeCard pantherClawsShuri, SomeUpgradeCard spiderBitesShuri, SomeUpgradeCard vibraniumSuitShuri, SomeUpgradeCard invisibilityGearShuri, SomeUpgradeCard stingOperationShuri, SomeUpgradeCard redemptionShuri, SomeUpgradeCard eideticMemorySilk, SomeUpgradeCard organicWebbingSilk, SomeUpgradeCard outwitSilk, SomeUpgradeCard spiderClawsSilk, SomeUpgradeCard spiderReflexesSilk, SomeUpgradeCard energyShieldSilk, SomeUpgradeCard readyforaFightSilk, SomeUpgradeCard stunGunSilk
+  , SomeUpgradeCard nc48004, SomeUpgradeCard nc48005, SomeUpgradeCard nc48006, SomeUpgradeCard nc48014, SomeUpgradeCard nc48015
   , SomeUpgradeCard jubilee47004, SomeUpgradeCard jubilee47005, SomeUpgradeCard jubilee47013, SomeUpgradeCard jubilee47019
   , SomeUpgradeCard suppressingFire
   , SomeUpgradeCard frozenSolid

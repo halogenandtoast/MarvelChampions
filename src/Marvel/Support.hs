@@ -31,7 +31,10 @@ allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
-  [ SomeSupportCard nc48003
+  [ SomeSupportCard fw53006, SomeSupportCard fw53007, SomeSupportCard fw53020, SomeSupportCard fw53021, SomeSupportCard fw53037, SomeSupportCard fw54007
+  , SomeSupportCard aosP50008, SomeSupportCard aosP50009, SomeSupportCard aosP50015, SomeSupportCard aosP50017, SomeSupportCard aosP50018, SomeSupportCard aosP50019, SomeSupportCard aosP50020, SomeSupportCard aosP50028, SomeSupportCard aosP50040, SomeSupportCard aosP50041, SomeSupportCard aosP50055, SomeSupportCard aosP50056
+  , SomeSupportCard theElephantsTrunkShuri, SomeSupportCard queenRamondaShuri, SomeSupportCard theRaftShuri, SomeSupportCard doraMilajeShuri, SomeSupportCard targetSpotterShuri, SomeSupportCard albertMoonSilk, SomeSupportCard jJonahJamesonSilk, SomeSupportCard drSinclairSilk
+  , SomeSupportCard nc48003
   , SomeSupportCard iceWall
   , SomeSupportCard asteroidM, SomeSupportCard wontStayDown, SomeSupportCard childrenOfTheAtom
   , SomeSupportCard missionTeamFront, SomeSupportCard missionTeamFinished

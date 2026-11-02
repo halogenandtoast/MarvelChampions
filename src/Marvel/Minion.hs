@@ -2,6 +2,7 @@
 
 module Marvel.Minion where
 
+import Marvel.Minion.Minions.AgentsOfShield qualified as AosEncounter
 import Marvel.Minion.Minions.AgeOfApocalypseUnus
 
 import Marvel.Minion.Minions.AgeOfApocalypseSavageLand
@@ -74,7 +75,13 @@ allMinions =
   fromList $
     map
       (toFst someMinionCardCode)
-      [ SomeMinionCard nc48027, SomeMinionCard nc48034, SomeMinionCard nc48035, SomeMinionCard nc48036, SomeMinionCard nc48037
+      [ SomeMinionCard AosEncounter.aosControlledMinion
+  , SomeMinionCard AosEncounter.aosReluctantFoeMinion
+  , SomeMinionCard AosEncounter.aos50072, SomeMinionCard AosEncounter.aos50073, SomeMinionCard AosEncounter.aos50080, SomeMinionCard AosEncounter.aos50083, SomeMinionCard AosEncounter.aos50084, SomeMinionCard AosEncounter.aos50093, SomeMinionCard AosEncounter.aos50094, SomeMinionCard AosEncounter.aos50098, SomeMinionCard AosEncounter.aos50099, SomeMinionCard AosEncounter.aos50100, SomeMinionCard AosEncounter.aos50113, SomeMinionCard AosEncounter.aos50120, SomeMinionCard AosEncounter.aos50125, SomeMinionCard AosEncounter.aos50126, SomeMinionCard AosEncounter.aos50133, SomeMinionCard AosEncounter.aos50139, SomeMinionCard AosEncounter.aos50143, SomeMinionCard AosEncounter.aos50148, SomeMinionCard AosEncounter.aos50152, SomeMinionCard AosEncounter.aos50156, SomeMinionCard AosEncounter.aos50161, SomeMinionCard AosEncounter.aos50172, SomeMinionCard AosEncounter.aos50178
+  , SomeMinionCard fw53030, SomeMinionCard fw53032, SomeMinionCard fw53038, SomeMinionCard fw54028, SomeMinionCard fw54031, SomeMinionCard fw54034
+  , SomeMinionCard aosP50030, SomeMinionCard aosP50060, SomeMinionCard aosP50062
+  , SomeMinionCard klawShuri, SomeMinionCard mUSICShuri, SomeMinionCard joystickShuri, SomeMinionCard morlunSilk, SomeMinionCard atlasSilk
+  , SomeMinionCard nc48027, SomeMinionCard nc48034, SomeMinionCard nc48035, SomeMinionCard nc48036, SomeMinionCard nc48037
   , SomeMinionCard jubilee47024, SomeMinionCard jubilee47030
   , SomeMinionCard sauron
   , SomeMinionCard pyroIceman

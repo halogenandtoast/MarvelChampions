@@ -40,15 +40,11 @@ instance HasModifiersFor WreckersCommand where
 -- side scheme. Hero Action: spend [physical] [physical] resources -> discard this card.
 instance HasAbilities WreckersCommand where
   getAbilities (WreckersCommand a) = case attachmentEnemy a of
-    Just enemy@(EnemyVillainId _) ->
-      [ windowAbility a 1 (W.VillainSchemed After (VillainWithId $ villainOf enemy)) ForcedResponse NoCost (runAbility a 1)
+    Just (EnemyVillainId vid) ->
+      [ windowAbility a 1 (W.VillainSchemed After (VillainWithId vid)) ForcedResponse NoCost (runAbility a 1)
       , ability a 2 HeroAction NoCriteria (MultiResourceCost [Just Physical, Just Physical]) (DiscardTarget $ toRef a)
       ]
     _ -> []
-   where
-    villainOf = \case
-      EnemyVillainId v -> v
-      EnemyMinionId _ -> error "attached to a villain"
 
 instance RunMessage WreckersCommand where
   runMessage msg a@(WreckersCommand attrs) = runQueueT $ case msg of

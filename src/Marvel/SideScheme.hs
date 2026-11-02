@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.SideScheme.SideSchemes.AgentsOfShield qualified as AosEncounter
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseUnus
 
 import Marvel.SideScheme.SideSchemes.AgeOfApocalypseSavageLand
@@ -84,9 +85,13 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
   Just (SomeSideSchemeCard a) -> f a
 
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
-allSideSchemes = fromList $ map
-  (toFst someSideSchemeCardCode)
-  [ SomeSideSchemeCard nc48020, SomeSideSchemeCard nc48028, SomeSideSchemeCard nc48033
+allSideSchemes = fromList $ concatMap
+  (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
+  [ SomeSideSchemeCard AosEncounter.aos50074, SomeSideSchemeCard AosEncounter.aos50075, SomeSideSchemeCard AosEncounter.aos50081, SomeSideSchemeCard AosEncounter.aos50085, SomeSideSchemeCard AosEncounter.aos50095, SomeSideSchemeCard AosEncounter.aos50101, SomeSideSchemeCard AosEncounter.aos50121, SomeSideSchemeCard AosEncounter.aos50122, SomeSideSchemeCard AosEncounter.aos50127, SomeSideSchemeCard AosEncounter.aos50135, SomeSideSchemeCard AosEncounter.aos50136, SomeSideSchemeCard AosEncounter.aos50140, SomeSideSchemeCard AosEncounter.aos50146, SomeSideSchemeCard AosEncounter.aos50150, SomeSideSchemeCard AosEncounter.aos50154, SomeSideSchemeCard AosEncounter.aos50159, SomeSideSchemeCard AosEncounter.aos50162, SomeSideSchemeCard AosEncounter.aos50173, SomeSideSchemeCard AosEncounter.aos50174, SomeSideSchemeCard AosEncounter.aos50180
+  , SomeSideSchemeCard fw53031, SomeSideSchemeCard fw53041, SomeSideSchemeCard fw54029, SomeSideSchemeCard fw54036
+  , SomeSideSchemeCard aosP50031, SomeSideSchemeCard aosP50061
+  , SomeSideSchemeCard goingUndercoverShuri, SomeSideSchemeCard showofEmpathyShuri, SomeSideSchemeCard manipulatedMUSICShuri, SomeSideSchemeCard playingforKeepsShuri, SomeSideSchemeCard gettheScoopSilk, SomeSideSchemeCard theGreatHuntSilk, SomeSideSchemeCard growInvulnerableSilk
+  , SomeSideSchemeCard nc48020, SomeSideSchemeCard nc48028, SomeSideSchemeCard nc48033
   , SomeSideSchemeCard jubilee47003, SomeSideSchemeCard jubilee47016, SomeSideSchemeCard jubilee47025, SomeSideSchemeCard jubilee47031, SomeSideSchemeCard jubilee47032, SomeSideSchemeCard jubilee47033
   , SomeSideSchemeCard sauronLives
   , SomeSideSchemeCard playingWithFire

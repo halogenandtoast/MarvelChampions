@@ -3,6 +3,7 @@ module Marvel.Criteria where
 import Marvel.Prelude
 import Marvel.Phase (Phase)
 import Marvel.Card.Code (CardCode)
+import Marvel.Card.Id (CardId)
 import Marvel.Id (SupportId, UpgradeId)
 import Marvel.Keyword (Keyword)
 
@@ -18,6 +19,7 @@ data Criteria
   | -- | the acting player can resolve the current unblanked Setting Special as a cost
     CanResolveSettingSpecial
   | NemesisMinionOutOfPlay
+  | HasTuckedEncounterCard
   | NoCriteria
   | InHeroForm
   | InAlterEgoForm
@@ -27,9 +29,11 @@ data Criteria
   | DuringPhase Phase
   | NoCardsPlayedThisPhase
   | HeldWeaponSwapAvailable UpgradeId
+  | EncounterTopHasEffect
   | EncounterIconExists
   | PoolIconEffectsCanResolve
   | PoolAllyInHandCanEnterPlay
+  | MovableSupportCounter Trait
   | MovableThreatExists
   | PlayedEventInDiscard
   | MinionExists MinionMatcher
@@ -56,6 +60,7 @@ data Criteria
   | EnvironmentExists EnvironmentMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
+  | PayingForCardOtherThan CardId
   | PayingForAbility CardCode Natural
   | SourceHasKeyword Keyword
   | -- | the card's resource cost is paid with only this type of resource: "you can

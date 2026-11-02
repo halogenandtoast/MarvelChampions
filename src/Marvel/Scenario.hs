@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.AgentsOfShield
 import Marvel.Scenario.AgeOfApocalypseDarkBeast
 import Marvel.Scenario.AgeOfApocalypseEnSabahNur
 import Marvel.Scenario.AgeOfApocalypseApocalypse
@@ -64,7 +65,8 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
+    [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
+  , SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
     , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
     , SomeScenarioCard mojoScenario
     , SomeScenarioCard mojoMagogScenario
@@ -142,7 +144,12 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("45118", [EncounterSet.AoaDystopianNightmare])
+    [ ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
+    , ("50086a", [EncounterSet.AosAimScience, EncounterSet.AosBatrocsBrigade])
+    , ("50103a", [EncounterSet.AosScientistSupreme])
+    , ("50129a", [EncounterSet.AosGravitationalPull, EncounterSet.AosHardSound])
+    , ("50165a", [EncounterSet.AosScientistSupreme, EncounterSet.AosShield])
+    , ("45118", [EncounterSet.AoaDystopianNightmare])
     , ("45184a", [EncounterSet.AoaCelestialTech, EncounterSet.AoaClanAkkaba])
     , ("45101b", [EncounterSet.AoaDarkRiders, EncounterSet.AoaInfinites])
     , ("45081a", [EncounterSet.AoaDystopianNightmare, EncounterSet.AoaHounds])

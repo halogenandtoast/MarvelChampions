@@ -1,5 +1,24 @@
 module Marvel.Minion.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet
+import Marvel.Keyword qualified as AospKeyword
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -176,7 +195,11 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ nc48027, nc48034, nc48035, nc48036, nc48037
+      [ aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
+  , FalconWinter.fw53030, FalconWinter.fw53032, FalconWinter.fw53038, FalconWinter.fw54028, FalconWinter.fw54031, FalconWinter.fw54034
+  , aosP50030, aosP50060, aosP50062
+  , BlackPantherShuriPack.klawShuri, BlackPantherShuriPack.mUSICShuri, BlackPantherShuriPack.joystickShuri, SilkPack.morlunSilk, SilkPack.atlasSilk
+  , nc48027, nc48034, nc48035, nc48036, nc48037
   , Jubilee.jubilee47024, Jubilee.jubilee47030
   , pyroIceman
   , sauron
@@ -4892,3 +4915,173 @@ nc48037 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+-- Agents of Shield players
+
+aosP50030 :: CardDef
+aosP50030 = CardDef
+  { cdCardCode = "50030"
+  , cdName = "Controller"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Elite, AospTrait.Psionic]
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.MariaHillNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50060 :: CardDef
+aosP50060 = CardDef
+  { cdCardCode = "50060"
+  , cdName = "Orion"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Leviathan]
+  , cdKeywords = fromList [AospKeyword.Toughness]
+  , cdCardType = AospCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = True
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.NickFuryNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50062 :: CardDef
+aosP50062 = CardDef
+  { cdCardCode = "50062"
+  , cdName = "Leviathan Soldier"
+  , cdCost = Nothing
+  , cdTraits = fromList [AospTrait.Leviathan]
+  , cdKeywords = fromList [AospKeyword.Toughness]
+  , cdCardType = AospCard.MinionType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.NickFuryNemesis
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aos50072 :: CardDef
+aos50072 = AosEncounter.aos50072
+
+aos50073 :: CardDef
+aos50073 = AosEncounter.aos50073
+
+aos50080 :: CardDef
+aos50080 = AosEncounter.aos50080
+
+aos50083 :: CardDef
+aos50083 = AosEncounter.aos50083
+
+aos50084 :: CardDef
+aos50084 = AosEncounter.aos50084
+
+aos50093 :: CardDef
+aos50093 = AosEncounter.aos50093
+
+aos50094 :: CardDef
+aos50094 = AosEncounter.aos50094
+
+aos50098 :: CardDef
+aos50098 = AosEncounter.aos50098
+
+aos50099 :: CardDef
+aos50099 = AosEncounter.aos50099
+
+aos50100 :: CardDef
+aos50100 = AosEncounter.aos50100
+
+aos50113 :: CardDef
+aos50113 = AosEncounter.aos50113
+
+aos50120 :: CardDef
+aos50120 = AosEncounter.aos50120
+
+aos50125 :: CardDef
+aos50125 = AosEncounter.aos50125
+
+aos50126 :: CardDef
+aos50126 = AosEncounter.aos50126
+
+aos50133 :: CardDef
+aos50133 = AosEncounter.aos50133
+
+aos50139 :: CardDef
+aos50139 = AosEncounter.aos50139
+
+aos50143 :: CardDef
+aos50143 = AosEncounter.aos50143
+
+aos50148 :: CardDef
+aos50148 = AosEncounter.aos50148
+
+aos50152 :: CardDef
+aos50152 = AosEncounter.aos50152
+
+aos50156 :: CardDef
+aos50156 = AosEncounter.aos50156
+
+aos50161 :: CardDef
+aos50161 = AosEncounter.aos50161
+
+aos50172 :: CardDef
+aos50172 = AosEncounter.aos50172
+
+aos50178 :: CardDef
+aos50178 = AosEncounter.aos50178

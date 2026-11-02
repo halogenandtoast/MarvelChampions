@@ -127,6 +127,7 @@ instance Entity Villain where
     , villainBoostCards :: [EncounterCard]
     , villainBoost :: Natural
     , villainPendingAttackBoostCards :: Natural
+    , villainSchemeReplacesAttack :: Bool
     , villainSchemeWithoutBoost :: Bool
     , villainPendingSchemeBoostCards :: Natural
     , villainAttackAdditionalBoostCards :: Natural
@@ -237,6 +238,7 @@ villain f cardDef sch atk startingHp =
             , villainBoostCards = mempty
             , villainBoost = 0
             , villainPendingAttackBoostCards = 0
+            , villainSchemeReplacesAttack = False
             , villainSchemeWithoutBoost = False
             , villainPendingSchemeBoostCards = 0
             , villainAttackAdditionalBoostCards = 0
@@ -363,7 +365,8 @@ runVillainMessage msg attrs = case msg of
   -- retaliate answers the attack whether or not a tough status card took its damage
   VillainRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    for_ [n | Retaliate n <- toList keywords] $ retaliate attrs attacker
+    let amount = sum [n | Retaliate n <- keywords]
+    when (amount > 0) $ retaliate attrs attacker amount
     pure attrs
   VillainDamaged source dealt -> do
     modifiers <- getModifiers attrs
@@ -433,13 +436,17 @@ runVillainMessage msg attrs = case msg of
   VillainBecomeTough -> pure $ attrs & toughL .~ True
   VillainPreventAttackDamage source -> pure attrs {villainPreventedAttack = Just source}
   -- a stalwart villain cannot be stunned or confused (RR Stalwart)
-  Msg.VillainStunned _ -> statusUnlessStalwart attrs StunnedStatus
-  Msg.VillainConfused _ -> statusUnlessStalwart attrs ConfusedStatus
+  Msg.VillainStunned _ -> applySolidSoundStatus attrs StunnedStatus
+  Msg.VillainConfused _ -> applySolidSoundStatus attrs ConfusedStatus
   VillainSchemes -> do
     confused <- isConfused attrs
     if confused
       then pure $ attrs {villainActivationPlayer = Nothing} & confusedL .~ False & boostL .~ 0
-      else attrs <$ villainStep vid VillainBeginScheme
+      else do
+        player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
+        checkWindows [W.Window W.Would $ W.EnemySchemeBegins (toEnemyId attrs) player]
+        villainStep vid VillainBeginScheme
+        pure attrs
   -- queued after the scheme, everything it leads to runs before the player is forgotten,
   -- whether the scheme resolved, was replaced or was cancelled
   VillainSchemesWithBonus ident n -> do
@@ -450,12 +457,12 @@ runVillainMessage msg attrs = case msg of
     resolveVillainActivationAfterWould vid VillainSchemes
     villainStep vid VillainSchemeAgainstEnded
     pure attrs {villainActivationPlayer = Just ident}
-  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing, villainSchemeWithoutBoost = False, villainPendingSchemeBoostCards = 0, villainPendingAttackBoostCards = 0}
+  VillainSchemeAgainstEnded -> pure attrs {villainActivationPlayer = Nothing, villainSchemeReplacesAttack = False, villainSchemeRemoval = Nothing, villainSchemeWithoutBoost = False, villainPendingSchemeBoostCards = 0, villainPendingAttackBoostCards = 0}
   VillainBeginScheme -> do
     -- against the player it was said to be against, or the active player
     player <- maybe getActivePlayerId pure (villainActivationPlayer attrs)
     -- the scheme is his activation against the player whose alter-ego activates him
-    when (isNothing $ villainAttacking attrs) $ checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
+    unless (villainSchemeReplacesAttack attrs) $ checkWindows [W.Window W.When $ W.EnemyActivation (toEnemyId attrs) player]
     checkWindows [W.Window W.When $ W.Schemed vid]
     modifiers <- getModifiers attrs
     unless (villainSchemeWithoutBoost attrs || SchemesWithoutBoost `elem` modifiers) dealActivationBoost
@@ -463,7 +470,7 @@ runVillainMessage msg attrs = case msg of
     villainStep vid VillainFlipBoostCards
     villainStep vid VillainSchemed
     clearBoosts
-    when (isNothing $ villainAttacking attrs) $ checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
+    checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
   VillainAttacksAlly ident allyId -> do
@@ -516,7 +523,9 @@ runVillainMessage msg attrs = case msg of
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
-  VillainDealtBoost c -> pure $ attrs & boostCardsL %~ (c :)
+  VillainDealtBoost c -> do
+    checkWindows [W.Window W.After $ W.FacedownBoostGiven (EnemyVillainId $ villainId attrs) c]
+    pure $ attrs & boostCardsL %~ (c :)
   AttachedToVillain attachmentId -> do
     pure $ attrs & attachmentsL %~ HashSet.insert attachmentId
   AttachedUpgradeToVillain upgradeId -> do
@@ -595,17 +604,20 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "fwReplaceBoost" (fromJSON -> Success (old, replacement)) | isTarget attrs target ->
+      pure attrs {villainBoostCards = map (\card -> if card == old then replacement else card) (villainBoostCards attrs)}
+    CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {villainSchemeReplacesAttack = flag}
     CardSpecific target "schemeWithoutBoost" (fromJSON -> Success flag) | target == toRef attrs ->
       pure attrs {villainSchemeWithoutBoost = flag}
     CardSpecific target "additionalActivationBoost" (fromJSON -> Success n) | target == toRef attrs ->
       pure attrs {villainPendingAttackBoostCards = n, villainPendingSchemeBoostCards = n}
     CardSpecific target "clearSchemeBonus" (fromJSON -> Success n) | target == toRef attrs ->
       pure attrs {villainScheme = Sch (subtractNatural n $ unSch $ villainScheme attrs)}
-    CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
-      pure attrs {villainAttackTarget = Just (AllyCharacter aid), villainAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (villainAttacking attrs)}
+    CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success (you,aid)) | target == toRef attrs ->
+      pure attrs {villainActivationPlayer = Just you, villainAttackTarget = Just (AllyCharacter aid), villainAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (villainAttacking attrs)}
     PlaceCounters target n | target == toRef attrs -> pure attrs {villainCounters = villainCounters attrs + n}
     RemoveCounters target n | target == toRef attrs -> pure attrs {villainCounters = subtractNatural n (villainCounters attrs)}
-    GiveStatus (VillainRef vid) s | vid == villainId attrs -> statusUnlessStalwart attrs s
+    GiveStatus (VillainRef vid) s | vid == villainId attrs -> applySolidSoundStatus attrs s
     RemoveStatus (VillainRef vid) StunnedStatus | vid == villainId attrs, villainAdditionalStun attrs -> pure attrs {villainAdditionalStun = False}
     RemoveStatus (VillainRef vid) ConfusedStatus | vid == villainId attrs, villainAdditionalConfuse attrs -> pure attrs {villainAdditionalConfuse = False}
     RemoveStatus (VillainRef vid) s | vid == villainId attrs -> pure $ attrs & statusL s .~ False
@@ -663,7 +675,7 @@ carryOver VillainAttrs {..} = update
       & (upgradesL .~ villainUpgrades)
       & (boostCardsL .~ villainBoostCards)
       & (boostL .~ villainBoost)
-      & (\a -> a {villainCounters = villainCounters, villainSchemeWithoutBoost = villainSchemeWithoutBoost, villainPendingSchemeBoostCards = villainPendingSchemeBoostCards, villainAttackGrantedKeywords = villainAttackGrantedKeywords, villainPendingAttackBoostCards = villainPendingAttackBoostCards, villainAttackAdditionalBoostCards = villainAttackAdditionalBoostCards})
+      & (\a -> a {villainCounters = villainCounters, villainSchemeReplacesAttack = villainSchemeReplacesAttack, villainSchemeWithoutBoost = villainSchemeWithoutBoost, villainPendingSchemeBoostCards = villainPendingSchemeBoostCards, villainAttackGrantedKeywords = villainAttackGrantedKeywords, villainPendingAttackBoostCards = villainPendingAttackBoostCards, villainAttackAdditionalBoostCards = villainAttackAdditionalBoostCards})
       & (attackingL .~ (villainAttacking <&> attackDamageL %~ restage new))
       & \a -> a {villainAttackTarget = villainAttackTarget, villainActivationPlayer = villainActivationPlayer, villainPreventedAttack = villainPreventedAttack}
   restage VillainAttrs {villainAttack = Atk new} dmg = subtractNatural (unAtk villainAttack) (dmg + new)
@@ -733,9 +745,14 @@ instance FromJSON (Attrs Villain) where
       KeyMap.insertWith (\_ old -> old) "villainCounters" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainSchemeRemoval" (toJSON (Nothing :: Maybe (IdentityId, Source))) $
       KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
-      KeyMap.insertWith (\_ old -> old) "villainSchemeWithoutBoost" (Bool False) $
+      KeyMap.insertWith (\_ old -> old) "villainSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "villainSchemeWithoutBoost" (Bool False) $
       KeyMap.insertWith (\_ old -> old) "villainPendingSchemeBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackAdditionalBoostCards" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainAttackGrantedKeywords" (toJSON ([] :: [Keyword])) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalStun" (Bool False) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalConfuse" (Bool False) o
+
+applySolidSoundStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Attrs Villain)
+applySolidSoundStatus attrs status = do
+  replaced <- if status == ToughStatus then pure False else absorbStatusWithSolidSound (EnemyVillainId $ villainId attrs)
+  if replaced then pure attrs else statusUnlessStalwart attrs status

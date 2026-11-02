@@ -38,6 +38,7 @@ instance HasModifiersFor CrossfiresRifle where
     isEnemy = \case
       EnemyVillainId vid -> target == VillainRef vid
       EnemyMinionId mid -> target == MinionRef mid
+      EnemyAttachmentId aid -> target == AttachmentRef aid
   getModifiersFor _ _ _ = pure []
 
 -- | Hero Action: Exhaust your hero and spend a [wild] resource → discard Crossfire's

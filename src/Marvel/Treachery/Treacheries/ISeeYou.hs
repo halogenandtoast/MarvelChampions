@@ -49,5 +49,6 @@ instance RunMessage ISeeYou where
       when goblins case enemy of
         EnemyVillainId vid -> addBoost vid 1
         EnemyMinionId mid -> minionStep mid (MinionAddBoost 1)
+        EnemyAttachmentId _ -> pure ()
       pure t
     _ -> ISeeYou . (`With` meta) <$> runMessage msg attrs

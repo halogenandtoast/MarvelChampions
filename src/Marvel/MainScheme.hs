@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.MainScheme where
 
+import Marvel.MainScheme.MainSchemes.AgentsOfShield qualified as AosEncounter
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseUnus
 
 import Marvel.MainScheme.MainSchemes.AgeOfApocalypseFourHorsemen
@@ -44,7 +45,8 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
   Just (SomeMainSchemeCard a) -> f a
 
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
-allMainSchemes = fromList $ [("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
+allMainSchemes = fromList $ map (toFst someMainSchemeCardCode) [ SomeMainSchemeCard AosEncounter.aos50067b, SomeMainSchemeCard AosEncounter.aos50087b, SomeMainSchemeCard AosEncounter.aos50088b, SomeMainSchemeCard AosEncounter.aos50089b, SomeMainSchemeCard AosEncounter.aos50104b, SomeMainSchemeCard AosEncounter.aos50130b, SomeMainSchemeCard AosEncounter.aos50167b, SomeMainSchemeCard AosEncounter.aos50168b, SomeMainSchemeCard AosEncounter.aos50169b] <> [
+  ("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
   (toFst someMainSchemeCardCode)
   [ SomeMainSchemeCard huntingGeneTraitors, SomeMainSchemeCard theHorsemenOfApocalypse, SomeMainSchemeCard theAgeOfApocalypse, SomeMainSchemeCard darkBeastsBogusJourney, SomeMainSchemeCard enSabahNursPyramid, SomeMainSchemeCard theRiseOfApocalypse
   , SomeMainSchemeCard ne40077, SomeMainSchemeCard ne40078, SomeMainSchemeCard ne40103, SomeMainSchemeCard ne40104, SomeMainSchemeCard ne40121, SomeMainSchemeCard ne40139, SomeMainSchemeCard ne40140, SomeMainSchemeCard ne40141, SomeMainSchemeCard ne40142, SomeMainSchemeCard ne40143, SomeMainSchemeCard ne40166, SomeMainSchemeCard ne40167

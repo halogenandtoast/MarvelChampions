@@ -103,11 +103,12 @@ runMinionMessage msg attrs = case msg of
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
-    for_ [n | Retaliate n <- toList keywords] (retaliate attrs attacker)
+    let amount = sum [n | Retaliate n <- keywords]
+    when (amount > 0) $ retaliate attrs attacker amount
     pure attrs
   -- a stalwart minion cannot be stunned or confused (RR Stalwart)
-  MinionStunned _ -> statusUnlessStalwart attrs StunnedStatus
-  MinionConfused _ -> statusUnlessStalwart attrs ConfusedStatus
+  MinionStunned _ -> applyVulnerableStatus attrs StunnedStatus
+  MinionConfused _ -> applyVulnerableStatus attrs ConfusedStatus
   MinionBecomeTough -> statusUnlessStalwart attrs ToughStatus
   MinionDefendedBy characterId -> do
     forbidden <- elem AttacksCannotBeDefended <$> getModifiers attrs
@@ -145,25 +146,29 @@ runMinionMessage msg attrs = case msg of
     minionStep (minionId attrs) MinionSchemes
     minionStep (minionId attrs) MinionSchemeAgainstEnded
     pure attrs {minionActivationPlayer = Just you}
-  MinionSchemeAgainstEnded -> pure attrs {minionActivationPlayer = Nothing}
+  MinionSchemeAgainstEnded -> pure attrs {minionActivationPlayer = Nothing, minionSchemeReplacesAttack = False}
   MinionSchemes -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     confused <- isConfused attrs
     if forbidden then pure attrs else if confused
       then pure $ attrs {minionAdditionalConfuse = False} & confusedL .~ False
       else do
-        villainous <- isVillainous
-        -- the scheme is its activation against the player it is engaged with
-        let activation timing = checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (fromMaybe (minionEngagedIdentity attrs) $ minionActivationPlayer attrs)]
-        activation W.When
-        suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
-        when villainous do
-          unless suppressBoost $ dealBoost attrs
-          minionStep (minionId attrs) MinionFlipBoostCards
-        minionSchemed (minionId attrs)
-        when villainous clearBoosts
-        activation W.After
+        let you = fromMaybe (minionEngagedIdentity attrs) (minionActivationPlayer attrs)
+        checkWindows [W.Window W.Would $ W.EnemySchemeBegins (toEnemyId attrs) you]
+        minionStep (minionId attrs) MinionBeginScheme
         pure attrs
+  MinionBeginScheme -> do
+    villainous <- isVillainous
+    -- the scheme is its activation against the player it is engaged with
+    let activation timing = when (timing /= W.When || not (minionSchemeReplacesAttack attrs)) $ checkWindows [W.Window timing $ W.EnemyActivation (toEnemyId attrs) (fromMaybe (minionEngagedIdentity attrs) $ minionActivationPlayer attrs)]
+    activation W.When
+    suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
+    when (villainous && not suppressBoost) $ dealBoost attrs
+    minionStep (minionId attrs) MinionFlipBoostCards
+    minionSchemed (minionId attrs)
+    clearBoosts
+    activation W.After
+    pure attrs
   -- "attacks an ally": the player who controls it is attacked
   MinionAttacksAlly ident allyId -> do
     enemyAttacks (minionId attrs) ident
@@ -204,7 +209,7 @@ runMinionMessage msg attrs = case msg of
         checkWindows [attackWindow W.Would ident]
         minionBeginsAttack (minionId attrs) ident
         minionEndsAttack (minionId attrs)
-        whenM isVillainous clearBoosts
+        clearBoosts
         checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) ident]
         -- the attack is under way from when it is declared, as its would windows open
         attack' <- newAttack ident
@@ -216,7 +221,7 @@ runMinionMessage msg attrs = case msg of
     suppressBoost <- elem NoActivationBoostCard <$> getModifiers attrs
     when (villainous && not suppressBoost) $ dealBoost attrs
     declareDefense ident (toEnemyId attrs) (minionDefensePriority attrs)
-    when villainous $ minionStep (minionId attrs) MinionFlipBoostCards
+    minionStep (minionId attrs) MinionFlipBoostCards
     minionAttacked (minionId attrs)
     checkWindows [attackWindow W.After ident]
     pure $
@@ -230,12 +235,13 @@ runMinionMessage msg attrs = case msg of
     threat <- getModifiedScheme attrs
     modifiers <- getModifiers attrs
     destinations <- filterM (selectAny . SideSchemeWithId) [sid | MinionSchemesOn sid <- modifiers]
-    case headMay destinations of
-      Just sid -> placeThreatFrom W.ThreatFromMinion sid (threat + minionBoost attrs)
-      Nothing -> for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
+    case (minionSchemeRemoval attrs, headMay destinations) of
+      (Just you, _) -> for_ mainScheme $ \scheme -> cardSpecific GameRef "aosInformantScheme" (you,toSource attrs,scheme,threat + minionBoost attrs)
+      (Nothing, Just sid) -> placeThreatFrom W.ThreatFromMinion sid (threat + minionBoost attrs)
+      (Nothing, Nothing) -> for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
         placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
-    pure $ attrs & boostL .~ 0
+    pure $ attrs {minionSchemeRemoval = Nothing} & boostL .~ 0
   MinionEndAttack -> pure $ attrs & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
@@ -255,7 +261,9 @@ runMinionMessage msg attrs = case msg of
         attackedYou (attackEnemy attack') (attackCharacter attack')
         wasAttacked attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
-  MinionDealtBoost card -> pure $ attrs & boostCardsL %~ (<> [card])
+  MinionDealtBoost card -> do
+    checkWindows [W.Window W.After $ W.FacedownBoostGiven (EnemyMinionId $ minionId attrs) card]
+    pure $ attrs & boostCardsL %~ (<> [card])
   -- each boost card is turned faceup in turn, and its icons added; one it is given as
   -- they are ("give this enemy another boost card") is turned up after them
   MinionFlipBoostCards -> do
@@ -284,9 +292,13 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
-      CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success aid) | target == toRef attrs ->
-        pure attrs {minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
+      CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {minionSchemeReplacesAttack = flag}
+      CardSpecific target "fwReplaceBoost" (fromJSON -> Success (old, replacement)) | isTarget attrs target ->
+        pure attrs {minionBoostCards = map (\card -> if card == old then replacement else card) (minionBoostCards attrs)}
+      CardSpecific target "neRedirectAttackToAlly" (fromJSON -> Success (you,aid)) | target == toRef attrs ->
+        pure attrs {minionActivationPlayer = Just you, minionAttackTarget = Just (AllyCharacter aid), minionAttacking = fmap (\a -> a {attackCharacter = AllyCharacter aid, attackTarget = Nothing}) (minionAttacking attrs)}
       RemovePlayerCardFromHeldZones cid -> pure attrs {minionHeldCards = filter ((/= cid) . pcCardId) (minionHeldCards attrs), minionHeldTreacheries = filter ((/= cid) . ecCardId) (minionHeldTreacheries attrs)}
+      CardSpecific (isTarget attrs -> True) "informantScheme" (fromJSON -> Success you) -> pure attrs {minionSchemeRemoval = Just you}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
         let ident = minionEngagedIdentity attrs
@@ -295,7 +307,7 @@ instance RunMessage (Attrs Minion) where
         when present $ enemyActivationAfterCurrent (minionId attrs) $
           if hero then enemyAttacks (minionId attrs) ident else minionSchemes (minionId attrs)
         pure attrs
-      GiveStatus (MinionRef mid) s | mid == minionId attrs -> statusUnlessStalwart attrs s
+      GiveStatus (MinionRef mid) s | mid == minionId attrs -> applyVulnerableStatus attrs s
       RemoveStatus (MinionRef mid) StunnedStatus | mid == minionId attrs, minionAdditionalStun attrs -> pure attrs {minionAdditionalStun = False}
       RemoveStatus (MinionRef mid) ConfusedStatus | mid == minionId attrs, minionAdditionalConfuse attrs -> pure attrs {minionAdditionalConfuse = False}
       RemoveStatus (MinionRef mid) ToughStatus | mid == minionId attrs -> pure $ removeOneTough attrs
@@ -345,3 +357,13 @@ perPlayerHitPoints :: (HasGame m) => Attrs Minion -> Natural -> m [Modifier]
 perPlayerHitPoints _ n = do
   players <- getStartingPlayerCount
   pure [HitPointModifier (n * fromIntegral (players - 1)) | players > 1]
+
+applyVulnerableStatus :: ReverseQueue m => Attrs Minion -> StatusCard -> m (Attrs Minion)
+applyVulnerableStatus attrs status = do
+  replaced <- if status == ToughStatus then pure False else absorbStatusWithSolidSound (EnemyMinionId $ minionId attrs)
+  updated <- if replaced then pure attrs else statusUnlessStalwart attrs status
+  keywords <- getModifiedKeywords updated
+  stunned <- isStunned updated
+  confused <- isConfused updated
+  when (Vulnerable `elem` keywords && (stunned || confused)) $ removeFromPlay updated
+  pure updated

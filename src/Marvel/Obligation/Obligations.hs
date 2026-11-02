@@ -1,4 +1,7 @@
 module Marvel.Obligation.Obligations (module X) where
+import Marvel.Obligation.Obligations.AgentsOfShield as X
+import Marvel.Obligation.Obligations.Fw53029 as X
+import Marvel.Obligation.Obligations.Fw54027 as X
 
 import Marvel.Obligation.Obligations.Nc48026 as X
 
@@ -145,3 +148,11 @@ import Marvel.Obligation.Obligations.OldGrievances as X
 -- Magneto
 
 import Marvel.Obligation.Obligations.HotHeaded as X
+
+import Marvel.Obligation.Obligations.TChallasShadowShuri as X
+
+import Marvel.Obligation.Obligations.SilkSenseOverloadSilk as X
+
+-- Agents of Shield players
+import Marvel.Obligation.Obligations.AosP50029 as X
+import Marvel.Obligation.Obligations.AosP50059 as X

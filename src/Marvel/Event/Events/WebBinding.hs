@@ -26,5 +26,6 @@ instance RunMessage WebBinding where
       case enemy of
         EnemyMinionId mid -> dealDamage mid attrs (toDamage 4 FromAbility)
         EnemyVillainId _ -> pure ()
+        EnemyAttachmentId _ -> pure ()
       pure e
     _ -> WebBinding <$> runMessage msg attrs

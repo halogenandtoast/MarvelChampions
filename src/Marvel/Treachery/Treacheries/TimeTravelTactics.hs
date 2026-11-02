@@ -10,7 +10,6 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Message.Lifted
-import Marvel.Queue (push)
 import Marvel.Ref ()
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
@@ -35,8 +34,9 @@ instance RunMessage TimeTravelTactics where
       pure t
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       n <- countObligationsOf =<< getBoostedPlayer enemy
-      when (n > 0) $ push case enemy of
-        EnemyVillainId vid -> VillainMessage vid (VillainAddBoost n)
-        EnemyMinionId mid -> MinionMessage mid (MinionAddBoost n)
+      when (n > 0) case enemy of
+        EnemyVillainId vid -> addBoost vid n
+        EnemyMinionId mid -> minionStep mid (MinionAddBoost n)
+        EnemyAttachmentId _ -> pure ()
       pure t
     _ -> TimeTravelTactics <$> runMessage msg attrs

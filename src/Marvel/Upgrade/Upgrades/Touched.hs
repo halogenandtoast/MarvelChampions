@@ -28,6 +28,7 @@ instance HasModifiersFor Touched where
   getModifiersFor _ (IdentityRef you) (Touched a) | you == upgradeOwner a = do
     host <- touchedHost you
     case host of
+      Just (AttachmentCharacter _) -> pure []
       Just (IdentityCharacter p) -> do
         hero <- selectAny (IdentityWithId p <> HeroIdentity)
         pure [KeywordModifier Stalwart | hero]

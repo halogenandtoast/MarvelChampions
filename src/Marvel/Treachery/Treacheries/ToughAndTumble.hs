@@ -45,6 +45,7 @@ instance RunMessage ToughAndTumble where
               if hero then enemyAttacks enemy you else case enemy of
                 EnemyVillainId vid -> villainSchemesAgainst vid you
                 EnemyMinionId mid -> minionSchemes mid
+                EnemyAttachmentId _ -> pure ()
               cardSpecific attrs "activateNext" (you, hero, filter (/= enemy) enemies)
           | enemy <- eligible ]
       pure $ ToughAndTumble (attrs `With` meta)

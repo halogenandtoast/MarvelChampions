@@ -70,6 +70,7 @@ instance Entity Upgrade where
     , upgradeHeldCardsFacedown :: Bool
     , upgradeResourceSlots :: [Resource]
     , upgradeOccupiedSlots :: [Int]
+    , upgradeRedirectNextScheme :: Bool
     , upgradeFaceDown :: Bool
     -- ^ facedown, out of play for its text (Spectrum's energy forms)
     }
@@ -223,6 +224,7 @@ upgrade f cardDef =
             , upgradeHeldCardsFacedown = False
             , upgradeResourceSlots = []
             , upgradeOccupiedSlots = []
+            , upgradeRedirectNextScheme = False
             , upgradeFaceDown = False
             }
     }
@@ -295,6 +297,7 @@ instance RunMessage (Attrs Upgrade) where
                 _ -> Nothing
              , upgradeAttachedAlly = case host of AllyCharacter aid -> Just aid; _ -> Nothing
              , upgradeAttachedIdentity = case host of IdentityCharacter you -> Just you; _ -> Nothing}
+    PlaceCounters target n | target == toRef a -> a <$ upgradeStep (upgradeId a) (AddUpgradeUses n)
     RemoveCounters target n | target == toRef a -> do
       when (upgradeUses a > 0 && n >= upgradeUses a && upgradeDiscardIfNoUses a) $ removeFromPlay a
       pure $ a & usesL %~ subtractNatural n
@@ -384,4 +387,4 @@ instance RunMessage (Attrs Upgrade) where
 
 instance FromJSON (Attrs Upgrade) where
   parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
-    [("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]
+    [("upgradeRedirectNextScheme", Bool False), ("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]

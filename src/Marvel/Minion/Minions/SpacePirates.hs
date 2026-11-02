@@ -38,6 +38,7 @@ anotherBoostCard attrs = \case
     -- turned up for a villainous minion's, it still gives "the villain" its card (RR
     -- Villainous), facedown on him for his next activation
     EnemyMinionId _ -> selectOne ActiveVillain >>= traverse_ dealBoost
+    EnemyAttachmentId _ -> pure ()
   _ -> Nothing
 
 pirateCommander :: MinionCard PirateCommander

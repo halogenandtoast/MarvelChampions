@@ -53,6 +53,7 @@ instance FromJSON Attack where
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
   EnemyMinionId mid -> MinionRef mid
+  EnemyAttachmentId aid -> AttachmentRef aid
   EnemyVillainId vid -> VillainRef vid
 
 -- | The enemy a source names, as the source of an enemy's attack does.

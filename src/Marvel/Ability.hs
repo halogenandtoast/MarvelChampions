@@ -20,8 +20,8 @@ import Marvel.GameValue (GameValue (Static))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
-import Marvel.Modifier (Modifier (CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
-import Marvel.Card.Def (cdKeywords, cardMatch, CardType (AllyType), CardMatcher (..))
+import Marvel.Modifier (Modifier (CanLookAtTopOfEncounterDeck, CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
+import Marvel.Card.Def (HasCardDef(getCardDef), cdBoostIcons, cdKeywords, cardMatch, CardType (AllyType), CardMatcher (..))
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -146,6 +146,7 @@ passesCriteria x a =
     SelfMatches identityMatcher ->
       member x <$> select (IdentityWithId x <> identityMatcher)
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay x
+    HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards x
     NoCriteria -> pure True
     Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
@@ -153,6 +154,7 @@ passesCriteria x a =
     Exhausted -> member x <$> select ExhaustedIdentity
     Unexhausted -> member x <$> select UnexhaustedIdentity
     OwnsThis -> case abilitySource a of
+      IdentityRef who -> pure $ who == x
       AllyRef aid ->
         member aid <$> select (AllyControlledBy $ IdentityWithId x)
       SupportRef aid ->
@@ -177,10 +179,21 @@ passesCriteria x a =
     EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
     NoCardsPlayedThisPhase -> not . any ((== x) . fst) <$> getPlayedThisPhase
     HeldWeaponSwapAvailable uid -> notNull <$> getLegalHeldWeaponSwaps x uid
+    EncounterTopHasEffect -> do
+      visible <- elem CanLookAtTopOfEncounterDeck <$> getModifiers GameRef
+      top <- headMay <$> getEncounterDeck
+      effective <- maybe (pure 0) getBoostIcons top
+      pure $ not visible || effective > 0 || maybe False (notNull . cdBoostIcons . getCardDef) top
+    PayingForCardOtherThan previous -> do
+      current <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
+      pure $ maybe True ((/= previous) . pcCardId) current
     EncounterIconExists -> (> 0) <$> getEncounterIconCount
     PoolIconEffectsCanResolve -> poolIconEffectsCanResolve x source
     PoolAllyInHandCanEnterPlay -> selectAny $ InHandOf (IdentityWithId x) $
       ExtendedCardMatches [BasicCardMatches (CardWithType AllyType <> CardWithAspect Aspect.Pool), CanEnterPlay]
+    MovableSupportCounter trait -> do
+      supports <- selectList (SupportWithTrait trait)
+      if length supports < 2 then pure False else anyM (fmap (>0) . getCountersOn) supports
     MovableThreatExists -> anyM (canMoveSchemeThreatFrom source) =<< selectList (SchemeWithThreat $ GreaterThan $ Static 0)
     IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
@@ -226,6 +239,7 @@ passesCardCriteria ident card = go
     IsSelf -> error "Irrelevant"
     OwnsThis -> error "Irrelevant"
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay ident
+    HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards ident
     NoCriteria -> pure True
     Never -> pure False
     SelfMatches identityMatcher ->
@@ -251,10 +265,21 @@ passesCardCriteria ident card = go
     EncounterDiscardHas m -> any (cardMatch m) <$> getEncounterDiscard
     NoCardsPlayedThisPhase -> not . any ((== ident) . fst) <$> getPlayedThisPhase
     HeldWeaponSwapAvailable uid -> notNull <$> getLegalHeldWeaponSwaps ident uid
+    EncounterTopHasEffect -> do
+      visible <- elem CanLookAtTopOfEncounterDeck <$> getModifiers GameRef
+      top <- headMay <$> getEncounterDeck
+      effective <- maybe (pure 0) getBoostIcons top
+      pure $ not visible || effective > 0 || maybe False (notNull . cdBoostIcons . getCardDef) top
+    PayingForCardOtherThan previous -> do
+      current <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
+      pure $ maybe True ((/= previous) . pcCardId) current
     EncounterIconExists -> (> 0) <$> getEncounterIconCount
     PoolIconEffectsCanResolve -> poolIconEffectsCanResolve ident (toSource card)
     PoolAllyInHandCanEnterPlay -> selectAny $ InHandOf (IdentityWithId ident) $
       ExtendedCardMatches [BasicCardMatches (CardWithType AllyType <> CardWithAspect Aspect.Pool), CanEnterPlay]
+    MovableSupportCounter trait -> do
+      supports <- selectList (SupportWithTrait trait)
+      if length supports < 2 then pure False else anyM (fmap (>0) . getCountersOn) supports
     MovableThreatExists -> anyM (canMoveSchemeThreatFrom $ toSource card) =<< selectList (SchemeWithThreat $ GreaterThan $ Static 0)
     IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     UpgradeExists m -> selectAny m

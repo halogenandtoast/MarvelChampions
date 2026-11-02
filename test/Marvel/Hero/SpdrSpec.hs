@@ -73,6 +73,7 @@ blankWithEncounterCard who target = do
         , Obligation.obligationCardDef = Obligations.inheritedBurden
         , Obligation.obligationSurge = False
         , Obligation.obligationHeldCards = []
+                  , Obligation.obligationHeldEncounterCards = []
         , Obligation.obligationSideScheme = Nothing
         , Obligation.obligationOwner = Just who
         }

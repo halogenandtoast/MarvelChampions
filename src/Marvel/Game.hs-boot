@@ -16,6 +16,7 @@ import Marvel.Card.Code (CardCode)
 import Marvel.Keyword (Keyword)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
+import Marvel.Campaign (ShieldLog)
 import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
 import Marvel.Card.PlayerCard.Types
@@ -271,6 +272,8 @@ gameSelectCountAlly ::
 sideSchemesInVictoryDisplay :: (HasGame m) => m Natural
 getMainSchemeHeldCards :: (HasGame m) => MainSchemeId -> m [PlayerCard]
 
+abilityResourcesForCardWithReservedCounters :: (HasQueue m, MonadThrow m, HasGame m) => Maybe PlayerCard -> Natural -> Ability -> m [Resource]
+
 getAllyHeldCards :: (HasGame m) => IdentityId -> m [PlayerCard]
 allianceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
 
@@ -468,3 +471,20 @@ getAbilitiesForMatching :: HasGame m => IdentityId -> (Ability -> m Bool) -> m [
 getCharacterThwartAgainstScheme :: HasGame m => CharacterId -> SchemeId -> m Natural
 
 getAllyPrintedStats :: HasGame m => AllyId -> m (Natural, Natural, Natural)
+
+getShieldLog :: HasGame m => m ShieldLog
+
+allyDefeatedByConsequential :: HasGame m => AllyId -> m Bool
+
+organizationalSupportCandidates :: HasGame m => IdentityId -> m [(Target,[Resource])]
+organizationalSupportPotential :: HasGame m => IdentityId -> m [Resource]
+
+conditionalAttackReduction :: HasGame m => Target -> Source -> Damage -> m Natural
+
+attackableAttachmentTargets :: HasGame m => EnemyMatcher -> m [EnemyId]
+
+discardIsFromEncounter :: HasGame m => m Bool
+
+getAssignedBoostInWindow :: HasGame m => EnemyId -> EncounterCard -> m (Maybe EncounterCard)
+
+getMinionDamageInPlay :: HasGame m => MinionId -> m Natural

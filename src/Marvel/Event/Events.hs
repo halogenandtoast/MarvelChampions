@@ -1,4 +1,15 @@
 module Marvel.Event.Events (module X) where
+import Marvel.Event.Events.Fw53003 as X
+import Marvel.Event.Events.Fw53004 as X
+import Marvel.Event.Events.Fw53005 as X
+import Marvel.Event.Events.Fw53019 as X
+import Marvel.Event.Events.Fw54004 as X
+import Marvel.Event.Events.Fw54005 as X
+import Marvel.Event.Events.Fw54006 as X
+import Marvel.Event.Events.Fw54014 as X
+import Marvel.Event.Events.Fw54016 as X
+import Marvel.Event.Events.Fw54022 as X
+import Marvel.Event.Events.Fw54023 as X
 
 import Marvel.Event.Events.Nc48032 as X
 
@@ -600,3 +611,35 @@ import Marvel.Event.Events.ChillOut as X
 import Marvel.Event.Events.SurpriseMove as X
 
 import Marvel.Event.Events.TakeThat as X
+
+import Marvel.Event.Events.ClawedStrikeShuri as X
+
+import Marvel.Event.Events.OntheProwlShuri as X
+
+import Marvel.Event.Events.WakandaForeverShuri as X
+
+import Marvel.Event.Events.InfiltrationShuri as X
+
+import Marvel.Event.Events.HeartofthePantherShuri as X
+
+import Marvel.Event.Events.SmoothasSilkSilk as X
+
+import Marvel.Event.Events.SwingingSilkKickSilk as X
+
+import Marvel.Event.Events.WallcrawlSilk as X
+
+import Marvel.Event.Events.StopHittingYourselfSilk as X
+
+import Marvel.Event.Events.InvestigativeJournalismSilk as X
+
+import Marvel.Event.Events.QuickQuipSilk as X
+
+-- Agents of Shield players
+import Marvel.Event.Events.AosP50003 as X
+import Marvel.Event.Events.AosP50004 as X
+import Marvel.Event.Events.AosP50005 as X
+import Marvel.Event.Events.AosP50006 as X
+import Marvel.Event.Events.AosP50024 as X
+import Marvel.Event.Events.AosP50037 as X
+import Marvel.Event.Events.AosP50038 as X
+import Marvel.Event.Events.AosP50039 as X

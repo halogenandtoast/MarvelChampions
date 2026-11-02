@@ -1,5 +1,24 @@
 module Marvel.Treachery.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect ()
+import Marvel.Boost qualified as AospBoost
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet
+import Marvel.Keyword qualified as AospKeyword
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource ()
+import Marvel.Trait qualified as AospTrait ()
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
+import Marvel.Silk.Cards qualified as SilkPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait ()
@@ -161,7 +180,11 @@ import Marvel.Name
 allTreacheries :: HashMap CardCode CardDef
 allTreacheries = fromList $ map
   (toFst toCardCode)
-  [ nc48030, nc48038
+  [ aos50076, aos50077, aos50078, aos50079, aos50082, aos50096, aos50097, aos50102, aos50123, aos50124, aos50128, aos50137, aos50138, aos50141, aos50142, aos50147, aos50151, aos50155, aos50160, aos50163, aos50164, aos50175, aos50176, aos50177, aos50184a, aos50184b, aos50184c
+  , FalconWinter.fw53033, FalconWinter.fw53042, FalconWinter.fw54037
+  , aosP50033, aosP50063
+  , BlackPantherShuriPack.theScreamShuri, BlackPantherShuriPack.extremeRiskShuri, SilkPack.huntingtheSpiderBrideSilk, SilkPack.growingStrongSilk, SilkPack.titanicProportionsSilk
+  , nc48030, nc48038
   , burnIceman
   , theEyeOfSauron
   , Jubilee.jubilee47034
@@ -3741,3 +3764,152 @@ nc48038 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+-- Agents of Shield players
+
+aosP50033 :: CardDef
+aosP50033 = CardDef
+  { cdCardCode = "50033"
+  , cdName = "Diabolical Discs"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList [AospKeyword.Surge]
+  , cdCardType = AospCard.TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Boost]
+  , cdEncounterSet = Just AospSet.MariaHillNemesis
+  , cdEncounterSetQuantity = Just 2
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50063 :: CardDef
+aosP50063 = CardDef
+  { cdCardCode = "50063"
+  , cdName = "Cold Storage"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.TreacheryType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = []
+  , cdBoostIcons = [AospBoost.Boost, AospBoost.Star]
+  , cdEncounterSet = Just AospSet.NickFuryNemesis
+  , cdEncounterSetQuantity = Just 1
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Nothing
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aos50076 :: CardDef
+aos50076 = AosEncounter.aos50076
+
+aos50077 :: CardDef
+aos50077 = AosEncounter.aos50077
+
+aos50078 :: CardDef
+aos50078 = AosEncounter.aos50078
+
+aos50079 :: CardDef
+aos50079 = AosEncounter.aos50079
+
+aos50082 :: CardDef
+aos50082 = AosEncounter.aos50082
+
+aos50096 :: CardDef
+aos50096 = AosEncounter.aos50096
+
+aos50097 :: CardDef
+aos50097 = AosEncounter.aos50097
+
+aos50102 :: CardDef
+aos50102 = AosEncounter.aos50102
+
+aos50123 :: CardDef
+aos50123 = AosEncounter.aos50123
+
+aos50124 :: CardDef
+aos50124 = AosEncounter.aos50124
+
+aos50128 :: CardDef
+aos50128 = AosEncounter.aos50128
+
+aos50137 :: CardDef
+aos50137 = AosEncounter.aos50137
+
+aos50138 :: CardDef
+aos50138 = AosEncounter.aos50138
+
+aos50141 :: CardDef
+aos50141 = AosEncounter.aos50141
+
+aos50142 :: CardDef
+aos50142 = AosEncounter.aos50142
+
+aos50147 :: CardDef
+aos50147 = AosEncounter.aos50147
+
+aos50151 :: CardDef
+aos50151 = AosEncounter.aos50151
+
+aos50155 :: CardDef
+aos50155 = AosEncounter.aos50155
+
+aos50160 :: CardDef
+aos50160 = AosEncounter.aos50160
+
+aos50163 :: CardDef
+aos50163 = AosEncounter.aos50163
+
+aos50164 :: CardDef
+aos50164 = AosEncounter.aos50164
+
+aos50175 :: CardDef
+aos50175 = AosEncounter.aos50175
+
+aos50176 :: CardDef
+aos50176 = AosEncounter.aos50176
+
+aos50177 :: CardDef
+aos50177 = AosEncounter.aos50177
+
+aos50184a :: CardDef
+aos50184a = AosEncounter.aos50184a
+
+aos50184b :: CardDef
+aos50184b = AosEncounter.aos50184b
+
+aos50184c :: CardDef
+aos50184c = AosEncounter.aos50184c

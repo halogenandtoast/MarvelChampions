@@ -53,6 +53,7 @@ withModifiers p target modifiers = do
           , Obligation.obligationCardDef = Obligations.corruptedProgramming
           , Obligation.obligationSurge = False
           , Obligation.obligationHeldCards = []
+                  , Obligation.obligationHeldEncounterCards = []
           , Obligation.obligationSideScheme = Nothing
           , Obligation.obligationOwner = Just p
           }

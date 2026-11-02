@@ -1,4 +1,23 @@
 module Marvel.Upgrade.Upgrades (module X) where
+import Marvel.Upgrade.Upgrades.Fw53008 as X
+import Marvel.Upgrade.Upgrades.Fw53009 as X
+import Marvel.Upgrade.Upgrades.Fw53010 as X
+import Marvel.Upgrade.Upgrades.Fw53011 as X
+import Marvel.Upgrade.Upgrades.Fw53012 as X
+import Marvel.Upgrade.Upgrades.Fw53013 as X
+import Marvel.Upgrade.Upgrades.Fw53023 as X
+import Marvel.Upgrade.Upgrades.Fw53024 as X
+import Marvel.Upgrade.Upgrades.Fw53034 as X
+import Marvel.Upgrade.Upgrades.Fw54002 as X
+import Marvel.Upgrade.Upgrades.Fw54008 as X
+import Marvel.Upgrade.Upgrades.Fw54009 as X
+import Marvel.Upgrade.Upgrades.Fw54010 as X
+import Marvel.Upgrade.Upgrades.Fw54011 as X
+import Marvel.Upgrade.Upgrades.Fw54017 as X
+import Marvel.Upgrade.Upgrades.Fw54018 as X
+import Marvel.Upgrade.Upgrades.Fw54019 as X
+import Marvel.Upgrade.Upgrades.Fw54020 as X
+import Marvel.Upgrade.Upgrades.Fw54033 as X
 
 import Marvel.Upgrade.Upgrades.Nc48015 as X
 
@@ -461,3 +480,50 @@ import Marvel.Upgrade.Upgrades.IceSlide as X
 import Marvel.Upgrade.Upgrades.FrozenSolid as X
 
 import Marvel.Upgrade.Upgrades.SuppressingFire as X
+
+import Marvel.Upgrade.Upgrades.AjaAdannaShuri as X
+
+import Marvel.Upgrade.Upgrades.KimoyoBeadsShuri as X
+
+import Marvel.Upgrade.Upgrades.PantherClawsShuri as X
+
+import Marvel.Upgrade.Upgrades.SpiderBitesShuri as X
+
+import Marvel.Upgrade.Upgrades.VibraniumSuitShuri as X
+
+import Marvel.Upgrade.Upgrades.InvisibilityGearShuri as X
+
+import Marvel.Upgrade.Upgrades.StingOperationShuri as X
+
+import Marvel.Upgrade.Upgrades.RedemptionShuri as X
+
+import Marvel.Upgrade.Upgrades.EideticMemorySilk as X
+
+import Marvel.Upgrade.Upgrades.OrganicWebbingSilk as X
+
+import Marvel.Upgrade.Upgrades.OutwitSilk as X
+
+import Marvel.Upgrade.Upgrades.SpiderClawsSilk as X
+
+import Marvel.Upgrade.Upgrades.SpiderReflexesSilk as X
+
+import Marvel.Upgrade.Upgrades.EnergyShieldSilk as X
+
+import Marvel.Upgrade.Upgrades.ReadyforaFightSilk as X
+
+import Marvel.Upgrade.Upgrades.StunGunSilk as X
+
+-- Agents of Shield players
+import Marvel.Upgrade.Upgrades.AosP50010 as X
+import Marvel.Upgrade.Upgrades.AosP50011 as X
+import Marvel.Upgrade.Upgrades.AosP50035a as X
+import Marvel.Upgrade.Upgrades.AosP50035b as X
+import Marvel.Upgrade.Upgrades.AosP50042 as X
+import Marvel.Upgrade.Upgrades.AosP50043 as X
+import Marvel.Upgrade.Upgrades.AosP50044 as X
+import Marvel.Upgrade.Upgrades.AosP50045 as X
+import Marvel.Upgrade.Upgrades.AosP50046 as X
+import Marvel.Upgrade.Upgrades.AosP50050 as X
+import Marvel.Upgrade.Upgrades.AosP50051 as X
+import Marvel.Upgrade.Upgrades.AosP50052 as X
+import Marvel.Upgrade.Upgrades.AosP50058 as X

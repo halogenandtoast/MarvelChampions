@@ -32,6 +32,7 @@ data MinionMessage
   | -- | its attack by the character resolved: retaliate answers it
     MinionRetaliates CharacterId
   | MinionSchemes
+  | MinionBeginScheme
   | MinionSchemed
   | MinionBeginAttack IdentityId
   | MinionEngagedIdentity IdentityId

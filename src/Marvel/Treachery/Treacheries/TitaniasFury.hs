@@ -61,6 +61,7 @@ instance RunMessage TitaniasFury where
         case enemyId of
           EnemyVillainId villainId -> dealBoost villainId
           EnemyMinionId _ -> pure ()
+          EnemyAttachmentId _ -> pure ()
         pure t
       _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs
     _ -> TitaniasFury . (`With` meta) <$> runMessage msg attrs

@@ -1,5 +1,20 @@
 module Marvel.Resource.Cards where
 
+import Marvel.Ability.Types qualified as AospAbility ()
+import Marvel.Aspect qualified as AospAspect
+import Marvel.Boost qualified as AospBoost ()
+import Marvel.Card.Def qualified as AospCard
+import Marvel.Cost.Types qualified as AospCost
+import Marvel.Criteria qualified as AospCriteria
+import Marvel.EncounterSet qualified as AospSet ()
+import Marvel.Keyword qualified as AospKeyword ()
+import Marvel.Matchers qualified as AospMatch ()
+import Marvel.Name qualified as AospName ()
+import Marvel.Resource.Types qualified as AospResource
+import Marvel.Trait qualified as AospTrait ()
+import Marvel.Window.Types qualified as AospWindow ()
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
 import Marvel.Jubilee.Cards qualified as Jubilee
 
 import Marvel.Ability.Types qualified as MgAbility ()
@@ -98,7 +113,9 @@ import Marvel.Trait
 allResources :: HashMap CardCode CardDef
 allResources = fromList $ concatMap
   toCardCodePairs
-  [ Jubilee.jubilee47010a, Jubilee.jubilee47010b, Jubilee.jubilee47010c
+  [ aosP50007, aosP50014
+  , BlackPantherShuriPack.vibraniumShuri
+  , Jubilee.jubilee47010a, Jubilee.jubilee47010b, Jubilee.jubilee47010c
   , masterOfMagnetism
   , storedEnergy
   , montage, selfConfidence, selfControl, selfPreservation
@@ -234,13 +251,13 @@ thePowerOfProtection = reprintedAs ["48019", "05016", "09017", "16015"] $
     <>~ [(ResourceForCardsMatching $ CardWithAspect Protection, Wild)]
 
 energy :: CardDef
-energy = reprintedAs ["48023", "49024", "45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
+energy = reprintedAs ["54024", "53025", "50025", "52025", "51027", "48023", "49024", "45022", "43022", "40061", "38021", "37022", "36027", "33024", "34025", "35024", "32022", "32052", "27020", "27051", "03021", "05019", "06022", "08020", "09022", "10020", "04023", "04050", "12021", "13021", "14019", "15020", "18021", "16021", "16049", "19022", "20017", "21023", "22024", "23025", "25025", "26025"] $ deckLimited 1 $ basicResource "01088" "Energy" [] [Energy, Energy]
 
 genius :: CardDef
-genius = reprintedAs ["48024", "49025", "45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
+genius = reprintedAs ["54025", "53026", "50026", "52026", "51028", "48024", "49025", "45023", "43023", "40062", "38022", "37023", "36028", "33025", "34026", "35025", "32023", "32053", "27021", "27052", "03022", "05020", "06023", "08021", "09023", "10021", "04024", "04051", "12022", "13022", "14020", "15021", "18022", "16022", "16050", "19023", "20018", "21024", "22025", "23026", "25026", "26026"] $ deckLimited 1 $ basicResource "01089" "Genius" [] [Mental, Mental]
 
 strength :: CardDef
-strength = reprintedAs ["48025", "49026", "45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
+strength = reprintedAs ["54026", "53027", "50027", "52027", "51029", "48025", "49026", "45024", "43024", "40063", "38023", "37024", "36029", "33026", "34027", "35026", "32024", "32054", "27022", "27053", "03023", "05021", "06024", "08022", "09024", "10022", "04025", "04052", "12023", "13023", "14021", "15022", "18023", "16023", "16051", "19024", "20019", "21025", "22026", "23027", "25027", "26027"] $ deckLimited 1 $ basicResource "01090" "Strength" [] [Physical, Physical]
 
 -- | "Spend this card only in hero form."
 limitlessStrength :: CardDef
@@ -461,7 +478,7 @@ avianAnatomy = CardDef
   }
 
 thePowerOfFlight :: CardDef
-thePowerOfFlight = CardDef
+thePowerOfFlight = reprintedAs ["53028"] $ CardDef
   { cdCardCode = "42022"
   , cdName = "The Power of Flight"
   , cdCost = Nothing
@@ -695,4 +712,72 @@ masterOfMagnetism = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   , cdAbilityCost = MgCost.NoCost
+  }
+
+-- Agents of Shield players
+
+aosP50007 :: CardDef
+aosP50007 = CardDef
+  { cdCardCode = "50007"
+  , cdName = "Special Funding"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Nothing
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Physical), (AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 2
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
+  }
+
+aosP50014 :: CardDef
+aosP50014 = CardDef
+  { cdCardCode = "50014"
+  , cdName = "Organizational Support"
+  , cdCost = Nothing
+  , cdTraits = fromList []
+  , cdKeywords = fromList []
+  , cdCardType = AospCard.ResourceType
+  , cdAbilityType = Nothing
+  , cdAbilitySubTypes = []
+  , cdUnique = False
+  , cdAspect = Just AospAspect.Leadership
+  , cdCriteria = AospCriteria.NoCriteria
+  , cdResources = [(AospCard.PrintedResource, AospResource.Mental)]
+  , cdBoostIcons = []
+  , cdEncounterSet = Nothing
+  , cdEncounterSetQuantity = Nothing
+  , cdResponseWindow = Nothing
+  , cdActionCriteria = Nothing
+  , cdHazards = 0
+  , cdAcceleration = 0
+  , cdAmplify = 0
+  , cdLimit = Nothing
+  , cdDeckLimit = Just 3
+  , cdTeamUp = Nothing
+  , cdAlternateCardCodes = []
+  , cdPlayableFromDiscard = False
+  , cdDoubleWildResources = False
+  , cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  , cdAbilityCost = AospCost.NoCost
   }

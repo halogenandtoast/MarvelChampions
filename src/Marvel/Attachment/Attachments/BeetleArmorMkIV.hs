@@ -33,6 +33,7 @@ instance HasModifiersFor BeetleArmorMkIV where
     isEnemy = \case
       EnemyVillainId vid -> target == VillainRef vid
       EnemyMinionId mid -> target == MinionRef mid
+      EnemyAttachmentId aid -> target == AttachmentRef aid
   getModifiersFor _ _ _ = pure []
 
 -- | Attach to Beetle, if able. If you cannot, attach to the villain. A villain's hit
@@ -50,6 +51,7 @@ instance RunMessage BeetleArmorMkIV where
           case enemy of
             EnemyVillainId v -> changeVillainHitPoints v 4
             EnemyMinionId _ -> pure ()
+            EnemyAttachmentId _ -> pure ()
           pure . BeetleArmorMkIV $ attrs & enemyL ?~ enemy
     RemoveFromPlay target | target == toTarget attrs -> do
       for_ (attachmentEnemy attrs) \case
@@ -57,5 +59,6 @@ instance RunMessage BeetleArmorMkIV where
           inPlay <- selectAny (VillainWithId v)
           when inPlay $ changeVillainHitPoints v (-4)
         EnemyMinionId _ -> pure ()
+        EnemyAttachmentId _ -> pure ()
       BeetleArmorMkIV <$> runMessage msg attrs
     _ -> BeetleArmorMkIV <$> runMessage msg attrs

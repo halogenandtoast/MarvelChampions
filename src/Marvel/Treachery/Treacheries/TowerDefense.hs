@@ -40,6 +40,7 @@ addOtherVillain = \case
     attacking <- isJust <$> getVillainAttack v
     for_ other \o -> addBoost v =<< (if attacking then getVillainAttackValue o else getVillainSchemeValue o)
   EnemyMinionId _ -> pure ()
+  EnemyAttachmentId _ -> pure ()
 
 proximasPower :: TreacheryCard ProximasPower
 proximasPower = treachery ProximasPower Cards.proximasPower

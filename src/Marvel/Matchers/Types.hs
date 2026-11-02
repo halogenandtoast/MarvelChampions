@@ -62,6 +62,7 @@ data IdentityMatcher
   | -- | not kept from basic attacks (by a 'CannotBasicAttack' modifier, Seduced)
     IdentityCanBasicAttack
   | IdentityCanAttack
+  | IdentityCanDefendReady
   | IdentityCanDefend
   | -- | not kept in its form (by a 'CannotChangeForm' modifier)
     IdentityCanChangeForm

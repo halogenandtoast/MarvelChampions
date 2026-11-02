@@ -245,6 +245,7 @@ instance RunMessage MutantGenesisTreachery where
           EnemyMinionId m -> do
             hero <- selectAny (IdentityWithId you <> HeroIdentity)
             if hero then enemyAttacks m you else minionSchemes m
+          EnemyAttachmentId _ -> pure ()
     extraBoost name = do
       vs <- filterM (fmap (== name) . enemyTitle . EnemyVillainId) =<< selectList AnyVillain
       traverse_ dealBoost vs

@@ -115,6 +115,7 @@ enemyRef :: (IsEnemy a) => a -> Target
 enemyRef a = case toEnemy a of
   EnemyVillainId v -> VillainRef v
   EnemyMinionId m -> MinionRef m
+  EnemyAttachmentId a -> AttachmentRef a
 
 -- | A character, by any id that names one.
 class IsCharacter a where
@@ -139,6 +140,7 @@ instance IsCharacter EnemyId where
   toCharacter = \case
     EnemyVillainId v -> VillainCharacter v
     EnemyMinionId m -> MinionCharacter m
+    EnemyAttachmentId a -> AttachmentCharacter a
 
 -- | A scheme, by any id that names one.
 class IsScheme a where

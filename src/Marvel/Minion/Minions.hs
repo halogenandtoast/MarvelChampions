@@ -1,4 +1,11 @@
 module Marvel.Minion.Minions (module X) where
+import Marvel.Minion.Minions.AgentsOfShield as X
+import Marvel.Minion.Minions.Fw53030 as X
+import Marvel.Minion.Minions.Fw53032 as X
+import Marvel.Minion.Minions.Fw53038 as X
+import Marvel.Minion.Minions.Fw54028 as X
+import Marvel.Minion.Minions.Fw54031 as X
+import Marvel.Minion.Minions.Fw54034 as X
 
 import Marvel.Minion.Minions.Nc48037 as X
 
@@ -317,3 +324,18 @@ import Marvel.Minion.Minions.HellfirePawnMagneto as X
 import Marvel.Minion.Minions.PyroIceman as X
 
 import Marvel.Minion.Minions.Sauron as X
+
+import Marvel.Minion.Minions.KlawShuri as X
+
+import Marvel.Minion.Minions.MUSICShuri as X
+
+import Marvel.Minion.Minions.JoystickShuri as X
+
+import Marvel.Minion.Minions.MorlunSilk as X
+
+import Marvel.Minion.Minions.AtlasSilk as X
+
+-- Agents of Shield players
+import Marvel.Minion.Minions.AosP50030 as X
+import Marvel.Minion.Minions.AosP50060 as X
+import Marvel.Minion.Minions.AosP50062 as X

@@ -4,6 +4,7 @@ import Marvel.Prelude
 import Marvel.Card.Id (CardId)
 import Marvel.Phase (Phase)
 import Marvel.Resource.Types (Resource)
+import Marvel.Trait.Types (Trait)
 
 import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import {-# SOURCE #-} Marvel.Card.EncounterCard
@@ -38,7 +39,11 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = BamfDefense WindowTiming IdentityMatcher
+  = EncounterCardDealtTo IdentityMatcher
+  | EncounterCardWouldBeDealt IdentityMatcher
+  | CardWouldBeTuckedUnderIdentity IdentityMatcher
+  | FacedownBoostCardGiven EnemyMatcher
+  | BamfDefense WindowTiming IdentityMatcher
   | IdentityMakesBasicAttackOrThwart WindowTiming IdentityMatcher
   | CharacterTookIndirectDamage CharacterMatcher
   | PlayerCardEntersPlay WindowTiming IdentityMatcher CardMatcher
@@ -48,6 +53,7 @@ data WindowMatcher
   | BasicAttackDamagedEnemy IdentityMatcher
   | AllyAttackDamagedEnemy AllyMatcher EnemyMatcher
   | CardsDiscardedFromPlayerDeck IdentityMatcher
+  | EncounterCardDiscardedFromDeck CardMatcher
   | CardsDiscardedBy IdentityMatcher
   | -- | A named identity ability (the index on that identity), not an ability on
     -- another card controlled by its player.
@@ -59,6 +65,7 @@ data WindowMatcher
   | IdentityDamaged WindowTiming IdentityMatcher
   | IdentityDamagedByAttack WindowTiming IdentityMatcher
   | EnemyDefeatedByBasicAttack IdentityMatcher
+  | ThreatRemovedFromScheme SchemeMatcher
   | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
   | RemovesLastThreat IdentityMatcher
   | -- | "after you play <this card>": played, not only put into play
@@ -69,11 +76,15 @@ data WindowMatcher
   | -- | an ally matching would take damage
     AllyWouldTakeDamage AllyMatcher
   | AllyWouldTakeDamageOf WindowTiming AllyMatcher DamageSource
+  | EnemyWouldBeDealtDamageAtLeast EnemyMatcher Natural
   | EnemyWouldBeDealtDamage EnemyMatcher
   | EnemyWouldBeDealtDamageBy EnemyMatcher DamageMatcher
   | EnemyWouldTakeDamage EnemyMatcher
   | CharacterWithConditionWouldTakeDamage [StatusCard]
   | CharacterWouldTakeAttackDamageFrom EnemyMatcher CharacterMatcher
+  | CharacterWouldTakeDamage CharacterMatcher
+  | NonScenarioAttachmentWouldAttachToVillain Trait
+  | DefendingCharacterWouldTakeDamage CharacterMatcher
   | CharacterWouldTakeAttackDamage CharacterMatcher
   | -- | an ally matching would take damage exactly equal to its remaining hit points
     AllyWouldTakeDamageEqualToRemainingHitPoints AllyMatcher
@@ -81,6 +92,7 @@ data WindowMatcher
     HeroThwartsAllThreat IdentityMatcher
   | VillainWouldBeDefeatedMatching VillainMatcher
   | EnemyAttacksPlayerOrAlly WindowTiming EnemyMatcher IdentityMatcher
+  | EnemyWouldScheme EnemyMatcher IdentityMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
@@ -106,6 +118,7 @@ data WindowMatcher
   | MinionDefeated WindowTiming MinionMatcher
   | IdentityThwarts WindowTiming IdentityMatcher
   | CharacterDefeatedByEnemyAttack WindowTiming EnemyMatcher
+  | MinionLeftPlayFromEncounter
   | MinionWouldLeavePlay MinionMatcher
   | MinionEntersPlay WindowTiming MinionMatcher
   | SideSchemeEntersPlay WindowTiming SideSchemeMatcher
@@ -114,7 +127,8 @@ data WindowMatcher
   | EnemyDefeatedWithUpgrade WindowTiming CardDef DamageMatcher
   | EnemyDefeated WindowTiming EnemyMatcher DamageMatcher
   | -- | after an enemy matching takes damage of the kind matching
-    EnemyTookDamage EnemyMatcher DamageMatcher
+    EnemyDealtDamage EnemyMatcher DamageMatcher
+  | EnemyTookDamage EnemyMatcher DamageMatcher
   | IdentityChangedToForm WindowTiming IdentityMatcher
   | -- | "after you change form": a flip, or a change of an additional form (Spectrum's
     -- energy forms, MTS rulebook p.2)
@@ -159,6 +173,7 @@ data WindowMatcher
     BoostCardFlipped WindowTiming EnemyMatcher
   | -- | "you reveal": the encounter card is revealed for a player matching
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
+  | EncounterCardRevealedMatchingTucked WindowTiming IdentityMatcher
   | EncounterCardRevealedFromDeckBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | -- | a player matching plays a card matching (paid for and put into play or resolved)
     PlaysCard WindowTiming IdentityMatcher CardMatcher
@@ -188,6 +203,7 @@ data WindowMatcher
   | MutantChangesToHero WindowTiming IdentityMatcher
   | SurgeWouldResolve
   | EngagesMinion WindowTiming IdentityMatcher MinionMatcher
+  | MakesBasicThwartAgainst WindowTiming IdentityMatcher SchemeMatcher
   | MakesBasicThwart WindowTiming IdentityMatcher
   | WindowOneOf [WindowMatcher]
   | -- | the hero defended an attack and took no damage from it
@@ -221,6 +237,8 @@ data WindowMatcher
   | -- | a card would be placed into a discard pile from play
     CardWouldBeDiscardedFromPlay
   | CardWithIdWouldBeDiscardedFromPlay CardId
+  | PlayerCardWouldBeDiscardedByEncounter IdentityMatcher
+  | PlayerCardDiscardedFromPlayBy IdentityMatcher CardMatcher
   | PlayerCardWouldBeDiscardedFromPlay
   -- Adam Warlock
   | -- | "after your deck runs out of cards" (Soul World), "after a player resets their
@@ -249,6 +267,8 @@ data WindowType
   = UsedCardAbility IdentityId Source Natural
   | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
+  | WouldTuckEncounterCard IdentityId EncounterCard
+  | FacedownBoostGiven EnemyId EncounterCard
   | ResolvedTreacheryCard IdentityId EncounterCard
   | HeroThwartComplete IdentityId
   | ThwartRemovedThreat Source SchemeId Natural Natural
@@ -279,6 +299,7 @@ data WindowType
   | DefeatedEnemyWithUpgrades EnemyId [CardDef] Damage Source
   | IdentityThwart IdentityId Source
   | EnemyAttackDefeatedCharacter EnemyId CharacterId
+  | EncounterMinionLeftPlay EncounterCard
   | MinionLeavingPlay MinionId
   | MinionEnteredPlay MinionId
   | SideSchemeEnteredPlay SideSchemeId
@@ -286,7 +307,8 @@ data WindowType
   | PhaseBegan Phase
   | PhaseEnded Phase
   | -- | the enemy took this damage, from this source: none a tough status card prevented
-    EnemyTookDamageFrom EnemyId Damage Source
+    EnemyWasDealtDamage EnemyId Damage Source
+  | EnemyTookDamageFrom EnemyId Damage Source
   | VillainDefeatWouldOccur VillainId
   | EnemyAttackAlly EnemyId AllyId IdentityId
   | EnemyAttack EnemyId IdentityId
@@ -306,9 +328,13 @@ data WindowType
   | MutantChangedToHero IdentityId
   | IdentityChangesForm IdentityId
   | -- | the identity changed to the energy form of this upgrade, turned faceup
-    EnergyFormChanged IdentityId UpgradeId
+    SuitFormChanged IdentityId UpgradeId
+  | EnergyFormChanged IdentityId UpgradeId
   | WeatherSpecialResolved IdentityId SupportId
   | MassFormChanged IdentityId UpgradeId
+  | AttachmentAttachingToEnemy AttachmentId EnemyId
+  | EncounterCardWasDealt IdentityId EncounterCard
+  | EncounterCardBeingDealt IdentityId
   | IdentityDiscardedTough IdentityId
   | VillainActivationWouldBegin VillainId IdentityId
   | IgnoredKeyword IdentityId MinionId
@@ -376,6 +402,7 @@ data WindowType
   | -- | the player engages the minion: it enters play engaged with them, or is made to
     -- engage them
     EngagedMinion IdentityId MinionId
+  | MadeBasicThwartAgainst IdentityId SchemeId
   | MadeBasicThwart IdentityId
   | DefendedWithoutDamage IdentityId EnemyId
   | -- | the player's hero's attack is dealing this much damage past the enemy's
@@ -387,12 +414,14 @@ data WindowType
   | TurnEnded IdentityId
   -- Infiltrate the Museum
   | -- | the card, a player's or an encounter card, is leaving play for its discard pile
-    WouldBeDiscardedFromPlay (Either PlayerCard EncounterCard)
+    PlayerCardDiscardedFromPlay IdentityId PlayerCard
+  | WouldBeDiscardedFromPlay (Either PlayerCard EncounterCard)
   -- The Mad Titan's Shadow: Thanos
   | -- | the enemy's activation against the player: its attack, or its scheme in their
     -- alter-ego's activation; When as it begins, After once it has fully resolved, its
     -- boost cards discarded. A stunned attack or confused scheme is none (RR Activation)
     EnemyActivation EnemyId IdentityId
+  | EnemySchemeBegins EnemyId IdentityId
   | -- | the Infinity Stone deck's last card has left it, before its discard pile is
     -- shuffled back
     InfinityStoneDeckRanOut

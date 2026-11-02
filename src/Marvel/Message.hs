@@ -231,6 +231,7 @@ recordPlayerAttackDamage enemy source damage = when (damageAmount damage > 0 && 
   confused <- characterHasCondition ConfusedStatus $ case enemy of
     EnemyVillainId v -> VillainCharacter v
     EnemyMinionId m -> MinionCharacter m
+    EnemyAttachmentId a -> AttachmentCharacter a
   replaceMatchingMessage (mapWindow confused) isCompletion
  where
   isAttack = case damageSource damage of
@@ -300,6 +301,7 @@ enemyRetaliates :: EnemyId -> CharacterId -> Message
 enemyRetaliates enemy attacker = case enemy of
   EnemyVillainId vid -> VillainMessage vid (VillainRetaliates attacker)
   EnemyMinionId mid -> MinionMessage mid (MinionRetaliates attacker)
+  EnemyAttachmentId _ -> CheckWindows []
 
 -- | Retaliate's damage to the character attacking: an identity takes it as damage from
 -- anything but an attack does.
@@ -310,6 +312,7 @@ retaliateDamage source attacker n = case attacker of
   -- a minion made to attack another enemy (Moondragon)
   MinionCharacter mid -> [MinionMessage mid (MinionDamaged source (toDamage n FromRetaliate))]
   VillainCharacter vid -> [VillainMessage vid (VillainDamaged source (toDamage n FromRetaliate))]
+  AttachmentCharacter _ -> []
 
 -- | The messages a 'Simultaneously' holds, for the queue to look inside it.
 simultaneousMessages :: Message -> Maybe [Message]
@@ -341,6 +344,7 @@ characterRef = \case
   AllyCharacter a -> AllyRef a
   VillainCharacter v -> VillainRef v
   MinionCharacter m -> MinionRef m
+  AttachmentCharacter a -> AttachmentRef a
 
 -- | A step of the card's own, for it to answer as @CardSpecific@.
 cardSpecific :: (IsRef a, ToJSON v) => a -> Text -> v -> Message

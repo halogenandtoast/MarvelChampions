@@ -73,13 +73,14 @@ spec = parallel do
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
-      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign, campaignScenarios AgentsOfShieldCampaign], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
                <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
-               <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases) || (any (`elem` focusHeroes) ["bishop", "magik"] && name `elem` apocalypseCampaignCases)) | name <- campaigns]
+               <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases) || (any (`elem` focusHeroes) ["bishop", "magik"] && name `elem` apocalypseCampaignCases) || (any (`elem` focusHeroes) ["maria-hill", "nick-fury"] && name `elem` shieldCampaignCases)) | name <- campaigns]
       mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
       nextEvolutionCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios NextEvolution), mode <- [StandardCampaign, ExpertCampaign]]
+      shieldCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios AgentsOfShieldCampaign), mode <- [StandardCampaign, ExpertCampaign]]
       apocalypseCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios AgeOfApocalypseCampaign), mode <- [StandardCampaign, ExpertCampaign]]
   selected <- if not focused then pure Nothing else runIO do
     for_ focusHeroes $ \hero -> unless (hero `elem` heroes) $ fail $ "Unknown SMOKE_HEROES starter deck: " <> unpack hero
@@ -201,6 +202,33 @@ spec = parallel do
                   <> map RecordApocalypseOverseer (take n apocalypseOverseers)
                   <> concatMap rewards previous
                   <> [RecordHitPoints identity hp | n > 0, (identity, hp) <- zip identities [5, 0]]
+                c = foldl' (flip recordInLog) base records
+            playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+
+
+    describe "Agents of SHIELD campaign" do
+      for_ (zip [0 ..] $ campaignScenarios AgentsOfShieldCampaign) \(n, villain) ->
+        for_ [StandardCampaign, ExpertCampaign] \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
+            let heroes' = ["maria-hill", "nick-fury"]
+                identities = map ((.hero) . starter) heroes'
+                base = (newCampaignOf AgentsOfShieldCampaign mode identities) {completed = n}
+                remaining = ["50186","50187","50189","50190","50192","50193"]
+                log = noShieldLog
+                  { hiddenEvidence = ["50185","50188","50191"]
+                  , evidenceEnvelope = drop n remaining
+                  , earnedEvidence = take n remaining
+                  , boardSecrets = [("50181a",2),("50182a",1),("50183a",0)]
+                  , betrayedBoard = ["50181a" | n > 2]
+                  , widowRemaining = 2
+                  , rescuedCaptives = 1
+                  , adaptoidEnvironments = ["50109" | n > 2]
+                  , survivingThunderbolts = if n > 3 then ["50143","50152"] else []
+                  , evidenceVictories = fromIntegral n
+                  }
+                records = [RecordShieldLog log | n > 0]
+                  <> [RecordHitPoints identity hp | n > 0, (identity,hp) <- zip identities [5,0]]
                 c = foldl' (flip recordInLog) base records
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
 

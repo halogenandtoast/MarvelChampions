@@ -1,4 +1,9 @@
 module Marvel.SideScheme.SideSchemes (module X) where
+import Marvel.SideScheme.SideSchemes.AgentsOfShield as X
+import Marvel.SideScheme.SideSchemes.Fw53031 as X
+import Marvel.SideScheme.SideSchemes.Fw53041 as X
+import Marvel.SideScheme.SideSchemes.Fw54029 as X
+import Marvel.SideScheme.SideSchemes.Fw54036 as X
 
 import Marvel.SideScheme.SideSchemes.Nc48033 as X
 
@@ -321,3 +326,21 @@ import Marvel.SideScheme.SideSchemes.KeepUpThePressure as X
 import Marvel.SideScheme.SideSchemes.PlayingWithFire as X
 
 import Marvel.SideScheme.SideSchemes.SauronLives as X
+
+import Marvel.SideScheme.SideSchemes.GoingUndercoverShuri as X
+
+import Marvel.SideScheme.SideSchemes.ShowofEmpathyShuri as X
+
+import Marvel.SideScheme.SideSchemes.ManipulatedMUSICShuri as X
+
+import Marvel.SideScheme.SideSchemes.PlayingforKeepsShuri as X
+
+import Marvel.SideScheme.SideSchemes.GettheScoopSilk as X
+
+import Marvel.SideScheme.SideSchemes.TheGreatHuntSilk as X
+
+import Marvel.SideScheme.SideSchemes.GrowInvulnerableSilk as X
+
+-- Agents of Shield players
+import Marvel.SideScheme.SideSchemes.AosP50031 as X
+import Marvel.SideScheme.SideSchemes.AosP50061 as X

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Obligation where
 
+import Marvel.Obligation.Obligations.AgentsOfShield qualified as AosEncounter
 import Marvel.Obligation.Obligations.AgeOfApocalypseStandardIII
 
 import Marvel.Obligation.Obligations.AgeOfApocalypseDystopianNightmare
@@ -34,7 +35,11 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
 allObligations :: HashMap CardCode SomeObligationCard
 allObligations = fromList $ map
   (toFst someObligationCardCode)
-  [ SomeObligationCard nc48026
+  [ SomeObligationCard AosEncounter.aos50134, SomeObligationCard AosEncounter.aos50179
+  , SomeObligationCard fw53029, SomeObligationCard fw54027
+  , SomeObligationCard aosP50029, SomeObligationCard aosP50059
+  , SomeObligationCard tChallasShadowShuri, SomeObligationCard silkSenseOverloadSilk
+  , SomeObligationCard nc48026
   , SomeObligationCard hotHeaded
   , SomeObligationCard grounded
   , SomeObligationCard oldGrievances

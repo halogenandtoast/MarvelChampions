@@ -223,6 +223,7 @@ data PlayerView = PlayerView
   -- ^ publicly faceup while the hero grants that permission
   , discard :: [CardView]
   , dealtEncounterCards :: Int
+  , tuckedEncounterCards :: [CardView]
   , identityBoostCards :: Int
   , dealtCardIds :: [CardId]
   -- ^ the encounter cards dealt face down, for the board to move each from and to its pile
@@ -276,11 +277,11 @@ data AllyView = AllyView
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural, heldCards :: [CardView], damage :: Natural}
+data SupportView = SupportView {id :: SupportId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, facedownCards :: Int, threat :: Natural, heldCards :: [CardView], tuckedCards :: [CardView], damage :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural, resourceSlots :: [Resource], occupiedSlots :: [Int], heldCardsFacedown :: Int}
+data UpgradeView = UpgradeView {id :: UpgradeId, code :: CardCode, name :: Text, exhausted :: Bool, uses :: Natural, controller :: IdentityId, heldCards :: [CardView], facedown :: Bool, damage :: Natural, resourceSlots :: [Resource], occupiedSlots :: [Int], heldCardsFacedown :: Int, threat :: Natural}
   -- ^ the cards attached faceup to it, played from there (Hawkeye's Quiver); facedown,
   -- a Spectrum energy form she is not in (its owner's, not secret)
   deriving stock (Show, Generic)
@@ -325,6 +326,7 @@ data MinionView = MinionView
   , heldCards :: [CardView]
   , facedownCards :: Int
   , attachedToMinion :: Maybe MinionId
+  , attachedToEnvironment :: Maybe EnvironmentId
   , engagedWith :: IdentityId
   , hitPoints :: Natural
   , exhausted :: Bool
@@ -347,7 +349,7 @@ data EnvironmentView = EnvironmentView {id :: EnvironmentId, code :: CardCode, n
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data ObligationView = ObligationView {id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int, threat :: Natural, counters :: Natural}
+data ObligationView = ObligationView {tuckedCards :: [CardView], id :: ObligationId, code :: CardCode, name :: Text, facedownCards :: Int, threat :: Natural, counters :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -461,14 +463,15 @@ gameView seesHand g = do
       missionSchemeId = missionScheme <$> missionState
   schemes <- traverse sideSchemeView [x | x <- HashMap.elems $ gameSideSchemes g, Just (toId x) /= missionSchemeId]
   minions <- traverse minionView [x | x <- HashMap.elems $ gameMinions g, toId x `notElem` missionMinionIds]
-  uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g, toId a `notElem` missionAllyIds]
+  uncontrolledAllies <- traverse allyView [a | a <- HashMap.elems (gameAllies g), toId a `elem` gameUncontrolledAllies g, toId a `notElem` map snd (gameAosHostages g), toId a `notElem` missionAllyIds]
   mission <- for missionState \m -> do
     scheme <- traverse sideSchemeView (HashMap.lookup (missionScheme m) $ gameSideSchemes g)
     allies <- traverse allyView [a | aid <- missionAllies m, Just a <- [HashMap.lookup aid $ gameAllies g]]
     missionMinions <- traverse minionView [a | mid <- missionMinions m, Just a <- [HashMap.lookup mid $ gameMinions g]]
     pure $ MissionView scheme allies missionMinions (missionAttempts m) (missionFinished m) (missionSucceeded m)
       (missionParticipants m) [(aid, cardView $ PlayerCard card) | (aid, card) <- missionAssignments m]
-  mayLook <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
+  globallyVisible <- elem CanLookAtTopOfEncounterDeck <$> getModifiers GameRef
+  mayLookPrivate <- anyM (fmap (elem CanLookAtTopOfEncounterDeck) . getModifiers . IdentityRef) [pid | pid <- gameSeats g, seesHand pid]
   threat <- for (headMay [(src, sid, n) | W.Window W.Would (W.ThreatPlaced src sid n) <- concat (headMay (gameWindows g))]) \(src, sid, n) -> do
     threshold <- case sid of
       SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> Just <$> MainScheme.getThreshold (toAttrs s)
@@ -529,7 +532,7 @@ gameView seesHand g = do
           Just c | c.kind == Campaign.MutantGenesis -> Just $ length c.campaignLog.mutantGenesis.futurePastDeck
           _ -> Nothing
       , encounterDeckSize = length scenario.scenarioEncounterDeck
-      , encounterDeckTop = if mayLook then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
+      , encounterDeckTop = if globallyVisible || mayLookPrivate then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g) <> map (cardView . PlayerCard) (gamePlayerVictoryDisplay g)
@@ -646,6 +649,7 @@ gameView seesHand g = do
         , deckTop = visibleTop
         , discard = map (cardView . PlayerCard) (unDiscard a.playerIdentityDiscard)
         , dealtEncounterCards = length a.playerIdentityEncounterCards
+        , tuckedEncounterCards = map (cardView . EncounterCard) a.playerIdentityTuckedEncounterCards
         , identityBoostCards = length a.playerIdentityBoostCards
         , dealtCardIds = map ecCardId a.playerIdentityEncounterCards
         , allies
@@ -655,7 +659,7 @@ gameView seesHand g = do
         , engagedMinions = HashSet.toList a.playerIdentityMinions
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentIdentity == Just (toId p)]
         , obligations =
-            [ ObligationView a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards) (getObligationDisplayThreat o) (getObligationDisplayCounters o)
+            [ ObligationView (map (cardView . EncounterCard) a.obligationHeldEncounterCards) a.obligationId (toCardCode a.obligationCardDef) (display $ cdName a.obligationCardDef) (length a.obligationHeldCards) (getObligationDisplayThreat o) (getObligationDisplayCounters o)
             | o <- HashMap.elems (gameObligations g), let a = toAttrs o
             , a.obligationOwner == Just (toId p), isNothing a.obligationSideScheme
             ]
@@ -699,10 +703,10 @@ gameView seesHand g = do
   supportView (s :: Support) =
     let a = toAttrs s
         faceup = toCardCode a.supportCardDef == "38028"
-     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted (if toCardCode a == "46008" then 0 else a.supportUses) (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards] (if toCardCode a == "46008" then a.supportUses else 0)
+     in SupportView a.supportId (toCardCode a.supportCardDef) (display $ cdName a.supportCardDef) a.supportExhausted (if toCardCode a == "46008" then 0 else a.supportUses) (if faceup then 0 else length a.supportHeldCards) a.supportThreat [cardView (PlayerCard card) | faceup || seesHand a.supportController, card <- a.supportHeldCards] (map (cardView . EncounterCard) a.supportHeldEncounterCards) (if toCardCode a == "46008" then a.supportUses else 0)
   upgradeView (u :: Upgrade) =
     let a = toAttrs u
-     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a `elem` ["34007", "49006"] then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a `elem` ["34007", "49006"] then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0)
+     in UpgradeView a.upgradeId (toCardCode a.upgradeCardDef) (display $ cdName a.upgradeCardDef) a.upgradeExhausted (if toCardCode a `elem` ["34007", "49006", "50035a", "50035b"] then 0 else a.upgradeUses) a.upgradeController [cardView (PlayerCard card) | not a.upgradeHeldCardsFacedown || seesHand a.upgradeController, card <- a.upgradeHeldCards] a.upgradeFaceDown (if toCardCode a `elem` ["34007", "49006"] then a.upgradeUses else 0) a.upgradeResourceSlots a.upgradeOccupiedSlots (if a.upgradeHeldCardsFacedown then length a.upgradeHeldCards else 0) (if toCardCode a `elem` ["50035a", "50035b"] then a.upgradeUses else 0)
   attachmentView (x :: Attachment) =
     let a = toAttrs x
         crisisHere = runIdentity $ runReaderT (elem CrisisIcon <$> getModifiers (AttachmentRef a.attachmentId)) g
@@ -753,6 +757,7 @@ gameView seesHand g = do
         , heldCards = [cardView (PlayerCard card) | not hiddenHeldCards, card <- a.minionHeldCards]
         , facedownCards = length a.minionHeldTreacheries + if hiddenHeldCards then length a.minionHeldCards else 0
         , attachedToMinion = a.minionAttachedTo
+        , attachedToEnvironment = headMay [eid | (eid,mid) <- gameAosBackup g, mid == a.minionId]
         , engagedWith = fromMaybe a.minionEngagedIdentity $ do
             host <- a.minionAttachedTo
             Minion.minionEngagedIdentity . toAttrs <$> HashMap.lookup host (gameMinions g)
@@ -783,7 +788,7 @@ gameView seesHand g = do
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s
-    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) ([cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens False a.sideSchemeExhausted
 
 heldView :: PlayerCard -> HeldView
 heldView c = HeldView (pcCardId c) (pcOwner c)
@@ -958,11 +963,13 @@ attackView = fmap \a ->
     { attacker = case Attack.attackEnemy a of
         EnemyVillainId x -> idText x
         EnemyMinionId x -> idText x
+        EnemyAttachmentId x -> idText x
     , target = case Attack.attackCharacter a of
         IdentityCharacter x -> idText x
         AllyCharacter x -> idText x
         VillainCharacter x -> idText x
         MinionCharacter x -> idText x
+        AttachmentCharacter x -> idText x
     }
 
 -- | The id the client keys a card or entity by: the uuid inside the ref.
@@ -973,12 +980,14 @@ refId = \case
   MinionRef x -> Just (idText x)
   EnemyRef (EnemyVillainId x) -> Just (idText x)
   EnemyRef (EnemyMinionId x) -> Just (idText x)
+  EnemyRef (EnemyAttachmentId x) -> Just (idText x)
   AllyRef x -> Just (idText x)
   CharacterRef c -> Just case c of
     IdentityCharacter x -> idText x
     AllyCharacter x -> idText x
     VillainCharacter x -> idText x
     MinionCharacter x -> idText x
+    AttachmentCharacter x -> idText x
   SupportRef x -> Just (idText x)
   EventRef x -> Just (idText x)
   EffectRef x -> Just (idText x)

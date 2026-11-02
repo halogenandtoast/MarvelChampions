@@ -1025,7 +1025,7 @@ campaignView (Entity cid row) = do
     CampaignView
       { id = cid
       , name = row.marvelCampaignName
-      , campaign = c
+      , campaign = redactCampaign c
       , difficulty
       , heroes = [d.hero | (_, _, d) <- seats]
       , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated, campaign = Just cid}

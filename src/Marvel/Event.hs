@@ -26,7 +26,10 @@ allEvents :: HashMap CardCode SomeEventCard
 allEvents = fromList $ map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
-  [ SomeEventCard nc48007, SomeEventCard nc48008, SomeEventCard nc48009, SomeEventCard nc48010, SomeEventCard nc48011, SomeEventCard nc48016, SomeEventCard nc48018, SomeEventCard nc48031, SomeEventCard nc48032
+  [ SomeEventCard fw53003, SomeEventCard fw53004, SomeEventCard fw53005, SomeEventCard fw53019, SomeEventCard fw54004, SomeEventCard fw54005, SomeEventCard fw54006, SomeEventCard fw54014, SomeEventCard fw54016, SomeEventCard fw54022, SomeEventCard fw54023
+  , SomeEventCard aosP50003, SomeEventCard aosP50004, SomeEventCard aosP50005, SomeEventCard aosP50006, SomeEventCard aosP50024, SomeEventCard aosP50037, SomeEventCard aosP50038, SomeEventCard aosP50039
+  , SomeEventCard clawedStrikeShuri, SomeEventCard ontheProwlShuri, SomeEventCard wakandaForeverShuri, SomeEventCard infiltrationShuri, SomeEventCard heartofthePantherShuri, SomeEventCard smoothasSilkSilk, SomeEventCard swingingSilkKickSilk, SomeEventCard wallcrawlSilk, SomeEventCard stopHittingYourselfSilk, SomeEventCard investigativeJournalismSilk, SomeEventCard quickQuipSilk
+  , SomeEventCard nc48007, SomeEventCard nc48008, SomeEventCard nc48009, SomeEventCard nc48010, SomeEventCard nc48011, SomeEventCard nc48016, SomeEventCard nc48018, SomeEventCard nc48031, SomeEventCard nc48032
   , SomeEventCard jubilee47006, SomeEventCard jubilee47007a, SomeEventCard jubilee47007b, SomeEventCard jubilee47007c, SomeEventCard jubilee47008a, SomeEventCard jubilee47008b, SomeEventCard jubilee47008c, SomeEventCard jubilee47009, SomeEventCard jubilee47014, SomeEventCard jubilee47015, SomeEventCard jubilee47021, SomeEventCard jubilee47022, SomeEventCard jubilee47028, SomeEventCard jubilee47029
   , SomeEventCard takeThat
   , SomeEventCard surpriseMove

@@ -262,7 +262,9 @@ createIdentity ident alterEgoSide heroSide =
       , playerIdentityUpgrades = mempty
       , playerIdentityExhausted = False
       , playerIdentityEncounterCards = []
+      , playerIdentityTuckedEncounterCards = []
       , playerIdentityBoostCards = []
+      , playerIdentityLastDefense = 0
       , playerIdentityDamageReduction = 0
       , playerIdentityStunned = False
       , playerIdentityConfused = False
@@ -527,7 +529,7 @@ printedXChoices ignoringCost attrs c mTarget = do
   payers <- resourceCostPayers ident (Just c)
   resources <- filter allowed <$> concatMapM (\payer -> do
     let reserved = if payer == toId attrs then sum [n | IdentityCountersCost n <- flattenCosts (cdAbilityCost $ getCardDef c)] else 0
-    abilities <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+    abilities <- concatMapM (abilityResourcesForCardWithReservedCounters (Just c) reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
     cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
     doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\card -> resourcesFor card (Just c)) cards) payers
   (ignored, adjustment) <- resourceCostAdjustment attrs c mTarget
@@ -606,7 +608,7 @@ playableTargetsAtDestination ignoringCost attrs c = do
     payers <- resourceCostPayers (toId attrs) (Just c)
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> concatMapM (\payer -> do
       let reserved = if payer == toId attrs then sum [n | IdentityCountersCost n <- flattenCosts cost] else 0
-      abilities <- concatMapM (abilityResourcesWithReservedCounters reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
+      abilities <- concatMapM (abilityResourcesForCardWithReservedCounters (Just c) reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
       cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
       doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
     prePlayReduction <- mayReduceCostToPlay attrs c mTarget
@@ -1227,7 +1229,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         HeroSide _ -> activate \minionId -> enemyAttacks minionId playerIdentityId
         AlterEgoSide _ -> activate minionSchemes
       pure pid
-    DealtEncounterCard ec ->
+    DealtEncounterCard ec -> do
+      checkWindows [W.Window W.After $ W.EncounterCardWasDealt playerIdentityId ec]
       pure $ PlayerIdentity $ attrs & encounterCardsL %~ (<> [ec])
     -- one at a time in the order dealt, a card dealt meanwhile (by surge) joining them
     RevealEncounterCards -> case playerIdentityEncounterCards of
@@ -1267,7 +1270,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         identityStep playerIdentityId (IdentityRetaliate $ attackEnemy attack')
       when (playerIdentityDefended || attackDefended attack') $
         identityStep playerIdentityId $ AttackDefended (attackEnemy attack') playerIdentityDamage playerIdentityDefended
-      let final = attrs & damageReductionL .~ 0 & defendedL .~ False
+      let final = (attrs {playerIdentityLastDefense = playerIdentityDamageReduction}) & damageReductionL .~ 0 & defendedL .~ False
       pure $ PlayerIdentity $ if stripped > 0 then final {playerIdentityTough = False, playerIdentityAdditionalTough = 0} else final
     IdentityDamaged source incoming -> do
       damage <- capIdentityAttackDamage playerIdentityId source incoming
@@ -1311,6 +1314,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       for_ (toList playerIdentitySupports) removeFromPlay
       for_ upgrades removeFromPlay
       for_ playerIdentityEncounterCards discardCard
+      for_ playerIdentityTuckedEncounterCards discardCard
       -- and the encounter cards in their play area (Ebony Maw's Spells)
       traverse_ removeFromPlay =<< selectList (EnvironmentInPlayAreaOf playerIdentityId)
       traverse_ (removeFromPlay . ObligationRef) =<< getObligationsOf playerIdentityId
@@ -1319,7 +1323,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         _ -> pure ()
       cardSpecific GameRef "aoaMissionEliminateOwner" playerIdentityId
       removeFromPlay playerIdentityId
-      pure $ PlayerIdentity $ attrs & defeatedL .~ True & encounterCardsL .~ []
+      pure $ PlayerIdentity $ (attrs {playerIdentityTuckedEncounterCards = []}) & defeatedL .~ True & encounterCardsL .~ []
     AttackDefended enemy damageBefore basic -> do
       checkWindows $
           W.Window W.After (W.HeroDefends playerIdentityId enemy)
@@ -1657,6 +1661,27 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid
     -- a step for the identity card is for it whichever face is up
+    CardSpecific (IdentityRef ident) "swapTuckedEncounterCard" (fromJSON -> Success (incoming,outgoing)) | ident == playerIdentityId attrs ->
+      pure $ PlayerIdentity attrs {playerIdentityTuckedEncounterCards = [if card == outgoing then incoming else card | card <- playerIdentityTuckedEncounterCards attrs]}
+    CardSpecific (IdentityRef ident) "tuckEncounterCard" (fromJSON -> Success card) | ident == playerIdentityId attrs -> do
+      let cards = filter (/= card) (playerIdentityTuckedEncounterCards attrs) <> [card]
+      when (toBaseCardCode (toCardCode pid) == "52001" && length cards > 4) $
+        cardSpecific ident "trimTuckedEncounterCards" ()
+      pure $ PlayerIdentity attrs {playerIdentityTuckedEncounterCards = cards}
+    CardSpecific (IdentityRef ident) "trimTuckedEncounterCards" _ | ident == playerIdentityId attrs -> do
+      when (length (playerIdentityTuckedEncounterCards attrs) > 4) $
+        chooseOne ident [cardLabeled (toCardCode card) $ do
+          discardTuckedEncounterCard ident card
+          cardSpecific ident "trimTuckedEncounterCards" () | card <- playerIdentityTuckedEncounterCards attrs]
+      pure pid
+    CardSpecific (IdentityRef ident) "discardTuckedEncounterCard" (fromJSON -> Success card) | ident == playerIdentityId attrs -> do
+      when (card `elem` playerIdentityTuckedEncounterCards attrs) $ do
+        discardCard card
+        when (toCardCode card == "52031") $ damageIdentity ident card (toDamage 2 FromAbility)
+      pure $ PlayerIdentity attrs {playerIdentityTuckedEncounterCards = filter (/= card) (playerIdentityTuckedEncounterCards attrs)}
+    CardSpecific (IdentityRef ident) "discardTuckedEncounterCardFromEncounter" (fromJSON -> Success card) | ident == playerIdentityId attrs -> do
+      when (card `elem` playerIdentityTuckedEncounterCards attrs) $ discardCard card
+      pure $ PlayerIdentity attrs {playerIdentityTuckedEncounterCards = filter (/= card) (playerIdentityTuckedEncounterCards attrs)}
     CardSpecific (IdentityRef ident) _ _ | ident == playerIdentityId attrs -> do
       sides <- for (playerIdentitySides attrs) \case
         HeroSide x -> HeroSide <$> runMessage msg x
@@ -1735,7 +1760,7 @@ instance FromJSON (Attrs PlayerIdentity) where
   parseJSON = withObject "PlayerIdentityAttrs" $ \o ->
     genericParseJSON (aesonOptions $ Just "playerIdentity") $ Object $
       KeyMap.union o $ KeyMap.fromList
-        [("topDeckPlayUsed", Bool False), ("pendingTopDeckPlay", Null), ("chosenAspects", toJSON ([] :: [Aspect])), ("previousGameWon", Null), ("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
+        [("lastDefense", toJSON (0 :: Natural)), ("tuckedEncounterCards", toJSON ([] :: [EncounterCard])), ("topDeckPlayUsed", Bool False), ("pendingTopDeckPlay", Null), ("chosenAspects", toJSON ([] :: [Aspect])), ("previousGameWon", Null), ("weatherDeck", Null), ("additionalTough", toJSON (0 :: Natural)), ("boostCards", toJSON ([] :: [EncounterCard])), ("additionalStun", Bool False), ("additionalConfuse", Bool False)]
 
 deriving newtype instance ToJSON PlayerIdentity
 deriving newtype instance FromJSON PlayerIdentity

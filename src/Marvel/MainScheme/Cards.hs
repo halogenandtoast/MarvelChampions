@@ -4,6 +4,7 @@ module Marvel.MainScheme.Cards where
 
 
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.Resource.Types qualified as NEResource ()
 
 import Marvel.Boost qualified as NEBoost ()
@@ -48,7 +49,8 @@ import Marvel.Name
 allMainSchemes :: HashMap CardCode CardDef
 allMainSchemes =
   fromList $ map (toFst toCardCode)
-    [ huntingGeneTraitors, theHorsemenOfApocalypse, theAgeOfApocalypse, darkBeastsBogusJourney, enSabahNursPyramid, theRiseOfApocalypse
+    [ aos50067b, aos50087b, aos50088b, aos50089b, aos50104b, aos50130b, aos50167b, aos50168b, aos50169b
+  , huntingGeneTraitors, theHorsemenOfApocalypse, theAgeOfApocalypse, darkBeastsBogusJourney, enSabahNursPyramid, theRiseOfApocalypse
   , ne40077, ne40078, ne40103, ne40104, ne40121, ne40139, ne40140, ne40141, ne40142, ne40143, ne40166, ne40167
   , mojo39002a, mojo39002b, mojo39015a, mojo39015b, mojo39025a, mojo39025b
   , mgStalkedBySabretooth, mgTheInjuredSenator, mgNightOfTheSentinels, mgTheSentinelFactory, mgMasterMoldsAgenda, mgTheBrotherhoodStrikes, mgTheAtrium, mgTheCafeteria, mgTheBasketballCourt, mgTheCourtyard, mgAsteroidM, mgFactoryOnline, mgTheRuleOfMagnus, smHaplessPedestrians, smLeaveUsAlone, smMazeOfMirrors, smEdgeOfReality, smSinisterSynchronization, smSinisterBeatdown, smSkiesOverNewYork, smLowerManhattan, smMidtownManhattan, smUpperManhattan
@@ -1275,3 +1277,30 @@ theRiseOfApocalypse = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+aos50067b :: CardDef
+aos50067b = AosEncounter.aos50067b
+
+aos50087b :: CardDef
+aos50087b = AosEncounter.aos50087b
+
+aos50088b :: CardDef
+aos50088b = AosEncounter.aos50088b
+
+aos50089b :: CardDef
+aos50089b = AosEncounter.aos50089b
+
+aos50104b :: CardDef
+aos50104b = AosEncounter.aos50104b
+
+aos50130b :: CardDef
+aos50130b = AosEncounter.aos50130b
+
+aos50167b :: CardDef
+aos50167b = AosEncounter.aos50167b
+
+aos50168b :: CardDef
+aos50168b = AosEncounter.aos50168b
+
+aos50169b :: CardDef
+aos50169b = AosEncounter.aos50169b

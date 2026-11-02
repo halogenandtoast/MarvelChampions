@@ -1,5 +1,9 @@
 module Marvel.Attachment.Cards where
 
+import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
+import Marvel.FalconWinter.Cards qualified as FalconWinter
+
+import Marvel.BlackPantherShuri.Cards qualified as BlackPantherShuriPack
 import Marvel.Window.Types qualified as NcWindow ()
 
 import Marvel.Trait.Types qualified as NcTrait
@@ -147,7 +151,10 @@ allAttachments =
   fromList $
     map
       (toFst toCardCode)
-      [ nc48029
+      [ aos50068, aos50069, aos50070, aos50071, aos50092, aos50114, aos50115, aos50116, aos50117, aos50118, aos50119, aos50132, aos50144, aos50145, aos50149, aos50153, aos50157, aos50158, aos50170, aos50171, aos50181b, aos50182b, aos50183b
+  , FalconWinter.fw53039, FalconWinter.fw53040, FalconWinter.fw54030, FalconWinter.fw54035
+  , BlackPantherShuriPack.energyTruncheonShuri
+  , nc48029
   , pyrosFlamethrower
   , lifeDrain
   , Jubilee.jubilee47026, Jubilee.jubilee47027
@@ -3269,3 +3276,72 @@ nc48029 = CardDef
   , cdDoesNotCountTowardHandSize = False
   , cdCanPayForOthersWithTrait = Nothing
   }
+
+aos50068 :: CardDef
+aos50068 = AosEncounter.aos50068
+
+aos50069 :: CardDef
+aos50069 = AosEncounter.aos50069
+
+aos50070 :: CardDef
+aos50070 = AosEncounter.aos50070
+
+aos50071 :: CardDef
+aos50071 = AosEncounter.aos50071
+
+aos50092 :: CardDef
+aos50092 = AosEncounter.aos50092
+
+aos50114 :: CardDef
+aos50114 = AosEncounter.aos50114
+
+aos50115 :: CardDef
+aos50115 = AosEncounter.aos50115
+
+aos50116 :: CardDef
+aos50116 = AosEncounter.aos50116
+
+aos50117 :: CardDef
+aos50117 = AosEncounter.aos50117
+
+aos50118 :: CardDef
+aos50118 = AosEncounter.aos50118
+
+aos50119 :: CardDef
+aos50119 = AosEncounter.aos50119
+
+aos50132 :: CardDef
+aos50132 = AosEncounter.aos50132
+
+aos50144 :: CardDef
+aos50144 = AosEncounter.aos50144
+
+aos50145 :: CardDef
+aos50145 = AosEncounter.aos50145
+
+aos50149 :: CardDef
+aos50149 = AosEncounter.aos50149
+
+aos50153 :: CardDef
+aos50153 = AosEncounter.aos50153
+
+aos50157 :: CardDef
+aos50157 = AosEncounter.aos50157
+
+aos50158 :: CardDef
+aos50158 = AosEncounter.aos50158
+
+aos50170 :: CardDef
+aos50170 = AosEncounter.aos50170
+
+aos50171 :: CardDef
+aos50171 = AosEncounter.aos50171
+
+aos50181b :: CardDef
+aos50181b = AosEncounter.aos50181b
+
+aos50182b :: CardDef
+aos50182b = AosEncounter.aos50182b
+
+aos50183b :: CardDef
+aos50183b = AosEncounter.aos50183b

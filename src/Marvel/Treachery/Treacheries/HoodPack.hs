@@ -172,6 +172,7 @@ instance RunMessage HoodTreachery where
           EnemyMinionId mid -> do
             hero <- identityMatches HeroIdentity you
             if hero then enemyAttacks mid you else minionSchemesAgainst mid you
+          EnemyAttachmentId _ -> pure ()
         when (null actual) $ gainSurge attrs
       "24050" -> withTheVillain you $ \vid -> do
         villainStep vid (VillainSchemesWithBonus you 1)

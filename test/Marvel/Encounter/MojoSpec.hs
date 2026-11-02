@@ -177,6 +177,8 @@ spec = describe "Mojo standalone" do
     tg <- mojo
     inGame tg do
       let p = player1 tg
+      fantasy <- encounterCard Environments.mojo39041
+      resolve [RevealEncounterCardFrom W.RevealedFromSetAside p fantasy]
       _ <- revealNow p Attachments.mojo39027
       settle
       clearHand p
@@ -184,7 +186,7 @@ spec = describe "Mojo standalone" do
       vid <- villainIdNow
       before <- damageOf p
       resolve [VillainMessage vid (VillainAttacks p)]
-      -- This seed starts with Fantasy's amplify icon, so the zero-icon boost
+      -- Fantasy's amplify icon, so the zero-icon boost
       -- contributes one: Mojo's 1 ATK + Major Domo's 1 ATK + 1 boost.
       damageOf p `shouldReturn` before + 3
       length <$> scenarioEncounterDeckNow `shouldReturn` 1
@@ -206,6 +208,8 @@ spec = describe "Mojo standalone" do
     tg <- mojo
     inGame tg do
       let p = player1 tg
+      fantasy <- encounterCard Environments.mojo39041
+      resolve [RevealEncounterCardFrom W.RevealedFromSetAside p fantasy]
       clearHand p
       void $ setEncounterDeck [Obligations.mojo39062, Treacheries.assault] []
       before <- mainSchemeThreatNow

@@ -35,6 +35,7 @@ instance HasModifiersFor BlackjacksBazooka where
     isEnemy = \case
       EnemyVillainId vid -> target == VillainRef vid
       EnemyMinionId mid -> target == MinionRef mid
+      EnemyAttachmentId aid -> target == AttachmentRef aid
   getModifiersFor _ _ _ = pure []
 
 -- | Hero Action: spend [mental][mental][mental] resources → discard this card.

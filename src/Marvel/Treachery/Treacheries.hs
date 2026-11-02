@@ -1,4 +1,8 @@
 module Marvel.Treachery.Treacheries (module X) where
+import Marvel.Treachery.Treacheries.AgentsOfShield as X
+import Marvel.Treachery.Treacheries.Fw53033 as X
+import Marvel.Treachery.Treacheries.Fw53042 as X
+import Marvel.Treachery.Treacheries.Fw54037 as X
 
 import Marvel.Treachery.Treacheries.Nc48038 as X
 
@@ -314,3 +318,17 @@ import Marvel.Treachery.Treacheries.PowerAndDecadence as X
 import Marvel.Treachery.Treacheries.BurnIceman as X
 
 import Marvel.Treachery.Treacheries.TheEyeOfSauron as X
+
+import Marvel.Treachery.Treacheries.TheScreamShuri as X
+
+import Marvel.Treachery.Treacheries.ExtremeRiskShuri as X
+
+import Marvel.Treachery.Treacheries.HuntingtheSpiderBrideSilk as X
+
+import Marvel.Treachery.Treacheries.GrowingStrongSilk as X
+
+import Marvel.Treachery.Treacheries.TitanicProportionsSilk as X
+
+-- Agents of Shield players
+import Marvel.Treachery.Treacheries.AosP50033 as X
+import Marvel.Treachery.Treacheries.AosP50063 as X
