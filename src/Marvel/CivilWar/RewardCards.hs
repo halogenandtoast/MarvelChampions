@@ -34,3 +34,11 @@ rewardEvents =
   ,(rewardEvent "56209" "Recruited by Cap" 3 Nothing) {cdCriteria = FriendlyLeaderExists Nothing <> MinionExists (MinionEngagedWith You)}
   ,rewardEvent "56211" "Double Agent" 2 Nothing
   ,rewardEvent "56212" "Spider-Blast" 2 (Just "56168")]
+
+
+rewardResources :: [CardDef]
+rewardResources = [resource "56132" "Suit Up",resource "56136" "Raw Power",resource "56210" "The People's Hero",resource "56214" "Secret Contact"]
+ where
+  resource code name = (rewardEvent code name 0 Nothing)
+    {cdCost = Nothing,cdCardType = ResourceType,cdAbilityType = Nothing
+    ,cdCriteria = NoCriteria,cdResources = [(PrintedResource,Wild),(PrintedResource,Wild)]}

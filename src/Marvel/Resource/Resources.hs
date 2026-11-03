@@ -1,6 +1,7 @@
 module Marvel.Resource.Resources (afterSpent) where
 
 import Marvel.Prelude
+import Marvel.CivilWar.RewardResources (leaderRewardSpent)
 
 import Marvel.Card.Def (getCardDef, sameCard, cdCanPayForOthersWithTrait)
 import Marvel.Matchers
@@ -35,4 +36,4 @@ afterSpent recipient you spent card
         [ labeled "$label.everydayHeroHeal" (heal recipient 1)
         , labeled "$label.noResponse" (pure ())
         ]
-  | otherwise = pure ()
+  | otherwise = leaderRewardSpent you card

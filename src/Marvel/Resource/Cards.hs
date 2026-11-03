@@ -1,5 +1,7 @@
 module Marvel.Resource.Cards where
 
+import Marvel.CivilWar.RewardCards qualified as CwRewards
+
 import Marvel.Ability.Types qualified as AospAbility ()
 import Marvel.Aspect qualified as AospAspect
 import Marvel.Boost qualified as AospBoost ()
@@ -114,8 +116,7 @@ import Marvel.Resource
 import Marvel.Trait
 
 allResources :: HashMap CardCode CardDef
-allResources = fromList $ concatMap
-  toCardCodePairs
+allResources = fromList $ concatMap toCardCodePairs $ CwRewards.rewardResources <>
   [ WM.wm58006
   , aosP50007, aosP50014
   , BlackPantherShuriPack.vibraniumShuri
