@@ -8047,12 +8047,13 @@ discardableControlledCardsMatching who matcher = do
   allies <- selectList (AllyControlledBy $ IdentityWithId who)
   supports <- selectList (SupportControlledBy $ IdentityWithId who)
   upgrades <- selectList (UpgradeControlledBy $ IdentityWithId who)
+  schemes <- getControlledPlayerSideSchemes who False
   filterM (\target -> do
     card <- getsGame (`cardInPlay` target)
     modifiers <- getModifiers target
     pure $ maybe False (\c -> cardMatch matcher c && Permanent `notElem` cdKeywords (getCardDef c)) card
       && CannotBeDiscarded `notElem` modifiers && CannotLeavePlay `notElem` modifiers && CannotLeavePlayByCardAbilities `notElem` modifiers)
-    (map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades)
+    (map AllyRef allies <> map SupportRef supports <> map UpgradeRef upgrades <> map SideSchemeRef schemes)
 
 blankIn :: Game -> Target -> Bool
 blankIn g target = runIdentity $ runReaderT (isBlanked target) g

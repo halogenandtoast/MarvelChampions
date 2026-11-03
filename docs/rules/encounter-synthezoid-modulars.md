@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts and Taskmaster are verified. The remaining four modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster and Deadly Duo are verified. The remaining three modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Four other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Three other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
 
 ## Thunderbolts
 
@@ -39,3 +39,13 @@ Taskmaster enters with Toughness, Retaliate 1 and Villainous, then activates aga
 Mimicked Move makes Taskmaster attack the friendly leader with his villainous boost. If that attack cannot be initiated because Taskmaster or a friendly leader is absent, the local enemy leader instead receives tough and a facedown boost card. Its boost grants the activating enemy another boost card. Taskmaster's Academy has hinder one per player and an amplify icon; its defeat gives its own board's leader tough and a facedown boost card, including when an opponent removes the last threat.
 
 Validation: fifteen Taskmaster behavior/inventory examples pass alongside Namor and coverage (217 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures).
+
+## Deadly Duo
+
+Jester and Jack O'Lantern discard the revealing player's top three cards and count distinct types among cards actually discarded. Jester assigns that much indirect damage in either identity form; Jack places that much threat on the local main scheme through the normal threat windows. Repeating their reveal abilities uses the new revealing player's deck, even if the minion is engaged with someone else.
+
+Mad Jack's Platform reuses Resistance Fighter's identical reveal, boost and modifier behavior: the opposing team chooses a legal minion, the attachment grants four hit points and stalwart, and it surges if no legal host exists. Its boost can attach only to a minion engaged with the player resolving that boost and consumes the physical boost card when attached.
+
+Jester's Yo-Yo compares the printed costs of legally discardable controlled allies, supports, upgrades and player side schemes. The player breaks ties among the most expensive cards; with none it surges. Its boost discards a controlled upgrade without that cost comparison. Deadly Duo has hinder one per player, and defeating it discards eight cards from each player's deck on its own board, regardless of who removed its last threat.
+
+Validation: twenty Deadly Duo behavior/inventory examples pass alongside Hell’s Kitchen, Young Avengers, Heroes for Hire, Next Evolution modulars and coverage (298 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures). The shared controlled-card selector now includes controlled player side schemes, with a Yo-Yo regression test confirming discard to the owner without defeat.

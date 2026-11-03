@@ -2,6 +2,7 @@
 
 module Marvel.Attachment where
 
+import Marvel.CivilWar.DeadlyDuo qualified as SynthDuo
 import Marvel.CivilWar.Taskmaster qualified as SynthTask
 import Marvel.CivilWar.SpiderMan qualified as CwSM
 
@@ -91,7 +92,7 @@ withAttachmentCardCode cCode f = case lookup cCode allAttachments of
 
 allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
-  fromList $ [(toCardCode card,SomeAttachmentCard card) | card <- SynthTask.taskmasterEquipment] <> [(toCardCode CwSM.tangledUp,SomeAttachmentCard CwSM.tangledUp)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CwN.namorEquipment] <> [(toCardCode CwCD.darkforce,SomeAttachmentCard CwCD.darkforce)] <> [(toCardCode CwHK.resistanceFighter,SomeAttachmentCard CwHK.resistanceFighter)] <> [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
+  fromList $ [("57029",SomeAttachmentCard SynthDuo.madJacksPlatform)] <> [(toCardCode card,SomeAttachmentCard card) | card <- SynthTask.taskmasterEquipment] <> [(toCardCode CwSM.tangledUp,SomeAttachmentCard CwSM.tangledUp)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CwN.namorEquipment] <> [(toCardCode CwCD.darkforce,SomeAttachmentCard CwCD.darkforce)] <> [(toCardCode CwHK.resistanceFighter,SomeAttachmentCard CwHK.resistanceFighter)] <> [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
     map
       (toFst someAttachmentCardCode)
       [ SomeAttachmentCard CN.cn56026, SomeAttachmentCard CN.cn56057, SomeAttachmentCard CN.cn60035
