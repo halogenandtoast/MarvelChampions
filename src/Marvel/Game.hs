@@ -5069,6 +5069,21 @@ filterChoices f = \case
   ChooseOneAtATime cs -> ChooseOneAtATime (filter f cs)
   q -> q
 
+-- | Earlier activations may defeat a minion still listed in an order prompt.
+-- Recheck the remaining choices when the question is actually asked.
+withoutDepartedActivationTargets :: Game -> Question -> Question
+withoutDepartedActivationTargets g = go
+ where
+  go (QuestionLabel label target question) = QuestionLabel label target $
+    if label == "$label.chooseActivationOrder" then filterChoices present question else go question
+  go (Searched cards question) = Searched cards (go question)
+  go (Read text question) = Read text (go question)
+  go question = question
+  present (TargetLabel (MinionRef mid) _) = HashMap.member mid (gameMinions g)
+  present (TargetLabel (EnemyRef (EnemyMinionId mid)) _) = HashMap.member mid (gameMinions g)
+  present (CardLabel _ choice) = present choice
+  present _ = True
+
 -- | A player engaged with a minion with patrol cannot thwart the main scheme (RR Patrol):
 -- a choice that would thwart it is not theirs to make. Removing threat from it otherwise
 -- than by a thwart is not kept from them.
@@ -5841,7 +5856,7 @@ runGameMessagesWith before = go (0 :: Int)
             Just (IdentityMessage ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
             Just (Ask ident asked) -> do
               patrolled <- isPatrolled ident
-              cleaned <- withoutPatrolledThwarts g patrolled (withoutPermanentTargets g asked)
+              cleaned <- withoutPatrolledThwarts g patrolled (withoutPermanentTargets g $ withoutDepartedActivationTargets g asked)
               case cleaned of
                 -- nothing is asked when there is nothing to choose
                 question | not (hasChoices question) -> go (n + 1)

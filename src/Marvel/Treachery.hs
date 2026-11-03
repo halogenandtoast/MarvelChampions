@@ -86,7 +86,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
   Just (SomeTreacheryCard a) -> f a
 
 allTreacheries :: HashMap CardCode SomeTreacheryCard
-allTreacheries = fromList $ [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
+allTreacheries = fromList $ [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce),(toCardCode CwDR.justiceLikeLightning,SomeTreacheryCard CwDR.justiceLikeLightning)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
   (toFst someTreacheryCardCode)
   [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
   , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe

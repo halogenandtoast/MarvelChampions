@@ -258,3 +258,117 @@ spec = describe "Civil War Dangerous Recruits" do
       attack <- L.runQueueT $ L.capture $ L.villainAttacksCharacter attacker q (VillainCharacter defender)
       resolve attack
       leaderHp defender `shouldReturn` (before - 2)
+
+  for_ [False,True] $ \hero ->
+    it ("Justice Like Lightning activates the leader without a boost when there are no minions: hero " <> show hero) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        _ <- withLeader "57040"
+        when hero $ changeForm you
+        [next] <- stackEncounterDeck [M.hydraSoldier]
+        card <- encounterCard C.cw56089
+        resolve [RevealEncounterCard you card]
+        mainSchemeThreat `shouldReturn` if hero then 0 else 1
+        damageOf you `shouldReturn` if hero then 1 else 0
+        headMay <$> getEncounterDeck `shouldReturn` Just next
+
+  it "the first player orders the minions and each activates against its engaged player" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let first = player1 tg
+          second = player2 tg
+      changeForm first
+      attacking <- addMinion first M.hydraSoldier
+      scheming <- addMinion second M.hydraSoldier
+      card <- encounterCard C.cw56089
+      start [RevealEncounterCard first card]
+      let decline = whenM (offers isNoResponse) $ choose "resolve the treachery" isNoResponse >> decline
+      decline
+      fmap fst <$> asked `shouldReturn` Just first
+      choose "activate the alter-ego's minion first" (isTargetChoice scheming)
+      mainSchemeThreat `shouldReturn` 1
+      damageOf first `shouldReturn` 0
+      choose "activate the hero's minion second" (isTargetChoice attacking)
+      pass
+      damageOf first `shouldReturn` 2
+      damageOf second `shouldReturn` 0
+      mainSchemeThreat `shouldReturn` 1
+
+  it "a confused minion resolves its status replacement without a fallback leader activation" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      mid <- addMinion you M.hydraSoldier
+      resolve [GiveStatus (MinionRef mid) ConfusedStatus]
+      card <- encounterCard C.cw56089
+      resolve [RevealEncounterCard you card]
+      enemyMatches ConfusedEnemy (EnemyMinionId mid) `shouldReturn` False
+      mainSchemeThreat `shouldReturn` 0
+
+  it "Justice Like Lightning falls back to the leader if every minion is prohibited from activating" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "57040"
+      mid <- addMinion you M.hydraSoldier
+      prevent <- L.runQueueT $ L.capture $ L.lastingModifiers mid (SourceEntity $ MinionRef mid) [CannotActivate] False
+      resolve prevent
+      [next] <- stackEncounterDeck [M.hydraSoldier]
+      card <- encounterCard C.cw56089
+      resolve [RevealEncounterCard you card]
+      mainSchemeThreat `shouldReturn` 1
+      headMay <$> getEncounterDeck `shouldReturn` Just next
+
+  it "Justice Like Lightning still gives a villainous minion its boost" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      mid <- addMinion you M.hydraSoldier
+      villainous <- L.runQueueT $ L.capture $ L.lastingModifiers mid (SourceEntity $ MinionRef mid) [KeywordModifier K.Villainous] False
+      resolve villainous
+      _ <- stackEncounterDeck [M.hydraSoldier]
+      card <- encounterCard C.cw56089
+      resolve [RevealEncounterCard you card]
+      mainSchemeThreat `shouldReturn` 2
+
+
+  it "drops a minion that leaves play from the remaining activation-order prompt" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      first <- addMinion you M.hydraSoldier
+      second <- addMinion you M.hydraSoldier
+      card <- encounterCard C.cw56089
+      start [RevealEncounterCard you card]
+      choose "activate the first minion" (isTargetChoice first)
+      waiting <- fromMaybe (error "missing remaining activation choice") <$> openQuestion
+      damage <- L.runQueueT $ L.capture $ L.dealDamage second you (toDamage 10 FromAbility)
+      start $ damage <> [uncurry Ask waiting]
+      minionDamageOf second `shouldReturn` Nothing
+      mainSchemeThreat `shouldReturn` 1
+      offers (isTargetChoice second) `shouldReturn` False
+      offers (== EndTurn) `shouldReturn` True
+
+  it "a zero-SCH minion still activates instead of selecting the leader fallback" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- addMinion you M.hydraMercenary
+      card <- encounterCard C.cw56089
+      resolve [RevealEncounterCard you card]
+      mainSchemeThreat `shouldReturn` 0
+
+  it "Justice Like Lightning ignores minions on the opposing board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      _ <- withLeader "57040"
+      _ <- addSecondBoard tg
+      mid <- addMinion q M.hydraSoldier
+      resolve [GiveStatus (MinionRef mid) ConfusedStatus]
+      card <- encounterCard C.cw56089
+      resolve [RevealEncounterCard p card]
+      mainSchemeThreat `shouldReturn` 1
+      asYou q (enemyMatches ConfusedEnemy $ EnemyMinionId mid) `shouldReturn` True

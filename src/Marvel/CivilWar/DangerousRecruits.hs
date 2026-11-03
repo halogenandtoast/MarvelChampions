@@ -80,3 +80,28 @@ instance RunMessage ExcessiveForce where
         villainAttacksCharacterWithoutBoost vid first leader
       pure e
     _ -> ExcessiveForce <$> runMessage msg a
+
+
+newtype JusticeLikeLightning = JusticeLikeLightning (Attrs Treachery)
+  deriving anyclass IsTreachery
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+
+justiceLikeLightning :: TreacheryCard JusticeLikeLightning
+justiceLikeLightning = treachery JusticeLikeLightning C.cw56089
+
+instance RunMessage JusticeLikeLightning where
+  runMessage msg e@(JusticeLikeLightning a) = runQueueT $ case msg of
+    TreacheryMessage tid (RevealTreachery you) | tid == treacheryId a -> do
+      minions <- asYou you (selectList AnyMinion)
+      available <- filterM (fmap (notElem CannotActivate) . getModifiers . MinionRef) minions
+      pairs <- fmap catMaybes $ for available $ \mid -> fmap (mid,) <$> getMinionEngagedPlayer mid
+      let activate (mid,engaged) = enemyActivationAfterCurrent mid (minionActivatesAgainst mid engaged)
+      case pairs of
+        [] -> enemyLeaderFor you >>= traverse_ (\vid -> enemyActivationAfterCurrent vid $ enemyActivatesWithoutBoost a vid you)
+        [pair] -> activate pair
+        _ -> do
+          first <- asYou you (selectJust FirstPlayer)
+          chooseOneAtATimePrompted first "$label.chooseActivationOrder"
+            [targeting (MinionRef mid) (activate pair) | pair@(mid,_) <- pairs]
+      pure e
+    _ -> JusticeLikeLightning <$> runMessage msg a
