@@ -8,6 +8,7 @@ import System.Random.SplitMix (unseedSMGen)
 import Marvel.EncounterSet (modularSets)
 import Marvel.EncounterSet qualified as Encounter
 import System.Environment (lookupEnv)
+import Text.Read (readMaybe)
 import GHC.Clock (getMonotonicTimeNSec)
 import Data.Set qualified as Set
 import Data.Text qualified as Text
@@ -25,8 +26,8 @@ import Marvel.Game.Public (publicGameFor)
 -- | Answer whatever is asked at random, from a seed, for as many answers as given, or
 -- until the game ends. The game must not fail on the way. Hastened, a villain in play is
 -- defeated every so many answers, so that a scenario's later stages are played too.
-playRandomly :: (Int -> IO ()) -> Bool -> Int -> Int -> GameAppT Int
-playRandomly onQuestion hasten seed = go (mkStdGen seed)
+playRandomly :: (Int -> IO ()) -> (IdentityId -> Int -> IO ()) -> Bool -> Int -> Int -> GameAppT Int
+playRandomly onQuestion onAnswer hasten seed = go (mkStdGen seed)
  where
   go _ 0 = pure 0
   go gen n = do
@@ -51,8 +52,14 @@ playRandomly onQuestion hasten seed = go (mkStdGen seed)
             others = [i | (i, c) <- zip [0 ..] (choicesOf q), c /= EndTurn]
             pool = if roll == 0 || null others || length others == questionSize q then [0 .. questionSize q - 1] else others
             (k, gen'') = randomR (0, length pool - 1) gen'
+        liftIO $ onAnswer ident (pool !! k)
         answerQuestion ident (pool !! k)
         go gen'' (n - 1)
+
+saveSmokeSnapshot :: FilePath -> GameApp -> IO ()
+saveSmokeSnapshot path app = do
+  (game, queue, generator) <- currentState app
+  BL.writeFile path $ encode $ object ["game" .= game, "queue" .= queue, "generator" .= unseedSMGen (unStdGen generator)]
 
 spec :: Spec
 -- Every example owns its game, queue, logs and seeded random generator.
@@ -83,6 +90,7 @@ spec = parallel do
          in if full || matchesModular modular then allowed else take 1 $ drop (i `mod` max 1 (length allowed)) allowed
       scenarioName villain heroes' difficulty = show villain <> " against " <> show heroes' <> " on " <> show difficulty
       modularName villain modular = show villain <> " with " <> show modular
+      competitiveName :: CardCode -> CardCode -> Difficulty -> Int -> String
       competitiveName registration resistance mode players = "Civil War competitive " <> show players <> " seats, " <> show registration <> " vs " <> show resistance <> ", " <> show mode
       competitive =
         [(competitiveName registration resistance mode (length heroes'),setup,heroes')
@@ -90,6 +98,11 @@ spec = parallel do
         ,heroes' <- [["spider-man","thor"],["spider-man","thor","black-panther","hawkeye"]]
         ,Just reg <- [CW.defaultTeamScenario registration],Just res <- [CW.defaultTeamScenario resistance]
         ,let setup = CivilWarScenarioSetup registration [] mode [] $ Just $ CW.CompetitionSetup reg res]
+        <> [(competitiveName "56059" "56168" mode (length heroes') <> ", opposing copies",setup,heroes')
+           | mode <- [Normal,Expert]
+           , heroes' <- [["spider-man","spider-man"],["spider-man","thor","spider-man","thor"]]
+           , Just reg <- [CW.defaultTeamScenario "56059"],Just res <- [CW.defaultTeamScenario "56168"]
+           , let setup = CivilWarScenarioSetup "56059" [] mode [] $ Just $ CW.CompetitionSetup reg res]
       campaignName villain n mode = show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode
       scenarios = [(scenarioName villain heroes' difficulty, villain, heroes', difficulty)
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
@@ -264,13 +277,23 @@ spec = parallel do
    -- SMOKE_SEEDS=200 plays many more games, for hunting crashes
    seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
+      snapshotPath <- lookupEnv "SMOKE_FAILURE_SNAPSHOT"
+      recentAnswer <- newIORef Nothing
+      checkpointVersion <- (>>= readMaybe) <$> lookupEnv "SMOKE_CHECKPOINT_VERSION"
+      checkpointPath <- lookupEnv "SMOKE_CHECKPOINT_SNAPSHOT"
       recent <- newIORef Nothing
       recentApp <- newIORef Nothing
       result <- try $ withQuestionMonitor 5000000 $ \onQuestion -> do
         (app, ran, _) <- dealtGameWith f (withTestModulars setup) (map starter heroes) seed
         writeIORef recent (Just ran)
         writeIORef recentApp (Just app)
-        _ <- runGameApp app (playRandomly onQuestion (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
+        let recordQuestion version = do
+              onQuestion version
+              when (checkpointVersion == Just version) $ for_ checkpointPath $ \path -> saveSmokeSnapshot path app
+            recordAnswer player choice = for_ snapshotPath $ \_ -> do
+              (game, queue, generator) <- currentState app
+              writeIORef recentAnswer $ Just $ object ["game" .= game, "queue" .= queue, "generator" .= unseedSMGen (unStdGen generator), "player" .= player, "choice" .= choice]
+        _ <- runGameApp app (playRandomly recordQuestion recordAnswer (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame
         evaluate (length (show g))
       case result of
@@ -278,12 +301,11 @@ spec = parallel do
         Left (err :: SomeException) -> do
           -- Opt in for a single focused example: preserve the exact failing
           -- calculation for replay without dumping a whole game into Hspec.
-          snapshot <- lookupEnv "SMOKE_FAILURE_SNAPSHOT"
-          for_ snapshot \path -> do
+          for_ snapshotPath \path -> do
             saved <- readIORef recentApp
-            for_ saved \app -> do
-              (game, queue, generator) <- currentState app
-              BL.writeFile path $ encode $ object ["game" .= game, "queue" .= queue, "generator" .= unseedSMGen (unStdGen generator)]
+            for_ saved $ saveSmokeSnapshot path
+            previous <- readIORef recentAnswer
+            for_ previous $ BL.writeFile (path <> ".previous.json") . encode
           latest <- readIORef recent >>= maybe (pure []) readIORef
           expectationFailure $ unlines $ ("scenario " <> show setup.scenarioCode <> ", heroes " <> show heroes <> ", difficulty " <> show setup.difficulty <> ", seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
   heroes = map fst starterDecks

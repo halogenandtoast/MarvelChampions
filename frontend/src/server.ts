@@ -331,7 +331,7 @@ export interface GameView {
   futurePastDeckCount?: number | null
   round: number
   phase: 'PlayerPhase' | 'VillainPhase' | string
-  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
+  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | 'BothTeamsLost' | null
   activePlayer: string
   playerOrder: string[]
   seats: string[]
@@ -422,7 +422,7 @@ export interface GameSummary {
   difficulty: 'Normal' | 'Expert' | string
   round: number
   phase: string
-  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
+  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | 'BothTeamsLost' | null
   /** Waiting for friends to take the rest of the seats. */
   waiting: boolean
   /** Who plays, in turn order, as whom; none until the game is dealt. */

@@ -823,13 +823,18 @@ getSideSchemesIn = keysInArea SideSchemeRef gameSideSchemes
 -- the encounter deck or its discard pile. Each copy of a nemesis minion is one (Venom's
 -- Enraged Symbiotes, rulesheet FAQ).
 getNemesisMinionsOutOfPlay :: (HasGame m) => IdentityId -> m [EncounterCard]
-getNemesisMinionsOutOfPlay ident = getsGame \g -> fromMaybe [] do
-  p <- lookup ident (gamePlayers g)
-  let
-    scenario = toAttrs (g.gameScenario)
-    set = getNemesisSet (toCardCode p)
-    cards = onlyEncounterCards (scenarioSetAsideCards scenario) <> scenarioEncounterDeck scenario <> scenarioDiscard scenario
-  pure [c | c <- cards, cdEncounterSet (getCardDef c) == Just set, Minions.isNemesisMinion (getCardDef c)]
+getNemesisMinionsOutOfPlay ident = do
+  identity <- getsGame $ lookup ident . gamePlayers
+  case identity of
+    Nothing -> pure []
+    Just player -> do
+      key <- getDeckKeyFor ident
+      competitive <- isJust <$> getCompetition
+      aside <- if competitive then getSetAsideEncounterCardsForDeck key else getSetAsideEncounterCards
+      pile <- getPile key
+      let set = getNemesisSet (toCardCode player)
+          cards = aside <> pileDeck pile <> pileDiscard pile
+      pure [card | card <- cards, cdEncounterSet (getCardDef card) == Just set, Minions.isNemesisMinion (getCardDef card)]
 
 -- | Whether a patrol minion is engaged with the player: they cannot thwart the main
 -- scheme with the cards they control, by a basic thwart or an ability labeled thwart (RR
@@ -6597,7 +6602,9 @@ gameSelectEncounterCard m = case m of
   -- the nemesis set the player set aside during setup, as much of it as is still there
   NemesisSetFor identityId -> do
     mIdentity <- getsGame $ lookup identityId . entitiesPlayers . gameEntities
-    setAside <- getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
+    key <- getDeckKeyFor identityId
+    competitive <- isJust <$> getCompetition
+    setAside <- if competitive then getSetAsideEncounterCardsForDeck key else getSetAsideEncounterCards
     pure $ case mIdentity of
       Nothing -> mempty
       Just iid ->

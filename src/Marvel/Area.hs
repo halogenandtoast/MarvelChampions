@@ -49,6 +49,9 @@ isEncounterDeck = \case
 -- Weapons deck is part of the encounter deck once it is in play.
 discardsTo :: DeckKey -> DeckKey
 discardsTo = \case
+  -- Civil War identity setup uses temporary team decks before leaders exist.
+  -- Keep their physical homes until native scenario setup remaps them.
+  key@(NamedDeckKey name) | name `elem` ["cwRegistrationSetup", "cwResistanceSetup"] -> key
   NamedDeckKey _ -> EncounterDeckKey
   k -> k
 

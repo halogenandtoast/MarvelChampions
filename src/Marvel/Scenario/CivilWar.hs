@@ -124,7 +124,7 @@ instance RunMessage CivilWarScenario where
       live <- getCompetition
       leader <- getActiveVillainIn (CW.teamArea team)
       case (live,leader,cwScenarioCompetition config) of
-        (Just table,Just vid,Just competition) -> do
+        (Just _,Just vid,Just competition) -> do
           let opponent = CW.scenarioForTeam competition (CW.otherTeam team)
               family = maybeToList $ CW.leaderEncounterSet $ CW.teamScenarioLeader opponent
               modules = CW.teamScenarioModulars opponent
@@ -133,12 +133,11 @@ instance RunMessage CivilWarScenario where
               key = VillainDeckKey vid
               staged = fromMaybe (Pile [] []) $ HashMap.lookup pending $ scenarioDecks attrs
               early = pileDeck staged <> pileDiscard staged <> [card | team == CW.Registration,card <- scenarioEncounterDeck attrs]
-              here = CW.teamPlayers table team
           encounter <- gatherEncounterSets $ HashSet.fromList (family <> modules <> extra)
           standard <- standardPvpCards $ CW.otherTeam team
-          nemeses <- traverse (fmap E.getNemesisSet . getIdentityCode) here
-          let held = [card | EncounterCard card <- scenarioSetAsideCards attrs,cdEncounterSet (getCardDef card) `elem` map Just nemeses]
+          let held = [card | EncounterCard card <- scenarioSetAsideCards attrs,HashMap.lookup (ecCardId card) (scenarioCardDecks attrs) == Just pending]
               homes = HashMap.fromList [(ecCardId card,key) | card <- early <> held]
+                <> HashMap.map (\home -> if home == pending then key else home) (scenarioCardDecks attrs)
           rewards <- for (CW.leaderBasicCards $ CW.teamScenarioLeader $ CW.scenarioForTeam competition team) $ \code -> do
             cid <- getRandom
             pure $ PlayerCard $ MkPlayerCard cid (Player.lookupPlayerCard code) Nothing Nothing
@@ -148,7 +147,7 @@ instance RunMessage CivilWarScenario where
           let updated = attrs
                 { scenarioDecks = HashMap.delete pending $ scenarioDecks attrs
                 , scenarioEncounterDeck = if team == CW.Registration then [] else scenarioEncounterDeck attrs
-                , scenarioCardDecks = scenarioCardDecks attrs <> homes
+                , scenarioCardDecks = homes
                 , scenarioSetAsideCards = scenarioSetAsideCards attrs <> rewards
                 }
           pure $ CivilWarScenario (updated `With` config)

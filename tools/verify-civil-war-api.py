@@ -99,3 +99,18 @@ for viewer_token in [owner_token, other_token]:
     assert all(not q['choices'] for player, q in state['game']['question'].items() if player != visible_id)
 print('Separate-account views expose only the owned hand and conceal opposing choices')
 token = owner_token
+# Competitive uniqueness is team-local, including when the host owns every seat.
+gid_mirror = create(4)['id']
+req('/games/'+gid_mirror+'/join', {'deck': {'starter': 'spider-man'}, 'position': 0})
+req('/games/'+gid_mirror+'/join', {'deck': {'starter': 'spider-man'}, 'position': 1}, 400)
+req('/games/'+gid_mirror+'/join', {'deck': {'starter': 'spider-man'}, 'position': 2})
+req('/games/'+gid_mirror+'/join', {'deck': {'starter': 'thor'}, 'position': 1})
+req('/games/'+gid_mirror+'/join', {'deck': {'starter': 'black-panther'}, 'position': 3})
+req('/games/'+gid_mirror+'/start', {})
+mirror_view = req('/games/'+gid_mirror)
+assert mirror_view['started']
+assert sum(member['code'].startswith('01001') for team in mirror_view['game']['competition']['teams'] for member in team['roster']) == 2
+print('Same-team duplicate hero rejected; opposing copies accepted and started')
+direct_mirror = req('/games', {'name': 'Direct opposing heroes', 'scenario': setup, 'decks': [{'starter': 'spider-man'}, {'starter': 'spider-man'}], 'seats': 2})
+assert req('/games/'+direct_mirror['id'])['started']
+print('Direct two-seat creation also accepts matching heroes on opposing teams')

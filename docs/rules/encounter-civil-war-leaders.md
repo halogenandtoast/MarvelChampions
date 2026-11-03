@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twenty active main-scheme faces across Civil War and Synthezoid Smackdown. Unregistered Super and Government Contractor are also implemented because Hunting Rebel Heroes depends on them. The four Civil War scenarios now have native cooperative and competitive construction; see [scenario setup](scenario-civil-war.md). Synthezoid scenario registration and the dedicated competitive creation/lobby flow remain subsequent work.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twenty active main-scheme faces across Civil War and Synthezoid Smackdown. Unregistered Super and Government Contractor are also implemented because Hunting Rebel Heroes depends on them. The four Civil War scenarios now have native cooperative and competitive construction; see [scenario setup](scenario-civil-war.md). The dedicated competitive creation/lobby flow is implemented and covered by browser and live API checks. Final Civil War verification passes; Synthezoid scenario registration remains subsequent work.
 
 ## Leaders and combat
 

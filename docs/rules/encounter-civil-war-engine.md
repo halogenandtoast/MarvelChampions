@@ -1,5 +1,7 @@
 # Civil War engine boundaries
 
+Current Civil War status: all 169 non-player faces, sixteen required leader rewards, native cooperative/competitive scenario construction and the dedicated team creation/lobby/board UI are implemented. The sections below retain their historical implementation gates; their earlier “remaining” lists are superseded by [current scenario and verification status](scenario-civil-war.md). The final 28-case smoke matrix, strengthened pack-wide coverage and completion audit pass; see the linked verification status. Synthezoid content remains a separate unfinished expansion.
+
 Source: Civil War rulebook, pages 14–17 and FAQ, and Synthezoid Smackdown rulesheet. The official source URLs are recorded in `README.md`.
 
 Competitive games have two independent boards. Registration acts first, followed by resistance, in both the player and villain phases. Each team has its own first-player token and uses its original team size for per-player values. Each team builds the encounter scenario played by the opposing team: its friendly leader therefore occupies the other board.

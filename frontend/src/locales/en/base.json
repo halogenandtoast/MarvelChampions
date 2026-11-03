@@ -372,6 +372,7 @@
     },
     "reviewScenarios": "Review both team scenarios",
     "opponentsFace": "The opposing team faces this leader and encounter scenario.",
-    "eliminated": "Eliminated"
+    "eliminated": "Eliminated",
+    "cooperative": "Cooperative scenario"
   }
 }

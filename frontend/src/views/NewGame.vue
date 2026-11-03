@@ -95,6 +95,7 @@ const modularReleases = computed(() => releasesOf(modularSets.value, modularRele
 const modularFilter = ref('')
 const modularSearch = ref('')
 // Keep the common choices and current lineup visible without opening the library.
+const isCivilWarLeader = (code: string) => !!civilWar.value && ['registration', 'resistance'].some((faction) => civilWar.value![faction as 'registration' | 'resistance'].presets.some((preset) => preset.leader === code))
 const civilWarFaction = computed(() => {
   if (!scenario.value || !civilWar.value) return null
   return (['registration', 'resistance'] as const).find((faction) => civilWar.value![faction].presets.some((preset) => preset.leader === scenario.value!.code)) ?? null
@@ -281,6 +282,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
                 <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :data-code="code" :style="{ backgroundImage: villainArt(code) }" />
               </span>
               <span class="villain-name">{{ tileName(option.code) }}</span>
+              <span v-if="isCivilWarLeader(option.code)" class="villain-sets">{{ $t('civilWar.cooperative') }}</span>
               <span v-if="releaseOf(option.code).name !== tileName(option.code)" class="villain-sets">{{ releaseOf(option.code).name }}</span>
               <Check v-if="scenario && baseCode(scenario.code) === baseCode(option.code)" class="tick" aria-hidden="true" />
             </button>

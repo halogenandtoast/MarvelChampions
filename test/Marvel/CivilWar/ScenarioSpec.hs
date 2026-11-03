@@ -10,6 +10,7 @@ import Marvel.EncounterCard (gatherEncounterSet)
 import Marvel.Identity (identityObligations)
 import Marvel.MainScheme.Types qualified as Main
 import Marvel.Matchers
+import Marvel.Treachery.Cards qualified as T
 import Marvel.Query
 import Marvel.Scenario.CivilWar
 import Marvel.Scenario.Types qualified as S
@@ -107,6 +108,29 @@ spec = describe "Civil War native scenario construction" do
         length (nub $ map pcCardId rewards) `shouldBe` 8
         keys <- getDeckKeys
         keys `shouldSatisfy` all (`notElem` map CW.pendingEncounterDeck [CW.Registration,CW.Resistance])
+
+  it "keeps opposing copies of the same hero's nemesis set physically separate" do
+    tg <- nativeGame (competitionSetup "56059" "56168" Normal) ["spider-man","spider-man"]
+    inGame tg do
+      let one = player1 tg
+          two = seats tg !! 1
+      first <- selectList (NemesisSetFor one)
+      second <- selectList (NemesisSetFor two)
+      length first `shouldBe` 5
+      length second `shouldBe` 5
+      map ecCardId first `shouldSatisfy` all (`notElem` map ecCardId second)
+      length <$> getNemesisMinionsOutOfPlay one `shouldReturn` 1
+      length <$> getNemesisMinionsOutOfPlay two `shouldReturn` 1
+      shadow <- encounterCard T.shadowOfThePast
+      resolve [RevealEncounterCard one shadow]
+      selectList (NemesisSetFor one) `shouldReturn` []
+      selectList (NemesisSetFor two) `shouldReturn` second
+      otherShadow <- encounterCard T.shadowOfThePast
+      resolve [RevealEncounterCard two otherShadow]
+      selectList (NemesisSetFor two) `shouldReturn` []
+      for_ [one,two] $ \actor -> do
+        minions <- asYou actor $ selectList AnyMinion
+        length minions `shouldBe` 1
 
   it "sets up four seats as two teams with independent per-player values" do
     tg <- nativeGame (competitionSetup "56092" "56168" Normal) ["spider-man","thor","black-panther","hawkeye"]

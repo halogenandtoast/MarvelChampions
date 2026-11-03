@@ -31,8 +31,10 @@ const owner = computed(() => table.owner === currentUser.value?.id)
 // heroes are unique: those already brought to a seat
 const ownLeader = computed(() => table.competition && selectedPosition.value !== null ? table.competition[faction(selectedPosition.value)].leader : null)
 const ownLeaderName = computed(() => cards.card(ownLeader.value)?.name ?? '')
+const friendlySeats = computed(() => table.competition && selectedPosition.value !== null
+  ? table.seated.filter((seat) => faction(seat.position) === faction(selectedPosition.value!)) : table.seated)
 const taken = computed(() => [
-  ...table.seated.flatMap((s) => (s.hero ? [s.hero] : [])),
+  ...friendlySeats.value.flatMap((s) => (s.hero ? [s.hero] : [])),
   ...cards.store.all.filter((card) => card.type === 'hero' && card.name === ownLeaderName.value).map((card) => card.code),
 ])
 
@@ -70,7 +72,7 @@ const joinProblem = computed(() => {
   const face = selectedFace.value
   if (!face) return null
   if (ownLeaderName.value && cards.card(heroFace(face.hero))?.name === ownLeaderName.value) return 'error.cwLeaderHero'
-  return table.seated.some((seat) => seat.hero?.replace(/[ab]$/, '') === face.hero.replace(/[ab]$/, '')) ? 'newGame.heroTaken' : null
+  return friendlySeats.value.some((seat) => seat.hero?.replace(/[ab]$/, '') === face.hero.replace(/[ab]$/, '')) ? 'newGame.heroTaken' : null
 })
 const join = () => {
   if (!selectedFace.value || joinProblem.value) return

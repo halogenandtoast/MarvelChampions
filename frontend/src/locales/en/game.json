@@ -165,7 +165,8 @@
     "toCampaign": "Continue the campaign",
     "RegistrationWon": "Registration wins",
     "ResistanceWon": "Resistance wins",
-    "CompetitiveDraw": "Draw"
+    "CompetitiveDraw": "Draw",
+    "BothTeamsLost": "Both teams lose"
   },
   "waitingOn": "Waiting for {name}…",
   "seats": {

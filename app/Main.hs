@@ -565,6 +565,13 @@ refuseSharedHeroes deckLists = case sharedHeroes deckLists of
   [] -> pure ()
   titles -> sendResponseStatus status400 (ikeyWith "error.sharedHeroes" [textVar "heroes" (intercalate ", " titles)])
 
+-- | Opposing competitive teams have independent uniqueness checks.
+refuseSharedSeatedHeroes :: ScenarioSetup -> Int -> [(Int, DeckList)] -> Handler ()
+refuseSharedSeatedHeroes setup total seated = case setupCompetition setup of
+  Nothing -> refuseSharedHeroes (map snd seated)
+  Just _ -> for_ [True, False] \registration ->
+    refuseSharedHeroes [deckList | (position, deckList) <- seated, (position < total `div` 2) == registration]
+
 -- | Civil War compares printed hero titles with the leader chosen by that team.
 refuseLeaderHero :: ScenarioSetup -> Int -> Int -> DeckList -> Handler ()
 refuseLeaderHero setup total position deckList = for_ (setupCompetition setup) \competition -> do
@@ -618,12 +625,12 @@ postGamesR = do
     either (sendResponseStatus status400 . ikey) pure (validateCivilWarSetup setup)
   when (isNothing $ lookupScenario setup) $ sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode setup.scenarioCode)])
   deckLists <- traverse (resolveDeck userId) new.decks
-  refuseSharedHeroes deckLists
   let seatCount = fromMaybe (length deckLists) new.seats
       -- seats left open are for friends, and the game waits for them
       friends = seatCount > length deckLists
   when (seatCount < max 1 (length deckLists) || seatCount > 4) $ sendResponseStatus status400 (ikey "error.seatCount")
   when (isJust (setupCompetition setup) && seatCount `notElem` [2, 4]) $ sendResponseStatus status400 (ikey "error.cwSeatCount")
+  refuseSharedSeatedHeroes setup seatCount (zip [0 ..] deckLists)
   for_ (zip [0 ..] deckLists) \(position, deckList) -> refuseLeaderHero setup seatCount position deckList
   now <- liftIO getCurrentTime
   let newGame' g queue gen =
@@ -672,13 +679,15 @@ postJoinR gid = do
   deckList <- resolveDeck userId joining.deck
   seated <- runDB $ selectList [MarvelSeatGameId ==. gid] []
   when (row.marvelGameUserId /= userId && any ((== userId) . (.marvelSeatUserId) . entityVal) seated) $ sendResponseStatus status409 (ikey "error.alreadySeated")
-  refuseSharedHeroes . (deckList :) . map snd =<< friendSeats gid
   setup <- decodeOrFail "scenario" row.marvelGameScenario
   let available = [0 .. row.marvelGameSeats - 1] \\ map ((.marvelSeatPosition) . entityVal) seated
   position <- case joining.position of
     Just requested | requested `elem` available -> pure requested
     Just _ -> sendResponseStatus status409 (ikey "error.noFreeSeat")
     Nothing -> maybe (sendResponseStatus status409 (ikey "error.noFreeSeat")) pure (listToMaybe available)
+  existing <- friendSeats gid
+  let positions = sort $ map ((.marvelSeatPosition) . entityVal) seated
+  refuseSharedSeatedHeroes setup row.marvelGameSeats ((position, deckList) : zip positions (map snd existing))
   refuseLeaderHero setup row.marvelGameSeats position deckList
   inserted <- runDB $ insertUnique $ MarvelSeat gid position userId (Just $ toJSON deckList)
   when (isNothing inserted) $ sendResponseStatus status409 (ikey "error.noFreeSeat")

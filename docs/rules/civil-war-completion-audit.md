@@ -1,0 +1,22 @@
+# Civil War completion audit
+
+This audit concerns Civil War only. Synthezoid Smackdown, Fear No Evil and Shadowland remain separate unfinished expansion work. The overall expansion goal is not complete. Every Civil War requirement below is verified. This audit is included in the Civil War completion commit before work resumes on the remaining expansions.
+
+| Requirement | Current evidence | State |
+| --- | --- | --- |
+| Every Civil War non-player face | Local card data contains 169 leader, main/side scheme, attachment, treachery, minion and obligation faces. Full-pack `CoverageSpec` now includes Civil War encounters and explicitly checks leader and exact A/B scheme registrations. The 228-example coverage/native-scenario gate passes. | Verified |
+| Native card behavior | Civil War behavior suites cover leaders, signatures, main schemes, Standard PvP, all sixteen modular sets, hero obligations/nemeses and sixteen required leader reward dependencies. The complete current unit suite passes 8,740 examples. | Verified |
+| Cooperative custom scenarios | `Scenario/CivilWar.hs` registers all four leaders; `ScenarioSpec` verifies Normal/Expert setup, module inventory, custom main-scheme advancement, obligations and setup-time reveals. The ordinary creation page enforces three/four modules and identifies this flow as cooperative. | Verified |
+| Competitive independent boards | Native scenario tests verify exchanged scenarios, separate physical decks/discards, explicit five-card PvP printings, Expert additions, per-team values, obligations, nemesis homes, rewards and save/reload. `TeamSpec` covers selectors, abilities, effects and phase boundaries. | Verified |
+| Combat and equal opportunity to reply | Leader/defense/attack suites exercise normal attack windows, boosted cross-board attacks, actual defender ownership and phase-end leader advancement. `TeamSpec` covers results, reply phases and elimination. | Verified |
+| Opposing matching heroes | API validation and lobby exclusions are team-local. A native test reveals opposing Spider-Man nemesis copies independently. Live API checks reject teammate duplicates, accept opposing copies and exercise direct creation. | Verified |
+| Dedicated multiplayer creation | `/new-game/civil-war` uses server-provided faction presets/modules/schemes and accepts exactly two or four seats. Browser tests verify independent payloads and modular-count validation. | Verified |
+| One account controlling both sides | Live API and browser tests create two/four-seat games under one account, fill explicit seats, wait for host start and render the first player turn. | Verified |
+| Distinct accounts and privacy | Live API checks advance setup under separate accounts, verify only the owned hand is visible and opposing private choices are absent. `TeamSpec` also covers private searches/spectators. | Verified |
+| Board and result presentation | Browser tests verify team selection, both boards, current competitive phase, turn name, local encounter images, team summaries, faction wins, a draw and both teams losing. Eight browser tests pass against the final rebuilt server, including opposing-hero selection. | Verified |
+| Existing images and no competitor links | The live frontend uses the existing local images with an empty `VITE_ASSET_HOST`; no competitor images were downloaded. Card-viewer data contains zero `play.marvelsimulator.com` links. Image files are unchanged by the Civil War implementation. | Verified |
+| English UI labels | All eighteen literal label keys in the Civil War handlers exist in the English label dictionary. New creation, lobby, phase and outcome strings are localized. Frontend typechecking and production build pass. | Verified |
+| Randomized gameplay | The final 28-case matrix passes two seeds per case in 790.7 seconds with the unchanged five-second question watchdog, including opposing-copy games and final ownership changes. | Verified |
+| Completion commit before further expansions | Native assembly, UI and the performance optimization have focused intermediate commits. This completion commit closes the audit and final ownership changes before remaining expansion work resumes. | Included in this commit |
+
+Rules and implementation details are in [scenario construction](scenario-civil-war.md), [engine boundaries](encounter-civil-war-engine.md) and [leaders](encounter-civil-war-leaders.md). Historical failures and the performance investigation remain documented in the scenario file; they are not replaced by narrower passing checks.

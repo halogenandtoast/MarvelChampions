@@ -196,6 +196,7 @@ Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasy
 
 ## Civil War scenarios
 
+- [Completion audit](civil-war-completion-audit.md): requirement-by-requirement evidence and final verification results.
 - [Scenario construction](scenario-civil-war.md): cooperative and competitive setup, independent decks, physical inventories, rewards and save/reload.
 - [Engine boundaries](encounter-civil-war-engine.md): team phases, victory conditions, shared mechanics and reward-card behavior.
 - [Leader rules](encounter-civil-war-leaders.md): leader stages, signature cards and main-scheme interactions.

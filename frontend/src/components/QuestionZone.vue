@@ -4,7 +4,7 @@
 // game ended.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Loader, Trophy, Skull } from 'lucide-vue-next'
+import { Loader, Trophy, Skull, Minus } from 'lucide-vue-next'
 import { useChoiceLabel, useKeyed } from '../composables/useChoices'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useCards } from '../cards'
@@ -22,7 +22,7 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
   asking?: string | null
   /** the seat being asked, when it is someone else's */
   waitingOn?: string | null
-  outcome?: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
+  outcome?: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | 'BothTeamsLost' | null
   /** everything in the game by id, to name and show what a choice is about */
   things?: Record<string, { code: string; name: string }>
   /** the question is answered in a window over the board: only a button to open it here */
@@ -58,7 +58,8 @@ const tone = (choice: ChoiceView) =>
   <section class="question" :class="{ idle: !buttons.length && !onBoard }">
     <template v-if="outcome">
       <div class="outcome" :class="outcome.toLowerCase()">
-        <Trophy v-if="outcome !== 'Lost'" aria-hidden="true" />
+        <Minus v-if="outcome === 'CompetitiveDraw'" aria-hidden="true" />
+        <Trophy v-else-if="outcome !== 'Lost' && outcome !== 'BothTeamsLost'" aria-hidden="true" />
         <Skull v-else aria-hidden="true" />
         <span>{{ t(`game.outcome.${outcome === 'Won' ? 'won' : outcome === 'Lost' ? 'lost' : outcome}`) }}</span>
       </div>

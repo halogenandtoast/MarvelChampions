@@ -59,13 +59,14 @@ test('the host can choose the opposing team seat and cannot start with an empty 
     document.body.replaceChildren(host)
     Object.assign(window, { selectedSeat: null })
     createApp({ render: () => h(Lobby, {
-      table: { owner: 1, withFriends: true, seats: 2, competition: { registration, resistance }, seated: [{ position: 0, userId: 1, username: 'civil-war-test', hero: '01040a' }] },
+      table: { owner: 1, withFriends: true, seats: 2, competition: { registration, resistance }, seated: [{ position: 0, userId: 1, username: 'civil-war-test', hero: '01001a' }] },
       onJoin: (deck: unknown, position: number) => Object.assign(window, { selectedSeat: { deck, position } }),
     }) }).use(router).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
   }, { registration, resistance })
   await expect(page.getByRole('button', { name: /Start/ })).toBeDisabled()
   await expect(page.getByLabel('Choose your team and seat')).toHaveValue('1')
   await expect(page.getByText('Your team leader is Captain America. Choose a hero with a different title.')).toBeVisible()
+  await expect(page.getByRole('radio', { name: /Spider-Man/ })).toBeEnabled()
   await page.getByRole('radio', { name: /Spider-Man/ }).click()
   expect(await page.evaluate(() => (window as any).selectedSeat)).toEqual({ deck: { starter: 'spider-man' }, position: 1 })
 })
@@ -134,4 +135,23 @@ test('team summary shows reply results and selects the corresponding board', asy
   await expect(registrationTeam).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: /Resistance/ }).click()
   expect(await page.evaluate(() => (window as any).selectedArea)).toBe(1)
+})
+
+test('competitive results distinguish both winners, a draw and both teams losing', async ({ page }) => {
+  await page.goto('/#/cards/01001a')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: QuestionZone } = await load('/src/components/QuestionZone.vue')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const host = document.createElement('div')
+    document.body.replaceChildren(host)
+    createApp({ render: () => h('div', ['RegistrationWon', 'ResistanceWon', 'CompetitiveDraw', 'BothTeamsLost'].map((outcome) => h(QuestionZone, { outcome }))) })
+      .use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+  })
+  for (const text of ['Registration wins', 'Resistance wins', 'Draw', 'Both teams lose']) await expect(page.getByText(text, { exact: true })).toBeVisible()
+  await expect(page.locator('.competitivedraw .lucide-minus')).toHaveCount(1)
+  await expect(page.locator('.bothteamslost .lucide-skull')).toHaveCount(1)
 })
