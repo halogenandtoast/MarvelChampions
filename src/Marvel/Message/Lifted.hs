@@ -861,12 +861,17 @@ enemyAttacksAlly enemy ident ally = push case toEnemy enemy of
 -- | An explicit character attack, with boost effects resolved by the given player.
 -- Activations triggered during another activation wait for it to finish.
 villainAttacksCharacter :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> m ()
-villainAttacksCharacter vid you target = do
+villainAttacksCharacter vid you target = villainAttacksCharacterThen vid you target (pure ())
+
+-- | Finish an explicit character attack and its windows before its continuation.
+villainAttacksCharacterThen :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> m () -> m ()
+villainAttacksCharacterThen vid you target afterward = do
   previous <- getActivePlayerId
   enemyActivationAfterCurrent vid do
     setActivePlayer you
     villainStep vid (VillainAttacksCharacter you $ toCharacter target)
     setActivePlayer previous
+    afterward
 
 -- | An explicit character attack without dealing a new boost card for it.
 villainAttacksCharacterWithoutBoost :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> m ()

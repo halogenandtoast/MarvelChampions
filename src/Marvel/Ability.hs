@@ -13,16 +13,18 @@ import Marvel.Card.PlayerCard.Types
 import Marvel.Discard (unDiscard)
 import Marvel.Damage (damageAmount, damageUnpreventable)
 import Marvel.Message qualified as Msg
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.Id (CardId (..))
 import Marvel.Cost.Types
 import Marvel.Criteria
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.Game.Source
 import Marvel.GameValue (GameValue (Static))
 import Marvel.Id
 import Marvel.Identity.Types
 import Marvel.Matchers
 import Marvel.Modifier (Modifier (CanLookAtTopOfEncounterDeck, CannotTriggerPrintedHeroAbilities, CannotBeCanceled, LoseKeyword, KeywordModifier))
-import Marvel.Card.Def (HasCardDef(getCardDef), cdBoostIcons, cdKeywords, cardMatch, CardType (AllyType), CardMatcher (..))
+import Marvel.Card.Def (HasCardDef(getCardDef), cdBoostIcons, cdKeywords, cdEncounterSet, cardMatch, CardType (AllyType), CardMatcher (..))
 import Marvel.Projection
 import Marvel.Query
 import {-# SOURCE #-} Marvel.Question
@@ -148,6 +150,7 @@ passesCriteria x a =
       member x <$> select (IdentityWithId x <> identityMatcher)
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay x
     HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards x
+    FriendlyLeaderExists code -> friendlyLeaderExists x code
     NoCriteria -> pure True
     Never -> pure False
     InHeroForm -> member x <$> select HeroIdentity
@@ -266,6 +269,7 @@ passesCardCriteria ident card = go
     OwnsThis -> error "Irrelevant"
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay ident
     HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards ident
+    FriendlyLeaderExists code -> friendlyLeaderExists ident code
     NoCriteria -> pure True
     Never -> pure False
     SelfMatches identityMatcher ->
@@ -498,3 +502,21 @@ hasMayOverpay :: Cost -> Bool
 hasMayOverpay MayOverpay = True
 hasMayOverpay (Costs costs) = any hasMayOverpay costs
 hasMayOverpay _ = False
+
+
+-- | A friendly Civil War leader is on the opposing team's board. Ordinary enemy
+-- selectors deliberately cannot discover that leader as a friendly target.
+friendlyLeaderExists :: HasGame m => IdentityId -> Maybe CardCode -> m Bool
+friendlyLeaderExists you expected = do
+  competition <- getCompetition
+  case competition >>= \c -> CW.playerTeam c you of
+    Nothing -> pure False
+    Just team -> do
+      leader <- getActiveVillainIn $ CW.teamArea $ CW.otherTeam team
+      case leader of
+        Nothing -> pure False
+        Just vid -> case expected of
+          Nothing -> pure True
+          Just code -> getsGame $ \g -> case abilityCardDef g (VillainRef vid) of
+            Nothing -> False
+            Just def -> isJust (CW.leaderEncounterSet code) && cdEncounterSet def == CW.leaderEncounterSet code

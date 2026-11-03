@@ -1,0 +1,261 @@
+module Marvel.CivilWar.RewardEventSpec (spec) where
+
+import Marvel.Area (DeckKey (..),Pile (..))
+import Marvel.CivilWar.TeamSpec (competitive,addSecondBoard)
+import Marvel.CivilWar.LeaderSpec (withLeader,leaderHp,attachmentIdOf)
+import Marvel.CivilWar.Cards qualified as C
+import Marvel.Message.Lifted qualified as L
+import Marvel.Matchers (EntityMatcher (SourceEntity))
+import Marvel.Modifier (Modifier (CannotBeDiscarded))
+import Marvel.Minion.Cards qualified as M
+import Marvel.MainScheme.Types qualified as Main
+import Marvel.Villain.Types qualified as V
+import TestImport
+
+leaders :: TestGame -> CardCode -> CardCode -> GameAppT (VillainId,VillainId)
+leaders tg ownCode enemyCode = do
+  enemy <- withLeader enemyCode
+  own <- addSecondBoard tg
+  resolve [ReplaceVillain own ownCode Swapped,VillainMessage own SetVillainHp,SetActivePlayer $ player1 tg]
+  let (_,_,_,stage) = C.printedLeaderStats ownCode
+  withGame_ $ entitiesL . villainsL . ix own %~ (\(V.Villain leader) -> V.Villain $ V.overVillainAttrs (\a -> a {V.villainStage = stage}) leader)
+  pure (own,enemy)
+
+threatOn :: MainSchemeId -> GameAppT Natural
+threatOn sid = getsGame $ maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup sid . gameMainSchemes
+
+spec :: Spec
+spec = describe "Civil War leader reward events" do
+  it "The Futurist lets the friendly Iron Man scheme without drawing a boost card" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56059" "56137"
+      [next,_] <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      [scheme] <- getMainSchemesIn =<< getAreaOfTarget own
+      before <- threatOn scheme
+      card <- putInHand you "56129"
+      payment <- putInHand you "01089"
+      playWith card [payment]
+      pass
+      threatOn scheme `shouldReturn` (before + 1)
+      headMay <$> getEncounterDeck `shouldReturn` Just next
+      discardOf you >>= (`shouldSatisfy` any ((== pcCardId card) . pcCardId))
+
+  it "does not offer The Futurist with the wrong friendly leader or only an enemy Iron Man" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "56137" "56059"
+      card <- putInHand you "56129"
+      _ <- putInHand you "01089"
+      offers (isPlay card) `shouldReturn` False
+
+  for_ [("56134","56092","56137","01088",ConfusedStatus)
+       ,("56208","56137","56059","01090",StunnedStatus)
+       ,("56212","56168","56059","01089",ConfusedStatus)] $ \(code,ownCode,enemyCode,resource,status) ->
+    it (show code <> " makes the friendly leader attack and applies its paid-resource bonus") do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,enemy) <- leaders tg ownCode enemyCode
+        _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+        before <- leaderHp enemy
+        card <- putInHand you code
+        payment <- putInHand you resource
+        playWith card [payment]
+        whenM (offers $ isAbilityOf own) $ choose "resolve the friendly leader interrupt" (isAbilityOf own)
+        pass
+        leaderHp enemy >>= (`shouldSatisfy` (< before))
+        getCharacterStatusCount (VillainCharacter enemy) status `shouldReturn` 1
+        damageOf you `shouldReturn` 0
+
+  it "Double Agent removes threat locally and places threat on the friendly leader's scheme" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56168" "56059"
+      [local] <- getMainSchemesIn =<< getAreaOfTarget you
+      [other] <- getMainSchemesIn =<< getAreaOfTarget own
+      L.runQueueT (L.capture $ L.placeThreatOn GameRef (SchemeMainSchemeId local) 3) >>= resolve
+      before <- threatOn other
+      card <- putInHand you "56211"
+      payment <- putInHand you "01089"
+      playWith card [payment]
+      pass
+      threatOn local `shouldReturn` 1
+      threatOn other `shouldReturn` (before + 2)
+
+  it "Recruited by Cap moves a chosen engaged minion to an opponent's board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+          opponent = player2 tg
+      _ <- leaders tg "56137" "56059"
+      mid <- addMinion you M.hydraMercenary
+      card <- putInHand you "56209"
+      payment <- traverse (putInHand you) ["01088","01089"]
+      playWith card payment
+      choose "recruit the mercenary" (isTargetChoice mid)
+      choose "send it to the opponent" (isTargetChoice opponent)
+      pass
+      getsGame (fmap (minionEngagedIdentity . toAttrs) . lookup mid . gameMinions) `shouldReturn` Just opponent
+      otherArea <- getAreaOfTarget opponent
+      getAreaOfTarget mid `shouldReturn` otherArea
+
+  it "Target Lock discards a Hero Response attachment after its leader attack, even in alter-ego form" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "56059" "56137"
+      helmet <- encounterCard C.cw56144
+      shield <- encounterCard C.cw56143
+      resolve [RevealEncounterCard you helmet,RevealEncounterCard you shield]
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      card <- putInHand you "56130"
+      payment <- putInHand you "01089"
+      playWith card [payment]
+      offers (isTargetChoice $ attachmentIdOf shield) `shouldReturn` False
+      choose "discard Cap's Helmet" (isTargetChoice $ attachmentIdOf helmet)
+      pass
+      getAttachedCharacter (attachmentIdOf helmet) `shouldReturn` Nothing
+      getCharacterStatusCount (VillainCharacter enemy) ToughStatus `shouldReturn` 0
+
+  for_ [("56134","56092","56137","01089",ConfusedStatus)
+       ,("56208","56137","56059","01088",StunnedStatus)
+       ,("56212","56168","56059","01088",ConfusedStatus)] $ \(code,ownCode,enemyCode,resource,status) ->
+    it (show code <> " still attacks without its resource bonus when the wrong resource was paid") do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,enemy) <- leaders tg ownCode enemyCode
+        _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+        before <- leaderHp enemy
+        card <- putInHand you code
+        payment <- putInHand you resource
+        playWith card [payment]
+        whenM (offers $ isAbilityOf own) $ choose "resolve the friendly leader interrupt" (isAbilityOf own)
+        pass
+        leaderHp enemy >>= (`shouldSatisfy` (< before))
+        getCharacterStatusCount (VillainCharacter enemy) status `shouldReturn` 0
+
+  it "waits for an opposing player's boost decision before applying the resource bonus" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+          opponent = player2 tg
+      (_,enemy) <- leaders tg "56092" "56137"
+      ally <- putIntoPlay opponent "01050"
+      _ <- stackEncounterDeck [C.cw56156,M.hydraMercenary]
+      card <- putInHand you "56134"
+      payment <- putInHand you "01088"
+      playWith card [payment]
+      fmap fst <$> openQuestion `shouldReturn` Just opponent
+      getCharacterStatusCount (VillainCharacter enemy) ConfusedStatus `shouldReturn` 0
+      choose "opponent resolves Spectrum by exhausting Hulk" (isTargetChoice $ AllyCharacter $ allyIdOf ally)
+      pass
+      getCharacterStatusCount (VillainCharacter enemy) ConfusedStatus `shouldReturn` 1
+
+  it "still places Double Agent's threat when the local scheme has no threat to remove" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56168" "56059"
+      [local] <- getMainSchemesIn =<< getAreaOfTarget you
+      [other] <- getMainSchemesIn =<< getAreaOfTarget own
+      before <- threatOn other
+      card <- putInHand you "56211"
+      payment <- putInHand you "01089"
+      playWith card [payment]
+      pass
+      threatOn local `shouldReturn` 0
+      threatOn other `shouldReturn` (before + 2)
+
+  it "does not offer leader rewards in cooperative play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "56059"
+      for_ ["56129","56130","56134","56208","56209","56211","56212"] $ \code -> do
+        card <- putInHand you code
+        _ <- putInHand you "01089"
+        offers (isPlay card) `shouldReturn` False
+
+  it "does not spend the acting player's stun because the leader, rather than that player, attacks" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "56092" "56137"
+      resolve [GiveStatus (IdentityRef you) StunnedStatus]
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      before <- leaderHp enemy
+      card <- putInHand you "56134"
+      payment <- putInHand you "01088"
+      playWith card [payment]
+      pass
+      leaderHp enemy >>= (`shouldSatisfy` (< before))
+      getCharacterStatusCount (IdentityCharacter you) StunnedStatus `shouldReturn` 1
+
+  it "Recruited by Cap preserves a minion's damage and status and later discards it to its original encounter deck" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+          opponent = player2 tg
+      (own,enemy) <- leaders tg "56137" "56059"
+      minion <- encounterCard M.hydraMercenary
+      filler <- encounterCard M.shocker
+      otherFiller <- encounterCard M.weaponsRunner
+      let original = VillainDeckKey enemy
+          destination = VillainDeckKey own
+          mid = MinionId $ unCardId $ ecCardId minion
+      resolve [CreateDeck original [minion,filler],CreateDeck destination [otherFiller],RevealEncounterCard you minion
+        ,MinionMessage mid $ MinionDamaged GameRef $ toDamage 1 FromAbility,GiveStatus (MinionRef mid) ToughStatus]
+      card <- putInHand you "56209"
+      payment <- traverse (putInHand you) ["01088","01089"]
+      playWith card payment
+      choose "recruit the damaged mercenary" (isTargetChoice mid)
+      choose "send it to the opponent" (isTargetChoice opponent)
+      pass
+      minionDamageOf mid `shouldReturn` Just 1
+      getCharacterStatusCount (MinionCharacter mid) ToughStatus `shouldReturn` 1
+      resolve [MinionMessage mid MinionDefeated]
+      pileDiscard <$> getPile original >>= (`shouldSatisfy` elem minion)
+      pileDiscard <$> getPile destination >>= (`shouldSatisfy` notElem minion)
+
+  it "Now It's Personal gives the player actual native leader events from their own leader's pool" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "56059" "56137"
+      clearHand you
+      rewards <- traverse (putInHand you) ["56129","56130","56208"]
+      L.runQueueT (L.capture $ L.setAside $ map (PlayerCard . (\card -> card {pcOwner = Nothing,pcController = Nothing})) rewards) >>= resolve
+      personal <- encounterCard C.cw56128b
+      resolve [RevealEncounterCard you personal]
+      let oid = ObligationId $ unCardId $ ecCardId personal
+      choose "use Now It's Personal" (isAbilityOf $ ObligationRef oid)
+      getsGame (isNothing . lookup oid . gameObligations) `shouldReturn` True
+      offers (\case CardLabel code _ -> code == "56208"; _ -> False) `shouldReturn` False
+      choose "take The Futurist" (\case CardLabel code _ -> code == "56129"; _ -> False)
+      choose "take Target Lock" (\case CardLabel code _ -> code == "56130"; _ -> False)
+      pass
+      map toCardCode <$> handOf you `shouldReturn` ["56130","56129"]
+      handOf you >>= \cards -> map pcOwner cards `shouldBe` replicate 2 (Just you)
+      map toCardCode <$> getSetAsidePlayerCards >>= (`shouldSatisfy` elem "56208")
+
+  it "Target Lock does not offer an attachment that cannot be discarded" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "56059" "56137"
+      helmet <- encounterCard C.cw56144
+      resolve [RevealEncounterCard you helmet]
+      let aid = attachmentIdOf helmet
+      L.runQueueT (L.capture $ L.lastingModifiers GameRef (SourceEntity $ AttachmentRef aid) [CannotBeDiscarded] False) >>= resolve
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      card <- putInHand you "56130"
+      payment <- putInHand you "01089"
+      playWith card [payment]
+      offers (isTargetChoice aid) `shouldReturn` False
+      pass
+      getAttachedCharacter aid `shouldReturn` Just (VillainCharacter enemy)

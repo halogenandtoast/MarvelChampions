@@ -1,5 +1,7 @@
 module Marvel.Event.Cards where
 
+import Marvel.CivilWar.RewardCards qualified as CwRewards
+
 import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
 import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
@@ -165,8 +167,7 @@ import Marvel.Upgrade.Cards qualified as Upgrade
 import Marvel.Window
 
 allEvents :: HashMap CardCode CardDef
-allEvents = fromList $ concatMap
-  toCardCodePairs
+allEvents = fromList $ concatMap toCardCodePairs $ CwRewards.rewardEvents <>
   [ CampaignPlayers.cw56008, CampaignPlayers.cw56009, CampaignPlayers.cw56016, CampaignPlayers.cw56017, CampaignPlayers.cw56037, CampaignPlayers.cw56038, CampaignPlayers.cw56039, CampaignPlayers.cw56040, CampaignPlayers.cw56047, CampaignPlayers.cw56050, CampaignPlayers.fne60008, CampaignPlayers.fne60009, CampaignPlayers.fne60010, CampaignPlayers.fne60011, CampaignPlayers.fne60023, CampaignPlayers.fne60040a, CampaignPlayers.fne60040b, CampaignPlayers.fne60040c, CampaignPlayers.fne60041, CampaignPlayers.fne60048, CampaignPlayers.fne60049, CampaignPlayers.fne60050, CampaignPlayers.fne60055
   , WM.wm58003, WM.wm58004, WM.wm58005, WM.wm58016, WM.wm58018, WM.wm58019, WM.wm58020, WM.wm58033, HC.hc59009, HC.hc59010, HC.hc59011, HC.hc59026
   , JL.jl61004, JL.jl61005, JL.jl61006, JL.jl61019, JL.jl61026, JL.jl61027, JL.jl62003, JL.jl62004, JL.jl62005, JL.jl62006, JL.jl62015, JL.jl62022, JL.jl62023, JL.jl62034, JL.jl62035

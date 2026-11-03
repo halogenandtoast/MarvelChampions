@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Event where
 
+import Marvel.CivilWar.RewardEvents qualified as CwRewards
+
 import Marvel.Event.Events.JessicaLuke qualified as JL
 import Marvel.Prelude
 
@@ -24,7 +26,7 @@ withEventCardCode cCode f = case lookup cCode allEvents of
   Just (SomeEventCard a) -> f a
 
 allEvents :: HashMap CardCode SomeEventCard
-allEvents = fromList $ map
+allEvents = fromList $ [(toCardCode card,SomeEventCard card) | card <- CwRewards.leaderRewardEvents] <> (map
   (toFst someEventCardCode)
   $ concatMap (\(SomeEventCard a) -> SomeEventCard <$> printings a)
   [ SomeEventCard cw56008, SomeEventCard cw56009, SomeEventCard cw56016, SomeEventCard cw56017, SomeEventCard cw56037, SomeEventCard cw56038, SomeEventCard cw56039, SomeEventCard cw56040, SomeEventCard cw56047, SomeEventCard cw56050, SomeEventCard fne60008, SomeEventCard fne60009, SomeEventCard fne60010, SomeEventCard fne60011, SomeEventCard fne60023, SomeEventCard fne60040a, SomeEventCard fne60040b, SomeEventCard fne60040c, SomeEventCard fne60041, SomeEventCard fne60048, SomeEventCard fne60049, SomeEventCard fne60050, SomeEventCard fne60055
@@ -428,7 +430,7 @@ allEvents = fromList $ map
   , SomeEventCard psychicMisdirection
   , SomeEventCard psychicKicker
   , SomeEventCard soulSisters
-  ]
+  ])
 
 lookupEvent :: CardCode -> IdentityId -> EventId -> Event
 lookupEvent cardCode identityId eventId = case lookup cardCode allEvents of

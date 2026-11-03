@@ -15,6 +15,7 @@ import Marvel.Trait.Types (Trait)
 
 data Criteria
   = IsSelf
+  | FriendlyLeaderExists (Maybe CardCode)
   | CanFindTouched
   | CanFindPlayerCardForEntry CardCode
   | -- | the acting player can resolve the current unblanked Setting Special as a cost

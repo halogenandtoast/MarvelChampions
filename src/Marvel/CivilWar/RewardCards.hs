@@ -1,0 +1,36 @@
+module Marvel.CivilWar.RewardCards where
+
+import Marvel.Prelude
+import Marvel.Ability.Types (AbilityType (Action))
+import Marvel.Aspect (Aspect (Neutral))
+import Marvel.Card
+import Marvel.Cost.Types (Cost (NoCost))
+import Marvel.Criteria
+import Marvel.Name (Name)
+import Marvel.Matchers
+import Marvel.Resource.Types
+
+rewardEvent :: CardCode -> Name -> Int -> Maybe CardCode -> CardDef
+rewardEvent code name cost leader = CardDef
+  { cdCardCode = code,cdName = name,cdCost = Just cost
+  , cdTraits = mempty,cdKeywords = mempty,cdCardType = EventType
+  , cdAbilityType = Just Action,cdAbilitySubTypes = [],cdUnique = False
+  , cdAspect = Just Neutral,cdCriteria = FriendlyLeaderExists leader
+  , cdResources = [(PrintedResource,Wild)],cdResponseWindow = Nothing
+  , cdBoostIcons = [],cdEncounterSet = Nothing,cdEncounterSetQuantity = Nothing
+  , cdActionCriteria = Nothing,cdHazards = 0,cdAcceleration = 0,cdAmplify = 0
+  , cdLimit = Nothing,cdDeckLimit = Nothing,cdTeamUp = Nothing
+  , cdAlternateCardCodes = [],cdPlayableFromDiscard = False,cdAbilityCost = NoCost
+  , cdDoubleWildResources = False,cdDoesNotCountTowardHandSize = False
+  , cdCanPayForOthersWithTrait = Nothing
+  }
+
+rewardEvents :: [CardDef]
+rewardEvents =
+  [rewardEvent "56129" "The Futurist" 2 (Just "56059")
+  ,rewardEvent "56130" "Target Lock" 2 (Just "56059")
+  ,rewardEvent "56134" "You Started This" 2 (Just "56092")
+  ,rewardEvent "56208" "Fighting Dirty" 2 (Just "56137")
+  ,(rewardEvent "56209" "Recruited by Cap" 3 Nothing) {cdCriteria = FriendlyLeaderExists Nothing <> MinionExists (MinionEngagedWith You)}
+  ,rewardEvent "56211" "Double Agent" 2 Nothing
+  ,rewardEvent "56212" "Spider-Blast" 2 (Just "56168")]

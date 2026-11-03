@@ -591,6 +591,8 @@ library
       Marvel.CivilWar.Namor
       Marvel.CivilWar.Paladin
       Marvel.CivilWar.ResistanceAvengers
+      Marvel.CivilWar.RewardCards
+      Marvel.CivilWar.RewardEvents
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
@@ -2915,6 +2917,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.NamorSpec
       Marvel.CivilWar.PaladinSpec
       Marvel.CivilWar.ResistanceAvengersSpec
+      Marvel.CivilWar.RewardEventSpec
       Marvel.CivilWar.SetupFaceSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec

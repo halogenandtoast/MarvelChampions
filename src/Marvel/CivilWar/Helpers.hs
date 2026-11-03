@@ -78,11 +78,14 @@ teamForBoard vid = do
 -- | The defending leader's team resolves the boost card as "you". Its first
 -- player remains the chooser even if their own board has already finished.
 leaderAttacksLeader :: ReverseQueue m => VillainId -> VillainId -> m ()
-leaderAttacksLeader attacker defender = do
+leaderAttacksLeader attacker defender = leaderAttacksLeaderThen attacker defender (pure ())
+
+leaderAttacksLeaderThen :: ReverseQueue m => VillainId -> VillainId -> m () -> m ()
+leaderAttacksLeaderThen attacker defender afterward = do
   team <- leaderBelongsTo defender
   competition <- getCompetition
   case (competition,team) of
-    (Just c,Just own) -> villainAttacksCharacter attacker (CW.teamFirstPlayer c own) (VillainCharacter defender)
+    (Just c,Just own) -> villainAttacksCharacterThen attacker (CW.teamFirstPlayer c own) (VillainCharacter defender) afterward
     _ -> pure ()
 
 civilWarDef :: CardCode -> CardDef
