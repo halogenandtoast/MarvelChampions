@@ -5,7 +5,11 @@ import Data.Aeson.Key qualified as Key
 import Data.List (nub)
 import Marvel.Ally.Types qualified as A
 import Marvel.CivilWar.Cards qualified as C
-import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf)
+import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf,leaderHp)
+import Marvel.Area (DeckKey (..))
+import Marvel.Hp (HP (..))
+import Marvel.Attack qualified as Attack
+import Marvel.Villain.Types qualified as V
 import Marvel.CivilWar.TeamSpec (competitive,addSecondBoard)
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as M
@@ -53,6 +57,195 @@ jsonDifferences _ _ = ["value"]
 
 spec :: Spec
 spec = describe "Civil War leader reward upgrades" do
+  for_ [0,2] $ \armor ->
+    it ("Provoked Response redirects the actual boosted attack and caps damage after armor: " <> show armor) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,enemy) <- leaders tg "56092"
+        -- Keep both attacks on one stage so advancement cannot reset the hit-point dial.
+        withGame_ $ entitiesL . villainsL . ix own %~ (\(V.Villain v) -> V.Villain $ V.overVillainAttrs (\a -> a {V.villainHp = HP 100,V.villainMaxHp = HP 100}) v)
+        card <- putIntoPlay you "56133"
+        L.runQueueT (L.capture $ do
+          L.lastingModifiers GameRef (SourceEntity $ VillainRef enemy) [AttackModifier 8] False
+          L.lastingModifiers GameRef (SourceEntity $ VillainRef own) [DamageReduction armor] False) >>= resolve
+        _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+        changeForm you
+        before <- leaderHp own
+        start [VillainMessage enemy $ VillainAttacks you]
+        choose "redirect the attack to Captain Marvel" (isAbilityOfCard card)
+        pass
+        damageOf you `shouldReturn` 0
+        leaderHp own `shouldReturn` (before - 3)
+        map pcCardId <$> discardOf you >>= (`shouldSatisfy` elem (pcCardId card))
+        getEnemyAttack (EnemyVillainId enemy) `shouldReturn` Nothing
+        L.runQueueT (L.capture $ L.villainAttacksCharacter enemy you own) >>= start
+        pass
+        leaderHp own >>= (`shouldSatisfy` (< before - 6))
+
+  it "Provoked Response does not spend itself when stun cancels the attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "56092"
+      card <- putIntoPlay you "56133"
+      changeForm you
+      resolve [GiveStatus (VillainRef enemy) StunnedStatus]
+      start [VillainMessage enemy $ VillainAttacks you]
+      offers (isAbilityOfCard card) `shouldReturn` False
+      map upgradeId <$> upgradesWith "56133" `shouldReturn` [upgradeOf card]
+      damageOf you `shouldReturn` 0
+
+  for_ [False,True] $ \tough ->
+    it ("an enemy attack cap tracks actual cumulative damage and preserves tough: " <> show tough) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        (own,enemy) <- leaders tg "56092"
+        let current = Attack.attack (EnemyVillainId enemy) (VillainCharacter own) 8
+        withGame_ $ entitiesL . villainsL . ix enemy %~ (\(V.Villain v) -> V.Villain $ V.overVillainAttrs (\a -> a {V.villainAttacking = Just current}) v)
+        L.runQueueT (L.capture $ L.capAttackDamageToEnemy (EnemyVillainId enemy) (EnemyVillainId own) 3) >>= resolve
+        when tough $ resolve [GiveStatus (VillainRef own) ToughStatus]
+        before <- leaderHp own
+        resolve [VillainMessage own $ VillainDamaged (VillainRef enemy) (toDamage 2 FromAttack)]
+        leaderHp own `shouldReturn` (before - if tough then 0 else 2)
+        resolve [VillainMessage own $ VillainDamaged (VillainRef enemy) (toDamage 8 FromAttack)]
+        leaderHp own `shouldReturn` (before - 3)
+        resolve [VillainMessage own $ VillainDamaged (VillainRef enemy) (toDamage 8 FromAttack)]
+        leaderHp own `shouldReturn` (before - 3)
+        -- Damage outside that attack does not consume or inherit its budget.
+        resolve [VillainMessage own $ VillainDamaged GameRef (toDamage 2 FromAbility)]
+        leaderHp own `shouldReturn` (before - 5)
+
+  it "No, You Move! reattaches an in-play shield to the friendly Captain America before resolving the attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "56137"
+      shield <- encounterCard C.cw56143
+      resolve [RevealEncounterCard (player2 tg) shield]
+      L.runQueueT (L.capture $ L.attachToCharacter (attachmentIdOf shield) you) >>= resolve
+      resolve [RemoveStatus (VillainRef own) ToughStatus]
+      card <- putIntoPlay you "56207"
+      changeForm you
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      before <- leaderHp own
+      start [VillainMessage enemy $ VillainAttacks you]
+      choose "redirect the attack and recover Cap's shield" (isAbilityOfCard card)
+      choose "give Captain America tough for the returned shield" (isTargetChoice own)
+      pass
+      damageOf you `shouldReturn` 0
+      leaderHp own `shouldReturn` before
+      getAttachedCharacter (attachmentIdOf shield) `shouldReturn` Just (VillainCharacter own)
+      getCharacterStatusCount (VillainCharacter own) ToughStatus `shouldReturn` 0
+      map pcCardId <$> discardOf you >>= (`shouldSatisfy` elem (pcCardId card))
+
+  for_ [("56133","56092"),("56207","56137")] $ \(code,family) ->
+    it ("plays the zero-cost leader redirection reward from hand: " <> show code) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        _ <- leaders tg family
+        card <- putInHand you code
+        playWith card []
+        map upgradeId <$> upgradesWith code `shouldReturn` [upgradeOf card]
+
+  it "No, You Move! finds the Shield in the friendly leader's encounter deck" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "56137"
+      shield <- encounterCard C.cw56143
+      filler <- encounterCard M.shocker
+      resolve [CreateDeck (VillainDeckKey own) [shield,filler]]
+      card <- putIntoPlay you "56207"
+      changeForm you
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      before <- leaderHp own
+      start [VillainMessage enemy $ VillainAttacks you]
+      choose "recover the Shield from the friendly leader's deck" (isAbilityOfCard card)
+      choose "give Captain America tough after finding the Shield" (isTargetChoice own)
+      pass
+      getAttachedCharacter (attachmentIdOf shield) `shouldReturn` Just (VillainCharacter own)
+      leaderHp own `shouldReturn` before
+      damageOf you `shouldReturn` 0
+
+  it "No, You Move! does not trigger another Shield attachment response when it is already on Captain America" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "56137"
+      shield <- encounterCard C.cw56143
+      resolve [RevealEncounterCard (player2 tg) shield,RemoveStatus (VillainRef own) ToughStatus]
+      card <- putIntoPlay you "56207"
+      changeForm you
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      before <- leaderHp own
+      start [VillainMessage enemy $ VillainAttacks you]
+      choose "resolve the attack against Captain America" (isAbilityOfCard card)
+      pass
+      leaderHp own `shouldReturn` (before - 2)
+      getCharacterStatusCount (VillainCharacter own) ToughStatus `shouldReturn` 0
+
+  it "does not consume another Provoked Response after the first copy has redirected the attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "56092"
+      first <- putIntoPlay you "56133"
+      second <- putIntoPlay you "56133"
+      changeForm you
+      _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+      start [VillainMessage enemy $ VillainAttacks you]
+      choose "use one redirection" (isAbilityOfCard first)
+      offers (isAbilityOfCard second) `shouldReturn` False
+      pass
+      map upgradeId <$> upgradesWith "56133" `shouldReturn` [upgradeOf second]
+
+  for_ [("56133","56092"),("56207","56137")] $ \(code,family) -> do
+    it ("does not redirect a minion attack with " <> show code) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        _ <- leaders tg family
+        card <- putIntoPlay you code
+        minion <- encounterCard M.hydraMercenary
+        resolve [RevealEncounterCard you minion]
+        changeForm you
+        let mid = MinionId $ unCardId $ ecCardId minion
+        start [MinionMessage mid $ MinionAttacks you]
+        offers (isAbilityOfCard card) `shouldReturn` False
+        pass
+        map upgradeId <$> upgradesWith code `shouldReturn` [upgradeOf card]
+        damageOf you >>= (`shouldSatisfy` (> 0))
+
+    it ("suppresses the printed redirection while blanked: " <> show code) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (_,enemy) <- leaders tg family
+        card <- putIntoPlay you code
+        L.runQueueT (L.capture $ L.lastingModifiers GameRef (SourceEntity $ UpgradeRef $ upgradeOf card) [Blank] False) >>= resolve
+        changeForm you
+        _ <- stackEncounterDeck [M.hydraMercenary,M.shocker]
+        start [VillainMessage enemy $ VillainAttacks you]
+        offers (isAbilityOfCard card) `shouldReturn` False
+        pass
+        map upgradeId <$> upgradesWith code `shouldReturn` [upgradeOf card]
+        damageOf you >>= (`shouldSatisfy` (> 0))
+
+  it "preserves attack enemy damage caps in saves and defaults older attacks to no cap" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      (own,enemy) <- leaders tg "56092"
+      let current = (Attack.attack (EnemyVillainId enemy) (VillainCharacter own) 8)
+            {Attack.attackEnemyDamageCaps = [(EnemyVillainId own,3,2)]}
+      fromJSON (toJSON current) `shouldBe` Success current
+      case toJSON current of
+        Object obj -> case fromJSON (Object $ KeyMap.delete "attackEnemyDamageCaps" obj) of
+          Success restored -> Attack.attackEnemyDamageCaps restored `shouldBe` []
+          Error err -> error err
+        _ -> error "attack must serialize as an object"
+
   it "High-Tech Suit attaches to the friendly Iron Man and counts as exactly one Tech attachment" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

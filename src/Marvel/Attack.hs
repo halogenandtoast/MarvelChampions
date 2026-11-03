@@ -27,6 +27,8 @@ data Attack = Attack
   , attackRanged :: Bool
   , attackIdentityDamageCaps :: [(IdentityId, Natural, Natural)]
   -- ^ identity, maximum damage from this attack, and damage actually taken so far
+  , attackEnemyDamageCaps :: [(EnemyId, Natural, Natural)]
+  -- ^ enemy target, maximum damage from this attack, and actual damage so far
   , attackPrevention :: Natural
   , attackUsesAttackForDefense :: Maybe IdentityId
   , attackThreatRemoval :: Maybe IdentityId
@@ -48,7 +50,7 @@ data Attack = Attack
 -- | An attack saved before attacks could deal indirect damage deals direct damage.
 instance FromJSON Attack where
   parseJSON = withObject "Attack" \o ->
-    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackIdentityDamageCaps", toJSON ([] :: [(IdentityId, Natural, Natural)])), ("attackSimultaneousGroupId", toJSON (Nothing :: Maybe CardId)), ("attackIsSimultaneousAdditional", toJSON False), ("attackBlanksDefender", toJSON False), ("attackCompletionId", toJSON (Nothing :: Maybe CardId)), ("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
+    genericParseJSON defaultOptions (Object $ KeyMap.union o $ KeyMap.fromList [("attackEnemyDamageCaps", toJSON ([] :: [(EnemyId, Natural, Natural)])), ("attackIdentityDamageCaps", toJSON ([] :: [(IdentityId, Natural, Natural)])), ("attackSimultaneousGroupId", toJSON (Nothing :: Maybe CardId)), ("attackIsSimultaneousAdditional", toJSON False), ("attackBlanksDefender", toJSON False), ("attackCompletionId", toJSON (Nothing :: Maybe CardId)), ("attackBaseReduction", toJSON (0 :: Natural)), ("attackDamageRedirect", toJSON (Nothing :: Maybe EnemyId)), ("attackUsesAttackForDefense", toJSON (Nothing :: Maybe IdentityId)), ("attackPrevention", toJSON (0 :: Natural)), ("attackThreatRemoval", toJSON (Nothing :: Maybe IdentityId)), ("attackIndirect", toJSON False), ("attackDividedEvenly", toJSON False)])
 
 attackSource :: Attack -> Source
 attackSource a = case attackEnemy a of
@@ -92,6 +94,7 @@ attack enemyId characterId dmg =
     , attackDefended = False
     , attackPiercing = False
     , attackRanged = False
+    , attackEnemyDamageCaps = []
     , attackIdentityDamageCaps = []
     , attackPrevention = 0
     , attackUsesAttackForDefense = Nothing
@@ -149,6 +152,7 @@ keepingGains (Just old) a =
     , attackPiercing = attackPiercing a || attackPiercing old
     , attackRanged = attackRanged a || attackRanged old
     , attackPrevented = attackPrevented a || attackPrevented old
+    , attackEnemyDamageCaps = attackEnemyDamageCaps old <> attackEnemyDamageCaps a
     , attackIdentityDamageCaps = attackIdentityDamageCaps old <> attackIdentityDamageCaps a
     , attackPrevention = attackPrevention a + attackPrevention old
     , attackUsesAttackForDefense = attackUsesAttackForDefense old <|> attackUsesAttackForDefense a

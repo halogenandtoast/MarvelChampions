@@ -1774,6 +1774,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ modifyEnemyAttack enemy (\a -> if attackCharacter a == IdentityCharacter you && attackDefended a then a {attackUsesAttackForDefense = Just you} else a) g
   CardSpecific GameRef "mgAttackThreatReplacement" (fromJSON -> Success (enemy, you)) ->
     pure $ modifyEnemyAttack enemy (\a -> a {attackThreatRemoval = Just you}) g
+  CardSpecific GameRef "capAttackDamageToEnemy" (fromJSON -> Success (attacker, target, n :: Natural)) ->
+    pure $ modifyEnemyAttack attacker (\a -> a {attackEnemyDamageCaps = (target,n,0) : attackEnemyDamageCaps a}) g
+  CardSpecific GameRef "recordEnemyAttackDamageTaken" (fromJSON -> Success (attacker, target, n :: Natural)) ->
+    pure $ modifyEnemyAttack attacker (\a -> a {attackEnemyDamageCaps = [(who,cap,taken + if who == target then n else 0) | (who,cap,taken) <- attackEnemyDamageCaps a]}) g
   CardSpecific GameRef "aoaCapAttackDamage" (fromJSON -> Success (enemy, you, n :: Natural)) ->
     pure $ modifyEnemyAttack enemy (\a -> a {attackIdentityDamageCaps = (you, n, 0) : attackIdentityDamageCaps a}) g
   CardSpecific GameRef "aoaRecordAttackDamage" (fromJSON -> Success (enemy, you, n :: Natural)) ->
@@ -8760,6 +8764,18 @@ capIdentityAttackDamage you source damage
   | Just enemy <- sourceEnemy source = do
       current <- getEnemyAttack enemy
       let limits = [subtractNatural taken cap | attack' <- maybeToList current, (who, cap, taken) <- attackIdentityDamageCaps attack', who == you]
+      pure damage {damageAmount = minimum (damageAmount damage : limits)}
+  | otherwise = pure damage
+
+-- | The cap follows one attack and target and is applied after reductions and
+-- prevention, so armor does not reduce an already-capped amount a second time.
+capEnemyAttackDamageTaken :: HasGame m => EnemyId -> Source -> Damage -> m Damage
+capEnemyAttackDamageTaken target source damage
+  | damageUnpreventable damage = pure damage
+  | damageSource damage `notElem` [FromAttack,FromOverkill] = pure damage
+  | Just attacker <- sourceEnemy source = do
+      current <- getEnemyAttack attacker
+      let limits = [subtractNatural taken cap | a <- maybeToList current,(who,cap,taken) <- attackEnemyDamageCaps a,who == target]
       pure damage {damageAmount = minimum (damageAmount damage : limits)}
   | otherwise = pure damage
 

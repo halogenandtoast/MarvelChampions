@@ -51,6 +51,9 @@ instance HasModifiersFor LeaderRewardUpgrade where
 
 instance HasAbilities LeaderRewardUpgrade where
   getAbilities (LeaderRewardUpgrade (a `With` energy)) = case toCardCode a of
+    code | code `elem` ["56133","56207"] ->
+      [windowAbility a 4 (W.EnemyWouldAttack VillainEnemy $ IdentityWithId $ upgradeController a) ForcedInterrupt NoCost (runAbility a 4)
+        & \ab -> ab {abilityCriteria = OwnsThis <> FriendlyLeaderExists (Just $ if code == "56133" then "56092" else "56137")}]
     "56131" -> [ability a 3 HeroAction ForAnyPlayer (MultiResourceCost [Just Energy,Just Mental]) (runAbility a 3)
       | isJust (upgradeAttachedEnemy a)]
     "56135" -> [windowAbility a 1 (W.AttachmentCountersPlaced W.After $ AttachmentWithId channel) Response NoCost (runAbility a 1)
@@ -91,6 +94,16 @@ instance RunMessage LeaderRewardUpgrade where
             giveStatus vid ToughStatus
         _ -> pure ()
       pure $ LeaderRewardUpgrade (updated `With` energy)
+    RanAbility _ (isTarget a -> True) 4 windows _ -> do
+      friendly <- friendlyLeaderFor (upgradeController a)
+      let attackers = [vid | W.EnemyAttack (EnemyVillainId vid) you <- windows,you == upgradeController a]
+      for_ (headMay attackers) $ \attacker -> for_ friendly $ \target -> do
+        if toCardCode a == "56133"
+          then capAttackDamageToEnemy (EnemyVillainId attacker) (EnemyVillainId target) 3
+          else firstPlayerAtLeader target >>= (`returnCaptainAmericaShield` target)
+        redirectVillainAttackToCharacter attacker (VillainCharacter target)
+      removeFromPlay a
+      pure e
     RanAbility _ (isTarget a -> True) 3 _ _ -> removeFromPlay a >> pure e
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       for_ (upgradeAttachedAlly a) (`heal` 1)

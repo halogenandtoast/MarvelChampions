@@ -49,6 +49,10 @@ rewardUpgrades :: [CardDef]
 rewardUpgrades =
   [(rewardEvent "56131" "High-Tech Suit" 1 (Just "56059"))
     {cdCardType = UpgradeType,cdAbilityType = Nothing}
+  ,(rewardEvent "56133" "Provoked Response" 0 (Just "56092"))
+    {cdCardType = UpgradeType,cdAbilityType = Nothing}
+  ,(rewardEvent "56207" "No, You Move!" 0 (Just "56137"))
+    {cdCardType = UpgradeType,cdAbilityType = Nothing}
   ,(rewardEvent "56135" "Alpha Flight Recruit" 0 Nothing)
     {cdCardType = UpgradeType,cdAbilityType = Nothing,cdCriteria = AllyExists AnyAlly,cdTraits = fromList [T.Title]}
   ,(rewardEvent "56213" "Hard to Hit" 1 (Just "56168"))

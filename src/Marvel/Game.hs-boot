@@ -534,3 +534,5 @@ competitiveBoardFinishedFor :: Game -> IdentityId -> Bool
 canPutPlayerAllyIntoPlay :: HasGame m => IdentityId -> PlayerCard -> m Bool
 
 getSetAsideEncounterCardsForDeck :: HasGame m => DeckKey -> m [EncounterCard]
+
+capEnemyAttackDamageTaken :: HasGame m => EnemyId -> Source -> Damage -> m Damage

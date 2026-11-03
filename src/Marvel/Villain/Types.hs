@@ -377,7 +377,8 @@ runVillainMessage msg attrs = case msg of
     let reduced = reducedDamage modifiers dealt
         sustained = subtractNatural (fromIntegral $ unHp $ villainHp attrs) (fromIntegral $ unHp $ villainMaxHp attrs)
         room = minimum (damageAmount reduced : [subtractNatural sustained cap | MaximumSustainedDamage cap <- modifiers])
-        damage = if damageUnpreventable dealt then reduced else if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = subtractNatural (damagePrevention dealt) room}
+        uncapped = if damageUnpreventable dealt then reduced else if villainTough attrs && preventedByTough dealt then dealt else reduced {damageAmount = subtractNatural (damagePrevention dealt) room}
+    damage <- capEnemyAttackDamageTaken (toEnemyId attrs) source uncapped
     -- none at all (The Red House), or none from a player card (Sanctuary)
     cannotTakeDamage <- (||) <$> cannotTakeDamageFrom (toRef attrs) source <*> (not <$> canDamageThroughAerialRestriction (toRef attrs) source dealt)
     let -- infinite hit points: the damage is dealt, but he is not defeated by it
@@ -391,6 +392,8 @@ runVillainMessage msg attrs = case msg of
       | villainTough attrs && preventedByTough dealt -> pure $ attrs & toughL .~ False
       | otherwise -> do
         when (damageAmount damage > 0) $ do
+          when (damageSource damage `elem` [FromAttack,FromOverkill]) $ for_ (sourceEnemy source) $ \attacker ->
+            cardSpecific GameRef "recordEnemyAttackDamageTaken" (attacker,toEnemyId attrs,damageAmount damage)
           recordPlayerAttackDamage (toEnemyId attrs) source damage
           attackDealtDamageTo source damage vid
           checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]

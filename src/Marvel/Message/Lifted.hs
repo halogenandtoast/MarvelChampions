@@ -2827,6 +2827,11 @@ preventEnemyAttackDamage enemy n = cardSpecific GameRef "mgPartialAttackPreventi
 capEnemyAttackDamage :: ReverseQueue m => EnemyId -> IdentityId -> Natural -> m ()
 capEnemyAttackDamage enemy you n = cardSpecific GameRef "aoaCapAttackDamage" (enemy, you, n)
 
+-- | Limit the actual damage an enemy target takes from this single attack.
+capAttackDamageToEnemy :: ReverseQueue m => EnemyId -> EnemyId -> Natural -> m ()
+capAttackDamageToEnemy attacker target amount = cardSpecific GameRef "capAttackDamageToEnemy" (attacker,target,amount)
+
+
 -- | Turn the same physical side scheme into its attachment face without discarding it.
 transformSideSchemeToAttachment :: ReverseQueue m => SideSchemeId -> CardCode -> IdentityId -> m ()
 transformSideSchemeToAttachment sid code you = do
