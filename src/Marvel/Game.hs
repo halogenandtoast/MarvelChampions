@@ -8896,7 +8896,7 @@ playerCardEntryAllowed :: HasGame m => PlayerCard -> m Bool
 playerCardEntryAllowed card = do
   allowed <- getsGame (\g -> playerCardEntryAllowedIn g card)
   if not allowed then pure False else
-    if toCardCode card `elem` ["56131","56135","56213"] then case pcController card <|> pcOwner card of
+    if toCardCode card `elem` ["56131","56135","56213","57034"] then case pcController card <|> pcOwner card of
       Nothing -> pure False
       Just you -> asYou you $ case createUpgrade you card of
         Upgrade upgrade -> do

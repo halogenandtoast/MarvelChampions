@@ -124,6 +124,13 @@ windowMatches matcher w source = case matcher of
   MagneticPullSucceeded matcher -> case windowType w of
     MagneticPullResolved who _ | windowTiming w == After -> identityMatches matcher who
     _ -> pure False
+  EnemyWasAttackedByHeroOrLeader timing matcher -> case windowType w of
+    EnemyAttackOnEnemy (EnemyVillainId _) target | windowTiming w == timing -> enemyMatches matcher target
+    PlayerAttackResolved attacker _ enemies | windowTiming w == timing -> do
+      controller <- getHeroSourceController attacker
+      hero <- maybe (pure False) (\you -> identityMatches (IdentityWithId you <> HeroIdentity) you) controller
+      (hero &&) <$> anyM (enemyMatches matcher) enemies
+    _ -> pure False
   EnemyWasAttacked timing matcher -> case windowType w of
     EnemyAttackOnEnemy _ target | windowTiming w == timing -> enemyMatches matcher target
     PlayerAttackResolved _ _ enemies | windowTiming w == timing -> anyM (enemyMatches matcher) enemies

@@ -27,7 +27,7 @@ newtype LeaderRewardUpgrade = LeaderRewardUpgrade (Attrs Upgrade `With` Maybe At
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 leaderRewardUpgrades :: [UpgradeCard LeaderRewardUpgrade]
-leaderRewardUpgrades = map (upgrade $ \a -> LeaderRewardUpgrade (a `With` Nothing)) R.rewardUpgrades
+leaderRewardUpgrades = map (upgrade $ \a -> LeaderRewardUpgrade (a `With` Nothing)) (filter ((/= "57034") . toCardCode) R.rewardUpgrades)
 
 instance IsUpgrade LeaderRewardUpgrade where
   toUpgradeAttrs (LeaderRewardUpgrade (a `With` _)) = a

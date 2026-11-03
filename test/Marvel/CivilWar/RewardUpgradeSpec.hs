@@ -4,6 +4,7 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Key qualified as Key
 import Data.List (nub)
 import Marvel.Ally.Types qualified as A
+import Marvel.CivilWar.Helpers qualified
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf,leaderHp)
 import Marvel.Area (DeckKey (..))
@@ -648,3 +649,94 @@ spec = describe "Civil War leader reward upgrades" do
       L.runQueueT (L.capture $ L.putIntoPlay you card) >>= resolve
       upgradesWith "56135" `shouldReturn` []
       handOf you >>= (`shouldSatisfy` any ((== pcCardId card) . pcCardId))
+
+  it "Make Me Angry attaches only to the friendly She-Hulk leader" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "57001"
+      card <- putInHand you "57034"
+      payment <- putInHand you "01088"
+      playOn card own [payment]
+      pass
+      getsGame (fmap (upgradeAttachedEnemy . toAttrs) . lookup (upgradeIdOf card) . gameUpgrades) `shouldReturn` Just (Just $ EnemyVillainId own)
+
+  it "Make Me Angry is not playable with a different friendly leader" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "56137"
+      card <- putInHand you "57034"
+      _ <- putInHand you "01088"
+      offers (isPlay card) `shouldReturn` False
+
+  for_ [False,True] $ \stunned ->
+    it ("Make Me Angry answers a leader attack and discards only after a completed counterattack: stunned " <> show stunned) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,enemy) <- leaders tg "57001"
+        zeros <- traverse encounterCard $ replicate 8 C.cw57036
+        resolve [CreateDeck (VillainDeckKey own) $ take 4 zeros,CreateDeck (VillainDeckKey enemy) $ drop 4 zeros]
+        card <- putInHand you "57034"
+        payment <- putInHand you "01088"
+        playOn card own [payment]
+        pass
+        when stunned $ resolve [GiveStatus (VillainRef own) StunnedStatus]
+        before <- leaderHp enemy
+        L.runQueueT (L.capture $ Marvel.CivilWar.Helpers.leaderAttacksLeader enemy own) >>= resolve
+        leaderHp enemy `shouldReturn` (before - if stunned then 0 else 2)
+        getsGame (isJust . lookup (upgradeIdOf card) . gameUpgrades) `shouldReturn` stunned
+        getCharacterStatusCount (VillainCharacter own) StunnedStatus `shouldReturn` 0
+        when stunned do
+          L.runQueueT (L.capture $ Marvel.CivilWar.Helpers.leaderAttacksLeader enemy own) >>= resolve
+          leaderHp enemy `shouldReturn` (before - 2)
+          getsGame (isJust . lookup (upgradeIdOf card) . gameUpgrades) `shouldReturn` False
+
+  it "Make Me Angry counterattacks the hero who attacked She-Hulk" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+          opponent = player2 tg
+      (own,_) <- leaders tg "57001"
+      zeros <- traverse encounterCard $ replicate 4 C.cw57036
+      resolve [CreateDeck (VillainDeckKey own) zeros]
+      card <- putInHand you "57034"
+      payment <- putInHand you "01088"
+      playOn card own [payment]
+      pass
+      start [SetActivePlayer opponent,IdentityMessage opponent BeginTurn]
+      changeForm opponent
+      before <- damageOf opponent
+      L.runQueueT (L.capture $ L.basicAttackOn opponent (EnemyVillainId own) 0) >>= resolve
+      damageOf opponent >>= (`shouldSatisfy` (> before))
+      getsGame (isJust . lookup (upgradeIdOf card) . gameUpgrades) `shouldReturn` False
+      discardOf you >>= (`shouldSatisfy` elem card)
+
+  it "Make Me Angry does not answer an ally attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+          opponent = player2 tg
+      (own,_) <- leaders tg "57001"
+      card <- putInHand you "57034"
+      payment <- putInHand you "01088"
+      playOn card own [payment]
+      pass
+      ally <- putIntoPlay opponent "01002"
+      before <- damageOf opponent
+      start [SetActivePlayer opponent,AllyMessage (allyIdOf ally) AllyAttacked]
+      choose "Black Cat attacks She-Hulk" (isTargetChoice own)
+      pass
+      damageOf opponent `shouldReturn` before
+      getsGame (isJust . lookup (upgradeIdOf card) . gameUpgrades) `shouldReturn` True
+
+  it "Make Me Angry is not offered when She-Hulk cannot receive player attachments" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "57001"
+      L.runQueueT (L.capture $ L.lastingModifiers GameRef (SourceEntity $ VillainRef own) [CannotHaveAttachedPlayerCards] False) >>= resolve
+      card <- putInHand you "57034"
+      _ <- putInHand you "01088"
+      offers (isPlay card) `shouldReturn` False

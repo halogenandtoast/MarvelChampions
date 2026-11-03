@@ -52,7 +52,7 @@ rewardResources = [resource "57035" "Legal Counsel",resource "57077" "Android As
 
 
 rewardUpgrades :: [CardDef]
-rewardUpgrades =
+rewardUpgrades = makeMeAngry :
   [(rewardEvent "56131" "High-Tech Suit" 1 (Just "56059"))
     {cdCardType = UpgradeType,cdAbilityType = Nothing}
   ,(rewardEvent "56133" "Provoked Response" 0 (Just "56092"))
@@ -66,3 +66,6 @@ rewardUpgrades =
 
 phasedOutAttachments :: AttachmentMatcher
 phasedOutAttachments = AttachmentOnVillain ActiveVillain <> AttachmentWithPrintedHeroActionOrResponse <> DiscardableAttachment
+
+makeMeAngry :: CardDef
+makeMeAngry = (rewardEvent "57034" "Make Me Angry" 1 (Just "57001")) {cdCardType = UpgradeType,cdAbilityType = Nothing}

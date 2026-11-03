@@ -110,6 +110,7 @@ data WindowMatcher
   | EnemyAttackedAnyTarget WindowTiming EnemyMatcher
   | MagneticPullSucceeded IdentityMatcher
   | EnemyWasAttacked WindowTiming EnemyMatcher
+  | EnemyWasAttackedByHeroOrLeader WindowTiming EnemyMatcher
   | AttachesUpgradeToEnemy WindowTiming IdentityMatcher CardMatcher EnemyMatcher
   | EnemyAttackedAndDamaged EnemyMatcher CharacterMatcher
   | IdentityAttacked WindowTiming IdentityMatcher EnemyMatcher
