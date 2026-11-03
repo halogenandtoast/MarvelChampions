@@ -81,6 +81,7 @@ modularSets =
   , "namor_modular"
   , "spider_man_modular"
   , "new_avengers"
+  , "secret_avengers"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

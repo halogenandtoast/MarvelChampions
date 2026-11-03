@@ -9393,3 +9393,16 @@ dropFirstInPlayBoost _ [] = []
 dropFirstInPlayBoost mid (scope@(other,_,_) : rest)
   | mid == other = rest
   | otherwise = scope : dropFirstInPlayBoost mid rest
+
+-- | Putting an ally into play ignores play costs and play-only restrictions, but
+-- cannot duplicate a physical card or a friendly unique character.
+canPutPlayerAllyIntoPlay :: HasGame m => IdentityId -> PlayerCard -> m Bool
+canPutPlayerAllyIntoPlay you card = asYou you do
+  targets <- getCardsInPlayTargets
+  live <- getsGame $ \g -> any ((== pcCardId card) . toCardId) (mapMaybe (cardInPlay g) targets)
+  uniques <- getUniqueTitlesInPlay
+  let def = getCardDef card
+      name = (title $ cdName def, maybe [] pure $ subtitle $ cdName def)
+      clash = cdUnique def && any (uniqueMatch name) uniques
+  allowed <- playerCardEntryAllowed (card {pcController = Just you})
+  pure $ cdCardType def == AllyType && not live && not clash && allowed

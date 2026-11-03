@@ -593,6 +593,7 @@ library
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
+      Marvel.CivilWar.SwitchingSides
       Marvel.CivilWar.Types
       Marvel.CivilWar.Unregistered
       Marvel.CivilWar.VisionTreacheries
@@ -2914,6 +2915,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.ResistanceAvengersSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec
+      Marvel.CivilWar.SwitchingSidesSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CivilWar.VisionTreacherySpec
       Marvel.CoverageSpec

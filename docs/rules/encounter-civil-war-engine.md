@@ -208,3 +208,19 @@ The scoped views are saved with an outstanding question and survive a Game JSON 
 Validation: 24 new behavior examples cover both printings, revealing and engaged-player scopes, blanking and surge, copied boost text versus When Revealed, no re-entry, physical shuffle and reveal, ordinary and boost-only callbacks, delayed and repeated reactive effects, no activating-enemy target outside an activation, extra boosts during a real activation, team boundaries, and current/older save compatibility. The focused run passes 613 Civil War behavior examples and 178 coverage examples; the full unit suite passes 8,553 examples. New Avengers is now selectable with all five faces implemented. Secret Avengers has four of five faces implemented, with Switching Sides remaining. The compiled registry contains 148 of 169 Civil War non-player faces (88%), including 71 of its 72 modular faces.
 
 Randomized Rhino, Klaw, and Ultron checks with the complete New Avengers set pass with two seeds each.
+
+
+## Switching Sides
+
+Switching Sides discards an eligible ally controlled by the revealing player, including an encounter minion currently controlled as an ally. Its surge condition records the actual after-leaving-play window. An ally protected from discard or departure is not offered, and an ally that does not leave play causes surge. Discarding is not defeating.
+
+In competitive play, eligible opposing players are offered payment individually, starting with that team's first player. Declining passes the offer to the next teammate. The amount is the ally's printed cost; spending resources equal to that number does not constitute paying the ally's play cost, so conditional aspect resources do not double. A zero printed cost permits free entry. A card without a printed payable cost cannot be claimed this way.
+
+The returning ally keeps its physical card and original owner, with its controller changed to the payer. It leaves play before returning, so damage, statuses, exhaustion and attachments are cleared through ordinary departure and entry handling. Its later discard returns to its owner's discard pile. Player zones remove cards by physical ID when putting them into play, including when controller metadata has changed. Put-into-play restrictions and friendly uniqueness apply; play costs and play-only restrictions do not. These decisions follow the Rules Reference entries for discard, leaving play, ownership/control, cost and putting into play, plus Civil War's team and uniqueness rules.
+
+
+Validation: fourteen behavior examples cover cooperative discard and surge, protected allies, optional opposing payment, multiple opposing seats, affordability and uniqueness, free allies, owner and physical identity, fresh entry state, subsequent owner discard, controlled encounter minions, conditional resource values, and attachment cleanup. The Civil War/coverage gate passes 805 examples before the final attachment example; that example passes in the targeted fourteen-example run and in the full unit run of 8,568 examples. The frontend production build passes. The viewer spelling correction for Switching Sides is preserved by the card generator.
+
+Secret Avengers is now selectable, completing all sixteen Civil War modular sets and their seventy-two native card faces. The compiled registry contains 149 of 169 Civil War non-player faces (88%). The remaining twenty are sixteen setup faces and four Standard PvP faces. This card coverage does not imply finished scenario setup or multiplayer creation.
+
+Randomized Rhino, Klaw and Ultron checks with Secret Avengers pass with two seeds each (three smoke examples).

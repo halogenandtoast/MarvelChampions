@@ -706,5 +706,8 @@
   "cwDiscardHighestCost": "Discard the highest-cost card you control",
   "cwSpiderWomanSchemes": "Spider-Woman schemes",
   "cwDecoyFromDeck": "Attach a Life Model Decoy from the encounter deck",
-  "cwDecoyFromDiscard": "Attach a Life Model Decoy from the encounter discard pile"
+  "cwDecoyFromDiscard": "Attach a Life Model Decoy from the encounter discard pile",
+  "cwSwitchingSidesOffer": "Put the discarded ally under your control?",
+  "cwSwitchingSidesFree": "Put this ally into play for free",
+  "cwSwitchingSidesPay": "Spend {count} resources to put this ally into play"
 }

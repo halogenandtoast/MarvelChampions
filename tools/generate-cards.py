@@ -64,6 +64,8 @@ def card(c, pack_order):
     # Verified against the existing printed Paladin's Pistol image.
     if c["code"] == "56118":
         c = {**c, "text": c.get("text", "").replace("Attack to Paladin.", "Attach to Paladin.")}
+    if c["code"] == "56158":
+        c = {**c, "text": c.get("text", "").replace("enmy team", "enemy team")}
     t = c["type_code"]
     orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE else "portrait")
     out = {

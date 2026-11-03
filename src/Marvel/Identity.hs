@@ -1720,9 +1720,9 @@ runPlayerMessage msg pid@(PlayerIdentity attrs) = case msg of
       pure $
         PlayerIdentity $
           attrs
-            & (handL %~ Hand . filter (/= card) . unHand)
-            & (discardL %~ Discard . filter (/= card) . unDiscard)
-            & (deckL %~ Deck . filter (/= card) . unDeck)
+            & (handL %~ Hand . filter ((/= pcCardId card) . pcCardId) . unHand)
+            & (discardL %~ Discard . filter ((/= pcCardId card) . pcCardId) . unDiscard)
+            & (deckL %~ Deck . filter ((/= pcCardId card) . pcCardId) . unDeck)
     IdentityMessage ident msg'
       | ident == playerIdentityId attrs ->
           runIdentityMessage msg' pid

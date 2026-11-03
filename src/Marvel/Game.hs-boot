@@ -530,3 +530,5 @@ getAllyPhysicalCard :: HasGame m => AllyId -> m (Maybe Card)
 allyMatchesAtDefeat :: HasGame m => AllyMatcher -> AllyId -> m Bool
 
 competitiveBoardFinishedFor :: Game -> IdentityId -> Bool
+
+canPutPlayerAllyIntoPlay :: HasGame m => IdentityId -> PlayerCard -> m Bool
