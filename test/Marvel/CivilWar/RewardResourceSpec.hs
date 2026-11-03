@@ -4,6 +4,7 @@ import Marvel.Area (DeckKey (..),Pile (..))
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf)
 import Marvel.CivilWar.TeamSpec (competitive,addSecondBoard)
+import Marvel.MainScheme.Types qualified as Main
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as M
 import Marvel.Villain.Types qualified as V
@@ -174,3 +175,143 @@ spec = describe "Civil War leader reward resources" do
       getCharacterStatusCount (VillainCharacter own) ToughStatus `shouldReturn` 1
       isExhaustedNow you `shouldReturn` False
       upgradesWith "01093" `shouldReturn` []
+
+  for_ [False,True] $ \hero ->
+    it ("Legal Counsel moves one threat only as a Hero Response: hero " <> show hero) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,_) <- leaders tg "57001"
+        [local] <- getMainSchemesIn =<< getAreaOfTarget you
+        [other] <- getMainSchemesIn =<< getAreaOfTarget own
+        L.runQueueT (L.capture $ L.placeThreatOn GameRef (SchemeMainSchemeId local) 3) >>= resolve
+        before <- getsGame $ maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup other . gameMainSchemes
+        when hero $ changeForm you
+        _ <- buyTenacity you "57035"
+        offers (isLabel "$label.cwLegalCounsel") `shouldReturn` hero
+        when hero $ choose "use Legal Counsel" (isLabel "$label.cwLegalCounsel")
+        pass
+        getsGame (maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup local . gameMainSchemes) `shouldReturn` if hero then 2 else 3
+        getsGame (maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup other . gameMainSchemes) `shouldReturn` (before + if hero then 1 else 0)
+        length <$> upgradesWith "01093" `shouldReturn` 1
+
+  it "Legal Counsel has no response without threat but still pays two resources" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57001"
+      changeForm you
+      _ <- buyTenacity you "57035"
+      offers (isLabel "$label.cwLegalCounsel") `shouldReturn` False
+      pass
+      length <$> upgradesWith "01093" `shouldReturn` 1
+
+  it "Legal Counsel can be declined without moving threat or undoing payment" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57001"
+      [local] <- getMainSchemesIn =<< getAreaOfTarget you
+      L.runQueueT (L.capture $ L.placeThreatOn GameRef (SchemeMainSchemeId local) 2) >>= resolve
+      changeForm you
+      _ <- buyTenacity you "57035"
+      choose "decline Legal Counsel" (isLabel "$label.noResponse")
+      pass
+      getsGame (maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup local . gameMainSchemes) `shouldReturn` 2
+      length <$> upgradesWith "01093" `shouldReturn` 1
+
+  for_ [C.cw57046a,C.cw57046b] $ \def ->
+    it ("Android Assistance flips the friendly Vision's existing mass form: " <> show (toCardCode def)) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,_) <- leaders tg "57040"
+        form <- encounterCard def
+        resolve [RevealEncounterCard (player2 tg) form]
+        changeForm you
+        _ <- buyTenacity you "57077"
+        choose "use Android Assistance" (isLabel "$label.cwAndroidAssistance")
+        pass
+        getAttachedCharacter (attachmentIdOf form) `shouldReturn` Just (VillainCharacter own)
+        getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn`
+          Just (if toCardCode def == "57046a" then "57046b" else "57046a")
+        length <$> upgradesWith "01093" `shouldReturn` 1
+
+  it "Android Assistance has no interrupt in alter ego" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57040"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form]
+      _ <- buyTenacity you "57077"
+      offers (isLabel "$label.cwAndroidAssistance") `shouldReturn` False
+      pass
+      getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn` Just "57046a"
+
+  it "Android Assistance can be declined" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57040"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form]
+      changeForm you
+      _ <- buyTenacity you "57077"
+      choose "decline Android Assistance" (isLabel "$label.noResponse")
+      pass
+      getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn` Just "57046a"
+
+  it "Android Assistance triggers while paying an ability cost before that ability resolves" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57040"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form]
+      tenacity <- putIntoPlay you "01093"
+      changeForm you
+      L.runQueueT (L.capture $ L.exhaust you) >>= resolve
+      resource <- putInHand you "57077"
+      choose "use Tenacity" (isAbilityOfCard tenacity)
+      payWith [resource]
+      isExhaustedNow you `shouldReturn` True
+      choose "flip Vision before Tenacity readies the hero" (isLabel "$label.cwAndroidAssistance")
+      pass
+      isExhaustedNow you `shouldReturn` False
+      getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn` Just "57046b"
+
+  for_ [("57035","$label.cwLegalCounsel"),("57077","$label.cwAndroidAssistance")] $ \(code,label) ->
+    it (show code <> " still pays two resources without a friendly leader") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        _ <- buyTenacity you code
+        offers (isLabel label) `shouldReturn` False
+        pass
+        length <$> upgradesWith "01093" `shouldReturn` 1
+
+  it "Android Assistance interrupts before Legal Counsel responds, regardless of spend order" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "57040"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form]
+      [local] <- getMainSchemesIn =<< getAreaOfTarget you
+      L.runQueueT (L.capture $ L.placeThreatOn GameRef (SchemeMainSchemeId local) 2) >>= resolve
+      changeForm you
+      purchase <- putInHand you "01091"
+      legal <- putInHand you "57035"
+      android <- putInHand you "57077"
+      playWith purchase [legal,android]
+      offers (isLabel "$label.cwAndroidAssistance") `shouldReturn` True
+      offers (isLabel "$label.cwLegalCounsel") `shouldReturn` False
+      choose "interrupt spending first" (isLabel "$label.cwAndroidAssistance")
+      offers (isLabel "$label.cwLegalCounsel") `shouldReturn` True
+      choose "respond to spending afterward" (isLabel "$label.cwLegalCounsel")
+      pass
+      getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn` Just "57046b"
+      getsGame (maybe 0 (Main.mainSchemeThreat . toAttrs) . lookup local . gameMainSchemes) `shouldReturn` 1
+      discardOf you >>= (`shouldSatisfy` \cards -> legal `elem` cards && android `elem` cards)

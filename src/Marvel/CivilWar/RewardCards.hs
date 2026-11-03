@@ -42,7 +42,7 @@ rewardEvents =
 
 
 rewardResources :: [CardDef]
-rewardResources = [resource "56132" "Suit Up",resource "56136" "Raw Power",resource "56210" "The People's Hero",resource "56214" "Secret Contact"]
+rewardResources = [resource "57035" "Legal Counsel",resource "57077" "Android Assistance",resource "56132" "Suit Up",resource "56136" "Raw Power",resource "56210" "The People's Hero",resource "56214" "Secret Contact"]
  where
   resource code name = (rewardEvent code name 0 Nothing)
     {cdCost = Nothing,cdCardType = ResourceType,cdAbilityType = Nothing

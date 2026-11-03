@@ -38,7 +38,7 @@ import Marvel.Queue (HasQueue)
 import Marvel.Ref
 import Marvel.Resource
 import Marvel.Trait (Trait)
-import Marvel.Resource.Resources (afterSpent)
+import Marvel.Resource.Resources (beforeSpent,afterSpent)
 import Marvel.Resource.Resources.AvianAnatomy (avianAnatomySpent)
 import Marvel.Resource.Resources.MolecularAcceleration (molecularAccelerationSpent)
 import Marvel.Resource.Resources.PassionForJustice (passionForJusticeSpent)
@@ -1130,6 +1130,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
       -- here once; do not discard receipted held cards a second time.
       for_ handSpent discardCard
       -- Interrupts to spending resolve before responses to having spent a card.
+      for_ spent \(who, card) -> beforeSpent who card
       case activeCostTarget activeCost of
         ForCard played -> for_ spent \(who, card) -> cyclopsResourceSpent who played card
         _ -> pure ()

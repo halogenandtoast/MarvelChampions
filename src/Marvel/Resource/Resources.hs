@@ -1,7 +1,7 @@
-module Marvel.Resource.Resources (afterSpent) where
+module Marvel.Resource.Resources (beforeSpent, afterSpent) where
 
 import Marvel.Prelude
-import Marvel.CivilWar.RewardResources (leaderRewardSpent)
+import Marvel.CivilWar.RewardResources (leaderRewardSpent,leaderRewardWhenSpent)
 
 import Marvel.Card.Def (getCardDef, sameCard, cdCanPayForOthersWithTrait)
 import Marvel.Matchers
@@ -13,6 +13,10 @@ import Marvel.Resource.Cards qualified as Cards
 import Marvel.Resource.Resources.PymParticles
 import Marvel.Resource.Resources.Salvage
 import Marvel.Resource.Resources.AdamWarlock
+
+-- | Interrupts for resources actually spent, including contributors and held cards.
+beforeSpent :: ReverseQueue m => IdentityId -> PlayerCard -> m ()
+beforeSpent = leaderRewardWhenSpent
 
 -- | What a resource card does after it is spent: "after you spend this card". The cards
 -- spent with it are on their way to the discard pile.
