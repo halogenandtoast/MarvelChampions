@@ -30,7 +30,7 @@ import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
 import Marvel.Attack (Attack (..), sourceEnemy)
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
-import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType))
+import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType, EventType))
 import Marvel.Card.Id (CardId (..), HasCardId (..))
 import Marvel.Card.EncounterCard (EncounterCard (..))
 import Marvel.Card.PlayerCard.Types (PlayerCard (..), encounterCardInPlayerDeck)
@@ -3026,6 +3026,24 @@ removePlayerCardFromHeldZones = push . RemovePlayerCardFromHeldZones . pcCardId
 
 
 -- * NeXt Evolution
+
+-- | Cancel a paid card before its effects or entry into play, retaining played
+-- timing. Return whether there was still an effect to cancel.
+cancelPlayerCardEffects :: ReverseQueue m => IdentityId -> PlayerCard -> m Bool
+cancelPlayerCardEffects you card = do
+  pending <- isQueued matches
+  when pending do
+    cancelMatchingMessage matches
+    if cdCardType (getCardDef card) == EventType
+      then cardSpecific GameRef "cancelledPlayedEvent" (you,card)
+      else do
+        removeFromGame (CardIdRef $ pcCardId card)
+        discardCard card
+  pure pending
+ where
+  matches = \case
+    PutCardIntoPlay _ other _ _ True -> pcCardId other == pcCardId card
+    _ -> False
 
 -- | Cancel a played event's effect, retaining its payment and normal disposal.
 cancelEventEffects :: HasQueue m => EventId -> m ()

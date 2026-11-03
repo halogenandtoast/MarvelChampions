@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster and Deadly Duo are verified. The remaining three modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster, Deadly Duo and Scarlet Twins are verified. The remaining two modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Three other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Two other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
 
 ## Thunderbolts
 
@@ -49,3 +49,13 @@ Mad Jack's Platform reuses Resistance Fighter's identical reveal, boost and modi
 Jester's Yo-Yo compares the printed costs of legally discardable controlled allies, supports, upgrades and player side schemes. The player breaks ties among the most expensive cards; with none it surges. Its boost discards a controlled upgrade without that cost comparison. Deadly Duo has hinder one per player, and defeating it discards eight cards from each player's deck on its own board, regardless of who removed its last threat.
 
 Validation: twenty Deadly Duo behavior/inventory examples pass alongside Hell’s Kitchen, Young Avengers, Heroes for Hire, Next Evolution modulars and coverage (298 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures). The shared controlled-card selector now includes controlled player side schemes, with a Yo-Yo regression test confirming discard to the owner without defeat.
+
+## Scarlet Twins
+
+Speed has Quickstrike and attempts to stun the revealing player. If no new stun is placed, that identity takes two ability damage through its normal damage windows. Wiccan has Incite 1 and attempts to confuse the player, placing two additional threat on the local main scheme only if no new confusion is placed. Steady's second status counts as a successful placement (Otherwise, RR1.8 p.31).
+
+Superspeed discards a random hand card using the stored game generator and assigns indirect damage equal to its printed cost. Its boost instead lets the player choose one hand card and deals no damage. Superpowered Siblings starts with three threat plus hinder one per player and has an amplify icon; its defeat makes the player who removed the last threat discard a chosen hand card.
+
+Spellcasting remains in its owner's play area until that player plays a card. Its forced interrupt cancels the pending card effects, retains payment and played-card timing, discards the card and then the obligation. Event cancellation preserves event-specific played windows and ordinary event cleanup; other canceled cards do not enter play. The cancellation helper checks that an effect remains pending before consuming a second copy. Rules Reference v1.8 Cancel (p.11) keeps costs paid and treats a canceled event as played. A search for newer Spellcasting-specific rulings found no exception.
+
+Validation: nineteen Scarlet Twins behavior/inventory examples pass alongside Gamora and coverage (238 examples, zero failures). These include paid ally, support, upgrade and event cancellations, single discard, and Gamora’s response after a canceled attack event. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).

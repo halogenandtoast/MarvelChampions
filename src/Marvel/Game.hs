@@ -3057,6 +3057,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ g & (entitiesL . effectsL %~ insertMap effectId effect)
   DisabledEffect effectId ->
     pure $ g & (entitiesL . effectsL %~ deleteMap effectId)
+  CardSpecific GameRef "cancelledPlayedEvent" (fromJSON -> Success (you,card)) -> do
+    let event = createEvent you card
+        played timing = checkWindows [W.Window timing $ W.EventPlayed you (toId event) (getCardDef card)]
+    removeFromGame (CardIdRef $ pcCardId card)
+    eventOwnedBy (toId event) (fromMaybe you $ pcOwner card)
+    played W.When
+    eventStep (toId event) ResolvedEvent
+    played W.After
+    reserved <- echoReservedReplay you
+    when (maybe False ((== card) . fst) reserved) $ cardSpecific you "fneReplayFinished" ()
+    pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutCardIntoPlay ident card payment mWindow wasPlayed -> do
     let mission = scenarioMission (toAttrs $ g.gameScenario)
         entersMission = wasPlayed && maybe False (\m -> not (missionFinished m) && missionPendingAlly m == Just (pcCardId card)) mission
