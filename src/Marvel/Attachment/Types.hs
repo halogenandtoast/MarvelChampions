@@ -1,6 +1,7 @@
 module Marvel.Attachment.Types where
 
 import Marvel.Prelude
+import Marvel.Window qualified as W
 
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Typeable
@@ -225,7 +226,9 @@ instance RunMessage (Attrs Attachment) where
     ReturnToHand target | Just target == (toTarget <$> attachmentAlly attrs) -> do
       removeFromPlay attrs
       pure attrs
-    PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n
+    PlaceCounters target n | target == toRef attrs -> do
+      when (n > 0) $ checkWindows [W.Window W.After $ W.AttachmentCounterAmountChanged (attachmentId attrs) (attachmentCounters attrs) (attachmentCounters attrs + n)]
+      pure $ attrs & countersL +~ n
     RemoveCounters target n | target == toRef attrs -> pure $ attrs & countersL %~ subtractNatural n
     _ -> pure attrs
 

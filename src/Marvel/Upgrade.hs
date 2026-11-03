@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Upgrade where
 
+import Marvel.CivilWar.RewardUpgrades qualified as CwRewards
+
 import Marvel.Upgrade.Upgrades.JessicaLuke qualified as JL
 import Marvel.Upgrade.Upgrades.AgeOfApocalypseBasicCampaign
 import Marvel.Upgrade.Upgrades.MutantGenesisCampaign
@@ -24,7 +26,7 @@ withUpgradeCardCode cCode f = case lookup cCode allUpgrades of
   Just (SomeUpgradeCard a) -> f a
 
 allUpgrades :: HashMap CardCode SomeUpgradeCard
-allUpgrades = fromList $ map
+allUpgrades = fromList $ [(toCardCode card,SomeUpgradeCard card) | card <- CwRewards.leaderRewardUpgrades] <> (map
   (toFst someUpgradeCardCode)
   $ concatMap (\(SomeUpgradeCard a) -> SomeUpgradeCard <$> printings a)
   [ SomeUpgradeCard cw56004, SomeUpgradeCard cw56005, SomeUpgradeCard cw56006, SomeUpgradeCard cw56007, SomeUpgradeCard cw56013, SomeUpgradeCard cw56032, SomeUpgradeCard cw56033, SomeUpgradeCard cw56034, SomeUpgradeCard cw56035, SomeUpgradeCard cw56036, SomeUpgradeCard cw56045, SomeUpgradeCard cw56046, SomeUpgradeCard fne60002, SomeUpgradeCard fne60003, SomeUpgradeCard fne60004, SomeUpgradeCard fne60005, SomeUpgradeCard fne60006, SomeUpgradeCard fne60017, SomeUpgradeCard fne60018, SomeUpgradeCard fne60026, SomeUpgradeCard fne60027, SomeUpgradeCard fne60028, SomeUpgradeCard fne60030, SomeUpgradeCard fne60031, SomeUpgradeCard fne60038, SomeUpgradeCard fne60043, SomeUpgradeCard fne60044, SomeUpgradeCard fne60045, SomeUpgradeCard fne60046, SomeUpgradeCard fne60047, SomeUpgradeCard fne60052, SomeUpgradeCard fne60053, SomeUpgradeCard fne60054
@@ -335,7 +337,7 @@ allUpgrades = fromList $ map
   , SomeUpgradeCard missionTraining
   , SomeUpgradeCard phoenixForceRestrained
   , SomeUpgradeCard phoenixForceUnleashed
-  ]
+  ])
 
 lookupUpgrade :: CardCode -> IdentityId -> UpgradeId -> Upgrade
 lookupUpgrade cardCode identityId upgradeId =

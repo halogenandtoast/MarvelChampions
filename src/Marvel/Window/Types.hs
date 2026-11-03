@@ -153,6 +153,7 @@ data WindowMatcher
   | WeatherSpecialResolvedFor WindowTiming IdentityMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
   | UpgradeLosesLastCounter WindowTiming UpgradeMatcher
+  | AttachmentCountersPlaced WindowTiming AttachmentMatcher
   | UpgradeCountersPlaced WindowTiming UpgradeMatcher
   | EnemyExactlyDefeatedByAttack IdentityMatcher
   | CardAddedToVictoryDisplay CardMatcher
@@ -284,6 +285,7 @@ data Window = Window
 
 data WindowType
   = UsedCardAbility IdentityId Source Natural
+  | AttachmentCounterAmountChanged AttachmentId Natural Natural
   | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
   | WouldTuckEncounterCard IdentityId EncounterCard

@@ -4941,8 +4941,14 @@ rememberCompetitiveEffects before after = case gameCompetition after of
      in after {gameCompetition = Just competition {CW.competitiveEffectAreas = added <> kept}}
 
 dispatchGameMessageCoreBody :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
-dispatchGameMessageCoreBody (PutCardIntoPlay _ card _ _ _) g | not (playerCardEntryAllowedIn g card) = pure g
-dispatchGameMessageCoreBody (ShuffleIntoEncounterDeck cards) g
+dispatchGameMessageCoreBody message g = case message of
+  PutCardIntoPlay you card _ _ _ -> do
+    allowed <- playerCardEntryAllowed (card {pcController = Just you})
+    if allowed then dispatchGameMessageCoreBodyUnchecked message g else pure g
+  _ -> dispatchGameMessageCoreBodyUnchecked message g
+
+dispatchGameMessageCoreBodyUnchecked :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
+dispatchGameMessageCoreBodyUnchecked (ShuffleIntoEncounterDeck cards) g
   | let live = [(mid,card) | card <- cards, let mid = MinionId $ unCardId $ ecCardId card
                  , Just minion <- [lookup mid (gameMinions g)], toCard minion == EncounterCard card]
   , not (null live) = runQueueT do
@@ -4951,10 +4957,10 @@ dispatchGameMessageCoreBody (ShuffleIntoEncounterDeck cards) g
       unless (null remaining) $ shuffleIntoEncounterDeck remaining
       pure g
 -- With no activating enemy, effects on that enemy have no target.
-dispatchGameMessageCoreBody (DealBoost (AttachmentRef aid)) g
+dispatchGameMessageCoreBodyUnchecked (DealBoost (AttachmentRef aid)) g
   | any (\(mid,_,_) -> unMinionId mid == unAttachmentId aid) (gameInPlayBoosts g)
   , not (HashMap.member aid $ gameAttachments g) = pure g
-dispatchGameMessageCoreBody original g =
+dispatchGameMessageCoreBodyUnchecked original g =
   let normalized = resolveMessageCardCosts (startingPlayerCountIn g) original
       msg = case normalized of
         CheckWindows windows ->
@@ -8782,7 +8788,16 @@ playerCardEntryAllowedIn g card = not professorBlocked && not shapeBlocked
       && any (\u -> getUpgradeController u == you && Shapeshift `member` cdTraits (getCardDef u)) (HashMap.elems $ gameUpgrades g)
 
 playerCardEntryAllowed :: HasGame m => PlayerCard -> m Bool
-playerCardEntryAllowed card = getsGame (\g -> playerCardEntryAllowedIn g card)
+playerCardEntryAllowed card = do
+  allowed <- getsGame (\g -> playerCardEntryAllowedIn g card)
+  if not allowed then pure False else
+    if toCardCode card `elem` ["56135","56213"] then case pcController card <|> pcOwner card of
+      Nothing -> pure False
+      Just you -> asYou you $ case createUpgrade you card of
+        Upgrade upgrade -> do
+          targets <- upgradeTargets upgrade
+          maybe (pure True) (fmap notNull . filterM attachable) targets
+    else pure True
 
 -- | Find searches every eligible known zone, excluding facedown encounter hands,
 -- the victory display and removed cards (RR Find).

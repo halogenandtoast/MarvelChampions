@@ -8,6 +8,7 @@ import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Criteria
 import Marvel.Name (Name)
 import Marvel.Matchers
+import Marvel.Trait qualified as T
 import Marvel.Resource.Types
 
 rewardEvent :: CardCode -> Name -> Int -> Maybe CardCode -> CardDef
@@ -42,3 +43,11 @@ rewardResources = [resource "56132" "Suit Up",resource "56136" "Raw Power",resou
   resource code name = (rewardEvent code name 0 Nothing)
     {cdCost = Nothing,cdCardType = ResourceType,cdAbilityType = Nothing
     ,cdCriteria = NoCriteria,cdResources = [(PrintedResource,Wild),(PrintedResource,Wild)]}
+
+
+rewardUpgrades :: [CardDef]
+rewardUpgrades =
+  [(rewardEvent "56135" "Alpha Flight Recruit" 0 Nothing)
+    {cdCardType = UpgradeType,cdAbilityType = Nothing,cdCriteria = AllyExists AnyAlly,cdTraits = fromList [T.Title]}
+  ,(rewardEvent "56213" "Hard to Hit" 1 (Just "56168"))
+    {cdCardType = UpgradeType,cdAbilityType = Nothing,cdTraits = fromList [T.Skill]}]

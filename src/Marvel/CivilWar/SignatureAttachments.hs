@@ -107,16 +107,18 @@ instance RunMessage SignatureAttachment where
           let attackers = [IdentityCharacter you | W.AttackUsingATKDamaged you enemies <- windows, Just enemy <- [attachmentEnemy a], enemy `elem` enemies]
                 <> [toCharacter enemy | W.EnemyAttacksAndDamages enemy _ _ <- windows]
           for_ (take 1 attackers) $ attachToCharacter (attachmentId a)
-        "56174" -> pure ()
+        "56174" -> placeCounters a 1
         "57007" -> for_ (attachmentEnemy a) $ \enemy -> do
           attackGains enemy Overkill
           afterMatching (\case VillainMessage vid VillainEndAttack -> enemy == EnemyVillainId vid; _ -> False) (removeFromPlay a)
         "57046b" -> for_ (attachmentEnemy a) $ \enemy -> preventEnemyDamage enemy 1
         _ -> pure ()
-      pure $ SignatureAttachment ((if toCardCode a == "56174" then a {attachmentCounters = min 3 $ attachmentCounters a + 1} else a) `With` pending)
-    CardSpecific (isTarget a -> True) "cwEnergy" (fromJSON -> Success n) -> pure $ SignatureAttachment (a {attachmentCounters = attachmentCounters a + n} `With` pending)
-    PlaceCounters target n | isTarget a target,toCardCode a == "56174" ->
-      pure $ SignatureAttachment (a {attachmentCounters = min 3 $ attachmentCounters a + n} `With` pending)
+      pure e
+    CardSpecific (isTarget a -> True) "cwEnergy" (fromJSON -> Success n) -> e <$ placeCounters a n
+    PlaceCounters target n | isTarget a target,toCardCode a == "56174" -> do
+      let updated = min 3 $ attachmentCounters a + n
+      when (updated > attachmentCounters a) $ checkWindows [W.Window W.After $ W.AttachmentCounterAmountChanged (attachmentId a) (attachmentCounters a) updated]
+      pure $ SignatureAttachment (a {attachmentCounters = updated} `With` pending)
     CardSpecific (isTarget a -> True) "cwSpendEnergy" (fromJSON -> Success attacker) -> do
       when (attachmentCounters a >= 4) $ for_ [vid | Just (EnemyVillainId vid) <- [attachmentEnemy a]] $ \vid -> do
         present <- inAnyArea $ selectAny $ CharacterWithId attacker
