@@ -588,6 +588,7 @@ library
       Marvel.CivilWar.MightyAvengers
       Marvel.CivilWar.Namor
       Marvel.CivilWar.Paladin
+      Marvel.CivilWar.ResistanceAvengers
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
@@ -2908,6 +2909,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.MightyAvengersSpec
       Marvel.CivilWar.NamorSpec
       Marvel.CivilWar.PaladinSpec
+      Marvel.CivilWar.ResistanceAvengersSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.TeamSpec

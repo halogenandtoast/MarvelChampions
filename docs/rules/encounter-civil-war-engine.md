@@ -180,3 +180,17 @@ Validation: all four Spider-Man card faces are implemented (five physical cards)
 The full unit suite passes 8,505 examples after the shared replacement and cross-board scheme-window changes.
 
 Randomized Rhino, Klaw, and Ultron checks with the Spider-Man modular set pass with two seeds each.
+
+## New and Secret Avengers: minions and side schemes
+
+Falcon, Hercules, Goliath, Black Panther, and Spectrum use native Teamwork (Avenger). Their printed When Defeated effects use the shared physical minion-to-boost departure path. That path now recognizes the pending defeated departure after the printed effect starts, as well as the earlier defeat-interrupt case used by Dangerous Recruits. The minion stays in play through its printed defeat effect and would-leave interrupts, then becomes the local enemy leader's boost card with the same physical ID. Its attachments and previously stored boosts discard separately. Blanking suppresses the printed destination, and overlapping Dangerous Recruits and printed destinations do not duplicate the card or leave pending markers. This follows Rules Reference v1.8, page 48; the official [Civil War preview](https://drafts.fantasyflightgames.com/en/news/2025/6/26/civil-war-1/) also describes these minions becoming boost cards after defeat.
+
+Falcon's boost confuses the resolving player, Hercules stuns them, and Goliath gives the local enemy leader tough. If the relevant status was already present, that physical boost card gains two boost icons. Black Panther exhausts the resolving player's ready upgrades, while Spectrum lets that player choose one ready controlled character to exhaust. Empty exhaustion choices finish without asking a question.
+
+New Avengers shuffles only minions from its own encounter discard pile into its own deck. Secret Avengers lets the enemy team search its own board's top five encounter cards and give the selected physical card to the local leader as a facedown boost, then shuffles that deck. The side scheme's board determines the piles and leader even if an opposing player removes its last threat. Both side schemes start at three threat and use Hinder 1 per player; New Avengers also has a hazard icon.
+
+Validation: 23 new behavior examples cover all five printed defeat destinations and later boost discard, each boost effect, Teamwork and board boundaries, physical identity, attachment and stored-boost cleanup, blanking, overlapping defeat effects, side-scheme threat and pile handling, and an opponent defeating Secret Avengers. The focused run passes 589 Civil War behavior examples and 177 coverage examples. These seven native faces do not yet make either modular set selectable: both Freedom Fighters printings and Switching Sides remain to be implemented.
+
+The compiled native registry contains 146 of 169 Civil War non-player faces (86%). The full unit suite passes 8,528 examples after extending the shared defeated-minion destination handler.
+
+Randomized Rhino, Klaw, and Ultron regression checks with Dangerous Recruits pass with two seeds each, exercising the existing caller of the shared defeat-to-boost path. The incomplete New and Secret Avengers sets are not used for randomized scenario checks yet.

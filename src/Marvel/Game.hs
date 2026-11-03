@@ -2882,7 +2882,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     let attrs = Effect.EffectAttrs eid "engine-lasting" source matcher modifiers (Just $ if roundEnd then Effect.DisableAtEndOfRound else Effect.DisableAtEndOfPhase)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
   CardSpecific GameRef "giveDefeatedMinionAsBoost" (fromJSON -> Success (mid :: MinionId, enemy :: EnemyId)) -> do
-    pending <- isQueued (== MinionMessage mid MinionDefeated)
+    pending <- isQueued $ \case
+      MinionMessage other MinionDefeated -> other == mid
+      ResolveMinionLeavingPlay other (MinionMessage who MinionLeavesPlay) -> other == mid && who == mid
+      _ -> False
     present <- inAnyArea $ selectAny $ EnemyWithId enemy
     if not (pending && present && HashMap.member mid (gameMinions g)) then pure g else do
       -- The printed When Defeated resolves while its card is still in play (RR p48).
