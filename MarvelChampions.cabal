@@ -582,6 +582,7 @@ library
       Marvel.CivilWar.MariaHill
       Marvel.CivilWar.MartialLaw
       Marvel.CivilWar.MightyAvengers
+      Marvel.CivilWar.Paladin
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.StandardTreacheries
       Marvel.CivilWar.Types
@@ -2895,6 +2896,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.MariaHillSpec
       Marvel.CivilWar.MartialLawSpec
       Marvel.CivilWar.MightyAvengersSpec
+      Marvel.CivilWar.PaladinSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.TeamSpec
       Marvel.CivilWar.VisionTreacherySpec
