@@ -2925,6 +2925,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.MarketDearEventsSpec
       Marvel.Campaign.MarketUpgradesSpec
       Marvel.Campaign.NextEvolutionSpec
+      Marvel.Campaign.ShadowlandSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
       Marvel.CivilWar.AtlanteansSpec
@@ -3000,6 +3001,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.EnchantressSpec
       Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.FalconNemesisSpec
+      Marvel.Encounter.FearNoEvilSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GambitNemesisSpec
       Marvel.Encounter.GamoraNemesisSpec
@@ -3056,6 +3058,8 @@ test-suite MarvelChampions-test
       Marvel.Encounter.RonanSpec
       Marvel.Encounter.SandmanSpec
       Marvel.Encounter.ScarletWitchNemesisSpec
+      Marvel.Encounter.ShadowlandCoverageSpec
+      Marvel.Encounter.ShadowlandSpec
       Marvel.Encounter.ShieldHeroesNemesisSpec
       Marvel.Encounter.SilkNemesisSpec
       Marvel.Encounter.SinisterAttackRestrictionsSpec

@@ -72,7 +72,8 @@ instance HasModifiersFor ShiftingCorridors where
 instance RunMessage ShiftingCorridors where
   runMessage msg e@(ShiftingCorridors a) = runQueueT $ case msg of
     VillainMessage vid declaration | vid == villainId a, Just recipient <- activationRecipient declaration -> do
-      maybe getActivePlayerId pure recipient >>= replaceActivation
+      blocked <- elem CannotActivate <$> getModifiers a
+      unless blocked $ maybe getActivePlayerId pure recipient >>= replaceActivation
       pure e
     VillainMessage vid VillainDefeated | vid == villainId a -> pure e
     RemoveCounters target n | isTarget a target -> do

@@ -221,3 +221,6 @@ Leader reward dependencies are tracked in [player-synthezoid.md](player-synthezo
 | Fear No Evil player cards | [Rules and scope](player-fear-no-evil.md) |
 
 - [Civil War and Fear No Evil nemeses](encounter-civil-war-fear-no-evil-nemeses.md): Tigra, Hulkling, Daredevil and Echo obligations and nemesis interactions.
+
+- [Shadowland encounters and campaign](encounter-shadowland.md): positions, traps, Dark Protégés, corruption, and campaign records.
+- [Fear No Evil encounters](encounter-fear-no-evil.md): implementation status and rules decisions for the street encounter sets.
