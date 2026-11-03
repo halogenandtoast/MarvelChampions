@@ -61,6 +61,9 @@ def card(c, pack_order):
     # Printed A Good Workout adds damage to the same enemy.
     if c["code"] == "40040":
         c = {**c, "text": c.get("text", "").replace("1 additional damage to an enemy", "1 additional damage to that enemy")}
+    # Verified against the existing printed Paladin's Pistol image.
+    if c["code"] == "56118":
+        c = {**c, "text": c.get("text", "").replace("Attack to Paladin.", "Attach to Paladin.")}
     t = c["type_code"]
     orientation = FOLD_OUT_ORIENTATIONS.get(c["code"], "landscape" if t in LANDSCAPE else "portrait")
     out = {
