@@ -79,6 +79,7 @@ modularSets =
   , "hells_kitchen"
   , "cloak_and_dagger_modular"
   , "namor_modular"
+  , "spider_man_modular"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

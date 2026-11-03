@@ -1161,7 +1161,7 @@ cancelEnemyActivation (toEnemy -> enemy) = withQueue_ $ \messages ->
       _ -> Just (MinionMessage mid step)
     DealBoost target | target == enemyRef enemy -> Nothing
     DeclareDefense _ e _ | e == enemy -> Nothing
-    CheckWindows windows -> case filter (\case Window _ (W.EnemyAttack e _) -> e /= enemy; _ -> True) windows of
+    CheckWindows windows -> case filter (\case Window _ (W.EnemyAttack e _) -> e /= enemy; Window _ (W.EnemyAttackAlly e _ _) -> e /= enemy; Window _ (W.EnemyAttackOnEnemy e _) -> e /= enemy; _ -> True) windows of
       [] -> Nothing
       remaining -> Just (CheckWindows remaining)
     message -> Just message

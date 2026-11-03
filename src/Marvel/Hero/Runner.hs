@@ -147,8 +147,10 @@ instance RunMessage (Attrs Hero) where
           if confused
             then removeConfused ident
             else do
-              checkWindows [W.Window W.When $ W.MadeBasicThwart ident]
-              basicThwart ident 0
+              replaced <- replacePowerWithDiscard ident
+              unless replaced do
+                checkWindows [W.Window W.When $ W.MadeBasicThwart ident]
+                basicThwart ident 0
           pure a
         BasicThwart bonus -> do
           schemes <- selectList (SchemeAHeroCanBasicThwart ident)

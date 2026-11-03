@@ -95,6 +95,7 @@ data Modifier
   | AttackModifierAgainst EnemyId Natural
   | DefenseModifierAgainst EnemyId Natural
   | AttacksCannotBeDefended
+  | ReplacePowerWithDiscard Target
   | ReplaceHeroAttackWithDiscardAndStun Target
   | OnlyAttackAttachment AttachmentId
   | CannotAttackEnemy EnemyId

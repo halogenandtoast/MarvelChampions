@@ -198,12 +198,13 @@ resolveChoice ident = \case
             labels <- sourceAbilitySubTypes source
             hero <- selectAny (IdentityWithId who <> HeroIdentity)
             modifiers <- getModifiers (IdentityRef who)
-            pure $ if hero && Ability.Attack `notElem` labels && any (\case ReplaceHeroAttackWithDiscardAndStun _ -> True; _ -> False) modifiers then Just who else Nothing
+            pure $ if hero && Ability.Attack `notElem` labels && any (\case ReplaceHeroAttackWithDiscardAndStun _ -> True; ReplacePowerWithDiscard _ -> True; _ -> False) modifiers then Just who else Nothing
           _ -> pure Nothing
         case replacement of
           Just who -> do
-            targets <- (\ms -> [t | ReplaceHeroAttackWithDiscardAndStun t <- ms]) <$> getModifiers (IdentityRef who)
-            let choices = [TargetLabel target [Run [RemoveFromPlay target, IdentityMessage who IdentityStunned]] | target <- targets]
+            modifiers <- getModifiers (IdentityRef who)
+            let targets = [(t,True) | ReplaceHeroAttackWithDiscardAndStun t <- modifiers] <> [(t,False) | ReplacePowerWithDiscard t <- modifiers]
+                choices = [TargetLabel target [Run $ [RemoveFromPlay target] <> [IdentityMessage who IdentityStunned | stunAfter]] | (target,stunAfter) <- targets]
             pure $ case choices of
               [TargetLabel _ [Run messages]] -> messages
               [] -> []

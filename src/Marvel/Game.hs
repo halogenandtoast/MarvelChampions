@@ -2819,12 +2819,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "basicThwartIgnoringPatrolAndCrisis" (fromJSON -> Success (you,bonus)) -> do
     confused <- identityMatches ConfusedIdentity you
     if confused then removeConfused you >> pure g else do
-      eid <- getRandom
-      let attrs = Effect.EffectAttrs eid "engine-lasting" (IdentityRef you) (SourceEntity $ IdentityRef you) [BasicThwartIgnoresPatrol, IgnoresCrisis] Nothing
-      checkWindows [W.Window W.When $ W.MadeBasicThwart you]
-      basicThwart you bonus
-      disableEffect eid
-      pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+      replaced <- replacePowerWithDiscard you
+      if replaced then pure g else do
+        eid <- getRandom
+        let attrs = Effect.EffectAttrs eid "engine-lasting" (IdentityRef you) (SourceEntity $ IdentityRef you) [BasicThwartIgnoresPatrol, IgnoresCrisis] Nothing
+        checkWindows [W.Window W.When $ W.MadeBasicThwart you]
+        basicThwart you bonus
+        disableEffect eid
+        pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
   CardSpecific GameRef "revealEncounterCardWithPlayerCount" (fromJSON -> Success (you,count,card)) -> do
     let target = SideSchemeRef $ SideSchemeId $ unCardId $ ecCardId card
     revealEncounterCard you card
@@ -5842,11 +5844,19 @@ competitiveAbilityAllowed g you ability
     _ -> Just source
   crossedLeaders = concatMap crossed $ concat $ gameWindows g
   crossed (W.Window _ event) = case event of
+    W.EnemySchemeBegins enemy _ -> [enemyRef enemy]
+    W.Schemed vid -> [VillainRef vid]
+    W.VillainSchemeResolved vid _ -> [VillainRef vid]
+    W.VillainSchemeResolvedOnMainScheme vid _ -> [VillainRef vid]
     W.EnemyAttackOnEnemy attacker defender | areaOf attacker /= areaOf defender -> [enemyRef attacker,enemyRef defender]
     W.VillainDamageFrom defender from damage | Just attacker <- sourceEnemy from,damageSource damage `elem` [FromAttack,FromOverkill],areaOf attacker /= areaOf (EnemyVillainId defender) -> [enemyRef attacker,VillainRef defender]
     _ -> []
   currentLeaders = concatMap namedLeaders $ concat $ take 1 $ gameWindows g
   namedLeaders (W.Window _ event) = case event of
+    W.EnemySchemeBegins enemy _ -> [enemyRef enemy]
+    W.Schemed vid -> [VillainRef vid]
+    W.VillainSchemeResolved vid _ -> [VillainRef vid]
+    W.VillainSchemeResolvedOnMainScheme vid _ -> [VillainRef vid]
     W.EnemyAttackOnEnemy attacker defender -> [enemyRef attacker,enemyRef defender]
     W.VillainDamageFrom vid _ _ -> [VillainRef vid]
     W.DamagedVillain vid _ -> [VillainRef vid]
@@ -7880,10 +7890,20 @@ iconModifiersIn g aid = runIdentity $ runReaderT (for local $ \target -> do
 replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
 replaceHeroAttackWithDiscardAndStun who = runQueueT do
   hero <- identityMatches HeroIdentity who
-  targets <- (\ms -> [t | ReplaceHeroAttackWithDiscardAndStun t <- ms]) <$> getModifiers (IdentityRef who)
-  if not hero || null targets then pure False else do
-    chooseOrRunOne who [targeting target (removeFromPlay target >> stunIdentity who) | target <- targets]
+  modifiers <- getModifiers (IdentityRef who)
+  let targets = [(t,True) | ReplaceHeroAttackWithDiscardAndStun t <- modifiers, hero]
+        <> [(t,False) | ReplacePowerWithDiscard t <- modifiers]
+  if null targets then pure False else do
+    chooseOrRunOne who [targeting target (removeFromPlay target >> when stunAfter (stunIdentity who)) | (target,stunAfter) <- targets]
     pure True
+
+-- | A consumable attachment replaces one power after status-card replacements.
+replacePowerWithDiscard :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
+replacePowerWithDiscard you = runQueueT do
+  modifiers <- getModifiers (IdentityRef you)
+  let targets = [target | ReplacePowerWithDiscard target <- modifiers]
+  unless (null targets) $ chooseOrRunOne you [targeting target (removeFromPlay target) | target <- targets]
+  pure $ not (null targets)
 
 characterDamageNow :: (HasGame m) => CharacterId -> m Natural
 characterDamageNow = \case
@@ -7985,7 +8005,10 @@ cancelLabeledAbility you labels = do
       baffles = Ability.Thwart `elem` labels && confused
   when stops $ removeStun you
   when baffles $ removeConfused you
-  pure $ stops || baffles
+  if stops || baffles then pure True
+  else if Ability.Attack `elem` labels then replaceHeroAttackWithDiscardAndStun you
+  else if Ability.Thwart `elem` labels then replacePowerWithDiscard you
+  else pure False
 
 -- | Resolving a defense-labeled ability is a defense, without applying basic DEF.
 -- An ally already defending remains the defender. Generic defend interrupts open

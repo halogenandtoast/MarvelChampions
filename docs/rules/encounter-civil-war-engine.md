@@ -162,3 +162,21 @@ Validation: all five Namor card faces are implemented and the set is selectable.
 The full unit suite passes 8,483 examples after adding the minion's when-scheme window.
 
 Randomized Rhino, Klaw, and Ultron checks with Namor pass with two seeds each.
+
+## Spider-Man modular set
+
+Tangled Up attaches to the friendly leader on the opposite board when possible. Otherwise it attaches to the revealing player's hero; with no eligible leader or hero it is discarded. It replaces one attack, scheme, or thwart by its attached character, discarding itself instead. Status-card replacements resolve first, so a stun cancelling an attack does not also spend Tangled Up. Multiple copies replace one power at a time, with the player choosing the copy to discard. A paid attack or thwart event still pays its cost and is discarded, while its effect is replaced. Basic powers and Grapnel Launcher's extra basic thwart use the same replacement. Blanking suppresses the printed replacement.
+
+Leader attacks use the generic would-attack window for any target, including another leader. Replacing an attack removes its queued attack windows and activation work, retaining cleanup. Forced abilities on a leader or its attachments also recognize that leader's explicitly named scheme windows across boards. This extends the existing cross-board attack permission without exposing unrelated abilities from the other board.
+
+Spider-Man attacks each distinct character named by an attached Tangled Up once, then searches only if none of these attacks began. A prevented activation does not count as an attack; an attack whose damage is stopped still counts. The whole sequence waits until a current activation finishes. The enemy team's required search uses only the revealing team's encounter deck and discard pile, deals the selected physical card facedown, and shuffles that deck.
+
+Interpretation of the competitive-area rule: Spider-Man's explicit reference to characters with the named Tangled Up attachment includes a friendly leader on the other board. This is treated as a specified cross-board target rather than an ordinary unrestricted character selector. Searches, boost-condition checks, and other ordinary selectors remain local. The Civil War competitive-area rule and the Rules Reference replacement rules were checked; a search of published rulings found no specific clarification for Spider-Man or Tangled Up.
+
+Spectacular places two threat on the revealing player's main scheme and, in competitive play, removes two from the friendly leader's main scheme. Neighborhood Hero begins with two threat and moves up to two available threat from the friendly leader's main scheme. This is movement, using the existing direct movement steps rather than separate removal and placement abilities. If that move cannot at least partially resolve, its otherwise effect places two threat per player, including when a competitive source has zero threat. These choices follow the Move and Otherwise entries of Rules Reference v1.8, pages 30–31.
+
+Validation: all four Spider-Man card faces are implemented (five physical cards) and the modular set is selectable. Twenty-one new behavior examples cover cooperative and competitive hosts, no eligible host, basic and event replacements, resource costs, status priority, multiple copies, boost conditions and physical-card movement, cross-board leader attacks and schemes, named tangled targets, prevented attacks and fallback searches, Grapnel Launcher, threat movement and partial/zero availability, and team boundaries. The focused run passes 566 Civil War behavior examples and 177 coverage examples. The compiled native registry contains 139 of the 169 Civil War non-player faces (82%).
+
+The full unit suite passes 8,505 examples after the shared replacement and cross-board scheme-window changes.
+
+Randomized Rhino, Klaw, and Ultron checks with the Spider-Man modular set pass with two seeds each.

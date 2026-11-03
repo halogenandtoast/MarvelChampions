@@ -324,6 +324,7 @@ modularSets =
   , CwHellsKitchen
   , CwCloakAndDaggerModular
   , CwNamorModular
+  , CwSpiderManModular
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

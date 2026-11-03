@@ -340,6 +340,8 @@ getRemovedFromGameEncounterCards :: (HasGame m) => m [EncounterCard]
 
 getAccelerationTokenCount :: (HasGame m) => m Natural
 
+replacePowerWithDiscard :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
+
 replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => IdentityId -> m Bool
 
 obligationIsInPlay :: (HasGame m) => ObligationId -> m Bool
