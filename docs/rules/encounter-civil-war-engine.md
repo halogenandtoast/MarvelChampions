@@ -116,3 +116,19 @@ The two Street Defenders printings share Justice Like Lightning's activation han
 The Defenders shares S.H.I.E.L.D. Patrol's continuous guard handler and has its own printed acceleration icon. Guard applies to local minions and ends when the scheme leaves play or its text is blanked. The ordinary hinder handler places its additional threat. A search of recent FFG rulings found no card-specific exception; the [July 9, 2026 FFG ruling](https://hallofheroeslcg.com/latest-ffg-rulings-post-rrg-1-7/) also confirms that “enemy leader” means the villain when these modules are used outside a Civil War scenario.
 
 Validation: Defenders is selectable with all five card faces implemented. Its Hell’s Kitchen printing of Street Defenders is also implemented. Twenty-six new behavior examples cover cooperative and competitive status targets, full status allowances, stalwart and steady, boost callbacks, tough and surge, board boundaries, both activation printings, status replacements, hinder, guard, and acceleration. The focused run passes 494 Civil War examples and 173 coverage examples. Randomized Rhino, Klaw, and Ultron checks with Defenders pass with two seeds.
+
+## Hell's Kitchen
+
+Daredevil's When Revealed choice belongs to the enemy team's first player, but its boost choice belongs to the player resolving the boost. Both choices contain only that player's ready identity and ready controlled allies. An exhausted character cannot be exhausted again (Rules Reference v1.8, page 19); with no eligible character, the effect finishes without an empty question.
+
+Iron Fist attacks the friendly leader on the opposing board through the ordinary minion attack pipeline. In cooperative play there is no friendly leader, so Iron Fist activates against the revealing player, attacking a hero or scheming against an alter-ego. Its boost schedules the enemy leader's attack after the current activation, without dealing an additional boost card, as for Excessive Force. In cooperative play the boost has no friendly-leader target.
+
+Resistance Fighter's normal attachment instruction lets the opposing team choose a local minion. If none can receive encounter attachments, it is discarded and deals a surge card. Its boost instead lets the resolving player choose a minion engaged with that player. Attaching consumes the physical boost card, so the same card becomes the attachment and is not also discarded when boosts clear. With no eligible engaged minion, the boost is discarded normally without surge. Only the attached minion gains four hit points and stalwart.
+
+Defend Hell's Kitchen prevents all threat removal while a Defender minion is on its own board. The restriction is continuous: removing the last Defender ends it immediately, and a Defender on the other board does not impose it. Hinder and its hazard icon use the existing side-scheme engine. Street Defenders shares the tested activation handler used by Justice Like Lightning and the Defenders printing.
+
+These effects follow the ordinary exhaustion, attachment, boost, activation and otherwise rules. A search of recent published FFG rulings found no card-specific exception for this set.
+
+Validation: all five Hell's Kitchen card faces are implemented and the set is selectable. Fifteen new behavior examples cover exhaustion and choice ownership, no eligible characters, cooperative fallback activations, cross-board attacks, deferred no-boost attacks, attachment surge, physical boost-to-attachment movement, engagement restrictions, stalwart, hinder, continuous threat protection, and board boundaries. The focused run passes 509 Civil War behavior examples and 174 coverage examples. The compiled native registry now contains 125 of the 169 Civil War non-player faces (74%); this excludes Synthezoid and does not imply completion of competitive scenario setup or the creation UI.
+
+Randomized Rhino, Klaw, and Ultron checks with Hell's Kitchen pass with two seeds each.

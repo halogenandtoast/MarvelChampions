@@ -321,6 +321,7 @@ modularSets =
   , CwPaladin
   , CwAtlanteans
   , CwDefenders
+  , CwHellsKitchen
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

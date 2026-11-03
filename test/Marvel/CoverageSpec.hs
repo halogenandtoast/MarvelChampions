@@ -76,6 +76,7 @@ modularSets =
   , "paladin"
   , "atlanteans"
   , "defenders"
+  , "hells_kitchen"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

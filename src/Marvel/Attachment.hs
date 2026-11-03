@@ -2,6 +2,8 @@
 
 module Marvel.Attachment where
 
+import Marvel.CivilWar.HellsKitchen qualified as CwHK
+
 import Marvel.KreeFanatic qualified as KF
 import Marvel.CampaignPlayers.NemesisAttachments qualified as CN
 
@@ -82,7 +84,7 @@ withAttachmentCardCode cCode f = case lookup cCode allAttachments of
 
 allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
-  fromList $ [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
+  fromList $ [(toCardCode CwHK.resistanceFighter,SomeAttachmentCard CwHK.resistanceFighter)] <> [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
     map
       (toFst someAttachmentCardCode)
       [ SomeAttachmentCard CN.cn56026, SomeAttachmentCard CN.cn56057, SomeAttachmentCard CN.cn60035
