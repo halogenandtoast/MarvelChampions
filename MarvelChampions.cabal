@@ -1676,8 +1676,12 @@ library
       Marvel.Scenario.NextEvolutionMarauders
       Marvel.Scenario.TricksterTakeover
       Marvel.Scenario.Types
+      Marvel.Shadowland.BlackFlower
       Marvel.Shadowland.Cards
+      Marvel.Shadowland.Corruption
       Marvel.Shadowland.NinjaSwarm
+      Marvel.Shadowland.Position
+      Marvel.Shadowland.Spells
       Marvel.Shadowland.Traps
       Marvel.SideScheme
       Marvel.SideScheme.Cards
