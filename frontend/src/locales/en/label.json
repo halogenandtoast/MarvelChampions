@@ -707,6 +707,8 @@
   "cwSpiderWomanSchemes": "Spider-Woman schemes",
   "cwDecoyFromDeck": "Attach a Life Model Decoy from the encounter deck",
   "cwDecoyFromDiscard": "Attach a Life Model Decoy from the encounter discard pile",
+  "cwChooseRewardPlayer": "Choose who selects their leader cards next",
+  "cwChooseLeaderReward": "Choose a card from your leader",
   "cwSwitchingSidesOffer": "Put the discarded ally under your control?",
   "cwSwitchingSidesFree": "Put this ally into play for free",
   "cwSwitchingSidesPay": "Spend {count} resources to put this ally into play"

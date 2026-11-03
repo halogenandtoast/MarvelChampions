@@ -1975,6 +1975,52 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             first = CW.teamFirstPlayer c (CW.phaseTeam next)
         if isNothing (CW.nextTeamPhase phase) then endRound else beginPhase (CW.ordinaryPhase next)
         pure g {gameCompetition = Just c {CW.competitivePhase = next},gameActivePlayer = first}
+  CardSpecific GameRef "flipSideSchemeToObligation" (fromJSON -> Success (sid,you,code)) -> case lookup sid (gameSideSchemes g) of
+    Nothing -> pure g
+    Just scheme -> do
+      frameworkDiscard $ do
+        for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g),upgradeAttachedSideScheme (toAttrs u) == Just sid] removeFromPlay
+        for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g),attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
+      for_ (SideScheme.sideSchemeHeldCards $ toAttrs scheme) discardCard
+      let oid = ObligationId $ unSideSchemeId sid
+          obligation = lookupObligation code oid
+      obligationStep oid (ObligationOwnedBy you)
+      pure $ g
+        & entitiesL . sideSchemesL %~ deleteMap sid
+        & entitiesL . obligationsL %~ insertMap oid obligation
+        & areasL . each %~ (\area -> area {areaSideSchemes = filter (/= sid) (areaSideSchemes area)})
+  CardSpecific GameRef "cwBeginLeaderRewards" (fromJSON -> Success (you :: IdentityId)) -> do
+    case gameCompetition >>= \c -> (c,) <$> CW.playerTeam c you of
+      Nothing -> pure ()
+      Just (c,team) -> do
+        let codes = CW.leaderBasicCards $ CW.teamScenarioLeader $ CW.scenarioForTeam (CW.competitiveSetup c) team
+        players <- filter (`elem` CW.teamPlayers c team) <$> getAllPlayers
+        cardSpecific GameRef "cwChooseRewardPlayer" (CW.teamFirstPlayer c team,codes,players)
+    pure g
+  CardSpecific GameRef "cwChooseRewardPlayer" (fromJSON -> Success (first :: IdentityId,codes :: [CardCode],players :: [IdentityId])) -> do
+    live <- getAllPlayers
+    cards <- filter ((`elem` codes) . toCardCode) <$> getSetAsidePlayerCards
+    let remaining = filter (`elem` live) players
+        begin you = cardSpecific GameRef "cwLeaderRewards" (first,codes,you : filter (/= you) remaining,2 :: Natural)
+    unless (null cards) $ case remaining of
+      [] -> pure ()
+      [you] -> begin you
+      _ -> chooseOnePrompted first "$label.cwChooseRewardPlayer" [targeting you (begin you) | you <- remaining]
+    pure g
+  CardSpecific GameRef "cwLeaderRewards" (fromJSON -> Success (first :: IdentityId,codes :: [CardCode],players :: [IdentityId],remaining :: Natural)) -> do
+    case players of
+      [] -> pure ()
+      you : rest | remaining == 0 -> cardSpecific GameRef "cwChooseRewardPlayer" (first,codes,rest)
+                 | otherwise -> do
+          cards <- filter ((`elem` codes) . toCardCode) <$> getSetAsidePlayerCards
+          if null cards then cardSpecific GameRef "cwChooseRewardPlayer" (first,codes,rest)
+          else chooseOnePrompted you "$label.cwChooseLeaderReward"
+            [cardLabeled (toCardCode card) $ do
+              removeFromGame $ CardIdRef $ pcCardId card
+              takeControlOf you card
+              cardSpecific GameRef "cwLeaderRewards" (first,codes,players,remaining - 1)
+            | card <- cards]
+    pure g
   CardSpecific GameRef "cwFinishBoard" (fromJSON -> Success (team,outcome)) | Just c <- gameCompetition ->
     pure g {gameCompetition = Just $ CW.recordTeamOutcome team outcome c}
   CardSpecific GameRef "cwSetFirstPlayer" (fromJSON -> Success (team,you)) | Just c <- gameCompetition -> do
@@ -5941,18 +5987,27 @@ isBlankedInContext a = do
         SupportRef sid -> maybe False ((== "31001b") . toCardCode . Support.supportCardDef . toAttrs) (lookup sid (gameSupports g))
         UpgradeRef uid -> maybe False ((== "31002b") . toCardCode . getCardDef) (lookup uid (gameUpgrades g))
         _ -> False
+  let targetDef = abilityCardDef g (toTarget a)
+      permanentSet = targetDef >>= \def -> if isPermanent def then cdEncounterSet def else Nothing
+      allowed provider = modifierProviderAllowed g (toTarget a) provider && case permanentSet of
+        Nothing -> True
+        Just ownSet ->
+          let source = case provider of
+                EffectRef eid -> maybe provider (refocus . Effect.effectSource . toAttrs) (lookup eid $ gameEffects g)
+                _ -> provider
+           in (cdEncounterSet =<< abilityCardDef g source) == Just ownSet
   let uncontrolled = case toTarget a of { AllyRef aid -> aid `elem` g.gameUncontrolledAllies; _ -> False }
   if protected then pure False else (missionAlly g (toTarget a) ||) . (attackBlanksTarget g (toTarget a) ||) . (uncontrolled ||) . (facedown ||) . elem Blank . mconcat
     <$> sequence
-      [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameSideSchemes g)
+      [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameSideSchemes g)
       -- Effect modifiers are stored explicitly; match only effects that can blank.
       , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a))
-          (filter (elem Blank . Effect.effectModifiers . toAttrs) $ filter (modifierProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameEffects g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameAttachments g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameUpgrades g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameEnvironments g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget . toAttrs) $ HashMap.elems $ gameVillains g)
-      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (modifierProviderAllowed g (toTarget a) . toTarget) $ HashMap.elems $ gameObligations g)
+          (filter (elem Blank . Effect.effectModifiers . toAttrs) $ filter (allowed . toTarget . toAttrs) $ HashMap.elems $ gameEffects g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameAttachments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameUpgrades g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameEnvironments g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget . toAttrs) $ HashMap.elems $ gameVillains g)
+      , concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameObligations g)
       ]
 
 -- | Run messages until the queue empties or someone has to answer a question, saying

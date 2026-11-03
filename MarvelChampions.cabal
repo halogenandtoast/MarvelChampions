@@ -570,6 +570,7 @@ library
       Marvel.CivilWar.AttackTreacheries
       Marvel.CivilWar.CapeKiller
       Marvel.CivilWar.Cards
+      Marvel.CivilWar.ChoosingSides
       Marvel.CivilWar.CloakAndDagger
       Marvel.CivilWar.DangerousRecruits
       Marvel.CivilWar.Defenders
@@ -2893,6 +2894,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.AtlanteansSpec
       Marvel.CivilWar.AttackTreacherySpec
       Marvel.CivilWar.CapeKillerSpec
+      Marvel.CivilWar.ChoosingSidesSpec
       Marvel.CivilWar.CloakAndDaggerSpec
       Marvel.CivilWar.DangerousRecruitsSpec
       Marvel.CivilWar.DefendersSpec

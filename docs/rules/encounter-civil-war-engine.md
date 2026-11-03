@@ -224,3 +224,21 @@ Validation: fourteen behavior examples cover cooperative discard and surge, prot
 Secret Avengers is now selectable, completing all sixteen Civil War modular sets and their seventy-two native card faces. The compiled registry contains 149 of 169 Civil War non-player faces (88%). The remaining twenty are sixteen setup faces and four Standard PvP faces. This card coverage does not imply finished scenario setup or multiplayer creation.
 
 Randomized Rhino, Klaw and Ultron checks with Secret Avengers pass with two seeds each (three smoke examples).
+
+
+## Choosing Sides and Now It's Personal
+
+Choosing Sides starts with four threat per player on its own board. Its permanent keyword prevents an ordinary defeat or discard at zero threat, while its constant ability caps each attack against that board's enemy leader at two damage. Other-board leaders and nonattack damage are unaffected. The last-threat response takes a single snapshot of the top five encounter cards. The enemy team chooses one distinct physical card for each receiving teammate; later choices cannot expand the original search. The searched deck is shuffled when the search finishes, even if there are insufficient cards. The side scheme then flips to Now It's Personal with the same physical ID and is given to that team's first player.
+
+This is a flip, not defeat or departure. Rules Reference v1.8, Flip (page 20), requires attachments, tucked cards, statuses and tokens to be discarded when the new face has a different type. The cross-type transition discards attached upgrades and attachments, discards held cards, and creates the obligation face without the old face's counters. It does not open defeat responses or discard the physical encounter card. Pending search choices and the resolving marker serialize normally.
+
+Now It's Personal is an action with removal from the game as its cost. Its effect uses the triggering player's team and their own leader's reward codes, rather than the enemy leader on that board. The team first player chooses which teammate resolves next, following the Each Player entry (page 17). Each teammate chooses two physical cards from the shared set-aside pool. Chosen cards leave that pool before being added to hand, with ownership and control assigned to the receiving player. An exhausted pool never creates an empty question. The native leader-specific reward card dependencies and their scenario setup still need integration before this can be verified end to end with those actual rewards.
+
+Permanent encounter cards now ignore blanking from cards outside their encounter set. The existing special protection of player permanent forms is preserved. Effects carry their original card source when checking the same-set exception in the Permanent rule (page 32).
+
+
+The compiled registry now contains 153 of 169 Civil War non-player faces (91%), with sixteen setup faces remaining. Registry coverage alone does not establish playable competitive setup: the sixteen Civil War leader-specific basic reward codes are absent from the native player-card definition registry, and actual reward entry/play plus scenario setup remain to be completed. Existing hero-pack player-card implementation is outside this dependency work.
+
+Validation: twenty-one new behavior examples cover all four printings' initial threat and flips, damage scope and nonattack damage, partial removal and permanent protection, original-five-card search and one card per teammate, empty search, physical identity and ownership of both faces, Game JSON round trips with an outstanding search, action removal, shared reward-pool movement and ownership, first-player choice of reward resolution order, same-set and outside-set blanking, and attachment cleanup without a defeat response. The Civil War and coverage gate passes 827 examples; the frontend production build passes.
+
+The final full unit suite passes 8,589 examples after adding reward resolution order.

@@ -3534,3 +3534,8 @@ recordPendingVillainSchemeThreat vid scheme = do
 -- icons, card flip, entry keywords or boost discard are implied.
 resolveInPlayMinionBoost :: ReverseQueue m => IdentityId -> MinionId -> Maybe EnemyId -> m ()
 resolveInPlayMinionBoost you mid actor = cardSpecific GameRef "beginInPlayMinionBoost" (mid,you,actor)
+
+
+-- | Flip across card types, discarding the old face's attachments and counters.
+flipSideSchemeToObligation :: ReverseQueue m => SideSchemeId -> IdentityId -> CardCode -> m ()
+flipSideSchemeToObligation sid you code = cardSpecific GameRef "flipSideSchemeToObligation" (sid,you,code)
