@@ -571,6 +571,7 @@ library
       Marvel.CivilWar.CapeKiller
       Marvel.CivilWar.Cards
       Marvel.CivilWar.DangerousRecruits
+      Marvel.CivilWar.Defenders
       Marvel.CivilWar.Helpers
       Marvel.CivilWar.HeroesForHire
       Marvel.CivilWar.Initiative
@@ -2886,6 +2887,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.AttackTreacherySpec
       Marvel.CivilWar.CapeKillerSpec
       Marvel.CivilWar.DangerousRecruitsSpec
+      Marvel.CivilWar.DefendersSpec
       Marvel.CivilWar.HeroesForHireSpec
       Marvel.CivilWar.InitiativeSpec
       Marvel.CivilWar.IronManSpec
