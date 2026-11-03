@@ -1,5 +1,19 @@
 module Marvel.Minion.Cards where
 
+import Marvel.FearNoEvil.Cards qualified as OwlDefs
+
+import Marvel.Shadowland.Cards qualified as ShadowsDefs
+
+import Marvel.Shadowland.Cards qualified as DarkDefs
+
+import Marvel.Shadowland.Cards qualified as FlowerCards
+
+import Marvel.Shadowland.Cards qualified as StreetTrapsCards
+
+import Marvel.FearNoEvil.Cards qualified as StreetCopsCards
+
+import Marvel.Shadowland.Cards qualified as SL
+
 import Marvel.CivilWar.Cards qualified as CwMA
 
 import Marvel.CampaignPlayers.EncounterCards qualified as CN
@@ -206,11 +220,11 @@ allMinions =
   fromList $
     map
       (toFst toCardCode)
-      [ CwMA.cw56087, CwMA.cw56088, CwMA.cw56083, CwMA.cw56073, CwMA.cw56074, CwMA.cw56075, CwMA.cw56078, CwMA.cw56079, CN.enc56024, CN.enc56027, CN.enc56028, CN.enc56055, CN.enc60033, CN.enc60061, CN.enc60063
+      [ StreetTrapsCards.street65047,  StreetCopsCards.street60182, StreetCopsCards.street60183,  CwMA.cw56087, CwMA.cw56088, CwMA.cw56083, CwMA.cw56073, CwMA.cw56074, CwMA.cw56075, CwMA.cw56078, CwMA.cw56079, CN.enc56024, CN.enc56027, CN.enc56028, CN.enc56055, CN.enc60033, CN.enc60061, CN.enc60063
   , ronanKreeFanatic
   , WM.wm58026, HC.hc59036, HC.hc59037, HC.hc59042, HC.hc59043, HC.hc59044
   , JL.jl61031, JL.jl62029, JL.jl62032, JL.jl62033
-  , TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
+  , SL.street65028, SL.street65029, SL.street65030, SL.street65031, SL.street65032, SL.street65033, SL.street65034, FlowerCards.street65073, FlowerCards.street65074, DarkDefs.street65020, DarkDefs.street65021, DarkDefs.street65022, DarkDefs.street65023, ShadowsDefs.street65005, ShadowsDefs.street65006, ShadowsDefs.street65041, ShadowsDefs.street65066, ShadowsDefs.street65067, ShadowsDefs.street65068, ShadowsDefs.street65069, OwlDefs.street60200, OwlDefs.street60201, OwlDefs.street60202, OwlDefs.street60203, OwlDefs.street60192, OwlDefs.street60193, OwlDefs.street60197, OwlDefs.street60198, TT.tt55017, TT.tt55018, TT.tt55019, TT.tt55020, TT.tt55037, TT.tt55038, TT.tt55039, TT.tt55040, TT.tt55041, TT.tt55042, TT.tt55043, TT.tt55044, TT.tt55056, TT.tt55057, TT.tt55058, TT.tt55059
   , aos50072, aos50073, aos50080, aos50083, aos50084, aos50093, aos50094, aos50098, aos50099, aos50100, aos50113, aos50120, aos50125, aos50126, aos50133, aos50139, aos50143, aos50148, aos50152, aos50156, aos50161, aos50172, aos50178
   , FalconWinter.fw53030, FalconWinter.fw53032, FalconWinter.fw53038, FalconWinter.fw54028, FalconWinter.fw54031, FalconWinter.fw54034
   , aosP50030, aosP50060, aosP50062

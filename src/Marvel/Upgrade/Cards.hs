@@ -1,5 +1,7 @@
 module Marvel.Upgrade.Cards where
 
+import Marvel.Shadowland.Cards qualified as SL
+
 import Marvel.CivilWar.RewardCards qualified as CwRewards
 
 import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
@@ -174,7 +176,7 @@ import Marvel.Trait
 
 allUpgrades :: HashMap CardCode CardDef
 allUpgrades = fromList $ concatMap toCardCodePairs $ CwRewards.rewardUpgrades <>
-  [ CampaignPlayers.cw56004, CampaignPlayers.cw56005, CampaignPlayers.cw56006, CampaignPlayers.cw56007, CampaignPlayers.cw56013, CampaignPlayers.cw56032, CampaignPlayers.cw56033, CampaignPlayers.cw56034, CampaignPlayers.cw56035, CampaignPlayers.cw56036, CampaignPlayers.cw56045, CampaignPlayers.cw56046, CampaignPlayers.fne60002, CampaignPlayers.fne60003, CampaignPlayers.fne60004, CampaignPlayers.fne60005, CampaignPlayers.fne60006, CampaignPlayers.fne60017, CampaignPlayers.fne60018, CampaignPlayers.fne60026, CampaignPlayers.fne60027, CampaignPlayers.fne60028, CampaignPlayers.fne60030, CampaignPlayers.fne60031, CampaignPlayers.fne60038, CampaignPlayers.fne60043, CampaignPlayers.fne60044, CampaignPlayers.fne60045, CampaignPlayers.fne60046, CampaignPlayers.fne60047, CampaignPlayers.fne60052, CampaignPlayers.fne60053, CampaignPlayers.fne60054
+  [ SL.street65072a, SL.street65072b, CampaignPlayers.cw56004, CampaignPlayers.cw56005, CampaignPlayers.cw56006, CampaignPlayers.cw56007, CampaignPlayers.cw56013, CampaignPlayers.cw56032, CampaignPlayers.cw56033, CampaignPlayers.cw56034, CampaignPlayers.cw56035, CampaignPlayers.cw56036, CampaignPlayers.cw56045, CampaignPlayers.cw56046, CampaignPlayers.fne60002, CampaignPlayers.fne60003, CampaignPlayers.fne60004, CampaignPlayers.fne60005, CampaignPlayers.fne60006, CampaignPlayers.fne60017, CampaignPlayers.fne60018, CampaignPlayers.fne60026, CampaignPlayers.fne60027, CampaignPlayers.fne60028, CampaignPlayers.fne60030, CampaignPlayers.fne60031, CampaignPlayers.fne60038, CampaignPlayers.fne60043, CampaignPlayers.fne60044, CampaignPlayers.fne60045, CampaignPlayers.fne60046, CampaignPlayers.fne60047, CampaignPlayers.fne60052, CampaignPlayers.fne60053, CampaignPlayers.fne60054
   , WM.wm58002, WM.wm58008, WM.wm58009, WM.wm58010, WM.wm58011, WM.wm58021, WM.wm58030, WM.wm58032, HC.hc59005, HC.hc59006, HC.hc59007, HC.hc59013, HC.hc59014, HC.hc59015, HC.hc59016, HC.hc59017, HC.hc59024
   , JL.jl61009, JL.jl61010, JL.jl61011, JL.jl61012, JL.jl61013, JL.jl61014, JL.jl61023, JL.jl61024, JL.jl61034, JL.jl61035, JL.jl61036, JL.jl61037, JL.jl61040, JL.jl62008, JL.jl62009, JL.jl62010, JL.jl62011, JL.jl62036, JL.jl62037
   , FalconWinter.fw53008, FalconWinter.fw53009, FalconWinter.fw53010, FalconWinter.fw53011, FalconWinter.fw53012, FalconWinter.fw53013, FalconWinter.fw53023, FalconWinter.fw53024, FalconWinter.fw53034, FalconWinter.fw54002, FalconWinter.fw54008, FalconWinter.fw54009, FalconWinter.fw54010, FalconWinter.fw54011, FalconWinter.fw54017, FalconWinter.fw54018, FalconWinter.fw54019, FalconWinter.fw54020, FalconWinter.fw54033

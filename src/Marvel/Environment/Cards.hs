@@ -1,5 +1,9 @@
 module Marvel.Environment.Cards where
 
+import Marvel.Shadowland.Cards qualified as PositionsDefs
+
+import Marvel.FearNoEvil.Cards qualified as FNE
+
 import Marvel.AgentsOfShield.EncounterCards qualified as AosEncounter
 import Marvel.Ability.Types qualified as AospAbility ()
 import Marvel.Aspect qualified as AospAspect ()
@@ -78,7 +82,7 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
+  [ FNE.street60177, FNE.street60178, FNE.street60179, PositionsDefs.street65003a, PositionsDefs.street65003b, PositionsDefs.street65004a, PositionsDefs.street65004b, TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
   , aos50090a, aos50090b, aos50105a, aos50106a, aos50107a, aos50108a, aos50109, aos50110, aos50111, aos50112, aos50131a, aos50131b, aos50181a, aos50182a, aos50183a
   , aosP50032
   , pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon

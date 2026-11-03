@@ -69,6 +69,7 @@ data CampaignLog = CampaignLog
   , apocalypse :: ApocalypseLog
   , shield :: ShieldLog
   , nextEvolution :: NextEvolutionLog
+  , shadowland :: ShadowlandLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
   }
@@ -357,8 +358,22 @@ mutantRoleAspects = \case
   Defender -> [Justice, Protection]
   Peacekeeper -> [Justice, Leadership]
 
+-- | Shadowland's removed villains and each hero's two recorded rewards.
+data ShadowlandLog = ShadowlandLog
+  { removedProteges :: [CardCode]
+  , overpoweringHistory :: [(CardCode, Natural)]
+  , preparedCards :: [(CardCode, [CardCode])]
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass ToJSON
+instance FromJSON ShadowlandLog where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just noShadowlandLog
+noShadowlandLog :: ShadowlandLog
+noShadowlandLog = ShadowlandLog [] [] []
+
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign | AgentsOfShieldCampaign
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign | AgentsOfShieldCampaign | ShadowlandCampaign
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -396,7 +411,10 @@ data CampaignStepKind
 
 -- | What a scenario writes in the log, the player named by their identity's code.
 data CampaignRecord
-  = RecordShieldLog ShieldLog
+  = RecordShadowlandProtege CardCode
+  | RecordShadowlandOverpowered CardCode
+  | RecordShadowlandPreparedCard CardCode CardCode
+  | RecordShieldLog ShieldLog
   | RecordHitPoints CardCode Natural
   | RecordExperimentalWeapons [CardCode]
   | RecordDelayCounters Natural
@@ -486,6 +504,7 @@ campaignScenarios = \case
   NextEvolution -> ["40077", "40103", "40118", "40136", "40163"]
   AgeOfApocalypseCampaign -> ["45059", "45081a", "45101b", "45118", "45184a"]
   AgentsOfShieldCampaign -> ["50064", "50086a", "50103a", "50129a", "50165a"]
+  ShadowlandCampaign -> ["65001a","65038a","65060a"]
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -546,6 +565,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , shadowland = noShadowlandLog
           , shield = noShieldLog
           , apocalypse = noApocalypseLog
           , nextEvolution = noNextEvolutionLog
@@ -640,6 +660,12 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
 recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordShadowlandProtege code -> logged $ \l -> l {shadowland = l.shadowland {removedProteges = nub (toHeroCardCode code : l.shadowland.removedProteges)}}
+  RecordShadowlandOverpowered ident -> logged $ \l -> let entries = l.shadowland.overpoweringHistory; code = toHeroCardCode ident; n = fromMaybe 0 (List.lookup code entries)
+    in l {shadowland = l.shadowland {overpoweringHistory = (code,n+1) : filter ((/=code) . fst) entries}}
+  RecordShadowlandPreparedCard ident card -> logged $ \l -> let entries = l.shadowland.preparedCards; code = toHeroCardCode ident; old = fromMaybe [] (List.lookup code entries)
+    in l {shadowland = l.shadowland {preparedCards = (code,nub $ old <> [card]) : filter ((/=code) . fst) entries}}
+
   RecordShieldLog shieldLog -> c {campaignLog = c.campaignLog {shield = shieldLog}}
   RecordCampaignLost -> c {lost = True}
   RecordApocalypseMission n code -> aoa \l -> l {missions = filter ((/= n) . fst) l.missions <> [(n, code)]}

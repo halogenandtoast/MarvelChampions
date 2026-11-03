@@ -544,6 +544,7 @@ library
       Marvel.Campaign.MadTitansShadow
       Marvel.Campaign.MutantGenesis
       Marvel.Campaign.NextEvolution
+      Marvel.Campaign.Shadowland
       Marvel.Campaign.SinisterMotives
       Marvel.Campaign.Steps
       Marvel.CampaignPlayers.Cards
@@ -1674,6 +1675,7 @@ library
       Marvel.Scenario.MutantGenesis
       Marvel.Scenario.NextEvolution
       Marvel.Scenario.NextEvolutionMarauders
+      Marvel.Scenario.Shadowland
       Marvel.Scenario.TricksterTakeover
       Marvel.Scenario.Types
       Marvel.Shadowland.BlackFlower
@@ -1681,12 +1683,15 @@ library
       Marvel.Shadowland.Corruption
       Marvel.Shadowland.DarkProtege
       Marvel.Shadowland.Encounters
+      Marvel.Shadowland.Identity
+      Marvel.Shadowland.MainSchemes
       Marvel.Shadowland.NinjaSwarm
       Marvel.Shadowland.Position
       Marvel.Shadowland.ProtegeAbilities
       Marvel.Shadowland.Spells
       Marvel.Shadowland.Traps
       Marvel.Shadowland.Villains
+      Marvel.Shadowland.Whisper
       Marvel.SideScheme
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes

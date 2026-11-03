@@ -1,6 +1,20 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.FearNoEvil.TracksuitMafia qualified as Tracksuit
+
+import Marvel.FearNoEvil.OwlTombstone qualified as Owl
+
+import Marvel.Shadowland.Encounters qualified as Shadows
+
+import Marvel.Shadowland.DarkProtege qualified as Dark
+
+import Marvel.Shadowland.NinjaSwarm qualified as SL
+import Marvel.FearNoEvil.Disasters qualified as FNE
+import Marvel.FearNoEvil.Cops qualified as StreetCops
+import Marvel.Shadowland.Traps qualified as StreetTraps
+import Marvel.Shadowland.BlackFlower qualified as Flower
+
 import Marvel.CivilWar.RoyalGuard qualified as SynthRoyal
 import Marvel.CivilWar.MoonKnight qualified as SynthMoon
 import Marvel.CivilWar.ScarletTwins qualified as SynthTwins
@@ -126,7 +140,7 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
   Just (SomeSideSchemeCard a) -> f a
 
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
-allSideSchemes = fromList $ [("57073",SomeSideSchemeCard SynthRoyal.theRoyalGuard)] <> [("57068",SomeSideSchemeCard SynthMoon.khonshusAvatar)] <> [("57064",SomeSideSchemeCard SynthTwins.superpoweredSiblings)] <> [("57031",SomeSideSchemeCard SynthDuo.deadlyDuo)] <> [("57026",SomeSideSchemeCard SynthTask.taskmastersAcademy)] <> [("57021",SomeSideSchemeCard SynthThunder.theThunderbolts)] <> [("57059",SomeSideSchemeCard SynthYoung.youngAvengersScheme)] <> [("57016",SomeSideSchemeCard SynthShield.homelandSecurity)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CwChoosing.choosingSides] <>  [(toCardCode card,SomeSideSchemeCard card) | card <- CwRA.resistanceSideSchemes] <> [(toCardCode CwSM.neighborhoodHero,SomeSideSchemeCard CwSM.neighborhoodHero)] <> [(toCardCode CwN.rulerOfAtlantis,SomeSideSchemeCard CwN.rulerOfAtlantis)] <> [(toCardCode CwCD.cloakAndDaggerScheme,SomeSideSchemeCard CwCD.cloakAndDaggerScheme)] <> [(toCardCode CwHK.defendHellsKitchen,SomeSideSchemeCard CwHK.defendHellsKitchen)] <> [(toCardCode CwD.theDefenders,SomeSideSchemeCard CwD.theDefenders)] <> [(toCardCode CwA.atlantisAttacks,SomeSideSchemeCard CwA.atlantisAttacks)] <> [(toCardCode CwHFH.heroesForHire,SomeSideSchemeCard CwHFH.heroesForHire)] <> [(toCardCode CwCK.arrestOrder,SomeSideSchemeCard CwCK.arrestOrder)] <> [(toCardCode CwML.shieldPatrol,SomeSideSchemeCard CwML.shieldPatrol)] <> [(toCardCode CwDR.dangerousRecruits,SomeSideSchemeCard CwDR.dangerousRecruits)] <> [(toCardCode CwMH.shieldHelicarrier,SomeSideSchemeCard CwMH.shieldHelicarrier)] <> [(toCardCode CwI.fiftyStateInitiative,SomeSideSchemeCard CwI.fiftyStateInitiative)] <> [(toCardCode CwMA.earthsMightiestHeroes,SomeSideSchemeCard CwMA.earthsMightiestHeroes)] <> [(toCardCode CWUnregistered.governmentContractor,SomeSideSchemeCard CWUnregistered.governmentContractor)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CW.leaderSideSchemes] <> concatMap
+allSideSchemes = fromList $ [(toCardCode Tracksuit.tracksuitMafia,SomeSideSchemeCard Tracksuit.tracksuitMafia)] <>  [(toCardCode Owl.hitList,SomeSideSchemeCard Owl.hitList)] <>  [(toCardCode card,SomeSideSchemeCard card) | card <- Shadows.shadowSideSchemes] <>  [(toCardCode card,SomeSideSchemeCard card) | card <- Dark.darkSchemes] <>  [(toCardCode SL.dancingShadows,SomeSideSchemeCard SL.dancingShadows)] <> [(toCardCode FNE.collapsingBridge,SomeSideSchemeCard FNE.collapsingBridge)] <> [(toCardCode StreetCops.policeCordon,SomeSideSchemeCard StreetCops.policeCordon)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- StreetTraps.trapSchemes] <> [(toCardCode card,SomeSideSchemeCard card) | card <- Flower.flowerSchemes] <>  [("57073",SomeSideSchemeCard SynthRoyal.theRoyalGuard)] <> [("57068",SomeSideSchemeCard SynthMoon.khonshusAvatar)] <> [("57064",SomeSideSchemeCard SynthTwins.superpoweredSiblings)] <> [("57031",SomeSideSchemeCard SynthDuo.deadlyDuo)] <> [("57026",SomeSideSchemeCard SynthTask.taskmastersAcademy)] <> [("57021",SomeSideSchemeCard SynthThunder.theThunderbolts)] <> [("57059",SomeSideSchemeCard SynthYoung.youngAvengersScheme)] <> [("57016",SomeSideSchemeCard SynthShield.homelandSecurity)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CwChoosing.choosingSides] <>  [(toCardCode card,SomeSideSchemeCard card) | card <- CwRA.resistanceSideSchemes] <> [(toCardCode CwSM.neighborhoodHero,SomeSideSchemeCard CwSM.neighborhoodHero)] <> [(toCardCode CwN.rulerOfAtlantis,SomeSideSchemeCard CwN.rulerOfAtlantis)] <> [(toCardCode CwCD.cloakAndDaggerScheme,SomeSideSchemeCard CwCD.cloakAndDaggerScheme)] <> [(toCardCode CwHK.defendHellsKitchen,SomeSideSchemeCard CwHK.defendHellsKitchen)] <> [(toCardCode CwD.theDefenders,SomeSideSchemeCard CwD.theDefenders)] <> [(toCardCode CwA.atlantisAttacks,SomeSideSchemeCard CwA.atlantisAttacks)] <> [(toCardCode CwHFH.heroesForHire,SomeSideSchemeCard CwHFH.heroesForHire)] <> [(toCardCode CwCK.arrestOrder,SomeSideSchemeCard CwCK.arrestOrder)] <> [(toCardCode CwML.shieldPatrol,SomeSideSchemeCard CwML.shieldPatrol)] <> [(toCardCode CwDR.dangerousRecruits,SomeSideSchemeCard CwDR.dangerousRecruits)] <> [(toCardCode CwMH.shieldHelicarrier,SomeSideSchemeCard CwMH.shieldHelicarrier)] <> [(toCardCode CwI.fiftyStateInitiative,SomeSideSchemeCard CwI.fiftyStateInitiative)] <> [(toCardCode CwMA.earthsMightiestHeroes,SomeSideSchemeCard CwMA.earthsMightiestHeroes)] <> [(toCardCode CWUnregistered.governmentContractor,SomeSideSchemeCard CWUnregistered.governmentContractor)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CW.leaderSideSchemes] <> concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
   [ SomeSideSchemeCard CN.cn56025, SomeSideSchemeCard CN.cn56056, SomeSideSchemeCard CN.cn60034, SomeSideSchemeCard CN.cn60062
   , SomeSideSchemeCard KF.judgeJuryExecutioner

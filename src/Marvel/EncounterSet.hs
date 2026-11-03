@@ -335,7 +335,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ CwRoyalGuard
+  [ FneTracksuitMafia, FneTheOwl, FneTombstone, SlNinjaSwarm, SlDeadlyContraptions, SlBlackFlower, FneDisasters, FneCops
+  , CwRoyalGuard
   , CwMoonKnightModular
   , CwScarletTwins
   , CwDeadlyDuo

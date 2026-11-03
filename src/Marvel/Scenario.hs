@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.Shadowland
 import Marvel.Scenario.CivilWar
 import Marvel.Scenario.AgentsOfShield
 
@@ -69,7 +70,7 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    (map SomeScenarioCard civilWarScenarios <> [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
+    (map SomeScenarioCard shadowlandScenarios <> map SomeScenarioCard civilWarScenarios <> [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
   , SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
     , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
     , SomeScenarioCard enchantressScenario
@@ -150,7 +151,7 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    (civilWarRecommendedModules <> [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
+    (civilWarRecommendedModules <> [("65001a",[EncounterSet.SlNinjaSwarm]),("65038a",[EncounterSet.SlNinjaSwarm]),("65060a",[EncounterSet.SlNinjaSwarm])] <> [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
     , ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
     , ("50086a", [EncounterSet.AosAimScience, EncounterSet.AosBatrocsBrigade])
     , ("50103a", [EncounterSet.AosScientistSupreme])

@@ -3,6 +3,7 @@ module Marvel.Scenario.Types where
 import Marvel.CivilWar.Types (CompetitionSetup)
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.Trait qualified as MojoTrait
+import Marvel.Shadowland.Cards qualified as Shadowland
 import Marvel.Prelude
 import Marvel.AgeOfApocalypse.MissionTypes
 
@@ -11,7 +12,7 @@ import Data.HashSet qualified as HashSet
 import Data.Function (on)
 import Data.List qualified as List
 import Data.Typeable
-import Marvel.Area (discardsTo, emptyPile, isEncounterDeck)
+import Marvel.Area (discardsTo, emptyPile, isEncounterDeck, shadowlandTrapDeck)
 import Marvel.Campaign.Steps (runCampaignStep)
 import Marvel.Card
 import Marvel.Difficulty
@@ -281,7 +282,7 @@ instance RunMessage (Attrs Scenario) where
             & \a' -> a' {scenarioReshufflesThisRound = scenarioReshufflesThisRound a' + penalty}
       _ -> pure a
     isNamed = \case
-      NamedDeckKey _ -> True
+      key@(NamedDeckKey _) -> key /= shadowlandTrapDeck
       _ -> False
 
 -- | The top card of the encounter deck, which is never empty while its discard pile has
@@ -295,10 +296,10 @@ drawEncounterCard attrs = case scenarioEncounterDeck attrs of
 leaves :: EncounterCard -> Attrs Scenario -> Attrs Scenario
 leaves card attrs =
   attrs
-    & (setAsideCardsL %~ filter (/= EncounterCard card))
-    & (encounterDeckL %~ filter (/= card))
-    & (discardL %~ filter (/= card))
-    & \a -> a {scenarioDecks = HashMap.map (\(Pile d x) -> Pile (filter (/= card) d) (filter (/= card) x)) (scenarioDecks a)}
+    & (setAsideCardsL %~ filter ((/=ecCardId card) . toCardId))
+    & (encounterDeckL %~ filter ((/=ecCardId card) . ecCardId))
+    & (discardL %~ filter ((/=ecCardId card) . ecCardId))
+    & \a -> a {scenarioDecks = HashMap.map (\(Pile d x) -> Pile (filter ((/=ecCardId card) . ecCardId) d) (filter ((/=ecCardId card) . ecCardId) x)) (scenarioDecks a)}
 
 -- | The encounter-deck messages, and the player whose area's deck they are on when not
 -- "you"'s.
@@ -360,7 +361,7 @@ runScenarioMessage msg attrs = case msg of
     runOnDeck key msg attrs
   CreateDeck key cards -> do
     deck' <- shuffleM cards
-    let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
+    let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards, key /= shadowlandTrapDeck || MojoTrait.Trap `member` cdTraits (getCardDef c)]
     pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = a.scenarioCardDecks <> homes}
   -- a card set aside leaves the set-aside area for wherever it goes
   RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId) & encounterDeckL %~ filter ((/= cid) . ecCardId) & discardL %~ filter ((/= cid) . ecCardId)
@@ -378,7 +379,9 @@ runScenarioMessage msg attrs = case msg of
         pure $ leaves ec attrs & pileL key %~ \(Pile d x) -> Pile (d <> [ec]) x
   CardSpecific GameRef "removeEncounterCardFromPiles" (fromJSON -> Success (ec :: EncounterCard)) -> pure $ leaves ec attrs
   DiscardedCard (EncounterCard ec) -> do
-    let home = fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
+    let home = if HashMap.member shadowlandTrapDeck (scenarioDecks attrs) && MojoTrait.Trap `member` cdTraits (getCardDef ec)
+          then shadowlandTrapDeck
+          else fromMaybe EncounterDeckKey (HashMap.lookup (ecCardId ec) (scenarioCardDecks attrs))
     pure $
       if home == EncounterDeckKey || HashMap.member home (scenarioDecks attrs)
         then leaves ec attrs & pileL home %~ \(Pile d x) -> Pile d (ec : x)
@@ -444,7 +447,7 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       -- from wherever they were: the set-aside area or the discard pile
-      let homes = HashMap.fromList [(ecCardId card,key) | key /= EncounterDeckKey,discardsTo key == key,card <- cards]
+      let homes = HashMap.fromList [(ecCardId card,key) | key /= EncounterDeckKey,discardsTo key == key,card <- cards,key /= shadowlandTrapDeck || MojoTrait.Trap `member` cdTraits (getCardDef card)]
       pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards)
         & \a -> a {scenarioCardDecks = a.scenarioCardDecks <> homes}
     -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
@@ -630,6 +633,11 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     -- player putting it there: a support under their control, an attachment as its own
     -- "attach to" says (RR Appendix II, step 11); a scenario's own Setup comes after
     PutSetupEncounterCardsIntoPlay -> do
+      when (SlBlackFlower `member` scenarioEncounterSets) do
+        players <- getAllPlayers
+        cards <- traverse (const $ genEncounterCard Shadowland.street65072a) [1..4 :: Int]
+        for_ (zip players cards) $ \(you,card) -> putEncounterCardIntoPlay you card
+        setAside $ map EncounterCard $ drop (length players) cards
       let setupCards = filter (elem Keyword.Setup . cdKeywords . getCardDef) scenarioEncounterDeck
       unless (null setupCards) do
         first <- selectJust FirstPlayer

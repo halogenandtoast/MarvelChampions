@@ -2,6 +2,21 @@
 
 module Marvel.Minion where
 
+import Marvel.FearNoEvil.TracksuitMafia qualified as Tracksuit
+
+import Marvel.FearNoEvil.OwlTombstone qualified as Owl
+
+import Marvel.Shadowland.Whisper qualified as Whisper
+
+import Marvel.Shadowland.Encounters qualified as Shadows
+
+import Marvel.Shadowland.DarkProtege qualified as Dark
+
+import Marvel.Shadowland.NinjaSwarm qualified as SL
+import Marvel.FearNoEvil.Cops qualified as StreetCops
+import Marvel.Shadowland.Traps qualified as StreetTraps
+import Marvel.Shadowland.BlackFlower qualified as Flower
+
 import Marvel.CivilWar.RoyalGuard qualified as SynthRoyal
 import Marvel.CivilWar.MoonKnight qualified as SynthMoon
 import Marvel.CivilWar.ScarletTwins qualified as SynthTwins
@@ -108,7 +123,7 @@ withMinionCardCode cCode f = case lookup cCode allMinions of
 
 allMinions :: HashMap CardCode SomeMinionCard
 allMinions =
-  fromList $
+  fromList . (([(toCardCode card,SomeMinionCard card) | card <- Tracksuit.tracksuits] <> [(toCardCode card,SomeMinionCard card) | card <- Owl.streetMinions] <> [(toCardCode card,SomeMinionCard card) | card <- Whisper.whisperMinions] <> [(toCardCode card,SomeMinionCard card) | card <- Shadows.shadowMinions] <> [(toCardCode card,SomeMinionCard card) | card <- Dark.darkMinions] <> [(toCardCode card,SomeMinionCard card) | card <- SL.ninjas] <> [(toCardCode card,SomeMinionCard card) | card <- StreetCops.police] <> [(toCardCode StreetTraps.ironMonk,SomeMinionCard StreetTraps.ironMonk)] <> [(toCardCode card,SomeMinionCard card) | card <- Flower.flowerMinions]) <>) $
     map
       (toFst someMinionCardCode)
       $ map SomeMinionCard SynthRoyal.royalGuard <> [SomeMinionCard SynthMoon.moonKnight] <> map SomeMinionCard SynthTwins.scarletTwins <> map SomeMinionCard SynthDuo.deadlyMinions <> [SomeMinionCard SynthTask.taskmaster] <> map SomeMinionCard SynthThunder.thunderbolts <> map SomeMinionCard SynthYoung.youngAvengers <> [SomeMinionCard SynthShield.shieldOperator] <> map SomeMinionCard CwRA.resistanceAvengers <> [SomeMinionCard CwSM.spiderMan,SomeMinionCard CwN.namor] <> map SomeMinionCard CwCD.cloakAndDaggerMinions <> [SomeMinionCard CwHK.daredevil,SomeMinionCard CwHK.ironFist] <> map SomeMinionCard CwD.defenders <> map SomeMinionCard CwHFH.hiredHeroes <> map SomeMinionCard CwMA.minions <> [SomeMinionCard CwA.atlanteanGuard,SomeMinionCard CwP.paladin,SomeMinionCard CwCK.capeKiller,SomeMinionCard CwML.shieldSoldier,SomeMinionCard CwMH.mariaHill,SomeMinionCard CwDR.bullseye,SomeMinionCard CwDR.venom] <> [ SomeMinionCard CN.cn56024, SomeMinionCard CN.cn56027, SomeMinionCard CN.cn56028, SomeMinionCard CN.cn56055, SomeMinionCard CN.cn60033, SomeMinionCard CN.cn60061, SomeMinionCard CN.cn60063

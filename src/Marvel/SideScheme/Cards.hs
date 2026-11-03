@@ -1,5 +1,21 @@
 module Marvel.SideScheme.Cards where
 
+import Marvel.FearNoEvil.Cards qualified as OwlDefs
+
+import Marvel.Shadowland.Cards qualified as ShadowsDefs
+
+import Marvel.Shadowland.Cards qualified as DarkDefs
+
+import Marvel.Shadowland.Cards qualified as FlowerCards
+
+import Marvel.Shadowland.Cards qualified as StreetTrapsCards
+
+import Marvel.FearNoEvil.Cards qualified as StreetCopsCards
+
+import Marvel.FearNoEvil.Cards qualified as FNE
+
+import Marvel.Shadowland.Cards qualified as SL
+
 import Marvel.CivilWar.Cards qualified as CW
 import Marvel.CampaignPlayers.EncounterCards qualified as CN
 import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
@@ -200,13 +216,13 @@ import Marvel.Name
 allSideSchemes :: HashMap CardCode CardDef
 allSideSchemes = fromList $ concatMap
   toCardCodePairs
-  [ CW.cw56086,CW.cw56082,CW.cw56077,CW.cw56120,CW.cw56072,CW.cw56104,CW.cw56149,CW.cw56179,CW.cw57012,CW.cw57054
+  [ StreetCopsCards.street60185,  CW.cw56086,CW.cw56082,CW.cw56077,CW.cw56120,CW.cw56072,CW.cw56104,CW.cw56149,CW.cw56179,CW.cw57012,CW.cw57054
   , CN.enc56025, CN.enc56056, CN.enc60034, CN.enc60062
   , judgeJuryExecutioner
   , CampaignPlayers.fne60012, CampaignPlayers.fne60024
   , WM.wm58027, HC.hc59028, HC.hc59038, HC.hc59041, HC.hc59045
   , JL.jl61007, JL.jl61020, JL.jl61028, JL.jl61029, JL.jl61032, JL.jl61039, JL.jl62030
-  , TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
+  , SL.street65035, FNE.street60180, StreetTrapsCards.street65048, StreetTrapsCards.street65049, FlowerCards.street65075, FlowerCards.street65076, DarkDefs.street65024, DarkDefs.street65025, ShadowsDefs.street65007, ShadowsDefs.street65008, ShadowsDefs.street65009, ShadowsDefs.street65042, ShadowsDefs.street65043, ShadowsDefs.street65070, OwlDefs.street60204, OwlDefs.street60199, TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
   , aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
   , FalconWinter.fw53031, FalconWinter.fw53041, FalconWinter.fw54029, FalconWinter.fw54036
   , aosP50031, aosP50061

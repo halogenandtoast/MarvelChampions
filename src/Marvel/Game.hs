@@ -1948,7 +1948,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   GameOver Lost
     | Just c <- gameCampaign
     , Campaign.isExpertCampaign c
-    , c.kind /= Campaign.AgeOfApocalypseCampaign
+    , c.kind `notElem` [Campaign.AgeOfApocalypseCampaign,Campaign.ShadowlandCampaign]
     , Campaign.scenarioNumber c == length c.scenarios -> do
         clearQueue
         pure $ g & stateL .~ Finished Lost & campaignL .~ Just c {Campaign.lost = True}
