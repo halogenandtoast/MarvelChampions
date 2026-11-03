@@ -603,6 +603,7 @@ library
       Marvel.CivilWar.Types
       Marvel.CivilWar.Unregistered
       Marvel.CivilWar.VisionTreacheries
+      Marvel.CivilWar.YoungAvengers
       Marvel.Cost
       Marvel.Cost.Types
       Marvel.Count
@@ -2932,6 +2933,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.SwitchingSidesSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CivilWar.VisionTreacherySpec
+      Marvel.CivilWar.YoungAvengersSpec
       Marvel.CoverageSpec
       Marvel.Encounter.AdamWarlockNemesisSpec
       Marvel.Encounter.AgentsOfShieldBlackWidowSpec
