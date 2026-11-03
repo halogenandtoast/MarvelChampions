@@ -502,6 +502,9 @@ attachmentIsReady :: HasGame m => AttachmentId -> m Bool
 getActiveCostValue :: HasGame m => ActiveCostId -> m (Maybe Cost)
 getCardsInPlayTargets :: HasGame m => m [Target]
 
+encounterCardPrintedAttack :: IdentityId -> EncounterCard -> Natural
+encounterCardPrintedScheme :: IdentityId -> EncounterCard -> Natural
+
 encounterCardPrintedHitPoints :: IdentityId -> EncounterCard -> Natural
 
 characterAttackDamageAllowed :: HasGame m => Target -> Damage -> m Bool

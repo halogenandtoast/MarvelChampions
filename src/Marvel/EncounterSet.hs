@@ -315,6 +315,7 @@ modularSets =
   , CwTheInitiative
   , CwMariaHillModular
   , CwDangerousRecruits
+  , CwMartialLaw
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

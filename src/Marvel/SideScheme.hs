@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.SideScheme where
 
+import Marvel.CivilWar.MartialLaw qualified as CwML
 import Marvel.CivilWar.DangerousRecruits qualified as CwDR
 import Marvel.CivilWar.MightyAvengers qualified as CwMA
 import Marvel.CivilWar.Initiative qualified as CwI
@@ -99,7 +100,7 @@ withSideSchemeCardCode cCode f = case lookup cCode allSideSchemes of
   Just (SomeSideSchemeCard a) -> f a
 
 allSideSchemes :: HashMap CardCode SomeSideSchemeCard
-allSideSchemes = fromList $ [(toCardCode CwDR.dangerousRecruits,SomeSideSchemeCard CwDR.dangerousRecruits)] <> [(toCardCode CwMH.shieldHelicarrier,SomeSideSchemeCard CwMH.shieldHelicarrier)] <> [(toCardCode CwI.fiftyStateInitiative,SomeSideSchemeCard CwI.fiftyStateInitiative)] <> [(toCardCode CwMA.earthsMightiestHeroes,SomeSideSchemeCard CwMA.earthsMightiestHeroes)] <> [(toCardCode CWUnregistered.governmentContractor,SomeSideSchemeCard CWUnregistered.governmentContractor)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CW.leaderSideSchemes] <> concatMap
+allSideSchemes = fromList $ [(toCardCode CwML.shieldPatrol,SomeSideSchemeCard CwML.shieldPatrol)] <> [(toCardCode CwDR.dangerousRecruits,SomeSideSchemeCard CwDR.dangerousRecruits)] <> [(toCardCode CwMH.shieldHelicarrier,SomeSideSchemeCard CwMH.shieldHelicarrier)] <> [(toCardCode CwI.fiftyStateInitiative,SomeSideSchemeCard CwI.fiftyStateInitiative)] <> [(toCardCode CwMA.earthsMightiestHeroes,SomeSideSchemeCard CwMA.earthsMightiestHeroes)] <> [(toCardCode CWUnregistered.governmentContractor,SomeSideSchemeCard CWUnregistered.governmentContractor)] <> [(toCardCode card,SomeSideSchemeCard card) | card <- CW.leaderSideSchemes] <> concatMap
   (\(SomeSideSchemeCard builder) -> [(toCardCode printing, SomeSideSchemeCard printing) | printing <- printings builder])
   [ SomeSideSchemeCard CN.cn56025, SomeSideSchemeCard CN.cn56056, SomeSideSchemeCard CN.cn60034, SomeSideSchemeCard CN.cn60062
   , SomeSideSchemeCard KF.judgeJuryExecutioner

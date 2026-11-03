@@ -578,6 +578,7 @@ library
       Marvel.CivilWar.LeaderTreacheries
       Marvel.CivilWar.MainSchemes
       Marvel.CivilWar.MariaHill
+      Marvel.CivilWar.MartialLaw
       Marvel.CivilWar.MightyAvengers
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.StandardTreacheries
@@ -2888,6 +2889,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.LeaderTreacherySpec
       Marvel.CivilWar.MainSchemeSpec
       Marvel.CivilWar.MariaHillSpec
+      Marvel.CivilWar.MartialLawSpec
       Marvel.CivilWar.MightyAvengersSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.TeamSpec

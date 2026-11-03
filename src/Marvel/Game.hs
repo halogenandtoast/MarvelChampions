@@ -8941,6 +8941,13 @@ dispatchEntitiesMessage msg@(MinionMessage mid MinionDefeated) entities
       pure rest {entitiesMinions = insertMap mid (Minion.overMinion (const updated) minion) (entitiesMinions rest)}
 dispatchEntitiesMessage msg entities = runMessage msg entities
 
+-- | Printed stats of an out-of-play encounter card, without creating a game entity.
+encounterCardPrintedAttack :: IdentityId -> EncounterCard -> Natural
+encounterCardPrintedAttack you card = unAtk $ Minion.minionAttack $ toAttrs $ createMinion you card
+
+encounterCardPrintedScheme :: IdentityId -> EncounterCard -> Natural
+encounterCardPrintedScheme you card = unSch $ Minion.minionScheme $ toAttrs $ createMinion you card
+
 encounterCardPrintedHitPoints :: IdentityId -> EncounterCard -> Natural
 encounterCardPrintedHitPoints you card = unHp $ Minion.getMinionPrintedHitPoints $ createMinion you card
 

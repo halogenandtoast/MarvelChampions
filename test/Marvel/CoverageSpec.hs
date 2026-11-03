@@ -70,6 +70,7 @@ modularSets =
   , "the_initiative"
   , "maria_hill_modular"
   , "dangerous_recruits"
+  , "martial_law"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"
