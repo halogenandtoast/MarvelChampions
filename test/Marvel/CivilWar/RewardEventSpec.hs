@@ -1,12 +1,14 @@
 module Marvel.CivilWar.RewardEventSpec (spec) where
 
+import Marvel.Card.AttachmentHeroAbilities (hasPrintedHeroActionOrResponse)
+import Test.Hspec qualified as H
 import Marvel.Area (DeckKey (..),Pile (..))
 import Marvel.CivilWar.TeamSpec (competitive,addSecondBoard)
 import Marvel.CivilWar.LeaderSpec (withLeader,leaderHp,attachmentIdOf)
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.Message.Lifted qualified as L
 import Marvel.Matchers (EntityMatcher (SourceEntity))
-import Marvel.Modifier (Modifier (CannotBeDiscarded))
+import Marvel.Modifier (Modifier (CannotBeDiscarded,CannotLeavePlay,CannotLeavePlayByCardAbilities))
 import Marvel.Minion.Cards qualified as M
 import Marvel.MainScheme.Types qualified as Main
 import Marvel.Villain.Types qualified as V
@@ -395,3 +397,99 @@ spec = describe "Civil War leader reward events" do
       getCharacterStatusCount (VillainCharacter own) StunnedStatus `shouldReturn` 0
       L.runQueueT (L.capture $ L.villainAttacksCharacter own (player2 tg) (VillainCharacter enemy)) >>= resolve
       leaderHp enemy `shouldReturn` (before - 2)
+
+  it "Phased Out discards an enemy leader's Hero Response attachment for zero resources" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "57040" "56137"
+      helmet <- encounterCard C.cw56144
+      resolve [RevealEncounterCard you helmet]
+      getAttachedCharacter (attachmentIdOf helmet) `shouldReturn` Just (VillainCharacter enemy)
+      card <- putInHand you "57076"
+      playWith card []
+      choose "phase out the helmet" (isTargetChoice $ attachmentIdOf helmet)
+      pass
+      getAttachedCharacter (attachmentIdOf helmet) `shouldReturn` Nothing
+      getEncounterDiscard >>= (`shouldSatisfy` elem helmet)
+
+  it "Phased Out lets its player choose among eligible attachments" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (_,enemy) <- leaders tg "57040" "56059"
+      gauntlets <- encounterCard C.cw56065
+      helmet <- encounterCard C.cw56067
+      resolve [RevealEncounterCard you gauntlets,RevealEncounterCard you helmet]
+      card <- putInHand you "57076"
+      playWith card []
+      choose "phase out Powered Gauntlets" (isTargetChoice $ attachmentIdOf gauntlets)
+      pass
+      getAttachedCharacter (attachmentIdOf gauntlets) `shouldReturn` Nothing
+      getAttachedCharacter (attachmentIdOf helmet) `shouldReturn` Just (VillainCharacter enemy)
+
+  for_ [C.cw56143] $ \def ->
+    it ("Phased Out cannot be initiated for a Forced Response attachment: " <> show (toCardCode def)) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        _ <- leaders tg "57040" "56137"
+        attachment <- encounterCard def
+        resolve [RevealEncounterCard you attachment]
+        card <- putInHand you "57076"
+        offers (isPlay card) `shouldReturn` False
+
+  for_ [CannotBeDiscarded,CannotLeavePlay,CannotLeavePlayByCardAbilities] $ \restriction ->
+    it ("Phased Out does not offer a protected attachment: " <> show restriction) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        _ <- leaders tg "57040" "56137"
+        helmet <- encounterCard C.cw56144
+        resolve [RevealEncounterCard you helmet]
+        L.runQueueT (L.capture $ L.lastingModifiers GameRef (SourceEntity $ AttachmentRef $ attachmentIdOf helmet) [restriction] False) >>= resolve
+        card <- putInHand you "57076"
+        offers (isPlay card) `shouldReturn` False
+
+  it "Phased Out ignores an eligible attachment on the friendly leader's board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56059" "56137"
+      gauntlets <- encounterCard C.cw56065
+      resolve [RevealEncounterCard (player2 tg) gauntlets]
+      getAttachedCharacter (attachmentIdOf gauntlets) `shouldReturn` Just (VillainCharacter own)
+      card <- putInHand you "57076"
+      offers (isPlay card) `shouldReturn` False
+
+  it "the erratum matches Hero Action or Hero Response, not Hero Interrupt" do
+    hasPrintedHeroActionOrResponse "39048" `H.shouldBe` False
+    hasPrintedHeroActionOrResponse "56067" `H.shouldBe` True
+    hasPrintedHeroActionOrResponse "57023" `H.shouldBe` True
+
+  it "Phased Out needs no friendly leader in cooperative play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "56137"
+      helmet <- encounterCard C.cw56144
+      resolve [RevealEncounterCard you helmet]
+      card <- putInHand you "57076"
+      playWith card []
+      choose "phase out the enemy helmet" (isTargetChoice $ attachmentIdOf helmet)
+      pass
+      getAttachedCharacter (attachmentIdOf helmet) `shouldReturn` Nothing
+      getEncounterDiscard >>= (`shouldSatisfy` elem helmet)
+
+  it "Phased Out uses its erratum to discard a Hero Action attachment" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- withLeader "56137"
+      sword <- encounterCard C.cw57023
+      resolve [RevealEncounterCard you sword]
+      card <- putInHand you "57076"
+      playWith card []
+      choose "phase out the sword" (isTargetChoice $ attachmentIdOf sword)
+      pass
+      getAttachedCharacter (attachmentIdOf sword) `shouldReturn` Nothing

@@ -1,9 +1,11 @@
 module Marvel.CivilWar.MoonKnightSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.LeaderSpec (attachmentIdOf,withLeader)
 import Marvel.EncounterCard (gatherEncounterSet)
 import Marvel.EncounterSet qualified as E
+import Marvel.Phase (Phase (PlayerPhase))
 import Marvel.Keyword qualified as K
 import Marvel.Matchers
 import Marvel.Modifier
@@ -127,3 +129,43 @@ spec = describe "Synthezoid Moon Knight" do
       playerIdentityExhausted <$> playerAttrs you `shouldReturn` True
       discard <- getEncounterDiscard
       length (filter (== card) discard) `shouldBe` 1
+
+  it "Moon Knight resolves its reveal ability at most once per phase, including recursive repeats" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      repeatCard <- encounterCard C.cw57058
+      resolve [DiscardedCard $ EncounterCard repeatCard]
+      _ <- stackEncounterDeck $ replicate 4 M.hydraMercenary
+      mid <- addMinion you C.cw57065
+      dealtTo you `shouldReturn` []
+      resolve [MinionMessage mid $ RevealMinion you]
+      dealtTo you `shouldReturn` []
+      resolve [EndPhase PlayerPhase]
+      card <- encounterCard C.cw57030
+      resolve [DiscardedCard $ EncounterCard card,MinionMessage mid $ RevealMinion you]
+      length <$> dealtTo you `shouldReturn` 1
+      resolve [MinionMessage mid $ RevealMinion you]
+      length <$> dealtTo you `shouldReturn` 1
+
+  it "Moon Knight retains its used limit after reload and accepts older saves" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      mid <- addMinion you C.cw57065
+      original <- getsGame $ fromMaybe (error "missing Moon Knight") . lookup mid . gameMinions
+      let reloaded = case fromJSON (toJSON original) of
+            Success value -> value
+            Error message -> error message
+      withGame_ $ entitiesL . minionsL . ix mid .~ reloaded
+      card <- encounterCard C.cw57030
+      resolve [DiscardedCard $ EncounterCard card]
+      _ <- stackEncounterDeck [M.hydraMercenary,M.hydraSoldier]
+      resolve [MinionMessage mid $ RevealMinion you]
+      dealtTo you `shouldReturn` []
+      let legacy = case toJSON original of
+            Object obj -> Object $ KeyMap.delete "_withMetadata" obj
+            value -> value
+      case fromJSON legacy :: Result Minion of
+        Success loaded -> toCardCode (getCardDef loaded) `shouldBe` "57065"
+        Error message -> error message

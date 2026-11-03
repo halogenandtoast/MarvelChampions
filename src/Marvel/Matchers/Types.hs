@@ -479,6 +479,8 @@ data AttachmentMatcher
   = AttachmentWithId AttachmentId
   | AttachmentOnEnemyWithHeroAbility EnemyId
   | AttachmentWithPrintedHeroActionOrResponse
+  | AttachmentOnVillain VillainMatcher
+  | DiscardableAttachment
   | AttachmentIs CardDef
   | AttachmentWithTrait Trait
   | AttachmentWithCounters GameValueMatcher

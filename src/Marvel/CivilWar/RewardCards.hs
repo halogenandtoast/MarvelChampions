@@ -33,6 +33,7 @@ rewardEvents =
   ,rewardEvent "57033" "She-Hulk Smash" 2 (Just "57001")
   ,rewardEvent "57074" "Calculated Risk" 2 Nothing
   ,rewardEvent "57075" "Synthezoid Strike" 2 (Just "57040")
+  ,(rewardEvent "57076" "Phased Out" 0 Nothing) {cdCriteria = AttachmentExists phasedOutAttachments}
   ,rewardEvent "56129" "The Futurist" 2 (Just "56059")
   ,rewardEvent "56130" "Target Lock" 2 (Just "56059")
   ,rewardEvent "56134" "You Started This" 2 (Just "56092")
@@ -62,3 +63,6 @@ rewardUpgrades =
     {cdCardType = UpgradeType,cdAbilityType = Nothing,cdCriteria = AllyExists AnyAlly,cdTraits = fromList [T.Title]}
   ,(rewardEvent "56213" "Hard to Hit" 1 (Just "56168"))
     {cdCardType = UpgradeType,cdAbilityType = Nothing,cdTraits = fromList [T.Skill]}]
+
+phasedOutAttachments :: AttachmentMatcher
+phasedOutAttachments = AttachmentOnVillain ActiveVillain <> AttachmentWithPrintedHeroActionOrResponse <> DiscardableAttachment

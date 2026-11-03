@@ -36,6 +36,9 @@ instance RunMessage LeaderRewardEvent where
         "57032" -> for_ window $ \case
           W.ThreatPlaced _ scheme n -> insteadOf (isThreatPlacement scheme) $ placeThreatWithoutWindow scheme (subtractNatural 3 n)
           _ -> pure ()
+        "57076" -> do
+          attachments <- asYou you $ selectList C.phasedOutAttachments
+          unless (null attachments) $ chooseOne you [targeting aid $ removeFromPlay aid | aid <- attachments]
         "57075" -> for_ [(attacker,defender) | Just attacker <- [friendly],Just defender <- [enemy]] $ \(attacker,defender) -> do
           dense <- inAnyArea $ selectAny $ AttachmentOnEnemy (EnemyVillainId attacker) <> AttachmentIs Printed.cw57046a
           unless dense $ flipLeaderMassForm (EnemyVillainId attacker)

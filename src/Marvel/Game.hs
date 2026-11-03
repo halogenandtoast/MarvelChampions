@@ -6792,6 +6792,12 @@ gameSelectAttachment m = do
   matchFilter x a@(aid,def,enemy,counters,hero,abilities) = case x of
     AttachmentWithId ident' -> pure $ ident' == aid
     AttachmentWithPrintedHeroActionOrResponse -> pure hero
+    AttachmentOnVillain matcher -> case enemy of
+      Just (EnemyVillainId vid) -> villainMatches matcher vid
+      _ -> pure False
+    DiscardableAttachment -> do
+      modifiers <- getModifiers (AttachmentRef aid)
+      pure $ Permanent `notElem` cdKeywords def && all (`notElem` modifiers) [CannotBeDiscarded,CannotLeavePlay,CannotLeavePlayByCardAbilities]
     AttachmentOnEnemyWithHeroAbility eid -> pure $ enemy == Just eid
       && any ((`elem` [Ability.HeroAction,Ability.HeroResponse]) . abilityType) abilities
     AttachmentIs expected -> pure $ sameCard expected def
@@ -9500,6 +9506,7 @@ explicitAttachmentTargets game = \case
   AttachmentWithId aid -> [AttachmentRef aid]
   AttachmentOnEnemy enemy -> onEnemy enemy
   AttachmentOnEnemyWithHeroAbility enemy -> onEnemy enemy
+  AttachmentOnVillain matcher -> concat [onEnemy (EnemyVillainId vid) | VillainRef vid <- explicitVillainTargets matcher]
   AttachmentMatches matchers -> concatMap (explicitAttachmentTargets game) matchers
   _ -> []
  where

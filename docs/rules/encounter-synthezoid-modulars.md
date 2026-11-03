@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-All eight modular sets are implemented and verified. Six leader reward dependencies are verified; the remaining two and native Synthezoid scenario/UI integration remain unfinished. See [leader reward dependencies](player-synthezoid.md). Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+All eight modular sets are implemented and verified. Seven leader reward dependencies are verified; the remaining one and native Synthezoid scenario/UI integration remain unfinished. See [leader reward dependencies](player-synthezoid.md). Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -62,7 +62,7 @@ Validation: nineteen Scarlet Twins behavior/inventory examples pass alongside Ga
 
 ## Moon Knight
 
-Moon Knight enters with Toughness and Retaliate 2, then resolves the topmost treachery's When Revealed ability from the local encounter discard pile. The physical treachery remains in that pile and is not discarded a second time. The shared replay helper now also resolves printed or gained surge at completion; it does not reveal the card again or apply reveal-only keywords such as Incite.
+Moon Knight enters with Toughness and Retaliate 2, then resolves the topmost treachery's When Revealed ability from the local encounter discard pile at most once per phase (RR1.8 FAQ erratum, p.70). Its used limit persists through reloads and resets at phase end; older saves load with the limit unused. The physical treachery remains in that pile and is not discarded a second time. The shared replay helper now also resolves printed or gained surge at completion; it does not reveal the card again or apply reveal-only keywords such as Incite.
 
 Crescent Dart attaches to an eligible Moon Knight, otherwise to the local enemy leader. Its forced interrupt grants piercing and ranged to the attached character's next attack and discards the Dart after that attack ends. It supports both enemy and converted-ally hosts. Fist of Khonshu exhausts the revealing identity and deals two ability damage; its boost exhausts only.
 
@@ -79,3 +79,11 @@ Atlanteans reuses its identical Civil War printing's handler: discard the top th
 The Royal Guard starts with three threat plus hinder one per player. Its defeat lets the opposing team search the relevant encounter deck and discard pile for Blood Debt, then deals the selected physical copy facedown to the player who defeated the scheme. It does not reveal that obligation or grant Hunted immediately. The searched deck is shuffled even when no matching card is found.
 
 Validation: nineteen Royal Guard behavior/inventory examples pass alongside Atlanteans, Adam Warlock and coverage (248 examples, zero failures). They cover both identity forms, owner-specific Hunted, prohibited activation, full cost payment boundaries, both search piles, facedown dealing and the opposing chooser. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).
+
+
+## Rules errata audit
+
+The RR1.8 FAQ lists two Synthezoid corrections: Moon Knight's replay is limited to once per phase, and Phased Out matches Hero Action or Hero Response instead of Hero Interrupt. Both are now reflected in the engine, viewer text and card-data generator. The phase-limit regression covers the recursive reveal sequence this erratum prevents, its reset and save compatibility. The earlier modular checks did not cover that limit; this audit corrects that gap.
+
+
+Errata validation: the full Civil War, coverage and Cyclops aspect checks pass (1,234 examples), including recursive replay, phase reset, reloaded use limits and older save parsing. The updated Moon Knight modular passes randomized Rhino, Klaw and cooperative Civil War Captain America checks with two seeds each (three cases, zero failures). The card-data check confirms only the two corrected text fields changed; generator fixtures reproduce both corrections.

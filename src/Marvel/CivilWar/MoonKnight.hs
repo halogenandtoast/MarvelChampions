@@ -19,21 +19,29 @@ import Marvel.SideScheme.Types
 import Marvel.Treachery.Types
 import Marvel.Window qualified as W
 
-newtype MoonKnight = MoonKnight (Attrs Minion)
-  deriving anyclass (IsMinion,HasModifiersFor,HasAbilities)
-  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+newtype MoonKnight = MoonKnight (Attrs Minion `With` Bool)
+  deriving anyclass (HasModifiersFor,HasAbilities)
+  deriving newtype (Show,Eq,ToJSON,HasCardCode,IsRef)
+
+instance FromJSON MoonKnight where
+  parseJSON value = (MoonKnight <$> parseJSON value) <|> ((\a -> MoonKnight (a `With` False)) <$> parseJSON value)
+
+instance IsMinion MoonKnight where
+  toMinionAttrs (MoonKnight (a `With` _)) = a
+  overMinionAttrs f (MoonKnight (a `With` used)) = MoonKnight (f a `With` used)
 
 moonKnight :: MinionCard MoonKnight
 moonKnight = let (sch,atk,hp) = C.printedMinionStats "57065"
-  in minion MoonKnight C.cw57065 (Sch sch) (Atk atk) (HP hp)
+  in minion (MoonKnight . (`With` False)) C.cw57065 (Sch sch) (Atk atk) (HP hp)
 
 instance RunMessage MoonKnight where
-  runMessage msg e@(MoonKnight a) = runQueueT $ case msg of
-    MinionMessage mid (RevealMinion you) | mid == minionId a -> do
+  runMessage msg (MoonKnight (a `With` used)) = runQueueT $ case msg of
+    MinionMessage mid (RevealMinion you) | mid == minionId a,not used -> do
       cards <- asYou you getEncounterDiscard
       for_ (headMay $ filter (cardMatch $ CardWithType TreacheryType) cards) $ resolveEncounterWhenRevealed you
-      pure e
-    _ -> MoonKnight <$> runMessage msg a
+      pure $ MoonKnight (a `With` True)
+    EndPhase _ -> (\updated -> MoonKnight (updated `With` False)) <$> runMessage msg a
+    _ -> (\updated -> MoonKnight (updated `With` used)) <$> runMessage msg a
 
 newtype CrescentDart = CrescentDart (Attrs Attachment)
   deriving anyclass IsAttachment

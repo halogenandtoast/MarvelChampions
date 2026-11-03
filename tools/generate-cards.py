@@ -136,6 +136,11 @@ def card(c, pack_order):
         "deckRequirements": c.get("deck_requirements"),
         "deckOptions": c.get("deck_options"),
     }
+    # Rules Reference v1.8, p.70: Synthezoid Smackdown errata.
+    if c["code"] == "57076":
+        out["text"] = out["text"].replace("Hero Interrupt", "Hero Action")
+    if c["code"] == "57065" and "Limit once per phase" not in out["text"]:
+        out["text"] += " (Limit once per phase.)"
     return {k: v for k, v in out.items() if v not in (None, {}, [])} | {"traits": out["traits"]}
 
 
