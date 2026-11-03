@@ -37,7 +37,7 @@ instance IsScenario CivilWarScenario where
   scenarioCompetitionSetup (CivilWarScenario (_ `With` config)) = cwScenarioCompetition config
 
 civilWarLeaderCodes :: [CardCode]
-civilWarLeaderCodes = ["56059","56092","56137","56168"]
+civilWarLeaderCodes = ["56059","56092","56137","56168","57001","57040"]
 
 civilWarRecommendedModules :: [(CardCode,[E.EncounterSet])]
 civilWarRecommendedModules = [(code,CW.teamScenarioModulars config) | code <- civilWarLeaderCodes,Just config <- [CW.defaultTeamScenario code]]
@@ -70,12 +70,14 @@ leaderStage base difficulty = fromMaybe (error "missing Civil War leader stage")
 
 -- Each physical printing contains five cards; do not gather both copies of the
 -- shared Standard PvP encounter set into either team's deck.
-standardPvpCards :: MonadRandom m => CW.Team -> m [EncounterCard]
-standardPvpCards faction = concatMapM copies $ zip [1,1,2,1] definitions
+standardPvpCards :: MonadRandom m => CardCode -> m [EncounterCard]
+standardPvpCards leader = concatMapM copies $ zip [1,1,2,1] definitions
  where
-  definitions = if faction == CW.Registration
-    then [C.cw56125,C.cw56126,C.cw56127,C.cw56128a]
-    else [C.cw56203,C.cw56204,C.cw56205,C.cw56206a]
+  definitions = case leader of
+    "57001" -> [C.cw57036,C.cw57037,C.cw57038,C.cw57039a]
+    "57040" -> [C.cw57078,C.cw57079,C.cw57080,C.cw57081a]
+    _ | CW.leaderTeam leader == Just CW.Registration -> [C.cw56125,C.cw56126,C.cw56127,C.cw56128a]
+      | otherwise -> [C.cw56203,C.cw56204,C.cw56205,C.cw56206a]
   copies (quantity,def) = traverse genEncounterCard $ replicate quantity def
 
 validateCivilWarSetup :: ScenarioSetup -> Either Text ()
@@ -134,7 +136,7 @@ instance RunMessage CivilWarScenario where
               staged = fromMaybe (Pile [] []) $ HashMap.lookup pending $ scenarioDecks attrs
               early = pileDeck staged <> pileDiscard staged <> [card | team == CW.Registration,card <- scenarioEncounterDeck attrs]
           encounter <- gatherEncounterSets $ HashSet.fromList (family <> modules <> extra)
-          standard <- standardPvpCards $ CW.otherTeam team
+          standard <- standardPvpCards $ CW.teamScenarioLeader opponent
           let held = [card | EncounterCard card <- scenarioSetAsideCards attrs,HashMap.lookup (ecCardId card) (scenarioCardDecks attrs) == Just pending]
               homes = HashMap.fromList [(ecCardId card,key) | card <- early <> held]
                 <> HashMap.map (\home -> if home == pending then key else home) (scenarioCardDecks attrs)

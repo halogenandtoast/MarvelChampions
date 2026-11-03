@@ -1,6 +1,6 @@
 # Civil War completion audit
 
-This audit concerns Civil War only. Synthezoid Smackdown, Fear No Evil and Shadowland remain separate unfinished expansion work. The overall expansion goal is not complete. Every Civil War requirement below is verified. This audit is included in the Civil War completion commit before work resumes on the remaining expansions.
+This audit concerns Civil War only. Synthezoid Smackdown is verified in its [separate completion audit](synthezoid-completion-audit.md). Fear No Evil and Shadowland remain unfinished expansion work. The overall expansion goal is not complete. Every Civil War requirement below is verified. This audit is included in the Civil War completion commit before work resumes on the remaining expansions.
 
 | Requirement | Current evidence | State |
 | --- | --- | --- |

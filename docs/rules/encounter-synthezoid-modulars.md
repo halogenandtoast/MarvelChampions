@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-All eight modular sets are implemented and verified. Seven leader reward dependencies are verified; the remaining one and native Synthezoid scenario/UI integration remain unfinished. See [leader reward dependencies](player-synthezoid.md). Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+All eight modular sets are implemented and verified. All eight leader reward dependencies are verified. Native Synthezoid scenario/UI integration is verified; see the [completion audit](synthezoid-completion-audit.md). See [leader reward dependencies](player-synthezoid.md). Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). The leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). At this intermediate milestone the leader reward dependencies and native scenario integration were unfinished; their final verification is recorded in the completion audit.
 
 ## Thunderbolts
 

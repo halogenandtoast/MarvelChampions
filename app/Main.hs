@@ -960,8 +960,8 @@ getScenariosR =
      in object
           [ "presets" .= [config | code <- civilWarLeaderCodes, CW.leaderTeam code == Just team, Just config <- [CW.defaultTeamScenario code]]
           , "modulars" .= filter (`elem` modularSets) factionModulars
-          , "firstSchemes" .= take 4 firstSchemes
-          , "secondSchemes" .= take 4 secondSchemes
+          , "firstSchemes" .= firstSchemes
+          , "secondSchemes" .= secondSchemes
           ]
 
 -- * Campaigns

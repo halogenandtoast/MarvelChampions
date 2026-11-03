@@ -1,7 +1,7 @@
 module Marvel.CivilWar.ScenarioSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
-import Data.List (nub)
+import Data.List (nub,sort)
 import Marvel.Area (AreaId (..),DeckKey (..),Pile (..))
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.CivilWar.Cards qualified as C
@@ -69,7 +69,7 @@ spec = describe "Civil War native scenario construction" do
         rewards <- getSetAsidePlayerCards
         filter ((`elem` concatMap CW.leaderBasicCards civilWarLeaderCodes) . toCardCode) rewards `shouldBe` []
 
-  for_ ["56059","56092"] $ \registration -> for_ ["56137","56168"] $ \resistance -> for_ [Normal,Expert] $ \difficulty ->
+  for_ ["56059","56092","57001"] $ \registration -> for_ ["56137","56168","57040"] $ \resistance -> for_ [Normal,Expert] $ \difficulty ->
     it ("exchanges independently built scenarios and separates their physical cards: " <> show (registration,resistance,difficulty)) do
       tg <- nativeGame (competitionSetup registration resistance difficulty) ["spider-man","thor"]
       inGame tg do
@@ -87,6 +87,13 @@ spec = describe "Civil War native scenario construction" do
           let families = map (cdEncounterSet . getCardDef) (pileDeck pile <> dealt)
           length dealt `shouldBe` (if code `elem` ["56092","56137"] then 1 else 0)
           length (filter (== Just E.CwStandardPvp) families) `shouldBe` 4
+          let standardCodes = case code of
+                "57001" -> ["57036","57037","57038","57038"]
+                "57040" -> ["57078","57079","57080","57080"]
+                _ | CW.leaderTeam code == Just CW.Registration -> ["56125","56126","56127","56127"]
+                  | otherwise -> ["56203","56204","56205","56205"]
+          sort (map toCardCode $ filter ((== Just E.CwStandardPvp) . cdEncounterSet . getCardDef) $ pileDeck pile <> dealt)
+            `shouldBe` sort standardCodes
           length (filter (== Just E.Standard) families) `shouldBe` 0
           for_ (CW.teamScenarioModulars defaults) $ \modular -> (modular,length (filter (== Just modular) families)) `shouldBe` (modular,5)
           length (filter (== Just E.ExpertSet) families) `shouldBe` (if difficulty == Expert then 3 else 0)
@@ -104,6 +111,7 @@ spec = describe "Civil War native scenario construction" do
         getsGame (S.scenarioEncounterDeck . toAttrs . gameScenario) `shouldReturn` []
         rewards <- getSetAsidePlayerCards
         length rewards `shouldBe` 8
+        sort (map toCardCode rewards) `shouldBe` sort (CW.leaderBasicCards registration <> CW.leaderBasicCards resistance)
         map pcOwner rewards `shouldBe` replicate 8 Nothing
         length (nub $ map pcCardId rewards) `shouldBe` 8
         keys <- getDeckKeys
@@ -132,39 +140,41 @@ spec = describe "Civil War native scenario construction" do
         minions <- asYou actor $ selectList AnyMinion
         length minions `shouldBe` 1
 
-  it "sets up four seats as two teams with independent per-player values" do
-    tg <- nativeGame (competitionSetup "56092" "56168" Normal) ["spider-man","thor","black-panther","hawkeye"]
-    inGame tg do
-      Just competition <- getCompetition
-      for_ [CW.Registration,CW.Resistance] $ \team -> do
-        let first = CW.teamFirstPlayer competition team
-            code = CW.teamScenarioLeader $ CW.scenarioForTeam (CW.competitiveSetup competition) (CW.otherTeam team)
-            (_,_,hp,_) = C.printedLeaderStats code
-        asYou first getStartingPlayerCount `shouldReturn` 2
-        Just leader <- getActiveVillainIn (CW.teamArea team)
-        getEnemyRemainingHitPoints (EnemyVillainId leader) `shouldReturn` (2 * fromIntegral hp)
-        [main] <- getMainSchemesIn (CW.teamArea team)
-        getsGame (fmap (Main.mainSchemeThreat . toAttrs) . HashMap.lookup main . gameMainSchemes) `shouldReturn` Just 4
-        [side] <- asYou first $ selectList AnySideScheme
-        sideSchemeThreat side `shouldReturn` 8
-        pile <- getPile =<< getDeckKeyFor first
-        length [card | card <- pileDeck pile,isNothing $ cdEncounterSet $ getCardDef card] `shouldBe` 2
+  for_ [("56092","56168"),("57001","57040")] $ \(registration,resistance) ->
+    it ("sets up four seats as two teams with independent per-player values: " <> show (registration,resistance)) do
+      tg <- nativeGame (competitionSetup registration resistance Normal) ["spider-man","thor","black-panther","hawkeye"]
+      inGame tg do
+        Just competition <- getCompetition
+        for_ [CW.Registration,CW.Resistance] $ \team -> do
+          let first = CW.teamFirstPlayer competition team
+              code = CW.teamScenarioLeader $ CW.scenarioForTeam (CW.competitiveSetup competition) (CW.otherTeam team)
+              (_,_,hp,_) = C.printedLeaderStats code
+          asYou first getStartingPlayerCount `shouldReturn` 2
+          Just leader <- getActiveVillainIn (CW.teamArea team)
+          getEnemyRemainingHitPoints (EnemyVillainId leader) `shouldReturn` (2 * fromIntegral hp)
+          [main] <- getMainSchemesIn (CW.teamArea team)
+          getsGame (fmap (Main.mainSchemeThreat . toAttrs) . HashMap.lookup main . gameMainSchemes) `shouldReturn` Just 4
+          [side] <- asYou first $ selectList AnySideScheme
+          sideSchemeThreat side `shouldReturn` 8
+          pile <- getPile =<< getDeckKeyFor first
+          length [card | card <- pileDeck pile,isNothing $ cdEncounterSet $ getCardDef card] `shouldBe` 2
 
-  it "preserves the native scenario and remaining setup through a Game JSON round trip" do
-    let setup = competitionSetup "56059" "56137" Expert
-    (app,_) <- dealtGameBeforeSetup id setup [starter "spider-man",starter "thor"] 1 (const $ pure ())
-    runGameApp app do
-      saved <- getsGame toJSON
-      restored <- case fromJSON saved of
-        Success game -> pure game
-        Error err -> error err
-      (toJSON (restored :: Game) == saved) `shouldBe` True
-      withGame_ $ const restored
-      toFirstTurn
-      for_ [CW.Registration,CW.Resistance] $ \team -> do
-        getActiveVillainIn (CW.teamArea team) >>= (`shouldSatisfy` isJust)
-        length <$> getMainSchemesIn (CW.teamArea team) `shouldReturn` 1
-      getSetAsidePlayerCards >>= \cards -> length cards `shouldBe` 8
+  for_ [("56059","56137"),("57001","57040")] $ \(registration,resistance) ->
+    it ("preserves the native scenario and remaining setup through a Game JSON round trip: " <> show (registration,resistance)) do
+      let setup = competitionSetup registration resistance Expert
+      (app,_) <- dealtGameBeforeSetup id setup [starter "spider-man",starter "thor"] 1 (const $ pure ())
+      runGameApp app do
+        saved <- getsGame toJSON
+        restored <- case fromJSON saved of
+          Success game -> pure game
+          Error err -> error err
+        (toJSON (restored :: Game) == saved) `shouldBe` True
+        withGame_ $ const restored
+        toFirstTurn
+        for_ [CW.Registration,CW.Resistance] $ \team -> do
+          getActiveVillainIn (CW.teamArea team) >>= (`shouldSatisfy` isJust)
+          length <$> getMainSchemesIn (CW.teamArea team) `shouldReturn` 1
+        getSetAsidePlayerCards >>= \cards -> length cards `shouldBe` 8
 
   for_ [False,True] $ \opponent ->
     it ("puts the Pool encounter cards only in their user's team scenario: opponent " <> show opponent) do
@@ -180,23 +190,24 @@ spec = describe "Civil War native scenario construction" do
           aside <- getSetAsideEncounterCardsForDeck key
           length [card | card <- aside,toCardCode card `elem` ["44038","44039","44040","44041","44042"]] `shouldBe` (if team == poolTeam then 6 else 0)
 
-  it "earns its own leader's physical rewards through the native Choosing Sides flow" do
-    tg <- nativeGame (competitionSetup "56059" "56137" Normal) ["spider-man","thor"]
-    inGame tg do
-      let you = player1 tg
-      [sid] <- selectList AnySideScheme
-      resolve [SideSchemeMessage sid $ SideSchemeThreatRemoved (IdentityRef you) 4]
-      let oid = ObligationId $ unSideSchemeId sid
-      choose "use Now It's Personal" (isAbilityOf $ ObligationRef oid)
-      choose "take High-Tech Suit from the registration pool" (\case CardLabel code _ -> code == "56131"; _ -> False)
-      choose "take The Futurist from the same pool" (\case CardLabel code _ -> code == "56129"; _ -> False)
-      pass
-      cards <- filter ((`elem` ["56131","56129"]) . toCardCode) <$> handOf you
-      length cards `shouldBe` 2
-      map pcOwner cards `shouldBe` [Just you,Just you]
-      aside <- getSetAsidePlayerCards
-      length aside `shouldBe` 6
-      filter ((`elem` ["56131","56129"]) . toCardCode) aside `shouldBe` []
+  for_ [("56059","56137","56131","56129"),("57001","57040","57032","57034")] $ \(registration,resistance,firstReward,secondReward) ->
+    it ("earns its own leader's physical rewards through the native Choosing Sides flow: " <> show registration) do
+      tg <- nativeGame (competitionSetup registration resistance Normal) ["spider-man","thor"]
+      inGame tg do
+        let you = player1 tg
+        [sid] <- selectList AnySideScheme
+        resolve [SideSchemeMessage sid $ SideSchemeThreatRemoved (IdentityRef you) 4]
+        let oid = ObligationId $ unSideSchemeId sid
+        choose "use Now It's Personal" (isAbilityOf $ ObligationRef oid)
+        choose "take the first reward from the registration pool" (\case CardLabel code _ -> code == firstReward; _ -> False)
+        choose "take the second reward from the same pool" (\case CardLabel code _ -> code == secondReward; _ -> False)
+        pass
+        cards <- filter ((`elem` [firstReward,secondReward]) . toCardCode) <$> handOf you
+        length cards `shouldBe` 2
+        map pcOwner cards `shouldBe` [Just you,Just you]
+        aside <- getSetAsidePlayerCards
+        length aside `shouldBe` 6
+        filter ((`elem` [firstReward,secondReward]) . toCardCode) aside `shouldBe` []
 
   it "advances a cooperative custom main scheme without changing the chosen leader" do
     let setup = CivilWarScenarioSetup "56059" [] Normal ["56121b","56124b"] Nothing

@@ -94,7 +94,7 @@ spec = parallel do
       competitiveName registration resistance mode players = "Civil War competitive " <> show players <> " seats, " <> show registration <> " vs " <> show resistance <> ", " <> show mode
       competitive =
         [(competitiveName registration resistance mode (length heroes'),setup,heroes')
-        | registration <- ["56059","56092"],resistance <- ["56137","56168"],mode <- [Normal,Expert]
+        | registration <- ["56059","56092","57001"],resistance <- ["56137","56168","57040"],mode <- [Normal,Expert]
         ,heroes' <- [["spider-man","thor"],["spider-man","thor","black-panther","hawkeye"]]
         ,Just reg <- [CW.defaultTeamScenario registration],Just res <- [CW.defaultTeamScenario resistance]
         ,let setup = CivilWarScenarioSetup registration [] mode [] $ Just $ CW.CompetitionSetup reg res]

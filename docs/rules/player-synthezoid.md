@@ -20,7 +20,7 @@ Android Assistance also generates two wild resources in either form. Its optiona
 
 Validation: twelve new resource behavior cases pass with Civil War, coverage, Cyclops, Cyclops mechanics and actual-resource checks (1,216 examples, zero failures). These cover optional responses, identity-form limits, both mass forms, ability payments, payments without a friendly leader, and Android Assistance resolving before Legal Counsel regardless of spend order. The English label JSON parses successfully.
 
-All eight reward dependencies are implemented. Native scenario/UI integration remains unfinished.
+All eight reward dependencies are implemented. Native scenario/UI integration is verified; see the [completion audit](synthezoid-completion-audit.md).
 
 
 ## Synthezoid Strike
@@ -47,4 +47,4 @@ Make Me Angry attaches to the player's friendly She-Hulk leader. Its target vali
 
 The counterattack is deferred until the original activation and its responses finish. The upgrade records whether its counterattack actually reaches its after-attack window, then discards after that attack and its responses finish. Under the RR1.8 Then and Stun entries, a stun replacement does not make the attack, so the post-Then discard is not performed; the card remains available for a later trigger. Pending and completion state are saved with the upgrade.
 
-Validation: all seven new Make Me Angry behavior cases pass, including hero and leader attackers, ally exclusion, attachment restrictions, and stun followed by a later successful counterattack. The full Civil War and coverage regression run passes (1,173 examples, zero failures). Native Synthezoid scenario/UI integration remains unfinished.
+Validation: all seven new Make Me Angry behavior cases pass, including hero and leader attackers, ally exclusion, attachment restrictions, and stun followed by a later successful counterattack. The full Civil War and coverage regression run passes (1,173 examples, zero failures). Native Synthezoid scenario/UI integration is verified; see the [completion audit](synthezoid-completion-audit.md).

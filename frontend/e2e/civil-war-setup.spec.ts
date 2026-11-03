@@ -155,3 +155,36 @@ test('competitive results distinguish both winners, a draw and both teams losing
   await expect(page.locator('.competitivedraw .lucide-minus')).toHaveCount(1)
   await expect(page.locator('.bothteamslost .lucide-skull')).toHaveCount(1)
 })
+
+test('Synthezoid leaders load their own modules and schemes in the team creation flow', async ({ page }) => {
+  const sheHulk = { leader: '57001', modulars: ['CwShieldOps', 'CwThunderboltsModular', 'CwTaskmasterModular', 'CwDeadlyDuo'], mainSchemes: ['57005b', '57006b'] }
+  const vision = { leader: '57040', modulars: ['CwYoungAvengers', 'CwScarletTwins', 'CwMoonKnightModular', 'CwRoyalGuard'], mainSchemes: ['57044b', '57045b'] }
+  await page.addInitScript((user) => localStorage.setItem('marvel-session', JSON.stringify({ token: 'cw-test', user })), user)
+  await page.route('**/api/whoami', (route) => route.fulfill({ json: user }))
+  await page.route('**/api/scenarios', (route) => route.fulfill({ json: {
+    scenarios: [], modulars: [], civilWar: Object.fromEntries([
+      ['registration', registration, sheHulk], ['resistance', resistance, vision],
+    ].map(([faction, original, added]) => {
+      const presets = [original, added] as typeof registration[]
+      return [faction, { presets, modulars: presets.flatMap((p) => p.modulars), firstSchemes: presets.map((p) => p.mainSchemes[0]), secondSchemes: presets.map((p) => p.mainSchemes[1]) }]
+    })),
+  } }))
+  let submitted: any = null
+  await page.route('**/api/games', async (route) => {
+    submitted = route.request().postDataJSON()
+    await route.fulfill({ status: 400, body: 'Test submission captured' })
+  })
+  await page.goto('/#/new-game/civil-war')
+  const factions = page.locator('fieldset')
+  await factions.nth(0).locator('select').nth(0).selectOption(sheHulk.leader)
+  await factions.nth(1).locator('select').nth(0).selectOption(vision.leader)
+  for (const [index, preset] of [sheHulk, vision].entries()) {
+    await expect(factions.nth(index).locator('select').nth(1)).toHaveValue(preset.mainSchemes[0]!)
+    await expect(factions.nth(index).locator('select').nth(2)).toHaveValue(preset.mainSchemes[1]!)
+    await expect(factions.nth(index).locator('input:checked')).toHaveCount(4)
+  }
+  await page.getByRole('button', { name: 'Create team lobby' }).click()
+  await expect.poll(() => submitted).not.toBeNull()
+  expect(submitted.seats).toBe(2)
+  expect(submitted.scenario.competition).toEqual({ registration: sheHulk, resistance: vision })
+})
