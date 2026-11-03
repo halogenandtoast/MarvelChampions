@@ -570,6 +570,7 @@ library
       Marvel.CivilWar.AttackTreacheries
       Marvel.CivilWar.CapeKiller
       Marvel.CivilWar.Cards
+      Marvel.CivilWar.CloakAndDagger
       Marvel.CivilWar.DangerousRecruits
       Marvel.CivilWar.Defenders
       Marvel.CivilWar.HellsKitchen
@@ -2887,6 +2888,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.AtlanteansSpec
       Marvel.CivilWar.AttackTreacherySpec
       Marvel.CivilWar.CapeKillerSpec
+      Marvel.CivilWar.CloakAndDaggerSpec
       Marvel.CivilWar.DangerousRecruitsSpec
       Marvel.CivilWar.DefendersSpec
       Marvel.CivilWar.HellsKitchenSpec

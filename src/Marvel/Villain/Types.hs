@@ -619,6 +619,10 @@ runVillainMessage msg attrs = case msg of
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
     CardSpecific target "recordPendingSchemeThreat" (fromJSON -> Success scheme) | isTarget attrs target -> attrs <$ recordPendingVillainSchemeThreat (villainId attrs) scheme
+    CardSpecific target "villainSchemeResultOn" (fromJSON -> Success (scheme,n)) | isTarget attrs target -> do
+      checkWindows $ [W.Window W.After $ W.VillainSchemeResolved (villainId attrs) n]
+        <> [W.Window W.After $ W.VillainSchemeResolvedOnMainScheme (villainId attrs) n | SchemeMainSchemeId _ <- [scheme]]
+      pure attrs
     CardSpecific target "villainSchemeResult" (fromJSON -> Success n) | isTarget attrs target -> do
       checkWindows [W.Window W.After $ W.VillainSchemeResolved (villainId attrs) n]
       pure attrs

@@ -441,6 +441,9 @@ windowMatches matcher w source = case matcher of
   VillainIsDefeated timing villainMatcher -> case windowType w of
     VillainDefeat villainId | timing == windowTiming w -> villainMatches villainMatcher villainId
     _ -> pure False
+  VillainSchemedPlacingThreatOnMainScheme matcher -> case windowType w of
+    VillainSchemeResolvedOnMainScheme vid n | windowTiming w == After, n > 0 -> villainMatches matcher vid
+    _ -> pure False
   VillainSchemedPlacingThreat matcher -> case windowType w of
     VillainSchemeResolved vid n | windowTiming w == After, n > 0 -> villainMatches matcher vid
     _ -> pure False

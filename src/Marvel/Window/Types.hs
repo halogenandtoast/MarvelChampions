@@ -125,6 +125,7 @@ data WindowMatcher
     -- not all of it prevented by his tough status card
     VillainWouldTakeDamage VillainMatcher DamageMatcher
   | VillainWouldTakeDamageFrom VillainMatcher DamageMatcher
+  | VillainSchemedPlacingThreatOnMainScheme VillainMatcher
   | VillainSchemedPlacingThreat VillainMatcher
   | VillainSchemed WindowTiming VillainMatcher
   | MinionDefeated WindowTiming MinionMatcher
@@ -339,6 +340,7 @@ data WindowType
   | DelayedAttackDamagePending IdentityId EnemyId Source Natural
   | -- | the damage an enemy's attack dealt the character
     EnemyAttacksAndDamages EnemyId CharacterId Natural
+  | VillainSchemeResolvedOnMainScheme VillainId Natural
   | VillainSchemeResolved VillainId Natural
   | Schemed VillainId
   | IdentityAttack IdentityId EnemyId

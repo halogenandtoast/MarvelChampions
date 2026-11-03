@@ -132,3 +132,19 @@ These effects follow the ordinary exhaustion, attachment, boost, activation and 
 Validation: all five Hell's Kitchen card faces are implemented and the set is selectable. Fifteen new behavior examples cover exhaustion and choice ownership, no eligible characters, cooperative fallback activations, cross-board attacks, deferred no-boost attacks, attachment surge, physical boost-to-attachment movement, engagement restrictions, stalwart, hinder, continuous threat protection, and board boundaries. The focused run passes 509 Civil War behavior examples and 174 coverage examples. The compiled native registry now contains 125 of the 169 Civil War non-player faces (74%); this excludes Synthezoid and does not imply completion of competitive scenario setup or the creation UI.
 
 Randomized Rhino, Klaw, and Ultron checks with Hell's Kitchen pass with two seeds each.
+
+## Cloak and Dagger
+
+Cloak lets the revealing player choose a scheme on their own board to receive two threat, then removes two threat from the friendly leader's main scheme on the other board in competitive play. Dagger heals the local enemy leader and lets the revealing player choose a controlled character to take two non-attack damage. These instructions resolve independently, including when the leader is already at full health. Character damage uses the ordinary damage windows.
+
+Their boosts check for the partner minion on their own board. With a partner present, the physical boost card is revealed as an encounter card, resolving its When Revealed effect and leaving no discarded duplicate. Without the partner, Cloak places one threat on a chosen local scheme and Dagger deals one damage to a chosen controlled character.
+
+Darkforce attaches to the local enemy leader and gives them tough. Its forced response uses the amount of threat the attached leader actually placed during its scheme activation, after threat interrupts, and removes that amount from the friendly leader's main scheme. It is then discarded, including in cooperative play where no friendly leader exists. Confusion replacing a scheme, a scheme placing zero threat, and a scheme placing threat on a signature side scheme do not spend it. This uses the existing scheme-activation receipt rather than reading the current threat total, which could include separate boost effects or later responses.
+
+Lightforce heals three damage from the local enemy leader and deals three indirect damage to the revealing player. The side scheme uses hinder and, when defeated, heals and toughens the leader on its own board. A blanked scheme has no printed defeat effect. Healing is capped at maximum hit points under Rules Reference v1.8, page 22; the native healing pipeline enforces that cap. A search of recent published rulings found no card-specific exception for this set.
+
+Validation: all five Cloak and Dagger card faces are implemented and the set is selectable. Seventeen behavior examples cover healing and damage, controlled-ally choices, opposite-board threat removal, partner detection and boost-to-reveal movement, confusion and zero-threat replacements, Darkforce's transferred amount and discard, signature side schemes, hinder, and a cross-board source defeating the side scheme. The focused run passes 526 Civil War behavior examples and 175 coverage examples. The compiled native registry contains 130 of the 169 Civil War non-player faces (77%).
+
+The full unit suite passes 8,463 examples after the shared scheme-result change.
+
+Randomized Rhino, Klaw, and Ultron checks with Cloak and Dagger pass with two seeds each.

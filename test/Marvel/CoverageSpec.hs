@@ -77,6 +77,7 @@ modularSets =
   , "atlanteans"
   , "defenders"
   , "hells_kitchen"
+  , "cloak_and_dagger_modular"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

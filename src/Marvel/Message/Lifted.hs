@@ -3526,6 +3526,6 @@ recordPendingVillainSchemeThreat vid scheme = do
   amount <- fromMaybe 0 <$> pendingThreatPlacement scheme
   present <- selectAny (SchemeWithId scheme)
   let receipt = if present then amount else 0
-  replaceMatchingMessage (const [Msg.cardSpecific (VillainRef vid) "villainSchemeResult" receipt]) $ \case
+  replaceMatchingMessage (const [Msg.cardSpecific (VillainRef vid) "villainSchemeResultOn" (scheme,receipt)]) $ \case
     CardSpecific (VillainRef who) "villainSchemeResult" _ -> who == vid
     _ -> False
