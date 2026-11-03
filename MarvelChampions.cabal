@@ -1679,10 +1679,13 @@ library
       Marvel.Shadowland.BlackFlower
       Marvel.Shadowland.Cards
       Marvel.Shadowland.Corruption
+      Marvel.Shadowland.DarkProtege
       Marvel.Shadowland.NinjaSwarm
       Marvel.Shadowland.Position
+      Marvel.Shadowland.ProtegeAbilities
       Marvel.Shadowland.Spells
       Marvel.Shadowland.Traps
+      Marvel.Shadowland.Villains
       Marvel.SideScheme
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes
