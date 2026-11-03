@@ -58,6 +58,8 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   toMinionAttrs = coerce
   minionDisplayCounters :: a -> Natural
   minionDisplayCounters _ = 0
+  minionAccelerationTokens :: a -> Natural
+  minionAccelerationTokens _ = 0
   overMinionAttrs :: (Attrs Minion -> Attrs Minion) -> a -> a
   default overMinionAttrs :: (Coercible a (Attrs Minion)) => (Attrs Minion -> Attrs Minion) -> a -> a
   overMinionAttrs = coerce
@@ -424,3 +426,6 @@ incomingMinionDamage attrs source originalDamage = do
         then originalDamage {damageAmount = max (damageAmount originalDamage) incoming}
         else if minionTough attrs && preventedByTough originalDamage then originalDamage else originalDamage {damageAmount = subtractNatural (damagePrevention originalDamage) room}
   pure damage
+
+getMinionAccelerationTokens :: Minion -> Natural
+getMinionAccelerationTokens (Minion a) = minionAccelerationTokens a

@@ -152,12 +152,12 @@ runMinionMessage msg attrs = case msg of
     minionStep (minionId attrs) MinionSchemes
     minionStep (minionId attrs) MinionSchemeAgainstEnded
     pure attrs {minionActivationPlayer = Just you}
-  MinionSchemeAgainstEnded -> pure attrs {minionActivationPlayer = Nothing, minionSchemeReplacesAttack = False}
+  MinionSchemeAgainstEnded -> pure attrs {minionActivationPlayer = Nothing, minionSchemeReplacesAttack = False,minionBoost = 0}
   MinionSchemes -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     confused <- isConfused attrs
-    if forbidden then pure attrs else if confused
-      then pure $ attrs {minionAdditionalConfuse = False} & confusedL .~ False
+    if forbidden then pure attrs {minionBoost = 0} else if confused
+      then pure $ attrs {minionAdditionalConfuse = False,minionBoost = 0} & confusedL .~ False
       else do
         let you = fromMaybe (minionEngagedIdentity attrs) (minionActivationPlayer attrs)
         checkWindows [W.Window W.Would $ W.EnemySchemeBegins (toEnemyId attrs) you]
@@ -205,8 +205,8 @@ runMinionMessage msg attrs = case msg of
   MinionAttacks ident -> do
     forbidden <- elem CannotActivate <$> getModifiers attrs
     stunned <- isStunned attrs
-    if forbidden then pure attrs {minionAttackTarget = Nothing} else if stunned
-      then pure $ attrs {minionAdditionalStun = False} & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
+    if forbidden then pure attrs {minionAttackTarget = Nothing,minionBoost = 0} else if stunned
+      then pure $ attrs {minionAdditionalStun = False,minionBoost = 0} & stunnedL .~ False & \a -> a {minionAttackTarget = Nothing}
       else do
         -- the attack is its activation against the player, from start to end, whether
         -- the attack resolves or is cancelled (a stunned minion does not activate)
@@ -251,7 +251,7 @@ runMinionMessage msg attrs = case msg of
         placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
     pure $ attrs {minionSchemeRemoval = Nothing} & boostL .~ 0
-  MinionEndAttack -> pure $ attrs {minionActivationPlayer = Nothing,minionAttackTarget = Nothing} & attackingL .~ Nothing
+  MinionEndAttack -> pure $ attrs {minionActivationPlayer = Nothing,minionAttackTarget = Nothing,minionBoost = 0} & attackingL .~ Nothing
   MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
   MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
   MinionAttackBecomesDividedEvenly -> pure $ attrs & attackingL . _Just %~ \a -> a {attackDividedEvenly = True}
@@ -314,10 +314,15 @@ instance RunMessage (Attrs Minion) where
       CardSpecific (isTarget attrs -> True) "informantScheme" (fromJSON -> Success you) -> pure attrs {minionSchemeRemoval = Just you}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
+        afterPendingMinionDefeat $ cardSpecific attrs "resolveTeamwork" ()
+        pure attrs
+      CardSpecific (isTarget attrs -> True) "resolveTeamwork" _ -> do
         let ident = minionEngagedIdentity attrs
         present <- selectAny (MinionWithId $ minionId attrs)
+        keywords <- getModifiedKeywords attrs
+        others <- anyM (\trait -> selectAny $ MinionWithTrait trait <> NotMinion (MinionWithId $ minionId attrs)) [trait | Teamwork trait <- keywords]
         hero <- identityMatches HeroIdentity ident
-        when present $ enemyActivationAfterCurrent (minionId attrs) $
+        when (present && others) $ enemyActivationAfterCurrent (minionId attrs) $
           if hero then enemyAttacks (minionId attrs) ident else minionSchemes (minionId attrs)
         pure attrs
       GiveStatus (MinionRef mid) s | mid == minionId attrs -> applyVulnerableStatus attrs s

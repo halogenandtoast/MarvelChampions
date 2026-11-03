@@ -28,6 +28,9 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  TrapOptionChosen identityMatcher options -> case windowType w of
+    ChoseTrapOption you option | windowTiming w == When, option `elem` options -> identityMatches identityMatcher you
+    _ -> pure False
   EncounterCardDealtTo identityMatcher -> case windowType w of
     EncounterCardWasDealt you _ | windowTiming w == After -> identityMatches identityMatcher you
     _ -> pure False

@@ -719,6 +719,10 @@ spec = describe "Civil War leader reward upgrades" do
       let you = player1 tg
           opponent = player2 tg
       (own,_) <- leaders tg "57001"
+      -- The temporary Klaw used to create the second board can reveal a guard.
+      -- Keep the leader available so this tests the reward's ally-attack trigger.
+      minions <- getsGame $ map fst . toList . gameMinions
+      resolve [RemoveFromPlay $ MinionRef mid | mid <- minions]
       card <- putInHand you "57034"
       payment <- putInHand you "01088"
       playOn card own [payment]

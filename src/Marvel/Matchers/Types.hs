@@ -3,6 +3,7 @@
 module Marvel.Matchers.Types where
 
 import Marvel.Prelude
+import Marvel.Card.Code (CardCode)
 import Marvel.Card.Id (CardId)
 
 import Marvel.Ability.Types
@@ -221,6 +222,7 @@ data EnemyMatcher
   | EnemyCanTakeDamageFrom Source
   | DamageableEnemy
   | EnemyIs CardDef
+  | EnemyWithRemainingHitPoints GameValueMatcher
   | EnemyWithTitle Text
   | NotEnemy EnemyMatcher
   | UndefendedEnemy
@@ -270,6 +272,7 @@ pattern VillainWithAnyDamage <-
 data VillainMatcher
   = ActiveVillain
   | AnyVillain
+  | VillainWithCardCode CardCode
   | VillainWithId VillainId
   | VillainWithDamage GameValueMatcher
   | VillainWithToughStatus

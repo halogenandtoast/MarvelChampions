@@ -36,6 +36,10 @@ data DeckKey
 experimentalWeaponsDeck :: DeckKey
 experimentalWeaponsDeck = NamedDeckKey "experimentalWeapons"
 
+-- | Trap! cards have their own reusable deck in Shadow Labyrinth.
+shadowlandTrapDeck :: DeckKey
+shadowlandTrapDeck = NamedDeckKey "shadowlandTraps"
+
 -- | Running out of an encounter deck, the encounter deck or a villain's, costs an
 -- acceleration token as its discard pile is shuffled back; the side-scheme deck's is
 -- shuffled back without penalty, and a named deck is not shuffled back at all.
@@ -51,7 +55,7 @@ discardsTo :: DeckKey -> DeckKey
 discardsTo = \case
   -- Civil War identity setup uses temporary team decks before leaders exist.
   -- Keep their physical homes until native scenario setup remaps them.
-  key@(NamedDeckKey name) | name `elem` ["cwRegistrationSetup", "cwResistanceSetup"] -> key
+  key@(NamedDeckKey name) | name `elem` ["cwRegistrationSetup", "cwResistanceSetup", "shadowlandTraps"] -> key
   NamedDeckKey _ -> EncounterDeckKey
   k -> k
 

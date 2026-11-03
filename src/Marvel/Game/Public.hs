@@ -596,6 +596,7 @@ gameView seesHand g = do
             <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
             <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
       , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g)) + sum [(toAttrs scheme).mainSchemeAccelerationTokens | scheme <- HashMap.elems (gameMainSchemes g)]
+          + sum (map Minion.getMinionAccelerationTokens $ HashMap.elems $ gameMinions g)
       , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
       , question = HashMap.mapWithKey visibleQuestion (gameQuestion g)
       , questionVersion = gameQuestionVersion g
@@ -683,6 +684,7 @@ gameView seesHand g = do
                 -- the Infinity Gauntlet's stones, beside the villain (The Mad Titan's Shadow)
                 <> concat [deckView "infinityStones" Nothing InfinityStoneDeckKey | first]
           , accelerationTokens = areaAccelerationTokens a + sum [(toAttrs scheme).mainSchemeAccelerationTokens | (sid, scheme) <- HashMap.toList (gameMainSchemes g), here (MainSchemeRef sid)]
+              + sum [Minion.getMinionAccelerationTokens minion | (mid,minion) <- HashMap.toList (gameMinions g), here (MinionRef mid)]
           , accelerationIcons = accelerationIconsIn g aid
           }
   upgradesOn p = [upgradeView u | u <- HashMap.elems (gameUpgrades g), p (toAttrs u)]
@@ -886,7 +888,7 @@ gameView seesHand g = do
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s
-    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) ([cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens Nothing Nothing False a.sideSchemeExhausted
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) (map (cardView . EncounterCard) a.sideSchemeHeldEncounterCards <> [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens Nothing Nothing False a.sideSchemeExhausted
 
 -- Civil War stores the active B face explicitly; older schemes use an unsuffixed code.
 setupFace :: CardCode -> CardCode

@@ -761,6 +761,11 @@ flipIdentity ident = do
 changeToAlterEgo :: (ReverseQueue m) => IdentityId -> m ()
 changeToAlterEgo ident = changeToForm ident B
 
+-- | An instruction to change to hero form has no effect on an identity already
+-- in hero form. Choosing another hero form is a separate permission.
+changeToHero :: ReverseQueue m => IdentityId -> m ()
+changeToHero ident = Matchers.identityMatches HeroIdentity ident >>= \hero -> unless hero (changeToHeroForm ident)
+
 -- | To a hero form other than the one showing: from alter-ego the player picks one, in
 -- one hero form Ant-Man changes to the other ("change to your other hero form").
 changeToHeroForm :: (ReverseQueue m) => IdentityId -> m ()
@@ -1210,6 +1215,15 @@ resolveMinionLeavingPlay mid = push $ ResolveMinionLeavingPlay mid (MinionMessag
 
 healAllDamage :: (ReverseQueue m) => MinionId -> m ()
 healAllDamage mid = push $ MinionMessage mid MinionHealAllDamage
+
+-- | A reveal effect can choose a different engagement before the normal entry
+-- engagement resolves. The chosen player replaces that pending engagement.
+redirectMinionEngagement :: ReverseQueue m => MinionId -> IdentityId -> m ()
+redirectMinionEngagement mid you = do
+  cancelMatchingMessage $ \case
+    MinionMessage other (MinionEngagedIdentity _) -> other == mid
+    _ -> False
+  engageMinion mid you
 
 -- | The minion engages the player, leaving the player it was engaged with.
 engageMinion :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
@@ -2643,6 +2657,16 @@ afterMatching matcher body = do
   replaceMatchingMessage (: msgs) matcher
 
 
+-- | Teamwork from a minion revealed by a When Defeated ability checks the board
+-- only after the defeated minion has left play (Shadowland FAQ, p.18).
+afterPendingMinionDefeat :: ReverseQueue m => m () -> m ()
+afterPendingMinionDefeat body = do
+  pending <- withQueue $ \queue -> (queue, headMay [mid | MinionMessage mid MinionDefeated <- concatMap queuedMessageLeaves queue])
+  case pending of
+    Nothing -> body
+    Just mid -> afterMatching (== MinionMessage mid MinionDefeated) body
+
+
 -- | Find Rogue's physical Touched card, wherever it currently is, and move it.
 findAndAttachTouched :: (ReverseQueue m) => IdentityId -> CharacterId -> m ()
 findAndAttachTouched you host = cardSpecific GameRef "findAndAttachTouched" (you, host)
@@ -2802,6 +2826,18 @@ placeEncounterCardUnderMainScheme :: ReverseQueue m => MainSchemeId -> Encounter
 placeEncounterCardUnderMainScheme sid card = do
   removeFromGame card
   cardSpecific sid "holdEncounterCard" card
+
+-- | Tuck an out-of-play encounter card faceup, preserving its physical identity.
+placeEncounterCardUnderSideScheme :: ReverseQueue m => SideSchemeId -> EncounterCard -> m ()
+placeEncounterCardUnderSideScheme sid card = do
+  removeFromGame card
+  cardSpecific GameRef "removeEncounterCardFromPiles" card
+  cardSpecific sid "holdEncounterCard" card
+
+revealEncounterCardUnderSideScheme :: ReverseQueue m => SideSchemeId -> IdentityId -> EncounterCard -> m ()
+revealEncounterCardUnderSideScheme sid you card = do
+  cardSpecific sid "removeHeldEncounterCard" (ecCardId card)
+  revealEncounterCardFrom W.RevealedFromSetAside you card
 
 putTopCardsUnder :: (ReverseQueue m, IsRef target) => IdentityId -> target -> Natural -> m ()
 putTopCardsUnder you target n = do

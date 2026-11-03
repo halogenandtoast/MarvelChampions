@@ -1888,6 +1888,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           modifiers <- getModifiers target
           if CannotLeavePlay `elem` modifiers then pure g
             else runGameMessage msg g {gameRemovedFromGameEncounterCards = gameRemovedFromGameEncounterCards <> [card]}
+  CardSpecific _ "holdEncounterCard" (fromJSON -> Success card) | card `elem` gameRemovedFromGameEncounterCards ->
+    runGameMessage msg g {gameRemovedFromGameEncounterCards = filter (/= card) gameRemovedFromGameEncounterCards}
   RevealedEncounterCardFrom _ _ card | card `elem` gameRemovedFromGameEncounterCards ->
     runGameMessage msg g {gameRemovedFromGameEncounterCards = filter (/= card) gameRemovedFromGameEncounterCards}
   RevealedEncounterCardWithoutWhenRevealedFrom _ _ card | card `elem` gameRemovedFromGameEncounterCards ->
@@ -2016,6 +2018,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g),upgradeAttachedSideScheme (toAttrs u) == Just sid] removeFromPlay
         for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g),attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
       for_ (SideScheme.sideSchemeHeldCards $ toAttrs scheme) discardCard
+      for_ (SideScheme.sideSchemeHeldEncounterCards $ toAttrs scheme) discardCard
       let oid = ObligationId $ unSideSchemeId sid
           obligation = lookupObligation code oid
       obligationStep oid (ObligationOwnedBy you)
@@ -2366,6 +2369,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     SideSchemeRef sid -> case lookup sid (gameSideSchemes g) of
       Nothing -> pure g
       Just scheme -> whenCanLeavePlay g sid do
+        for_ (SideScheme.sideSchemeHeldEncounterCards $ toAttrs scheme) discardCard
         frameworkDiscard $ for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedSideScheme (toAttrs u) == Just sid] removeFromPlay
         for_ [aid | (aid, at) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs at) == Just sid] removeFromPlay
         pure $
@@ -2550,6 +2554,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid) & (areasL . each %~ \a -> a {areaMainSchemes = filter (/= mid) (areaMainSchemes a)})
     -- out of the game, not discarded: what is attached to it is discarded
     SideSchemeRef sid -> whenCanLeavePlay g sid do
+      for_ (lookup sid $ gameSideSchemes g) $ traverse_ discardCard . SideScheme.sideSchemeHeldEncounterCards . toAttrs
       frameworkDiscard $ for_
         [ uid
         | (uid, u) <- HashMap.toList (gameUpgrades g)
@@ -2771,6 +2776,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       -- a villain's own side scheme cannot leave play while he is in play
       SideSchemeRef sid | sid `elem` HashMap.elems gameSignatureSchemes -> pure g
       SideSchemeRef sid -> whenCanLeavePlay g sid do
+        for_ (lookup sid $ gameSideSchemes g) $ traverse_ discardCard . SideScheme.sideSchemeHeldEncounterCards . toAttrs
         -- what is attached to it is discarded with it, first
         frameworkDiscard $ for_
           [ uid
@@ -3361,10 +3367,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     let selected cid def = any (\card -> toCardId card == cid && sameCard (getCardDef card) def) cards
         gone = [s | s <- HashMap.elems (gameSupports g), selected (CardId $ unSupportId $ toId s) (supportCardDef $ toAttrs s)]
         upgrades = [u | u <- HashMap.elems (gameUpgrades g), selected (CardId $ unUpgradeId $ toId u) (getCardDef u)]
+        minions = [m | m <- HashMap.elems (gameMinions g), selected (toCardId $ toCard m) (getCardDef m)]
+        villains = [v | v <- HashMap.elems (gameVillains g), let VillainId uuid = toId v, selected (CardId uuid) (getCardDef v)]
+        attachments = [at | at <- HashMap.elems (gameAttachments g), selected (toCardId $ toCard at) (getCardDef at)]
         schemes = [scheme | scheme <- HashMap.elems (gameSideSchemes g), selected (toCardId $ toCard scheme) (getCardDef scheme)]
     for_ schemes $ \scheme -> do
+      for_ (SideScheme.sideSchemeHeldEncounterCards $ toAttrs scheme) discardCard
       for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g), upgradeAttachedSideScheme (toAttrs u) == Just (toId scheme)] removeFromPlay
       for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g), Attachment.attachmentSideScheme (toAttrs a) == Just (toId scheme)] removeFromPlay
+    for_ minions $ \m -> do
+      minionDisengages (getMinionEngagedIdentity m) (toId m)
+      traverse_ removeFromPlay (Minion.minionAttachments $ toAttrs m)
+      traverse_ removeFromPlay (Minion.minionUpgrades $ toAttrs m)
+    for_ villains $ \v -> do
+      traverse_ removeFromPlay (Villain.villainAttachments $ toAttrs v)
+      traverse_ removeFromPlay (Villain.villainUpgrades $ toAttrs v)
+    traverse_ (attachmentRemoved . toId) attachments
     for_ gone \s -> identityStep (getSupportController s) (SupportRemoved (toId s))
     for_ upgrades \u -> do
       upgradeRemoved (toId u)
@@ -3373,6 +3391,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       & entitiesL . supportsL %~ (\m -> foldr (deleteMap . toId) m gone)
       & entitiesL . upgradesL %~ (\m -> foldr (deleteMap . toId) m upgrades)
       & entitiesL . sideSchemesL %~ (\m -> foldr (deleteMap . toId) m schemes)
+      & entitiesL . minionsL %~ (\m -> foldr (deleteMap . toId) m minions)
+      & removedEntitiesL . minionsL %~ (\m -> foldr (\e -> insertMap (toId e) e) m minions)
+      & entitiesL . villainsL %~ (\m -> foldr (deleteMap . toId) m villains)
+      & removedEntitiesL . villainsL %~ (\m -> foldr (\e -> insertMap (toId e) e) m villains)
+      & entitiesL . attachmentsL %~ (\m -> foldr (deleteMap . toId) m attachments)
+      & removedEntitiesL . attachmentsL %~ (\m -> foldr (\e -> insertMap (toId e) e) m attachments)
+      & areasL . each %~ (\area -> let remaining = filter (`notElem` map toId villains) (areaVillains area)
+          in area {areaVillains = remaining,areaActiveVillain = if areaActiveVillain area `elem` map (Just . toId) villains then headMay remaining else areaActiveVillain area})
       & areasL . each %~ (\area -> area {areaSideSchemes = filter (`notElem` map toId schemes) (areaSideSchemes area)})
   -- divided damage (Giant Wasp, Wasp Sting): a point at a time among the enemies
   -- matching, then each share dealt at once; an attack's attacks each enemy dealt one
@@ -3486,7 +3512,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       pure $ g & environmentIntoPlay ident environment
     -- an encounter support, as the Milano, is put into play under the player's control,
     -- its card owned by no player
-    SupportType -> do
+    kind | kind `elem` [SupportType,UpgradeType] -> do
       g <$ push (PutCardIntoPlay ident (MkPlayerCard (ecCardId card) (ecCardDef card) Nothing (Just ident)) NoPayment Nothing False)
     -- attached as its own "attach to" says, not revealed: no "When Revealed" and no surge
     AttachmentType -> do
@@ -3927,7 +3953,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           W.Window _ (W.RevealTreachery tid _) -> isQueued \case
             TreacheryMessage tid' (RevealTreachery _) -> tid' == tid
             _ -> False
-          W.Window _ (W.EncounterCardRevealed _ _ card) -> isQueued \case
+          W.Window timing (W.EncounterCardRevealed _ _ card) | timing /= W.After -> isQueued \case
             CardSpecific GameRef key (fromJSON -> Success (_ :: W.RevealSource, _ :: IdentityId, card' :: EncounterCard)) | key `elem` ["revealAfterWould", "revealAfterWouldWithoutWhenRevealed"] -> card' == card
             RevealedEncounterCardFrom _ _ card' -> card' == card
             RevealedEncounterCardWithoutWhenRevealedFrom _ _ card' -> card' == card
@@ -4412,7 +4438,7 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
         eventStep (toId event) (RevealedEvent ident)
       pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
     _ -> error "Unhandled"
-  checkWindows [W.Window W.After $ W.EncounterCardResolved ident card]
+  checkWindows [W.Window W.After $ W.EncounterCardRevealed source ident card, W.Window W.After $ W.EncounterCardResolved ident card]
   when dynamicPeril $ push (SetPeril Nothing)
   let encounterSource = CardIdRef (ecCardId card)
   abilityResolved encounterSource
@@ -6884,6 +6910,7 @@ gameSelectEnemy m = do
     AttackingEnemy -> pure $ isJust (villainAttackDetails e)
     EnemyAttackingCharacter cm -> maybe (pure False) (\a -> member (attackCharacter a) <$> gameSelectCharacter cm) (villainAttackDetails e)
     NotEnemy m' -> not <$> goVillain e m'
+    EnemyWithRemainingHitPoints value -> gameValueMatches value =<< getEnemyRemainingHitPoints (EnemyVillainId $ toId e)
     EnemyWithTitle name -> pure $ title (cdName $ getCardDef e) == name
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goVillain e) xs
@@ -6933,6 +6960,7 @@ gameSelectEnemy m = do
     AttackingEnemy -> pure $ isJust (minionAttackDetails e)
     EnemyAttackingCharacter cm -> maybe (pure False) (\a -> member (attackCharacter a) <$> gameSelectCharacter cm) (minionAttackDetails e)
     NotEnemy m' -> not <$> goMinion e m'
+    EnemyWithRemainingHitPoints value -> gameValueMatches value =<< getEnemyRemainingHitPoints (EnemyMinionId $ toId e)
     EnemyWithTitle name -> pure $ title (cdName $ getCardDef e) == name
     EnemyIs def -> pure $ sameCard def (getCardDef e)
     EnemyMatches xs -> allM (goMinion e) xs
@@ -7003,6 +7031,7 @@ gameSelectVillain m = do
       aid <- areaId <$> getYourArea
       getsGame \g -> activeVillainIn g aid == Just (toId v)
     AnyVillain -> pure . const True
+    VillainWithCardCode code -> pure . (== code) . toCardCode . getCardDef
     VillainWithId ident' -> pure . (== ident') . toId
     VillainWithDamage gameValueMatcher ->
       gameValueMatches gameValueMatcher . villainDamage
@@ -7957,11 +7986,13 @@ getAccelerationTokenCount = getsGame \g ->
   sum (map areaAccelerationTokens (gameAreas g))
     + sum [mainSchemeAccelerationTokens (toAttrs scheme) | scheme <- HashMap.elems (gameMainSchemes g)]
     + sum [sideSchemeAccelerationTokens (toAttrs scheme) | scheme <- HashMap.elems (gameSideSchemes g)]
+    + sum (map Minion.getMinionAccelerationTokens $ HashMap.elems $ gameMinions g)
 
 getAccelerationCountIn :: (HasGame m) => AreaId -> m Natural
 getAccelerationCountIn aid = getsGame \g ->
   sum [areaAccelerationTokens a | a <- gameAreas g, areaId a == aid] + accelerationIconsIn g aid
     + sum (map (mainSchemeAccelerationTokens . toAttrs) (inArea g aid MainSchemeRef (gameMainSchemes g)))
+    + sum (map Minion.getMinionAccelerationTokens (inArea g aid MinionRef (gameMinions g)))
 
 -- | The acceleration icons in the area, on its schemes, villains and obligations.
 accelerationIconsIn :: Game -> AreaId -> Natural

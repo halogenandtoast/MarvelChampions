@@ -54,6 +54,7 @@ instance Entity SideScheme where
     , sideSchemeInitialThreat :: GameValue
     , sideSchemeCrisis :: Bool
     , sideSchemeHeldCards :: [PlayerCard]
+    , sideSchemeHeldEncounterCards :: [EncounterCard]
     , sideSchemeRevealedBy :: Maybe IdentityId
     , sideSchemeDefeatedBy :: Maybe IdentityId
     -- ^ the player whose thwarting removed its last threat: "the player who defeated it"
@@ -73,6 +74,7 @@ instance Entity SideScheme where
     SideSchemeInitialThreat :: Field SideScheme GameValue
     SideSchemeCrisis :: Field SideScheme Bool
     SideSchemeHeldCards :: Field SideScheme [PlayerCard]
+    SideSchemeHeldEncounterCards :: Field SideScheme [EncounterCard]
     SideSchemeCounters :: Field SideScheme Natural
     SideSchemeAccelerationTokens :: Field SideScheme Natural
   field fld s =
@@ -84,6 +86,7 @@ instance Entity SideScheme where
           SideSchemeInitialThreat -> sideSchemeInitialThreat
           SideSchemeCrisis -> sideSchemeCrisis
           SideSchemeHeldCards -> sideSchemeHeldCards
+          SideSchemeHeldEncounterCards -> sideSchemeHeldEncounterCards
           SideSchemeCounters -> sideSchemeCounters
           SideSchemeAccelerationTokens -> sideSchemeAccelerationTokens
   toId = sideSchemeId . toAttrs
@@ -163,6 +166,7 @@ sideScheme f cardDef initialThreat =
             , sideSchemeThreat = 0
             , sideSchemeCrisis = False
             , sideSchemeHeldCards = []
+            , sideSchemeHeldEncounterCards = []
             , sideSchemeRevealedBy = Nothing
             , sideSchemeDefeatedBy = Nothing
             , sideSchemeCounters = 0
@@ -194,7 +198,7 @@ instance IsCard (Attrs SideScheme) where
 -- | A side scheme saved before it could hold counters has none.
 instance FromJSON (Attrs SideScheme) where
   parseJSON = withObject "SideSchemeAttrs" \o ->
-    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeRevealedBy", Null), ("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0), ("sideSchemePlayerCard", Null), ("sideSchemeExhausted", Bool False)])))
+    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeHeldEncounterCards", toJSON ([] :: [EncounterCard])), ("sideSchemeRevealedBy", Null), ("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0), ("sideSchemePlayerCard", Null), ("sideSchemeExhausted", Bool False)])))
 
 countersL :: Lens' (Attrs SideScheme) Natural
 countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
@@ -208,7 +212,11 @@ instance RunMessage (Attrs SideScheme) where
       when (sideSchemeThreat attrs > 0 && remaining == 0) $ defeatSideScheme (sideSchemeId attrs)
       pure $ attrs & threatL .~ remaining
     CardSpecific target "moveThreatIn" (fromJSON -> Success n) | target == toRef attrs -> pure $ attrs & threatL +~ n
-    RemovePlayerCardFromHeldZones cid -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs)}
+    CardSpecific target "holdEncounterCard" (fromJSON -> Success card) | target == toRef attrs ->
+      pure attrs {sideSchemeHeldEncounterCards = card : filter ((/= ecCardId card) . ecCardId) (sideSchemeHeldEncounterCards attrs)}
+    CardSpecific target "removeHeldEncounterCard" (fromJSON -> Success cid) | target == toRef attrs ->
+      pure attrs {sideSchemeHeldEncounterCards = filter ((/= cid) . ecCardId) (sideSchemeHeldEncounterCards attrs)}
+    RemovePlayerCardFromHeldZones cid -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs), sideSchemeHeldEncounterCards = filter ((/= cid) . ecCardId) (sideSchemeHeldEncounterCards attrs)}
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
       thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n

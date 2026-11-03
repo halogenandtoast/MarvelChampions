@@ -39,7 +39,8 @@ data ThreatSource
   deriving anyclass (ToJSON, FromJSON, Hashable)
 
 data WindowMatcher
-  = EncounterCardDealtTo IdentityMatcher
+  = TrapOptionChosen IdentityMatcher [Text]
+  | EncounterCardDealtTo IdentityMatcher
   | EncounterCardWouldBeDealt IdentityMatcher
   | CardWouldBeTuckedUnderIdentity IdentityMatcher
   | FacedownBoostCardGiven EnemyMatcher
@@ -285,7 +286,8 @@ data Window = Window
   deriving anyclass (ToJSON, FromJSON)
 
 data WindowType
-  = UsedCardAbility IdentityId Source Natural
+  = ChoseTrapOption IdentityId Text
+  | UsedCardAbility IdentityId Source Natural
   | AttachmentCounterAmountChanged AttachmentId Natural Natural
   | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
