@@ -531,6 +531,7 @@ library
       Marvel.Attachment.Attachments.WonderHerculesPack
       Marvel.Attachment.Attachments.WreckersCommand
       Marvel.Attachment.Cards
+      Marvel.Attachment.MinionEligibility
       Marvel.Attachment.Types
       Marvel.Attack
       Marvel.BlackPantherShuri.Cards
@@ -1141,6 +1142,7 @@ library
       Marvel.Exception
       Marvel.FalconWinter.Cards
       Marvel.FalconWinter.Helpers
+      Marvel.FearNoEvil.Cards
       Marvel.Frontend
       Marvel.Game
       Marvel.Game.Public
@@ -1670,6 +1672,7 @@ library
       Marvel.Scenario.NextEvolutionMarauders
       Marvel.Scenario.TricksterTakeover
       Marvel.Scenario.Types
+      Marvel.Shadowland.Cards
       Marvel.SideScheme
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes

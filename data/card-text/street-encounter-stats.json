@@ -1,0 +1,280 @@
+{
+  "65028": {
+    "scheme": 2,
+    "attack": 2,
+    "health": 5,
+    "boost": 0,
+    "boostStar": true,
+    "unique": true
+  },
+  "65029": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 3,
+    "boost": 0,
+    "boostStar": true,
+    "unique": true
+  },
+  "65030": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 2,
+    "boost": 2,
+    "boostStar": false
+  },
+  "65031": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 2,
+    "boost": 2,
+    "boostStar": false
+  },
+  "65032": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 2,
+    "boost": 1,
+    "boostStar": false
+  },
+  "65033": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 2,
+    "boost": 1,
+    "boostStar": false
+  },
+  "65034": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 2,
+    "boost": 1,
+    "boostStar": false
+  },
+  "65035": {
+    "baseThreat": 3,
+    "baseThreatFixed": true,
+    "boost": 0,
+    "boostStar": true
+  },
+  "60180": {
+    "baseThreat": 1,
+    "baseThreatFixed": true,
+    "boost": 2
+  },
+  "60182": {
+    "scheme": 0,
+    "attack": 2,
+    "health": 3,
+    "quantity": 2
+  },
+  "60183": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 4
+  },
+  "60185": {
+    "baseThreat": 3,
+    "baseThreatFixed": true
+  },
+  "65048": {
+    "baseThreat": 2
+  },
+  "65049": {
+    "baseThreat": 5,
+    "baseThreatFixed": true
+  },
+  "65050": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65051": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65052": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65053": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65054": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65055": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65056": {
+    "traits": [
+      "Trap!"
+    ]
+  },
+  "65075": {
+    "baseThreat": 1
+  },
+  "65076": {
+    "baseThreat": 1,
+    "baseThreatFixed": true,
+    "acceleration": 2
+  },
+  "60191": {
+    "quantity": 2,
+    "boost": 0
+  },
+  "60192": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 4,
+    "boost": 2,
+    "unique": true
+  },
+  "60193": {
+    "scheme": 3,
+    "attack": 2,
+    "health": 5,
+    "boost": 0,
+    "boostStar": true,
+    "unique": true
+  },
+  "60194": {
+    "boost": 3
+  },
+  "60195": {
+    "boost": 2
+  },
+  "60196": {
+    "boost": 2
+  },
+  "60197": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 5,
+    "boost": 2,
+    "unique": true
+  },
+  "60198": {
+    "scheme": 2,
+    "attack": 2,
+    "health": 8,
+    "boost": 0,
+    "boostStar": true,
+    "unique": true
+  },
+  "60199": {
+    "baseThreat": 3,
+    "boost": 3
+  },
+  "65005": {
+    "unique": true
+  },
+  "65006": {
+    "unique": true
+  },
+  "65020": {
+    "unique": true
+  },
+  "65021": {
+    "unique": true
+  },
+  "65022": {
+    "unique": true
+  },
+  "65023": {
+    "health": 5,
+    "scheme": 1,
+    "attack": 2,
+    "unique": true
+  },
+  "65041": {
+    "unique": true
+  },
+  "65047": {
+    "unique": true
+  },
+  "65073": {
+    "unique": true
+  },
+  "60072": {
+    "unique": true
+  },
+  "60081": {
+    "unique": true
+  },
+  "60091": {
+    "unique": true
+  },
+  "65007": {
+    "baseThreat": 4,
+    "baseThreatFixed": true
+  },
+  "65008": {
+    "baseThreat": 3,
+    "baseThreatFixed": false
+  },
+  "65009": {
+    "baseThreat": 2,
+    "baseThreatFixed": false
+  },
+  "65024": {
+    "baseThreat": 1,
+    "baseThreatFixed": true
+  },
+  "65025": {
+    "baseThreat": 2,
+    "baseThreatFixed": true
+  },
+  "65042": {
+    "baseThreat": 2,
+    "baseThreatFixed": false
+  },
+  "65043": {
+    "baseThreat": 3,
+    "baseThreatFixed": true
+  },
+  "65070": {
+    "baseThreat": 5,
+    "baseThreatFixed": false
+  },
+  "60200": {
+    "scheme": 0,
+    "attack": 2,
+    "health": 5,
+    "unique": true,
+    "boost": 2
+  },
+  "60201": {
+    "scheme": 0,
+    "attack": 1,
+    "health": 6,
+    "unique": true,
+    "boost": 2
+  },
+  "60202": {
+    "scheme": 3,
+    "attack": 0,
+    "health": 7,
+    "unique": true,
+    "boost": 3
+  },
+  "60203": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 3,
+    "quantity": 3,
+    "boost": 2
+  },
+  "60204": {
+    "baseThreat": 3,
+    "baseThreatFixed": false,
+    "boost": 2
+  }
+}

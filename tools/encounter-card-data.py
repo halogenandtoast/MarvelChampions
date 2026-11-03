@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TEXT = ROOT / 'data' / 'card-text'
+STREET_STATS = json.loads((TEXT / 'street-encounter-stats.json').read_text())
 RULEBOOKS = {
     'fne': 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf',
     'shadowland': 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/10/MC65-Rulebook.pdf',
@@ -51,6 +52,7 @@ def enrich_shadowland(cards):
                 card["textVerified"] = True
                 card["ocr"]["verified"] = False
                 card.update(reviewed.get(card["code"], {}))
+                card.update(STREET_STATS.get(card["code"], {}))
             return cards
         group, index, side = match.groups()
         number = SHADOW_NUMBERS[int(group)][int(index) - 1]
@@ -86,6 +88,7 @@ def enrich_shadowland(cards):
         if card['type'] == 'main_scheme':
             card['stage'] = ('1' if number in [1, 38, 60] else '2') + side.upper()
         card.update(reviewed.get(code, {}))
+        card.update(STREET_STATS.get(code, {}))
         grouped[code] = card
     for card in grouped.values():
         if card.get('linkedTo'):
@@ -139,6 +142,7 @@ def fne_cards(encode_images=False):
         add_stats(card, metadata.get(code, {}))
         # Reviewed printed values take precedence over incomplete secondary metadata.
         card.update(info)
+        card.update(STREET_STATS.get(code, {}))
         if code[-1] in 'ab':
             other = code[:-1] + ('b' if code[-1] == 'a' else 'a')
             if other in texts:

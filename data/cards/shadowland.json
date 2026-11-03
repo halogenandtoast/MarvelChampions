@@ -397,7 +397,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65006",
@@ -445,7 +446,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65007",
@@ -487,7 +489,9 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 4,
+      "baseThreatFixed": true
     },
     {
       "code": "65008",
@@ -529,7 +533,9 @@
       "acceleration": 1,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 3,
+      "baseThreatFixed": false
     },
     {
       "code": "65009",
@@ -571,7 +577,9 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 2,
+      "baseThreatFixed": false
     },
     {
       "code": "65010",
@@ -1358,7 +1366,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65021",
@@ -1406,7 +1415,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65022",
@@ -1453,7 +1463,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65023",
@@ -1491,7 +1502,11 @@
         "shadowland-6-012"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "health": 5,
+      "scheme": 1,
+      "attack": 2,
+      "unique": true
     },
     {
       "code": "65024",
@@ -1533,7 +1548,9 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 1,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 1,
+      "baseThreatFixed": true
     },
     {
       "code": "65025",
@@ -1575,7 +1592,9 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 2,
+      "baseThreatFixed": true
     },
     {
       "code": "65026",
@@ -1699,7 +1718,13 @@
         "shadowland-4-001"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 2,
+      "attack": 2,
+      "health": 5,
+      "boost": 0,
+      "boostStar": true,
+      "unique": true
     },
     {
       "code": "65029",
@@ -1738,7 +1763,13 @@
         "shadowland-4-002"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 2,
+      "health": 3,
+      "boost": 0,
+      "boostStar": true,
+      "unique": true
     },
     {
       "code": "65030",
@@ -1777,7 +1808,12 @@
         "shadowland-4-003"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 2,
+      "boost": 2,
+      "boostStar": false
     },
     {
       "code": "65031",
@@ -1816,7 +1852,12 @@
         "shadowland-4-004"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 2,
+      "boost": 2,
+      "boostStar": false
     },
     {
       "code": "65032",
@@ -1855,7 +1896,12 @@
         "shadowland-4-005"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 2,
+      "boost": 1,
+      "boostStar": false
     },
     {
       "code": "65033",
@@ -1894,7 +1940,12 @@
         "shadowland-4-006"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 2,
+      "boost": 1,
+      "boostStar": false
     },
     {
       "code": "65034",
@@ -1933,7 +1984,12 @@
         "shadowland-4-007"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 2,
+      "boost": 1,
+      "boostStar": false
     },
     {
       "code": "65035",
@@ -1969,7 +2025,11 @@
         "shadowland-4-008"
       ],
       "quantity": 1,
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 3,
+      "baseThreatFixed": true,
+      "boost": 0,
+      "boostStar": true
     },
     {
       "code": "65036",
@@ -2303,7 +2363,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65042",
@@ -2345,7 +2406,9 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 2,
+      "baseThreatFixed": false
     },
     {
       "code": "65043",
@@ -2387,7 +2450,9 @@
       "acceleration": 1,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 3,
+      "baseThreatFixed": true
     },
     {
       "code": "65044",
@@ -2565,7 +2630,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65048",
@@ -2607,7 +2673,8 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 2
     },
     {
       "code": "65049",
@@ -2649,7 +2716,9 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 5,
+      "baseThreatFixed": true
     },
     {
       "code": "65050",
@@ -2666,7 +2735,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-005.avif",
       "bundledImage": true,
       "sourceFile": "5_Blinding Powder_Treacehry.tif",
@@ -2702,7 +2773,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-006.avif",
       "bundledImage": true,
       "sourceFile": "6_Caltrops_Treachery.tif",
@@ -2738,7 +2811,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-007.avif",
       "bundledImage": true,
       "sourceFile": "7_Flame Spout_Treachery.tif",
@@ -2774,7 +2849,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-008.avif",
       "bundledImage": true,
       "sourceFile": "8_Oil Slick_Treachery.tif",
@@ -2810,7 +2887,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-009.avif",
       "bundledImage": true,
       "sourceFile": "9_Poisin Darts_Treachery.tif",
@@ -2846,7 +2925,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-010.avif",
       "bundledImage": true,
       "sourceFile": "10_Pressure Plate_Treachery.tif",
@@ -2882,7 +2963,9 @@
       "typeName": "Treachery",
       "faction": "encounter",
       "factionName": "Encounter",
-      "traits": [],
+      "traits": [
+        "Trap!"
+      ],
       "image": "shadowland-5-011.avif",
       "bundledImage": true,
       "sourceFile": "11_Tripwire_Treachery.tif",
@@ -3623,7 +3706,9 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 1,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 5,
+      "baseThreatFixed": false
     },
     {
       "code": "65071",
@@ -3801,7 +3886,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "code": "65074",
@@ -3891,7 +3977,8 @@
       "acceleration": 0,
       "crisis": 1,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 1
     },
     {
       "code": "65076",
@@ -3934,7 +4021,9 @@
       "acceleration": 2,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 1,
+      "baseThreatFixed": true
     },
     {
       "code": "65077",

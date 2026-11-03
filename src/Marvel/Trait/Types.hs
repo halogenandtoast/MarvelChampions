@@ -3,7 +3,25 @@ module Marvel.Trait.Types where
 import Marvel.Prelude
 
 data Trait
-  = Unregistered
+  = Art
+  | Completed
+  | DailyBugle
+  | Demon
+  | Disaster
+  | ECondition
+  | Failed
+  | TheHand
+  | HeroPosition
+  | Influenced
+  | Maggia
+  | Ninja
+  | Ny
+  | Overpowering
+  | Prisoner
+  | Tracksuit
+  | Underling
+  | VillainPosition
+  | Unregistered
   | Hunted
   | Rescued
   | Aim

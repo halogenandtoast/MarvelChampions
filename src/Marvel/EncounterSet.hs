@@ -5,7 +5,32 @@ import Marvel.Prelude
 import Marvel.Card.Code
 
 data EncounterSet
-  = CwAtlanteans
+  = FneBullseye
+  | FneElectro
+  | FneHammerhead
+  | FnePurpleMan
+  | FneTyphoidMary
+  | FneArtMuseumHeist
+  | FneTheGetaway
+  | FneProtectionRacket
+  | FneTheRaftBreakout
+  | FneStopThePresses
+  | FneKingpin
+  | FneDisasters
+  | FneCops
+  | FneDrive
+  | FneTheOwl
+  | FneTombstone
+  | FneTracksuitMafia
+  | FneFearNoEvilCampaign
+  | SlShadowsInTheNight
+  | SlDarkProtege
+  | SlNinjaSwarm
+  | SlShadowLabyrinth
+  | SlDeadlyContraptions
+  | SlHeartOfShadow
+  | SlBlackFlower
+  | CwAtlanteans
   | CwCapeKiller
   | CwCaptainAmerica
   | CwCaptainMarvel

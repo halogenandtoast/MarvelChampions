@@ -301,7 +301,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "name": "Deranged Bloodlust",
@@ -598,7 +599,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "name": "Charging Up",
@@ -928,7 +930,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "name": "Maggia Enforcers",
@@ -4223,7 +4226,10 @@
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_11.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 1,
+      "baseThreatFixed": true,
+      "boost": 2
     },
     {
       "name": "Bystanders in Peril",
@@ -4259,7 +4265,7 @@
       "traits": [
         "Police"
       ],
-      "quantity": 1,
+      "quantity": 2,
       "code": "60182",
       "packCode": "fne",
       "packName": "Fear No Evil",
@@ -4273,7 +4279,10 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_5.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 0,
+      "attack": 2,
+      "health": 3
     },
     {
       "name": "Crooked Cop",
@@ -4300,7 +4309,10 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_7.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 2,
+      "health": 4
     },
     {
       "name": "Wanted",
@@ -4348,7 +4360,9 @@
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_12.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 3,
+      "baseThreatFixed": true
     },
     {
       "name": "Sports Car",
@@ -4486,7 +4500,7 @@
       "traits": [
         "Superpower"
       ],
-      "quantity": 1,
+      "quantity": 2,
       "code": "60191",
       "packCode": "fne",
       "packName": "Fear No Evil",
@@ -4500,7 +4514,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_13.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 0
     },
     {
       "name": "Mister Fish",
@@ -4527,7 +4542,12 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_15.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 2,
+      "health": 4,
+      "boost": 2,
+      "unique": true
     },
     {
       "name": "The Owl",
@@ -4554,7 +4574,13 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_16.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 3,
+      "attack": 2,
+      "health": 5,
+      "boost": 0,
+      "boostStar": true,
+      "unique": true
     },
     {
       "name": "Swoop Down",
@@ -4578,7 +4604,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_17.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 3
     },
     {
       "name": "Cold as Ice",
@@ -4602,7 +4629,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_18.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 2
     },
     {
       "name": "Hard as Marble",
@@ -4626,7 +4654,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_19.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 2
     },
     {
       "name": "Beetle",
@@ -4653,7 +4682,12 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_20.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 5,
+      "boost": 2,
+      "unique": true
     },
     {
       "name": "Tombstone",
@@ -4679,7 +4713,13 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_21.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 2,
+      "attack": 2,
+      "health": 8,
+      "boost": 0,
+      "boostStar": true,
+      "unique": true
     },
     {
       "name": "Hit List",
@@ -4703,7 +4743,9 @@
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_14.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 3,
+      "boost": 3
     },
     {
       "name": "Ivan Banionis",
@@ -4730,7 +4772,12 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_22.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 0,
+      "attack": 2,
+      "health": 5,
+      "unique": true,
+      "boost": 2
     },
     {
       "name": "The Clown",
@@ -4757,7 +4804,12 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_23.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 0,
+      "attack": 1,
+      "health": 6,
+      "unique": true,
+      "boost": 2
     },
     {
       "name": "Tracksuit Mafioso",
@@ -4784,7 +4836,12 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_24.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 3,
+      "attack": 0,
+      "health": 7,
+      "unique": true,
+      "boost": 3
     },
     {
       "name": "Tracksuit Bro",
@@ -4797,7 +4854,7 @@
         "Criminal",
         "Tracksuit"
       ],
-      "quantity": 1,
+      "quantity": 3,
       "code": "60203",
       "packCode": "fne",
       "packName": "Fear No Evil",
@@ -4811,7 +4868,11 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_25.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 2,
+      "health": 3,
+      "boost": 2
     },
     {
       "name": "Tracksuit Mafia",
@@ -4835,7 +4896,10 @@
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_15.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 3,
+      "baseThreatFixed": false,
+      "boost": 2
     },
     {
       "name": "Art Museum Heist",
