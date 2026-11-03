@@ -2,10 +2,12 @@ module Marvel.Message.SideScheme where
 
 import Marvel.Prelude
 
+import Marvel.Id (IdentityId)
 import Marvel.Ref
 
 data SideSchemeMessage
-  = RevealSideScheme
+  = SideSchemeRevealedBy IdentityId
+  | RevealSideScheme
   | ExhaustedSideScheme
   | ReadiedSideScheme
   | DefeatSideScheme

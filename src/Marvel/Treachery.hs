@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.CivilWar.Atlanteans qualified as CwA
 import Marvel.CivilWar.LeaderTreacheries qualified as CW
 import Marvel.CivilWar.StandardTreacheries qualified as CWStandard
 import Marvel.CivilWar.MightyAvengers qualified as CwMA
@@ -89,7 +90,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
   Just (SomeTreacheryCard a) -> f a
 
 allTreacheries :: HashMap CardCode SomeTreacheryCard
-allTreacheries = fromList $ [(toCardCode card,SomeTreacheryCard card) | card <- CwHFH.bountyHunting] <> [(toCardCode CwCK.bringThemIn,SomeTreacheryCard CwCK.bringThemIn)] <> [(toCardCode CwML.rapidResponse,SomeTreacheryCard CwML.rapidResponse)] <> [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce),(toCardCode CwDR.justiceLikeLightning,SomeTreacheryCard CwDR.justiceLikeLightning)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
+allTreacheries = fromList $ [(toCardCode CwA.atlanteans,SomeTreacheryCard CwA.atlanteans)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwHFH.bountyHunting] <> [(toCardCode CwCK.bringThemIn,SomeTreacheryCard CwCK.bringThemIn)] <> [(toCardCode CwML.rapidResponse,SomeTreacheryCard CwML.rapidResponse)] <> [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce),(toCardCode CwDR.justiceLikeLightning,SomeTreacheryCard CwDR.justiceLikeLightning)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
   (toFst someTreacheryCardCode)
   [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
   , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe

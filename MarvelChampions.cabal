@@ -566,6 +566,7 @@ library
       Marvel.Card.WhenDefeated
       Marvel.Card.WhenRevealed
       Marvel.Choice
+      Marvel.CivilWar.Atlanteans
       Marvel.CivilWar.AttackTreacheries
       Marvel.CivilWar.CapeKiller
       Marvel.CivilWar.Cards
@@ -2881,6 +2882,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.NextEvolutionSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
+      Marvel.CivilWar.AtlanteansSpec
       Marvel.CivilWar.AttackTreacherySpec
       Marvel.CivilWar.CapeKillerSpec
       Marvel.CivilWar.DangerousRecruitsSpec

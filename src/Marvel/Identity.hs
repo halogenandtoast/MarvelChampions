@@ -1235,9 +1235,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck
         discarded <- discardPlayerDeckEncounters playerIdentityId cards
+        -- Shapeshifter encounter cards are discarded to the encounter pile by
+        -- the replacement helper, but still count as discarded by this effect.
+        let reported = [card | card <- cards, card `elem` discarded || cardMatch (CardWithTrait Shapeshifter) card]
         actor <- getYou
-        for_ discarded $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
-        for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discarded
+        for_ reported $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
+        for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> reported
         pure $
           PlayerIdentity $
             attrs

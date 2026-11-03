@@ -74,6 +74,7 @@ modularSets =
   , "cape_killer"
   , "heroes_for_hire"
   , "paladin"
+  , "atlanteans"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

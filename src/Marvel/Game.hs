@@ -4241,12 +4241,14 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
               & (entitiesL . obligationsL %~ insertMap (toId obligation) obligation)
     SideSchemeType | Just scheme <- lookup (SideSchemeId $ unCardId $ ecCardId card) (gameSideSchemes g) -> do
       -- An already-present card cannot cross into play a second time.
+      sideSchemeStep (toId scheme) (SideSchemeRevealedBy ident)
       revealing (toTarget scheme)
       whenRevealed $ sideSchemeStep (toId scheme) RevealSideScheme
       surges
       pure g
     SideSchemeType -> do
       let sideScheme = createSideScheme card
+      sideSchemeStep (toId sideScheme) (SideSchemeRevealedBy ident)
       revealing (toTarget sideScheme)
       sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
       checkWindows [W.Window W.After $ W.SideSchemeEnteredPlay (toId sideScheme)]

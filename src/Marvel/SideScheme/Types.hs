@@ -54,6 +54,7 @@ instance Entity SideScheme where
     , sideSchemeInitialThreat :: GameValue
     , sideSchemeCrisis :: Bool
     , sideSchemeHeldCards :: [PlayerCard]
+    , sideSchemeRevealedBy :: Maybe IdentityId
     , sideSchemeDefeatedBy :: Maybe IdentityId
     -- ^ the player whose thwarting removed its last threat: "the player who defeated it"
     , sideSchemeCounters :: Natural
@@ -162,6 +163,7 @@ sideScheme f cardDef initialThreat =
             , sideSchemeThreat = 0
             , sideSchemeCrisis = False
             , sideSchemeHeldCards = []
+            , sideSchemeRevealedBy = Nothing
             , sideSchemeDefeatedBy = Nothing
             , sideSchemeCounters = 0
             , sideSchemeAccelerationTokens = 0
@@ -192,7 +194,7 @@ instance IsCard (Attrs SideScheme) where
 -- | A side scheme saved before it could hold counters has none.
 instance FromJSON (Attrs SideScheme) where
   parseJSON = withObject "SideSchemeAttrs" \o ->
-    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0), ("sideSchemePlayerCard", Null), ("sideSchemeExhausted", Bool False)])))
+    genericParseJSON defaultOptions (Object (KeyMap.union o (KeyMap.fromList [("sideSchemeRevealedBy", Null), ("sideSchemeCounters", Number 0), ("sideSchemeAccelerationTokens", Number 0), ("sideSchemePlayerCard", Null), ("sideSchemeExhausted", Bool False)])))
 
 countersL :: Lens' (Attrs SideScheme) Natural
 countersL = lens sideSchemeCounters $ \m x -> m {sideSchemeCounters = x}
@@ -218,6 +220,7 @@ instance RunMessage (Attrs SideScheme) where
     SideSchemeMessage ident msg' | ident == sideSchemeId attrs -> do
       modifiers <- getModifiers attrs
       case msg' of
+        SideSchemeRevealedBy you -> pure attrs {sideSchemeRevealedBy = Just you}
         ExhaustedSideScheme -> pure attrs {sideSchemeExhausted = True}
         ReadiedSideScheme -> do
           canReady <- notElem CannotReady <$> getModifiers attrs
