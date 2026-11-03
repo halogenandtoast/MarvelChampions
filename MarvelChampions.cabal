@@ -1143,6 +1143,8 @@ library
       Marvel.FalconWinter.Cards
       Marvel.FalconWinter.Helpers
       Marvel.FearNoEvil.Cards
+      Marvel.FearNoEvil.Cops
+      Marvel.FearNoEvil.Disasters
       Marvel.Frontend
       Marvel.Game
       Marvel.Game.Public
