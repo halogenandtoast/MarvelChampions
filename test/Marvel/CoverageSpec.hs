@@ -72,6 +72,7 @@ modularSets =
   , "dangerous_recruits"
   , "martial_law"
   , "cape_killer"
+  , "heroes_for_hire"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

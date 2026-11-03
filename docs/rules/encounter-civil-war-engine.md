@@ -68,3 +68,15 @@ Bring Them In exhausts ready Unregistered identities on the revealing player's b
 Arrest Order deals only the topmost S.H.I.E.L.D. minion in the defeating player's encounter discard pile as a facedown encounter card. It does not reveal or put that minion into play.
 
 Validation: Cape-Killer is selectable with all four card faces implemented (five physical cards), including the previously implemented Unregistered Super. Fourteen new behavior examples cover Quickstrike, attack-only bonuses, direct ally attacks versus later defense, stun, full and partial exhaustion, searches from both piles, facedown deals, opponent choices, and board boundaries. The focused run passes 414 Civil War examples and 169 coverage examples. Randomized Rhino, Klaw, and Ultron checks with Cape-Killer pass with two seeds.
+
+## Heroes for Hire
+
+Colleen Wing discards an eligible ally controlled by the revealing player; Shang-Chi does the same for an upgrade. That player chooses while registered, and the enemy team chooses while the identity has Unregistered. Cards that cannot be discarded or cannot leave play through abilities are excluded. The existing opponent-choice helper supplies the first-player choice in cooperative play and the opposing first player in competitive play.
+
+Both printings of Bounty Hunting use the same handler. A registered identity chooses its hand discard; an Unregistered identity uses the engine's stored-generator random discard. Threat counts printed resource icons on the discarded card, including both icons on a double-resource card, without evaluating resource-generating abilities. Threat goes to the revealing player's main scheme through the normal threat-placement windows. An empty hand produces no discard question or threat.
+
+System Shock cannot be chosen for this discard, but may be discarded at random, even when it is the only card in hand. This follows the [FFG ruling of August 8, 2024](https://hallofheroeslcg.com/latest-ffg-rulings-post-rrg-1-6/). Regression tests exercise both paths and restore the saved game, queue, and generator to verify that a random discard repeats.
+
+The Heroes for Hire side scheme starts with three threat plus hinder 1 per player and its hazard icon. Its defeat effect gives the opposing team the Unregistered Super search for the defeating player, using only that player's team's encounter piles and dealing the selected card facedown.
+
+Validation: Heroes for Hire is selectable with all five card faces implemented. The same Bounty Hunting handler also implements its Paladin printing. Twenty-four new behavior examples cover both discard choosers, missing and protected targets, single and double resource icons, conditional resource generation, empty hands, chosen versus random System Shock discards, generator-preserving reload, hinder, hazard, and the defeat search. The focused run passes 438 Civil War examples and 170 coverage examples. Randomized Rhino, Klaw, and Ultron checks with Heroes for Hire pass with two seeds.
