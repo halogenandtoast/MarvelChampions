@@ -494,6 +494,7 @@ villainNarration vid = \case
   VillainAttacks ident -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> StunnedEnemy)) $ activation (VillainRef vid) ident "log.attacks" True
   VillainAttacksWithoutBoost ident -> villainNarration vid (VillainAttacks ident)
   VillainAttacksGaining ident _ -> villainNarration vid (VillainAttacks ident)
+  VillainAttacksWithBonus ident _ _ -> villainNarration vid (VillainAttacks ident)
   VillainBeginAttack ident -> Just $ villainAttackNarration vid ident
   VillainBeginAttackWithoutBoost ident -> Just $ villainAttackNarration vid ident
   VillainSchemes -> Just $ whenM' (selectAny (EnemyWithId (EnemyVillainId vid) <> ConfusedEnemy)) $ schemes (VillainRef vid) True

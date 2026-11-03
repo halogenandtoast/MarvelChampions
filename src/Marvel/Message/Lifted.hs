@@ -891,6 +891,15 @@ villainAttacksCharacterGaining vid you target keywords = do
     villainStep vid (VillainAttacksCharacterGaining you (toCharacter target) keywords)
     setActivePlayer previous
 
+-- | An explicit attack's ATK bonus and keywords belong only to that activation.
+villainAttacksCharacterWithBonus :: (ReverseQueue m, IsCharacter target) => VillainId -> IdentityId -> target -> Int -> [Keyword] -> m ()
+villainAttacksCharacterWithBonus vid you target bonus keywords = do
+  previous <- getActivePlayerId
+  enemyActivationAfterCurrent vid do
+    setActivePlayer you
+    villainStep vid (VillainAttacksCharacterWithBonus you (toCharacter target) bonus keywords)
+    setActivePlayer previous
+
 -- | The enemy's attack is defended by the character.
 enemyDefendedBy :: (ReverseQueue m, IsEnemy enemy) => enemy -> CharacterId -> m ()
 enemyDefendedBy enemy character = do

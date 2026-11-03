@@ -32,6 +32,7 @@ rewardEvents =
   [(rewardEvent "57032" "You're Out of Order!" 1 Nothing) {cdCriteria = NoCriteria,cdAbilityType = Just Interrupt,cdResponseWindow = Just $ W.ThreatWouldBePlaced W.AnyThreatSource EncounterMainScheme}
   ,rewardEvent "57033" "She-Hulk Smash" 2 (Just "57001")
   ,rewardEvent "57074" "Calculated Risk" 2 Nothing
+  ,rewardEvent "57075" "Synthezoid Strike" 2 (Just "57040")
   ,rewardEvent "56129" "The Futurist" 2 (Just "56059")
   ,rewardEvent "56130" "Target Lock" 2 (Just "56059")
   ,rewardEvent "56134" "You Started This" 2 (Just "56092")

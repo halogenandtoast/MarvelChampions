@@ -3,6 +3,7 @@ module Marvel.CivilWar.RewardEvents where
 import Marvel.Prelude
 import Marvel.Ability
 import Marvel.Card
+import Marvel.CivilWar.Cards qualified as Printed
 import Marvel.CivilWar.Helpers
 import Marvel.CivilWar.RewardCards qualified as C
 import Marvel.Entity
@@ -35,6 +36,11 @@ instance RunMessage LeaderRewardEvent where
         "57032" -> for_ window $ \case
           W.ThreatPlaced _ scheme n -> insteadOf (isThreatPlacement scheme) $ placeThreatWithoutWindow scheme (subtractNatural 3 n)
           _ -> pure ()
+        "57075" -> for_ [(attacker,defender) | Just attacker <- [friendly],Just defender <- [enemy]] $ \(attacker,defender) -> do
+          dense <- inAnyArea $ selectAny $ AttachmentOnEnemy (EnemyVillainId attacker) <> AttachmentIs Printed.cw57046a
+          unless dense $ flipLeaderMassForm (EnemyVillainId attacker)
+          resolvingPlayer <- enemyTeamChooser you
+          villainAttacksCharacterWithBonus attacker resolvingPlayer (VillainCharacter defender) (if dense then 1 else 0) [K.Piercing | dense]
         "57074" -> for_ friendly $ \vid -> do
           keys <- getDeckKeys
           let key = if VillainDeckKey vid `elem` keys then VillainDeckKey vid else EncounterDeckKey

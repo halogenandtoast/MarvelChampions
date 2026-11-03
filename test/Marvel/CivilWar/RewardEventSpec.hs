@@ -332,3 +332,66 @@ spec = describe "Civil War leader reward events" do
         remaining <- pileDeck <$> getPile (VillainDeckKey own)
         length remaining `shouldBe` (size - 1)
         remaining `shouldSatisfy` notElem selected
+
+  for_ [(C.cw57046a,True),(C.cw57046b,False)] $ \(formDef,dense) ->
+    for_ [False,True] $ \tough ->
+      it ("Synthezoid Strike uses the starting mass form for its bonuses: dense " <> show dense <> ", tough " <> show tough) do
+        tg <- competitive ["spider-man","captain-marvel"]
+        inGame tg do
+          let you = player1 tg
+          (own,enemy) <- leaders tg "57040" "56059"
+          form <- encounterCard formDef
+          resolve [RevealEncounterCard (player2 tg) form]
+          when tough $ resolve [GiveStatus (VillainRef enemy) ToughStatus]
+          ownBoost <- encounterCard C.cw57036
+          filler <- encounterCard C.cw57036
+          resolve [CreateDeck (VillainDeckKey own) [ownBoost,filler]]
+          before <- leaderHp enemy
+          card <- putInHand you "57075"
+          payment <- putInHand you "01088"
+          playWith card [payment]
+          pass
+          leaderHp enemy `shouldReturn` (before - if tough && not dense then 0 else if dense then 3 else 2)
+          getCharacterStatusCount (VillainCharacter enemy) ToughStatus `shouldReturn` 0
+          getsGame (fmap (toCardCode . getCardDef) . lookup (attachmentIdOf form) . gameAttachments) `shouldReturn` Just "57046a"
+          getAttachedCharacter (attachmentIdOf form) `shouldReturn` Just (VillainCharacter own)
+
+  it "Synthezoid Strike's bonus and piercing do not remain for Vision's next attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "57040" "56059"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form]
+      boosts <- traverse encounterCard $ replicate 4 C.cw57036
+      resolve [CreateDeck (VillainDeckKey own) boosts]
+      card <- putInHand you "57075"
+      payment <- putInHand you "01088"
+      playWith card [payment]
+      pass
+      before <- leaderHp enemy
+      resolve [GiveStatus (VillainRef enemy) ToughStatus]
+      L.runQueueT (L.capture $ L.villainAttacksCharacter own (player2 tg) (VillainCharacter enemy)) >>= resolve
+      leaderHp enemy `shouldReturn` before
+      getCharacterStatusCount (VillainCharacter enemy) ToughStatus `shouldReturn` 0
+      L.runQueueT (L.capture $ L.villainAttacksCharacter own (player2 tg) (VillainCharacter enemy)) >>= resolve
+      leaderHp enemy `shouldReturn` (before - 2)
+
+  it "Synthezoid Strike does not leave its bonus behind when stun replaces its attack" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "57040" "56059"
+      form <- encounterCard C.cw57046a
+      resolve [RevealEncounterCard (player2 tg) form,GiveStatus (VillainRef own) StunnedStatus]
+      boosts <- traverse encounterCard $ replicate 3 C.cw57036
+      resolve [CreateDeck (VillainDeckKey own) boosts]
+      before <- leaderHp enemy
+      card <- putInHand you "57075"
+      payment <- putInHand you "01088"
+      playWith card [payment]
+      pass
+      leaderHp enemy `shouldReturn` before
+      getCharacterStatusCount (VillainCharacter own) StunnedStatus `shouldReturn` 0
+      L.runQueueT (L.capture $ L.villainAttacksCharacter own (player2 tg) (VillainCharacter enemy)) >>= resolve
+      leaderHp enemy `shouldReturn` (before - 2)

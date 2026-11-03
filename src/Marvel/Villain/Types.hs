@@ -99,10 +99,12 @@ instance RunMessage Villain where
       VillainAttacks you -> Just (Just you)
       VillainAttacksWithoutBoost you -> Just (Just you)
       VillainAttacksGaining you _ -> Just (Just you)
+      VillainAttacksWithBonus you _ _ -> Just (Just you)
       VillainAttacksWithAdditionalBoostCards you _ -> Just (Just you)
       VillainAttacksAlly you _ -> Just (Just you)
       VillainAttacksCharacter you _ -> Just (Just you)
       VillainAttacksCharacterGaining you _ _ -> Just (Just you)
+      VillainAttacksCharacterWithBonus you _ _ _ -> Just (Just you)
       VillainSchemesAgainst you -> Just (Just you)
       VillainSchemes -> Just Nothing
       _ -> Nothing
@@ -479,6 +481,9 @@ runVillainMessage msg attrs = case msg of
     checkWindows [W.Window W.After $ W.EnemyActivation (toEnemyId attrs) player]
     pure attrs {villainActivationPlayer = Just player}
   -- "attacks an ally": the player who controls it is attacked
+  VillainAttacksCharacterWithBonus ident character bonus keywords -> do
+    resolveVillainActivationAfterWould vid (VillainAttacksWithBonus ident bonus keywords)
+    pure attrs {villainAttackTarget = Just character}
   VillainAttacksCharacterGaining ident character keywords -> do
     resolveVillainActivationAfterWould vid (VillainAttacksGaining ident keywords)
     pure attrs {villainAttackTarget = Just character}
@@ -496,6 +501,9 @@ runVillainMessage msg attrs = case msg of
   VillainAttacks ident -> attacks (VillainBeginAttack ident) ident []
   VillainAttacksWithoutBoost ident -> attacks (VillainBeginAttackWithoutBoost ident) ident []
   VillainAttacksGaining ident keywords -> attacks (VillainBeginAttack ident) ident keywords
+  VillainAttacksWithBonus ident bonus keywords -> do
+    updated <- attacks (VillainBeginAttack ident) ident keywords
+    pure $ updated & attackingL . _Just %~ \attack -> attack {attackChange = attackChange attack + bonus}
   VillainBeginAttack ident -> beginAttack True ident
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing

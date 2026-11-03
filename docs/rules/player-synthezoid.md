@@ -20,4 +20,13 @@ Android Assistance also generates two wild resources in either form. Its optiona
 
 Validation: twelve new resource behavior cases pass with Civil War, coverage, Cyclops, Cyclops mechanics and actual-resource checks (1,216 examples, zero failures). These cover optional responses, identity-form limits, both mass forms, ability payments, payments without a friendly leader, and Android Assistance resolving before Legal Counsel regardless of spend order. The English label JSON parses successfully.
 
-Make Me Angry, Synthezoid Strike and Phased Out remain unfinished, as does native scenario/UI integration.
+Make Me Angry and Phased Out remain unfinished, as does native scenario/UI integration.
+
+
+## Synthezoid Strike
+
+The starting mass form determines the event's branch. Dense grants +1 ATK and piercing for this attack. Intangible is flipped to Dense before the attack, so Vision uses Dense's normal ATK modifier but does not also receive the event's Dense-branch bonus or piercing.
+
+An explicit character attack can now carry its own signed ATK adjustment and granted keywords through the ordinary villain attack pipeline. The adjustment is part of that attack's state from its declaration, survives rebuilding the attack at its beginning, and is cleared with the attack. A stun replacement creates no attack to hold the adjustment, so it cannot leak into a later activation. No lasting modifier is placed on Vision.
+
+Validation: six new Synthezoid Strike behavior cases pass with the full Civil War and coverage checks (1,154 examples, zero failures). They cover both starting forms, both tough states, cleared bonuses and piercing on subsequent attacks, and a stun-replaced attack.
