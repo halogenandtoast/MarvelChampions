@@ -1145,6 +1145,8 @@ library
       Marvel.FearNoEvil.Cards
       Marvel.FearNoEvil.Cops
       Marvel.FearNoEvil.Disasters
+      Marvel.FearNoEvil.OwlTombstone
+      Marvel.FearNoEvil.TracksuitMafia
       Marvel.Frontend
       Marvel.Game
       Marvel.Game.Public
