@@ -4,6 +4,24 @@ import TestImport
 
 spec :: Spec
 spec = describe "defending" do
+  it "resolves a teammate defender's retaliate once under that defender's window limit" do
+    tg <- testGame ["spider-man","black-panther"]
+    inGame tg do
+      let attacked = player1 tg
+          defender = player2 tg
+      runNow [IdentityMessage attacked (ChangedToForm A),IdentityMessage defender (ChangedToForm A)]
+      vid <- villainIdNow
+      before <- villainDamageNow
+      runNow [VillainMessage vid $ VillainAttacksWithoutBoost attacked]
+      pass' attacked
+      choose "ask Black Panther to defend" (isTargetChoice defender)
+      choose "Black Panther defends for Spider-Man" (isTargetChoice defender)
+      pass
+      damageOf attacked `shouldReturn` 0
+      damageOf defender `shouldReturn` 0
+      villainDamageNow `shouldReturn` (before + 1)
+      getEnemyAttack (EnemyVillainId vid) `shouldReturn` Nothing
+
   it "another player's hero may defend, taking the attack" do
     tg <- testGame ["spider-man", "captain-marvel"]
     let p = player1 tg

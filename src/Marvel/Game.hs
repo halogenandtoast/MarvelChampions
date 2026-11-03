@@ -3956,7 +3956,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             : map respond as
               <> [pure $ TargetLabel (toRef c) [PlayCard c mwindow, again] | (c, mwindow) <- cs]
       ([keyword],_,_) | engineAttackResponse keyword -> do
-        resolve $ UseAbility (keyword & choicesL <>~ [again])
+        resolveAs ident $ UseAbility (keyword & choicesL <>~ [again])
       (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
     let updated window = fromMaybe window $ headMay [new | (old,new) <- zip originalWindows windows,old == window]
     pure g {gameWindows = case gameWindows of [] -> []; current : older -> map updated current : older}
