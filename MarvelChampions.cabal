@@ -600,6 +600,7 @@ library
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
       Marvel.CivilWar.SwitchingSides
+      Marvel.CivilWar.Taskmaster
       Marvel.CivilWar.Thunderbolts
       Marvel.CivilWar.Types
       Marvel.CivilWar.Unregistered
@@ -2932,6 +2933,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.SwitchingSidesSpec
+      Marvel.CivilWar.TaskmasterSpec
       Marvel.CivilWar.TeamSpec
       Marvel.CivilWar.ThunderboltsSpec
       Marvel.CivilWar.VisionTreacherySpec

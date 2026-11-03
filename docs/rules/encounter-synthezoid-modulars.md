@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers and Thunderbolts are verified. The remaining five modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts and Taskmaster are verified. The remaining four modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Five other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Four other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
 
 ## Thunderbolts
 
@@ -31,3 +31,11 @@ Penance deals two damage to the friendly leader. Without a friendly leader, the 
 Justice Like Lightning reuses the identical Civil War printing's handler. The Thunderbolts starts with three threat plus hinder one per player, contributes a hazard icon, and blocks threat removal while a Thunderbolt minion is present on its own board. Opposing-board minions do not protect it.
 
 Validation: the Thunderbolts, Defenders, S.H.I.E.L.D. Ops, Young Avengers and coverage checks pass together (256 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures).
+
+## Taskmaster
+
+Taskmaster enters with Toughness, Retaliate 1 and Villainous, then activates against the revealing player. His Sword grants one ATK and piercing. His Shield grants one SCH and reduces damage taken by one per instance, using the same damage reduction mechanism as Thanos's Armor. Both attach to an eligible Taskmaster before falling back to the local enemy leader. Their Hero Actions cost mental and physical resources and do not exhaust the hero.
+
+Mimicked Move makes Taskmaster attack the friendly leader with his villainous boost. If that attack cannot be initiated because Taskmaster or a friendly leader is absent, the local enemy leader instead receives tough and a facedown boost card. Its boost grants the activating enemy another boost card. Taskmaster's Academy has hinder one per player and an amplify icon; its defeat gives its own board's leader tough and a facedown boost card, including when an opponent removes the last threat.
+
+Validation: fifteen Taskmaster behavior/inventory examples pass alongside Namor and coverage (217 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures).

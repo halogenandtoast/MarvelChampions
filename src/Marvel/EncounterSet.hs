@@ -310,7 +310,8 @@ data EncounterSet
 -- with in place of the one it recommends.
 modularSets :: [EncounterSet]
 modularSets =
-  [ CwThunderboltsModular
+  [ CwTaskmasterModular
+  , CwThunderboltsModular
   , CwYoungAvengers
   , CwShieldOps
   , KreeFanatic

@@ -26,7 +26,7 @@ allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
   fromList [(toCardCode def, def) | def <- HashMap.elems Allies.allAllies, isJust (cdEncounterSet def)] <>
   allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions <> allObligations <> Environments.allEnvironments <> allEncounterSupports
-    <> fromList [(toCardCode def,def) | def <- CW.civilWarDefinitions,("56" `Text.isPrefixOf` unCardCode (toCardCode def) || cdEncounterSet def `elem` [Just CwShieldOps,Just CwYoungAvengers,Just CwThunderboltsModular]),cdCardType def `notElem` [VillainType,MainSchemeType]]
+    <> fromList [(toCardCode def,def) | def <- CW.civilWarDefinitions,("56" `Text.isPrefixOf` unCardCode (toCardCode def) || cdEncounterSet def `elem` [Just CwShieldOps,Just CwYoungAvengers,Just CwThunderboltsModular,Just CwTaskmasterModular]),cdCardType def `notElem` [VillainType,MainSchemeType]]
 
 gatherEncounterSets ::
   (MonadRandom m) => HashSet EncounterSet -> m [EncounterCard]
