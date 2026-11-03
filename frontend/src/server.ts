@@ -505,6 +505,7 @@ export interface CampaignLog {
   apocalypse: ApocalypseLog
   shield: ShieldLog
   nextEvolution: NextEvolutionLog
+  shadowland: { removedProteges: string[]; overpoweringHistory: [string, number][]; preparedCards: [string, string[]][] }
 }
 
 export type MutantRole = 'Brawler' | 'Commander' | 'Defender' | 'Peacekeeper'
@@ -592,7 +593,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign' | 'AgentsOfShieldCampaign'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign' | 'AgentsOfShieldCampaign' | 'ShadowlandCampaign'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

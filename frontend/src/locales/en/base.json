@@ -317,7 +317,11 @@
     "shieldBetrayed": "Compromised board members",
     "shieldCaptives": "Rescued captives",
     "shieldAdaptoids": "Adaptoid upgrades",
-    "shieldThunderbolts": "Surviving Thunderbolts"
+    "shieldThunderbolts": "Surviving Thunderbolts",
+    "ShadowlandCampaign": "Shadowland",
+    "shadowlandProteges": "Villains removed from the campaign",
+    "shadowlandPrepared": "Recorded supports and upgrades",
+    "shadowlandCorruption": "Previous scenarios with overpowering corruption"
   },
   "settings": {
     "title": "Settings",

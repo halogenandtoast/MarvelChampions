@@ -85,6 +85,7 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const shadowland = computed(() => view.value?.campaign.kind === 'ShadowlandCampaign')
 const shield = computed(() => view.value?.campaign.kind === 'AgentsOfShieldCampaign')
 const apocalypse = computed(() => view.value?.campaign.kind === 'AgeOfApocalypseCampaign')
 const nextEvolution = computed(() => view.value?.campaign.kind === 'NextEvolution')
@@ -227,6 +228,14 @@ const remove = async () => {
               <dt>{{ $t('campaign.hitPoints') }}</dt>
               <dd>{{ p.hitPoints ?? $t('campaign.none') }}</dd>
             </dl>
+            <dl v-else-if="shadowland">
+              <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
+              <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
+              <dt>{{ $t('campaign.shadowlandPrepared') }}</dt>
+              <dd>{{ names(log.shadowland.preparedCards.find(([hero]) => hero === p.identity)?.[1] ?? []) }}</dd>
+              <dt>{{ $t('campaign.shadowlandCorruption') }}</dt>
+              <dd>{{ log.shadowland.overpoweringHistory.find(([hero]) => hero === p.identity)?.[1] ?? 0 }}</dd>
+            </dl>
             <dl v-else-if="!titan">
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="view.campaign.mode === 'ExpertCampaign'">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
@@ -266,6 +275,10 @@ const remove = async () => {
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
           <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+        </dl>
+        <dl v-else-if="shadowland" class="scenario-log">
+          <dt>{{ $t('campaign.shadowlandProteges') }}</dt>
+          <dd>{{ names(log.shadowland.removedProteges) }}</dd>
         </dl>
         <dl v-else-if="shield && log.shield" class="scenario-log">
           <dt>{{ $t('campaign.shieldEvidence') }}</dt><dd>{{ names(log.shield.earnedEvidence) }}</dd>

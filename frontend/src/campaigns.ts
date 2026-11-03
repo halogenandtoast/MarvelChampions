@@ -8,5 +8,6 @@ export const campaignArt: Record<CampaignKind, string> = {
   SinisterMotives: '/images/products/sinister-motives.webp',
   AgeOfApocalypseCampaign: '/images/products/age-of-apocalypse.webp',
   AgentsOfShieldCampaign: '/images/products/agents-of-shield.webp',
+  ShadowlandCampaign: '/images/cards/shadowland-3-001.avif',
   NextEvolution: '/images/products/next-evolution.webp',
 }

@@ -92,7 +92,8 @@
     "named": {
       "mojoShow": "Show deck",
       "experimentalWeapons": "Experimental Weapons",
-      "kangsDominion": "Under Kang's Wrath (4A)"
+      "kangsDominion": "Under Kang's Wrath (4A)",
+      "shadowlandTraps": "Trap deck"
     },
     "identityBoostCards": "Boost cards",
     "futurePastDeck": "Future Past deck",
@@ -100,7 +101,8 @@
     "sense": "Sense deck",
     "tuckedPlayerCards": "Tucked events",
     "labor": "Labor deck",
-    "gift": "Gift deck"
+    "gift": "Gift deck",
+    "trapDiscard": "Trap discard pile"
   },
   "activeVillain": "Active",
   "areas": {

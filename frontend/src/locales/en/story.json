@@ -1063,5 +1063,8 @@
       "setup": "En Sabah Nur: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
       "victory": "Complete Protect the Professor to win the campaign. Winning this scenario without completing that mission loses the campaign."
     }
+  },
+  "shadowland": {
+    "setup": "Infiltrate Shadowland and stop the Hand. Keep your identity throughout the campaign. Creeping Corruption follows your progress: record whether it became Overpowering after each victory. You may record a support or upgrade costing 2 or less after each of the first two victories, and start later scenarios with recorded cards in play by accepting additional corruption."
   }
 }

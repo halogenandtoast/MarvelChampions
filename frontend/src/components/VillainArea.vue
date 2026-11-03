@@ -52,6 +52,7 @@ const deckLabel = (deck: DeckView) => {
   return te(key) ? t(key) : (deck.name ?? '')
 }
 const discardLabel = (deck: DeckView) => {
+  if (deck.name === 'shadowlandTraps') return t('game.piles.trapDiscard')
   if (deck.kind === 'villain') return t('game.piles.villainDiscard', { name: deck.name ?? '' })
   if (deck.kind === 'infinityStones') return t('game.piles.infinityStoneDiscard')
   return t('game.piles.sideSchemeDiscard')

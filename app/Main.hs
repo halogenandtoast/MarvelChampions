@@ -444,7 +444,7 @@ broadcast gid row g entries = do
 
 villainOf :: ScenarioSetup -> (Text, CardCode)
 -- a scenario of several villains (Breakout) is set up by, and named for, its main scheme
-villainOf setup = (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes), setup.scenarioCode)
+villainOf setup = (fromMaybe (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes)) (lookup setup.scenarioCode [("65001a","Shadows in the Night"),("65038a","Shadow Labyrinth"),("65060a","Heart of Shadow")]), setup.scenarioCode)
 
 summaries :: MonadIO m => [Entity MarvelGame] -> ReaderT SqlBackend m [GameSummary]
 summaries games = do
