@@ -1677,6 +1677,8 @@ library
       Marvel.Scenario.TricksterTakeover
       Marvel.Scenario.Types
       Marvel.Shadowland.Cards
+      Marvel.Shadowland.NinjaSwarm
+      Marvel.Shadowland.Traps
       Marvel.SideScheme
       Marvel.SideScheme.Cards
       Marvel.SideScheme.SideSchemes
