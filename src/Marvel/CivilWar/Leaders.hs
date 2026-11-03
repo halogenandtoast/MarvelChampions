@@ -44,8 +44,7 @@ instance HasModifiersFor CivilWarLeader where
   getModifiersFor _ target (CivilWarLeader a)
     | isTarget a target, leaderFamily a == E.CwIronMan = do
         tech <- selectList $ AttachmentOnEnemy (toEnemyId a) <> AttachmentWithTrait T.Tech
-        suits <- filterM (fmap (== Just (toEnemyId a)) . getUpgradeAttachedEnemy) =<< selectList (UpgradeNamed "High-Tech Suit")
-        pure [SchemeModifier $ min 3 $ fromIntegral (length tech + length suits)]
+        pure [SchemeModifier $ min 3 $ fromIntegral (length tech)]
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities CivilWarLeader where

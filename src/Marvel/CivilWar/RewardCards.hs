@@ -47,7 +47,9 @@ rewardResources = [resource "56132" "Suit Up",resource "56136" "Raw Power",resou
 
 rewardUpgrades :: [CardDef]
 rewardUpgrades =
-  [(rewardEvent "56135" "Alpha Flight Recruit" 0 Nothing)
+  [(rewardEvent "56131" "High-Tech Suit" 1 (Just "56059"))
+    {cdCardType = UpgradeType,cdAbilityType = Nothing}
+  ,(rewardEvent "56135" "Alpha Flight Recruit" 0 Nothing)
     {cdCardType = UpgradeType,cdAbilityType = Nothing,cdCriteria = AllyExists AnyAlly,cdTraits = fromList [T.Title]}
   ,(rewardEvent "56213" "Hard to Hit" 1 (Just "56168"))
     {cdCardType = UpgradeType,cdAbilityType = Nothing,cdTraits = fromList [T.Skill]}]

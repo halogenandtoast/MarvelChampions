@@ -629,7 +629,7 @@ gameView seesHand g = do
         schemes = [scheme | scheme <- HashMap.elems (gameMainSchemes g), here (MainSchemeRef $ toId scheme)]
         enemy = activeVillainIn g aid
         attachments = [attachment | attachment <- HashMap.elems (gameAttachments g), isJust enemy, (toAttrs attachment).attachmentEnemy == (EnemyVillainId <$> enemy)]
-        highTechSuits = [u | u <- HashMap.elems (gameUpgrades g), isJust enemy, toCardCode (getCardDef u) == "56131", (toAttrs u).upgradeAttachedEnemy == (EnemyVillainId <$> enemy)]
+        highTechSuits = [u | u <- HashMap.elems (gameUpgrades g), isJust enemy, toCardCode (getCardDef u) == "56131", not (runIdentity $ runReaderT (isBlanked u) g), (toAttrs u).upgradeAttachedEnemy == (EnemyVillainId <$> enemy)]
         rosterMember pid = do
           p <- HashMap.lookup pid (gamePlayers g) <|> HashMap.lookup pid (entitiesPlayers $ gameRemovedEntities g)
           pure $ TeamMemberView pid (toAttrs p).playerIdentityName (toCardCode p) (not $ HashMap.member pid $ gamePlayers g)

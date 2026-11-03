@@ -289,3 +289,16 @@ The Attach To rule (Rules Reference v1.8, page 8) applies to putting these upgra
 Validation: seventeen new behavior examples cover these cards, counter timing and source, optional decline, host cleanup, save/reload of the response, cross-board attacks, a replaced attack, wrong-side leaders, and legal/illegal put-into-play entries. The Civil War/coverage gate passes 898 examples. Thirteen of the sixteen Civil War leader reward dependencies are implemented; High-Tech Suit, Provoked Response and No, You Move! remain, along with scenario construction and the multiplayer creation flow.
 
 The final full unit suite passes 8,660 examples. Randomized Rhino, Klaw and Ultron checks with Secret Avengers pass with two seeds each (three smoke examples).
+
+
+## High-Tech Suit
+
+High-Tech Suit is a native leader reward upgrade. Its mandatory target is the controller's friendly Iron Man leader, including the leader on the opposing board. A put-into-play effect without a legal host leaves the physical card in its previous zone.
+
+The active text makes it a Tech attachment in play. Attachment selectors expose an alias for the existing upgrade rather than creating another stored entity. Iron Man's scheme bonus counts it once, respects the printed maximum of three, and Supersonic Punch recognizes its Tech classification. Blanking removes the classification, trait grant and printed Hero Action. Its original player-card definition has neither a printed Tech trait nor an attachment card type, so those classifications do not follow it into a deck, hand or discard pile.
+
+Either player can trigger its Hero Action in hero form by spending energy and mental resources. Existing attachment-removal effects, including Electromagnetic Blast, can also discard it. Both routes preserve its original physical ID and send it to its owner's discard pile. Attachment aliases also resolve their host, display name, modifiers, hand-return and remove-from-game operations through that same upgrade. Saved games retain one entity and the original owner.
+
+Rules checked: Rules Reference v1.8, Text Box (page 44), Traits (page 45), and Ownership and Control (page 31), together with the Civil War leader rules and FAQ. A search of recent published rulings found no card-specific High-Tech Suit exception.
+
+Validation: fourteen new behavior examples cover normal play and free entry, mandatory host legality, Tech classification and bonus cap, blanking, both players' resource payments, alter-ego restrictions, real Electromagnetic Blast removal, Supersonic Punch's Tech condition, physical ownership, save/reload, hand return and removal from the game. The Civil War/coverage gate passes 912 examples, the full unit suite passes 8,674 examples, and randomized Rhino, Klaw and Ultron games with Secret Avengers pass with two seeds. The compiled player-card registry now contains fourteen of the sixteen required Civil War leader rewards. Provoked Response and No, You Move! remain, followed by scenario construction and the dedicated multiplayer creation flow.

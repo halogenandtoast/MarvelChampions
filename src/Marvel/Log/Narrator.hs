@@ -723,7 +723,11 @@ refFor = \case
   SideSchemeRef x -> byId RefSideScheme x gameSideSchemes ((.sideSchemeCardDef) . toAttrs)
   MainSchemeRef x -> byId RefMainScheme x gameMainSchemes getCardDef
   TreacheryRef x -> byId RefTreachery x gameTreacheries getCardDef
-  AttachmentRef x -> byId RefAttachment x gameAttachments getCardDef
+  AttachmentRef x -> do
+    alias <- getsGame (`attachmentUpgrade` x)
+    case alias of
+      Just upgrade -> refFor (UpgradeRef $ toId upgrade)
+      Nothing -> byId RefAttachment x gameAttachments getCardDef
   EnvironmentRef x -> byId RefEnvironment x gameEnvironments getCardDef
   ObligationRef x -> byId RefObligation x gameObligations getCardDef
   EnemyRef (EnemyVillainId x) -> refFor (VillainRef x)

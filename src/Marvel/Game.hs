@@ -776,6 +776,7 @@ areaOfTarget g = \case
 
   -- an obligation is in its player's play area, an attachment where what it is on is
   ObligationRef o -> player =<< Obligation.obligationOwner . toAttrs =<< lookup o (gameObligations g)
+  AttachmentRef a | Just u <- attachmentUpgrade g a -> areaOfTarget g (UpgradeRef $ toId u)
   AttachmentRef a -> lookup a (gameAttachments g) >>= \x ->
     let at = toAttrs x
      in headMay $
@@ -1306,6 +1307,20 @@ discardFromPlay g c
     PlayerCard pc -> Left pc
     EncounterCard ec -> Right ec
 
+-- | An attachment alias names the same physical upgrade; never a second entity.
+attachmentUpgrade :: Game -> AttachmentId -> Maybe Upgrade
+attachmentUpgrade g aid@(AttachmentId uuid)
+  | HashMap.member aid (gameAttachments g) = Nothing
+  | otherwise = do
+      u <- lookup (UpgradeId uuid) (gameUpgrades g)
+      _ <- Upgrade.getUpgradeAttachmentTraits u
+      pure u
+
+canonicalAttachmentTarget :: Game -> Target -> Target
+canonicalAttachmentTarget g target = case target of
+  AttachmentRef aid | Just u <- attachmentUpgrade g aid -> UpgradeRef (toId u)
+  _ -> target
+
 -- | The card a game element in play was made from, by its ref.
 cardInPlay :: Game -> Target -> Maybe Card
 cardInPlay g = \case
@@ -1316,7 +1331,7 @@ cardInPlay g = \case
   UpgradeRef k -> toCard <$> lookup k (gameUpgrades g)
   TreacheryRef k -> toCard <$> lookup k (gameTreacheries g)
   MinionRef k -> toCard <$> lookup k (gameMinions g)
-  AttachmentRef k -> toCard <$> lookup k (gameAttachments g)
+  AttachmentRef k -> (toCard <$> lookup k (gameAttachments g)) <|> (toCard <$> attachmentUpgrade g k)
   SideSchemeRef k -> toCard <$> lookup k (gameSideSchemes g)
   EnvironmentRef k -> toCard <$> lookup k (gameEnvironments g)
   ObligationRef k -> toCard <$> lookup k (gameObligations g)
@@ -4942,6 +4957,12 @@ rememberCompetitiveEffects before after = case gameCompetition after of
 
 dispatchGameMessageCoreBody :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 dispatchGameMessageCoreBody message g = case message of
+  RemoveFromPlay target | canonicalAttachmentTarget g target /= target ->
+    dispatchGameMessageCoreBodyUnchecked (RemoveFromPlay $ canonicalAttachmentTarget g target) g
+  RemoveFromGame target | canonicalAttachmentTarget g target /= target ->
+    dispatchGameMessageCoreBodyUnchecked (RemoveFromGame $ canonicalAttachmentTarget g target) g
+  ReturnToHand target | canonicalAttachmentTarget g target /= target ->
+    dispatchGameMessageCoreBodyUnchecked (ReturnToHand $ canonicalAttachmentTarget g target) g
   PutCardIntoPlay you card _ _ _ -> do
     allowed <- playerCardEntryAllowed (card {pcController = Just you})
     if allowed then dispatchGameMessageCoreBodyUnchecked message g else pure g
@@ -5702,7 +5723,8 @@ abilityCardDef g = \case
   EnvironmentRef eid -> getCardDef <$> (lookup eid (gameEnvironments g) <|> lookup eid (g ^. removedEntitiesL . environmentsL))
   SideSchemeRef sid -> getCardDef <$> (lookup sid (gameSideSchemes g) <|> lookup sid (g ^. removedEntitiesL . sideSchemesL))
   MainSchemeRef sid -> getCardDef <$> (lookup sid (gameMainSchemes g) <|> lookup sid (g ^. removedEntitiesL . mainSchemesL))
-  AttachmentRef aid -> getCardDef <$> (lookup aid (gameAttachments g) <|> lookup aid (g ^. removedEntitiesL . attachmentsL))
+  AttachmentRef aid -> (getCardDef <$> (lookup aid (gameAttachments g) <|> lookup aid (g ^. removedEntitiesL . attachmentsL)))
+    <|> (getCardDef <$> attachmentUpgrade g aid)
   TreacheryRef tid -> getCardDef <$> (lookup tid (gameTreacheries g) <|> lookup tid (g ^. removedEntitiesL . treacheriesL))
   ObligationRef oid -> getCardDef <$> (lookup oid (gameObligations g) <|> lookup oid (g ^. removedEntitiesL . obligationsL))
   EventRef eid -> eventCardDef . toAttrs <$> lookup eid (gameEvents g)
@@ -5987,7 +6009,10 @@ competitiveAbilityAllowed g you ability
 -- | Whether the card's printed text box is treated as blank (Tech Theft). Only the cards
 -- that can blank another are asked, so a blanked card's own modifiers are not needed.
 isBlanked :: (HasGame m, IsRef a) => a -> m Bool
-isBlanked a = inElementArea a $ isBlankedInContext a
+isBlanked a = do
+  g <- getGame
+  let target = canonicalAttachmentTarget g (toTarget a)
+  inElementArea target $ isBlankedInContext target
 
 isBlankedInContext :: (HasGame m, IsRef a) => a -> m Bool
 isBlankedInContext a = do
@@ -6665,7 +6690,11 @@ gameSelectUpgrade m = do
       gameValueMatches gameValueMatcher . getUpgradeUses
     UpgradeCanFlipPsiEnergy -> \u ->
       if PsiEnergy `member` cdTraits (getCardDef u) then notElem CannotFlipPsiEnergy <$> getModifiers u else pure False
-    UpgradeWithTrait t -> pure . member t . cdTraits . getCardDef
+    UpgradeWithTrait t -> \u ->
+      if member t (cdTraits $ getCardDef u) then pure True
+      else case Upgrade.getUpgradeAttachmentTraits u of
+        Just traits | member t traits -> not <$> isBlanked u
+        _ -> pure False
     UpgradeWithKeyword k -> pure . member k . cdKeywords . getCardDef
     UpgradeWithResolvableSpecial -> \u -> do
       blanked <- isBlanked u
@@ -6707,21 +6736,33 @@ gameSelectAttachment ::
   (HasGame m) => AttachmentMatcher -> m (HashSet AttachmentId)
 gameSelectAttachment m = do
   snapshot <- getGame
-  attachments <- inCompetitiveAreaOnlyOrExplicit (explicitAttachmentTargets snapshot m) (AttachmentRef . toId) . HashMap.elems =<< getsGame gameAttachments
+  let real = [(toId a,getCardDef a,Attachment.attachmentEnemy $ toAttrs a,Attachment.attachmentCounters $ toAttrs a,
+        hasPrintedHeroActionOrResponse $ toCardCode $ getCardDef a,getAbilities a) | a <- HashMap.elems $ gameAttachments snapshot]
+  aliases <- fmap catMaybes $ for (HashMap.elems $ gameUpgrades snapshot) $ \u -> case Upgrade.getUpgradeAttachmentTraits u of
+    Nothing -> pure Nothing
+    Just traits -> do
+      blanked <- isBlanked u
+      let UpgradeId uuid = toId u
+          abilities = getAbilities u
+          hero = any ((`elem` [Ability.HeroAction,Ability.HeroResponse]) . abilityType) abilities
+      pure $ if blanked then Nothing else Just
+        (AttachmentId uuid,(getCardDef u) {cdCardType = AttachmentType,cdTraits = cdTraits (getCardDef u) <> traits},
+          upgradeAttachedEnemy $ toAttrs u,0,hero,abilities)
+  attachments <- inCompetitiveAreaOnlyOrExplicit (explicitAttachmentTargets snapshot m)
+    (\(aid,_,_,_,_,_) -> AttachmentRef aid) (real <> aliases)
   result <- filterM (matchFilter m) attachments
-  pure $ HashSet.fromList $ map toId result
+  pure $ HashSet.fromList [aid | (aid,_,_,_,_,_) <- result]
  where
-  matchFilter x = case x of
-    AttachmentWithId ident' -> pure . (== ident') . toId
-    AttachmentWithPrintedHeroActionOrResponse -> pure . hasPrintedHeroActionOrResponse . toCardCode . getCardDef
-    AttachmentOnEnemyWithHeroAbility enemy -> \attachment ->
-      pure $ Attachment.attachmentEnemy (toAttrs attachment) == Just enemy
-        && any ((`elem` [Ability.HeroAction, Ability.HeroResponse]) . abilityType) (getAbilities attachment)
-    AttachmentIs def -> pure . sameCard def . getCardDef
-    AttachmentWithTrait t -> pure . member t . cdTraits . getCardDef
-    AttachmentWithCounters matcher -> \attachment -> gameValueMatches matcher $ Attachment.attachmentCounters $ toAttrs attachment
-    AttachmentOnEnemy eid -> pure . (== Just eid) . Attachment.attachmentEnemy . toAttrs
-    AttachmentMatches xs -> \a -> allM (`matchFilter` a) xs
+  matchFilter x a@(aid,def,enemy,counters,hero,abilities) = case x of
+    AttachmentWithId ident' -> pure $ ident' == aid
+    AttachmentWithPrintedHeroActionOrResponse -> pure hero
+    AttachmentOnEnemyWithHeroAbility eid -> pure $ enemy == Just eid
+      && any ((`elem` [Ability.HeroAction,Ability.HeroResponse]) . abilityType) abilities
+    AttachmentIs expected -> pure $ sameCard expected def
+    AttachmentWithTrait t -> pure $ member t $ cdTraits def
+    AttachmentWithCounters matcher -> gameValueMatches matcher counters
+    AttachmentOnEnemy eid -> pure $ enemy == Just eid
+    AttachmentMatches xs -> allM (\matcher -> matchFilter matcher a) xs
 
 gameSelectEnvironment ::
   (HasGame m) => EnvironmentMatcher -> m (HashSet EnvironmentId)
@@ -7425,7 +7466,10 @@ inElementArea target body = do
   runReaderT body g {gameYou = Just context}
 
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
-getModifiers a = inElementArea a $ getModifiersInContext a
+getModifiers a = do
+  g <- getGame
+  let target = canonicalAttachmentTarget g (toTarget a)
+  inElementArea target $ getModifiersInContext target
 
 getModifiersInContext :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiersInContext a = withDepthGuard 2 $ do
@@ -7823,11 +7867,17 @@ getPowerStone = getsGame \g -> headMay [toId a | a <- HashMap.elems (gameAttachm
 
 -- | The character an attachment is attached to: an enemy, an identity or an ally.
 getAttachedCharacter :: (HasGame m) => AttachmentId -> m (Maybe CharacterId)
-getAttachedCharacter aid = getsGame \g -> do
-  at <- toAttrs <$> lookup aid (gameAttachments g)
-  (enemyCharacter <$> Attachment.attachmentEnemy at)
-    <|> (IdentityCharacter <$> Attachment.attachmentIdentity at)
-    <|> (AllyCharacter <$> Attachment.attachmentAlly at)
+getAttachedCharacter aid = getsGame $ \g ->
+  (do
+    at <- toAttrs <$> lookup aid (gameAttachments g)
+    (enemyCharacter <$> Attachment.attachmentEnemy at)
+      <|> (IdentityCharacter <$> Attachment.attachmentIdentity at)
+      <|> (AllyCharacter <$> Attachment.attachmentAlly at))
+  <|> (do
+    at <- toAttrs <$> attachmentUpgrade g aid
+    (enemyCharacter <$> upgradeAttachedEnemy at)
+      <|> (IdentityCharacter <$> Upgrade.upgradeAttachedIdentity at)
+      <|> (AllyCharacter <$> upgradeAttachedAlly at))
  where
   enemyCharacter = \case
     EnemyVillainId v -> VillainCharacter v
@@ -8791,7 +8841,7 @@ playerCardEntryAllowed :: HasGame m => PlayerCard -> m Bool
 playerCardEntryAllowed card = do
   allowed <- getsGame (\g -> playerCardEntryAllowedIn g card)
   if not allowed then pure False else
-    if toCardCode card `elem` ["56135","56213"] then case pcController card <|> pcOwner card of
+    if toCardCode card `elem` ["56131","56135","56213"] then case pcController card <|> pcOwner card of
       Nothing -> pure False
       Just you -> asYou you $ case createUpgrade you card of
         Upgrade upgrade -> do
@@ -9405,6 +9455,8 @@ explicitAttachmentTargets game = \case
   _ -> []
  where
   onEnemy enemy = [AttachmentRef aid | (aid,attachment) <- HashMap.toList (gameAttachments game), Attachment.attachmentEnemy (toAttrs attachment) == Just enemy]
+    <> [AttachmentRef (AttachmentId uuid) | u <- HashMap.elems (gameUpgrades game),
+      let UpgradeId uuid = toId u,isJust (Upgrade.getUpgradeAttachmentTraits u),upgradeAttachedEnemy (toAttrs u) == Just enemy]
 
 -- | Defeat responses still have the departing ally's physical card, including a
 -- converted encounter minion, in the removed-entity snapshot.

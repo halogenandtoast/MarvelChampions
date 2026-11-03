@@ -9,6 +9,11 @@ import Marvel.CivilWar.LeaderSpec (withLeader,attachmentIdOf)
 import Marvel.CivilWar.TeamSpec (competitive,addSecondBoard)
 import Marvel.Message.Lifted qualified as L
 import Marvel.Minion.Cards qualified as M
+import Marvel.Count (selectCount)
+import Marvel.Matchers
+import Marvel.Modifier
+import Marvel.Query
+import Marvel.Trait qualified as T
 import TestImport
 
 leaders :: TestGame -> CardCode -> GameAppT (VillainId,VillainId)
@@ -48,6 +53,184 @@ jsonDifferences _ _ = ["value"]
 
 spec :: Spec
 spec = describe "Civil War leader reward upgrades" do
+  it "High-Tech Suit attaches to the friendly Iron Man and counts as exactly one Tech attachment" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,enemy) <- leaders tg "56059"
+      card <- putIntoPlay you "56131"
+      let UpgradeId uuid = upgradeOf card
+          aid = AttachmentId uuid
+      getUpgradeAttachedEnemy (upgradeOf card) `shouldReturn` Just (EnemyVillainId own)
+      selectList (AttachmentOnEnemy (EnemyVillainId own) <> AttachmentWithTrait T.Tech) `shouldReturn` [aid]
+      selectList (AttachmentOnEnemy (EnemyVillainId enemy) <> AttachmentWithTrait T.Tech) `shouldReturn` []
+      getAttachedCharacter aid `shouldReturn` Just (VillainCharacter own)
+      getModifiers own >>= (`shouldSatisfy` elem (SchemeModifier 1))
+      getModifiers (upgradeOf card) >>= (`shouldSatisfy` elem (TraitModifier T.Tech))
+      getsGame (\g -> toCardCode <$> abilityCardDef g (AttachmentRef aid)) `shouldReturn` Just "56131"
+      getsGame (length . gameUpgrades) `shouldReturn` 1
+      getsGame (length . gameAttachments) `shouldReturn` 0
+
+  it "High-Tech Suit loses its attachment classification and scheme bonus while blanked" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      (own,_) <- leaders tg "56059"
+      card <- putIntoPlay (player1 tg) "56131"
+      L.runQueueT (L.capture $ L.lastingModifiers GameRef (SourceEntity $ UpgradeRef $ upgradeOf card) [Blank] False) >>= resolve
+      selectList (AttachmentOnEnemy (EnemyVillainId own) <> AttachmentWithTrait T.Tech) `shouldReturn` []
+      getModifiers own >>= (`shouldSatisfy` notElem (SchemeModifier 1))
+      getModifiers (upgradeOf card) >>= (`shouldSatisfy` notElem (TraitModifier T.Tech))
+
+  it "High-Tech Suit is selectable by attachment-removal effects and discards the original player card" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56059"
+      card <- putIntoPlay you "56131"
+      let UpgradeId uuid = upgradeOf card
+          aid = AttachmentId uuid
+      selectList (AttachmentOnEnemyWithHeroAbility $ EnemyVillainId own) `shouldReturn` [aid]
+      inAnyArea (selectList AttachmentWithPrintedHeroActionOrResponse) `shouldReturn` [aid]
+      resolve [RemoveFromPlay $ AttachmentRef aid]
+      map pcCardId <$> discardOf you >>= (`shouldSatisfy` elem (pcCardId card))
+      getsGame (length . gameUpgrades) `shouldReturn` 0
+      selectList (AttachmentWithId aid) `shouldReturn` []
+      let def = lookupPlayerCard "56131"
+      cdTraits def `shouldBe` mempty
+      cdCardType def `shouldBe` UpgradeType
+
+  for_ [False,True] $ \opponent ->
+    it ("High-Tech Suit accepts its energy and mental Hero Action payment from " <> if opponent then "an opposing player" else "its owner") do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+            actor = if opponent then player2 tg else you
+        _ <- leaders tg "56059"
+        card <- putIntoPlay you "56131"
+        start [SetActivePlayer actor,IdentityMessage actor BeginTurn]
+        changeForm actor
+        energy <- putInHand actor "01088"
+        mental <- putInHand actor "01089"
+        choose "discard High-Tech Suit with its printed Hero Action" (isAbilityOfCard card)
+        payWith [energy,mental]
+        pass
+        map pcCardId <$> discardOf you >>= (`shouldSatisfy` elem (pcCardId card))
+        when opponent $ map pcCardId <$> discardOf actor >>= (`shouldSatisfy` notElem (pcCardId card))
+        upgradesWith "56131" `shouldReturn` []
+
+  it "plays High-Tech Suit on the friendly leader before paying its cost" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      (own,_) <- leaders tg "56059"
+      card <- putInHand you "56131"
+      resource <- putInHand you "01088"
+      playOn card own [resource]
+      getUpgradeAttachedEnemy (upgradeOf card) `shouldReturn` Just (EnemyVillainId own)
+      selectList (UpgradeWithTrait T.Tech <> UpgradeWithId (upgradeOf card)) `shouldReturn` [upgradeOf card]
+
+  it "Electromagnetic Blast can discard an opposing player’s High-Tech Suit from the local leader" do
+    tg <- competitive ["spider-man","magneto"]
+    inGame tg do
+      let owner = player1 tg
+          actor = player2 tg
+      _ <- leaders tg "56059"
+      suit <- putIntoPlay owner "56131"
+      start [SetActivePlayer actor,IdentityMessage actor BeginTurn]
+      changeForm actor
+      area <- getAreaOf actor
+      schemes <- getMainSchemesIn (areaId area)
+      let scheme = SchemeMainSchemeId $ testHead schemes
+      threat <- selectCount SchemeThreat (SchemeWithId scheme)
+      when (threat > 0) $ L.runQueueT (L.capture $ L.removeThreat actor GameRef threat $ SchemeWithId scheme) >>= resolve
+      L.runQueueT (L.capture $ L.placeThreatOn GameRef scheme 3) >>= resolve
+      blast <- putInHand actor "49008"
+      resource <- putInHand actor "01089"
+      playWith blast [resource]
+      choose "remove the last threat" (isTargetChoice $ schemeRef scheme)
+      let UpgradeId uuid = upgradeOf suit
+      choose "discard the attached suit" (isTargetChoice $ AttachmentRef $ AttachmentId uuid)
+      pass
+      map pcCardId <$> discardOf owner >>= (`shouldSatisfy` elem (pcCardId suit))
+      upgradesWith "56131" `shouldReturn` []
+
+  it "High-Tech Suit satisfies Supersonic Punch’s Tech condition on its attached leader’s board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- leaders tg "56059"
+      _ <- putIntoPlay (player1 tg) "56131"
+      let you = player2 tg
+      resolve [SetActivePlayer you]
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      punch <- encounterCard C.cw56071
+      resolve [RevealEncounterCard you punch]
+      isConfused you `shouldReturn` True
+
+  it "caps Iron Man’s bonus at three Tech attachments including High-Tech Suit" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      (own,_) <- leaders tg "56059"
+      sequence_ $ replicate 4 $ putIntoPlay (player1 tg) "56131"
+      getModifiers own >>= (`shouldSatisfy` elem (SchemeModifier 3))
+      length <$> selectList (AttachmentOnEnemy (EnemyVillainId own) <> AttachmentWithTrait T.Tech) `shouldReturn` 4
+
+  it "preserves one High-Tech Suit entity, its host and physical ownership after saving" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      (own,_) <- leaders tg "56059"
+      card <- putIntoPlay (player1 tg) "56131"
+      fixture <- getsGame gameScenario
+      nativeScenario <- case fromJSON (toJSON fixture) of
+        Success value -> pure value
+        Error err -> error err
+      withGame_ $ scenarioL .~ nativeScenario
+      saved <- getsGame toJSON
+      restored <- case fromJSON saved of
+        Success value -> pure value
+        Error err -> error err
+      jsonDifferences saved (toJSON (restored :: Game)) `shouldBe` []
+      withGame_ $ const restored
+      let UpgradeId uuid = upgradeOf card
+          aid = AttachmentId uuid
+      getAttachedCharacter aid `shouldReturn` Just (VillainCharacter own)
+      getsGame (\g -> pcOwner <$> (cardInPlay g (AttachmentRef aid) >>= \case PlayerCard pc -> Just pc; _ -> Nothing)) `shouldReturn` Just (Just $ player1 tg)
+      getsGame (length . gameUpgrades) `shouldReturn` 1
+      getsGame (length . gameAttachments) `shouldReturn` 0
+
+  it "does not offer High-Tech Suit’s Hero Action to an alter-ego" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "56059"
+      card <- putIntoPlay you "56131"
+      _ <- putInHand you "01088"
+      _ <- putInHand you "01089"
+      offers (isAbilityOfCard card) `shouldReturn` False
+
+  for_ [False,True] $ \removed ->
+    it (if removed then "removes a counted attachment from the game as its original upgrade" else "returns a counted attachment to its original owner's hand") do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        _ <- leaders tg "56059"
+        card <- putIntoPlay you "56131"
+        let UpgradeId uuid = upgradeOf card
+            target = AttachmentRef $ AttachmentId uuid
+        resolve [if removed then RemoveFromGame target else ReturnToHand target]
+        inAnyArea (selectList $ UpgradeWithId $ upgradeOf card) `shouldReturn` []
+        map pcCardId <$> handOf you >>= (`shouldSatisfy` (if removed then notElem else elem) (pcCardId card))
+        map pcCardId <$> discardOf you >>= (`shouldSatisfy` notElem (pcCardId card))
+
+  it "does not put High-Tech Suit into play without a friendly Iron Man" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- leaders tg "56092"
+      let you = player1 tg
+      card <- putInHand you "56131"
+      resolve [PutCardIntoPlay you card NoPayment Nothing True]
+      map pcCardId <$> handOf you >>= (`shouldSatisfy` elem (pcCardId card))
+      getsGame (length . gameUpgrades) `shouldReturn` 0
+
   it "Alpha Flight Recruit heals once after any number of energy counters are placed on the friendly leader's attachment" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do

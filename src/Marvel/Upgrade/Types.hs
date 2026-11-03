@@ -2,6 +2,7 @@ module Marvel.Upgrade.Types where
 
 import Marvel.Prelude
 import Marvel.Resource.Types (Resource)
+import Marvel.Trait (Trait)
 
 import Data.Typeable
 import Data.Aeson.KeyMap qualified as KeyMap
@@ -145,6 +146,11 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a, HasAbilitie
   toUpgradeAttrs :: a -> Attrs Upgrade
   default toUpgradeAttrs :: (Coercible a (Attrs Upgrade)) => a -> Attrs Upgrade
   toUpgradeAttrs = coerce
+
+  -- | Additional attachment classification granted by the active text box. The
+  -- physical card remains an upgrade, with its original owner and discard pile.
+  upgradeAttachmentTraits :: a -> Maybe (HashSet Trait)
+  upgradeAttachmentTraits _ = Nothing
 
   -- | What it is played on, chosen before its cost is paid: what it attaches to, or
   -- the player who takes control of it. Nothing for an upgrade played on neither.
@@ -395,3 +401,7 @@ instance RunMessage (Attrs Upgrade) where
 instance FromJSON (Attrs Upgrade) where
   parseJSON = withObject "UpgradeAttrs" $ \o -> genericParseJSON defaultOptions $ Object $ KeyMap.union o $ KeyMap.fromList
     [("upgradeCanPlayHeldCards", Bool True), ("upgradeAttachedCard", toJSON (Nothing :: Maybe Target)), ("upgradeRedirectNextScheme", Bool False), ("upgradeAttachedIdentity", toJSON (Nothing :: Maybe IdentityId)), ("upgradeHeldCardsFacedown", Bool False), ("upgradeResourceSlots", toJSON ([] :: [Resource])), ("upgradeOccupiedSlots", toJSON ([] :: [Int]))]
+
+-- | Attachment classification without introducing a second stored card entity.
+getUpgradeAttachmentTraits :: Upgrade -> Maybe (HashSet Trait)
+getUpgradeAttachmentTraits (Upgrade a) = upgradeAttachmentTraits a

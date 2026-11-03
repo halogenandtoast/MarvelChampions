@@ -18,11 +18,12 @@ import Marvel.Modifier
 import Marvel.Query
 import Marvel.Question (runAbility)
 import Marvel.Ref
+import Marvel.Resource.Types (Resource (Energy,Mental))
+import Marvel.Trait qualified as T
 import Marvel.Upgrade.Types
 import Marvel.Window qualified as W
 
 newtype LeaderRewardUpgrade = LeaderRewardUpgrade (Attrs Upgrade `With` Maybe AttachmentId)
-  deriving anyclass HasModifiersFor
   deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
 
 leaderRewardUpgrades :: [UpgradeCard LeaderRewardUpgrade]
@@ -30,19 +31,28 @@ leaderRewardUpgrades = map (upgrade $ \a -> LeaderRewardUpgrade (a `With` Nothin
 
 instance IsUpgrade LeaderRewardUpgrade where
   toUpgradeAttrs (LeaderRewardUpgrade (a `With` _)) = a
+  upgradeAttachmentTraits (LeaderRewardUpgrade (a `With` _)) =
+    if toCardCode a == "56131" then Just (fromList [T.Tech]) else Nothing
   upgradeTargets (LeaderRewardUpgrade (a `With` _)) = case toCardCode a of
     "56135" -> do
       allies <- selectList AnyAlly
       eligible <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards]) <$> getModifiers ally) allies
       pure $ Just $ map toTarget eligible
-    "56213" -> do
-      eligible <- friendlyLeaderExists (upgradeController a) (Just "56168")
+    code | code `elem` ["56131","56213"] -> do
+      eligible <- friendlyLeaderExists (upgradeController a) (Just $ if code == "56131" then "56059" else "56168")
       friendly <- friendlyLeaderFor (upgradeController a)
       pure $ Just [VillainRef vid | eligible,Just vid <- [friendly]]
     _ -> pure Nothing
 
+instance HasModifiersFor LeaderRewardUpgrade where
+  getModifiersFor _ target (LeaderRewardUpgrade (a `With` _))
+    | toCardCode a == "56131",isTarget a target = pure [TraitModifier T.Tech]
+  getModifiersFor _ _ _ = pure []
+
 instance HasAbilities LeaderRewardUpgrade where
   getAbilities (LeaderRewardUpgrade (a `With` energy)) = case toCardCode a of
+    "56131" -> [ability a 3 HeroAction ForAnyPlayer (MultiResourceCost [Just Energy,Just Mental]) (runAbility a 3)
+      | isJust (upgradeAttachedEnemy a)]
     "56135" -> [windowAbility a 1 (W.AttachmentCountersPlaced W.After $ AttachmentWithId channel) Response NoCost (runAbility a 1)
       & \ability -> ability {abilityCriteria = FriendlyLeaderExists (Just "56092") <> AllyExists (AllyMatches [AllyWithId ally,AllyWithDamage $ GreaterThan $ Static 0])}
       | Just channel <- [energy],Just ally <- [upgradeAttachedAlly a]]
@@ -68,6 +78,10 @@ instance RunMessage LeaderRewardUpgrade where
           allies <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards]) <$> getModifiers ally) =<< selectList AnyAlly
           if null allies then removeFromPlay a else chooseOne (upgradeController a)
             [targeting ally $ upgradeStep uid (UpgradeAttachedToAlly ally) | ally <- allies]
+        "56131" -> when (isNothing target) $ do
+          friendly <- friendlyLeaderFor (upgradeController a)
+          eligible <- friendlyLeaderExists (upgradeController a) (Just "56059")
+          if eligible then for_ friendly (upgradeStep uid . UpgradeAttachedToEnemy . EnemyVillainId) else removeFromPlay a
         "56213" -> do
           let named = case target of Just (VillainRef vid) -> Just vid; _ -> Nothing
           friendly <- maybe (friendlyLeaderFor $ upgradeController a) (pure . Just) named
@@ -77,6 +91,7 @@ instance RunMessage LeaderRewardUpgrade where
             giveStatus vid ToughStatus
         _ -> pure ()
       pure $ LeaderRewardUpgrade (updated `With` energy)
+    RanAbility _ (isTarget a -> True) 3 _ _ -> removeFromPlay a >> pure e
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       for_ (upgradeAttachedAlly a) (`heal` 1)
       pure e
