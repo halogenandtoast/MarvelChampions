@@ -7,7 +7,9 @@ import Marvel.Prelude
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
+import Data.Text qualified as Text
 import Marvel.Ally.Cards qualified as Allies
+import Marvel.CivilWar.Cards qualified as CW
 import Marvel.Attachment.Cards
 import Marvel.Card.Code
 import Marvel.Card.Def
@@ -24,6 +26,7 @@ allEncounterCards :: HashMap CardCode CardDef
 allEncounterCards =
   fromList [(toCardCode def, def) | def <- HashMap.elems Allies.allAllies, isJust (cdEncounterSet def)] <>
   allAttachments <> allMinions <> allTreacheries <> allSideSchemes <> allSpecialMinions <> allObligations <> Environments.allEnvironments <> allEncounterSupports
+    <> fromList [(toCardCode def,def) | def <- CW.civilWarDefinitions,"56" `Text.isPrefixOf` unCardCode (toCardCode def),cdCardType def `notElem` [VillainType,MainSchemeType]]
 
 gatherEncounterSets ::
   (MonadRandom m) => HashSet EncounterSet -> m [EncounterCard]

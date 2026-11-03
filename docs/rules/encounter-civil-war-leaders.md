@@ -1,6 +1,6 @@
 # Civil War leaders and encounter cards
 
-The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twenty active main-scheme faces across Civil War and Synthezoid Smackdown. Unregistered Super and Government Contractor are also implemented because Hunting Rebel Heroes depends on them. Scenario registration remains pending complete modular sets and scenario setup.
+The native implementation covers the six leaders' 24 stages, 21 attachment faces, 17 treacheries, six leader side schemes, and twenty active main-scheme faces across Civil War and Synthezoid Smackdown. Unregistered Super and Government Contractor are also implemented because Hunting Rebel Heroes depends on them. The four Civil War scenarios now have native cooperative and competitive construction; see [scenario setup](scenario-civil-war.md). Synthezoid scenario registration and the dedicated competitive creation/lobby flow remain subsequent work.
 
 ## Leaders and combat
 
@@ -74,6 +74,6 @@ The local v1.8 entries for Target, Interrupt, Replacement Effect, Damage, Tough,
 
 The official [Rules Reference update](https://www.fantasyflightgames.com/mission-updates/) explains retaliate's Forced Response timing. Competitive leader attacks and reply phases are documented in [the engine notes](encounter-civil-war-engine.md).
 
-## Verification
+## Handler verification before scenario integration
 
 The full unit run passes 8,212 examples; the focused Civil War run passes 287. The selected Rhino, Klaw, and Risky Business smoke run passes 25 examples with Spider-Man and Black Panther, including the searched-card deal window and duplicate-entry guard. Coverage includes every implemented main-scheme face, captured player and encounter cards, hidden public data, immediate completion after a target reduction, status prevention and replacement, legacy saved schemes, cross-board responses, and the leader attachment and treachery cases described above.

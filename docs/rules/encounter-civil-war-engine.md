@@ -315,3 +315,10 @@ No, You Move! attaches the physical Cap's Shield to the friendly Captain America
 Rules checked: the Civil War competitive rules and FAQ; Rules Reference v1.8, Activation (page 6), Damage (page 14), Replacement Effect (page 37), and Tough (page 44). Searches of recent published rulings found no card-specific exception for these rewards.
 
 Validation: sixteen new behavior examples cover actual boosted redirection, armor before the cap, cumulative damage, tough, cap expiry, unrelated damage, stun cancellation, overlapping copies, normal play, blanking, minion exclusion, Shield movement and deck search, no repeat attachment response, and current/older attack JSON. The Civil War/coverage gate passes 928 examples, the full unit suite passes 8,690 examples, and randomized Rhino, Klaw and Ultron games with Secret Avengers pass with two seeds. The compiled registry now contains all sixteen Civil War leader reward dependencies. Scenario construction and the dedicated multiplayer creation flow remain necessary before Civil War is playable end to end.
+
+
+## Native scenario assembly
+
+The four Civil War scenarios are now registered with native cooperative and competitive construction. The implementation exchanges both teams' scenarios, builds independent encounter piles and reward pools, routes obligations and nemeses, resolves both boards' setup and handles team-specific Pool cards. Forty-eight new setup/inventory examples distinguish physical deck gathering from native handler registration. Details and current verification results are in [Civil War scenario construction](scenario-civil-war.md).
+
+The full unit suite passes 8,739 examples. Randomized four-seat play also exposed a teammate-defense retaliate loop; its independent regression and fix resolve automatic keyword abilities as the actual response-window player. The dedicated multiplayer creation/lobby flow and final Civil War audit remain required.

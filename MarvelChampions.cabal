@@ -1653,6 +1653,7 @@ library
       Marvel.Scenario.AgeOfApocalypseEnSabahNur
       Marvel.Scenario.AgeOfApocalypseFourHorsemen
       Marvel.Scenario.AgeOfApocalypseUnus
+      Marvel.Scenario.CivilWar
       Marvel.Scenario.Mojo
       Marvel.Scenario.MojoOpening
       Marvel.Scenario.MutantGenesis
@@ -2922,6 +2923,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.RewardEventSpec
       Marvel.CivilWar.RewardResourceSpec
       Marvel.CivilWar.RewardUpgradeSpec
+      Marvel.CivilWar.ScenarioSpec
       Marvel.CivilWar.SetupFaceSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec

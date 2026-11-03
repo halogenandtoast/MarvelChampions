@@ -840,7 +840,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       obligations <- getObligations pid
       nemesisSetCards <- gatherEncounterSet nemesisSet
       setAside (EncounterCard <$> nemesisSetCards)
-      shuffleIntoEncounterDeck obligations
+      key <- getDeckKeyFor playerIdentityId
+      fromDeck key $ shuffleIntoEncounterDeck obligations
       -- permanent cards are set aside before setup, for other cards to put into play
       -- (RR Permanent); those with setup begin the game in play instead
       let (permanent, deck) = partition (\c -> let ks = cdKeywords (getCardDef c) in Permanent `elem` ks && Keyword.Setup `notElem` ks) (unDeck playerIdentityDeck)

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Scenario where
 
+import Marvel.Scenario.CivilWar
 import Marvel.Scenario.AgentsOfShield
 
 import Marvel.Scenario.TricksterTakeover
@@ -68,7 +69,7 @@ withScenarioCardCode cCode f = case lookup cCode allScenarios of
 allScenarios :: HashMap CardCode SomeScenarioCard
 allScenarios = fromList $ map
   (toFst someScenarioCardCode)
-    [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
+    (map SomeScenarioCard civilWarScenarios <> [ SomeScenarioCard aosBlackWidowScenario, SomeScenarioCard aosBatrocScenario, SomeScenarioCard aosModokScenario, SomeScenarioCard aosThunderboltsScenario, SomeScenarioCard aosBaronZemoScenario
   , SomeScenarioCard aoaDarkBeastScenario, SomeScenarioCard aoaEnSabahNurScenario, SomeScenarioCard aoaApocalypseScenario, SomeScenarioCard aoaFourHorsemenScenario, SomeScenarioCard aoaUnusScenario
     , SomeScenarioCard neMorlockSiegeScenario, SomeScenarioCard neOnTheRunScenario, SomeScenarioCard neJuggernautScenario, SomeScenarioCard neMisterSinisterScenario, SomeScenarioCard neStryfeScenario
     , SomeScenarioCard enchantressScenario
@@ -137,7 +138,7 @@ allScenarios = fromList $ map
     , SomeScenarioCard smMysterioScenario
     , SomeScenarioCard smSinisterSixScenario
     , SomeScenarioCard smVenomGoblinScenario
-    ]
+    ])
 
 -- | The scenario with the sets it recommends, at standard difficulty.
 recommendedSetup :: CardCode -> Maybe ScenarioSetup
@@ -149,7 +150,7 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
+    (civilWarRecommendedModules <> [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
     , ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
     , ("50086a", [EncounterSet.AosAimScience, EncounterSet.AosBatrocsBrigade])
     , ("50103a", [EncounterSet.AosScientistSupreme])
@@ -218,12 +219,14 @@ recommendedModulars =
     , ("27084", [EncounterSet.WhispersOfParanoia])
     , ("27100", [EncounterSet.GuerrillaTactics])
     , ("27113", [EncounterSet.GoblinGear])
-    ]
+    ])
 
 lookupScenario :: ScenarioSetup -> Maybe Scenario
-lookupScenario setup = case lookup setup.scenarioCode allScenarios of
-  Just (SomeScenarioCard a) -> Just $ Scenario $ buildScenario a setup
-  Nothing -> Nothing
+lookupScenario setup
+  | setup.scenarioCode `elem` civilWarLeaderCodes,Left _ <- validateCivilWarSetup setup = Nothing
+  | otherwise = case lookup setup.scenarioCode allScenarios of
+      Just (SomeScenarioCard a) -> Just $ Scenario $ buildScenario a setup
+      Nothing -> Nothing
 
 -- | The scenarios there are, by the code they are set up with.
 scenarioCodes :: [CardCode]

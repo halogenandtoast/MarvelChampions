@@ -900,6 +900,9 @@ getDeckKeyFor ident = do
   aid <- areaId <$> getAreaOf ident
   getsGame \g -> case activeVillainIn g aid of
     Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
+    _ | Just competition <- gameCompetition g
+      , isJust (CW.leaderTeam $ toId $ gameScenario g)
+      , Just team <- CW.playerTeam competition ident -> CW.pendingEncounterDeck team
     _ -> EncounterDeckKey
 
 -- | The counters on the main scheme: Zola's test counters, say.
@@ -2214,10 +2217,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             holdFacedownCard host original
             pure g
   CardSpecific GameRef "setupPoolAspect" _ -> do
-    when (any (elem Marvel.Aspect.Pool . playerIdentityChosenAspects . toAttrs) $ HashMap.elems $ gamePlayers g) do
-      cards <- traverse (MGEncounter.genEncounterCard . (MGEncounter.allEncounterCards HashMap.!)) ["44037", "44038", "44039", "44040", "44041", "44041", "44042"]
-      shuffleIntoEncounterDeck [card | card <- cards, toCardCode card == "44037"]
-      setAside [EncounterCard card | card <- cards, toCardCode card /= "44037"]
+    let groups = case gameCompetition of
+          Nothing -> [gamePlayerOrder]
+          Just competition -> map (CW.teamPlayers competition) [CW.Registration,CW.Resistance]
+    for_ groups $ \members -> do
+      let poolUsers = [player | you <- members,Just player <- [lookup you $ gamePlayers g],Marvel.Aspect.Pool `elem` playerIdentityChosenAspects (toAttrs player)]
+      for_ (take 1 poolUsers) $ \player -> do
+        key <- getDeckKeyFor $ toId player
+        cards <- traverse (MGEncounter.genEncounterCard . (MGEncounter.allEncounterCards HashMap.!)) ["44037", "44038", "44039", "44040", "44041", "44041", "44042"]
+        fromDeck key $ shuffleIntoEncounterDeck [card | card <- cards,toCardCode card == "44037"]
+        fromDeck key $ setAside [EncounterCard card | card <- cards,toCardCode card /= "44037"]
     for_ (HashMap.elems $ gamePlayers g) \player -> do
       let a = toAttrs player
       when (isNothing a.playerIdentityPreviousGameWon && any ((== "44028") . toCardCode) (unDeck a.playerIdentityDeck)) $
@@ -2791,9 +2800,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               setupMainScheme
               mainSchemeStep mainSchemeId MainSchemePlaceInitialThreat
               mainSchemeStep mainSchemeId RevealMainScheme
-              when (HashMap.null $ gameMainSchemes g) $
-                for_ (HashMap.keys (gameVillains g)) \villainId ->
-                  checkWindows [W.Window When $ W.RevealVillain villainId W.RevealedFromVillain]
+              you <- getYou
+              let here = maybe defaultAreaId areaId $ areaOfTarget g (IdentityRef you)
+                  starting = null [sid | sid <- HashMap.keys (gameMainSchemes g), (areaId <$> areaOfTarget g (MainSchemeRef sid)) == Just here]
+              when starting $ for_ (villainsIn g here) $ \vid ->
+                checkWindows [W.Window When $ W.RevealVillain vid W.RevealedFromVillain]
           ]
         you <- getYou
         pure $ g & (entitiesL . mainSchemesL . at mainSchemeId ?~ x) & intoAreaOf you (\a -> a {areaMainSchemes = areaMainSchemes a <> [mainSchemeId]})

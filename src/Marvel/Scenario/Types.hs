@@ -361,7 +361,7 @@ runScenarioMessage msg attrs = case msg of
   CreateDeck key cards -> do
     deck' <- shuffleM cards
     let homes = HashMap.fromList [(ecCardId c, key) | key /= EncounterDeckKey, discardsTo key == key, c <- cards]
-    pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = scenarioCardDecks a <> homes}
+    pure $ foldr leaves attrs cards & pileL key .~ Pile deck' [] & \a -> a {scenarioCardDecks = a.scenarioCardDecks <> homes}
   -- a card set aside leaves the set-aside area for wherever it goes
   RemoveFromGame (CardIdRef cid) -> pure $ attrs & setAsideCardsL %~ filter ((/= cid) . toCardId) & encounterDeckL %~ filter ((/= cid) . ecCardId) & discardL %~ filter ((/= cid) . ecCardId)
   RemoveDeck EncounterDeckKey -> pure attrs
@@ -444,7 +444,9 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     ShuffleIntoEncounterDeck cards -> do
       deck' <- shuffleM (scenarioEncounterDeck <> cards)
       -- from wherever they were: the set-aside area or the discard pile
-      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards) & discardL %~ filter (`notElem` cards)
+      let homes = HashMap.fromList [(ecCardId card,key) | key /= EncounterDeckKey,discardsTo key == key,card <- cards]
+      pure $ attrs & encounterDeckL .~ deck' & setAsideCardsL %~ filter (`notElem` map EncounterCard cards) & discardL %~ filter (`notElem` cards)
+        & \a -> a {scenarioCardDecks = a.scenarioCardDecks <> homes}
     -- a card comes out from wherever it was: the set-aside area (a nemesis set's), or
     -- the encounter deck or discard pile searched
     AttachTreacheryToAlly _ card -> pure $ leaves card attrs
@@ -601,7 +603,10 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
     PutCardIntoPlay _ card _ _ _ -> pure $ attrs & setAsideCardsL %~ filter (\case
       PlayerCard other -> pcCardId other /= pcCardId card
       EncounterCard _ -> True)
-    SetAside cards -> pure $ foldr leaves attrs [ec | EncounterCard ec <- cards] & setAsideCardsL <>~ cards
+    SetAside cards -> do
+      let homes = HashMap.fromList [(ecCardId card,key) | EncounterCard card <- cards,key /= EncounterDeckKey,discardsTo key == key]
+      pure $ foldr leaves attrs [ec | EncounterCard ec <- cards] & setAsideCardsL <>~ cards
+        & \a -> a {scenarioCardDecks = a.scenarioCardDecks <> homes}
     RemovePlayerObligationsFromGame -> pure $ attrs & encounterDeckL %~ filter (not . isPlayerObligation)
     PutOnTopOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (cards <>) . filter (`notElem` cards)
     PutOnBottomOfEncounterDeck cards -> pure $ attrs & encounterDeckL %~ (<> cards) . filter (`notElem` cards)

@@ -6,6 +6,10 @@ Markdown transcription of the official *Marvel Champions: The Card Game* rules, 
 
 | Document | Version | URL |
 |---|---|---|
+| Civil War rulebook (MC56) | Custom scenarios, competitive mode and FAQ | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc56_rulebook-web_1.pdf |
+| Synthezoid Smackdown rulebook (MC57) | Scenario and competitive rules | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc57_rulebook-web.pdf |
+| Fear No Evil rulebook (MC60) | Scenarios and campaign | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf |
+| Shadowland rulebook (MC65) | Scenarios and campaign | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/10/MC65-Rulebook.pdf |
 | Agents of S.H.I.E.L.D. rulebook (MC50) | 24 pages | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc50_rulebook-web.pdf |
 | Black Panther (Shuri) rulesheet (MC51) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc51_rulesheet-web.pdf |
 | Silk rulesheet (MC52) | Rulesheet | https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc52_rulesheet-web.pdf |
@@ -189,6 +193,12 @@ Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasy
 
 - [Trickster Takeover](scenario-trickster-takeover.md): Enchantress, God of Lies
   (Single Group Mode), Trickster Magic; [FFG MC55 rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf).
+
+## Civil War scenarios
+
+- [Scenario construction](scenario-civil-war.md): cooperative and competitive setup, independent decks, physical inventories, rewards and save/reload.
+- [Engine boundaries](encounter-civil-war-engine.md): team phases, victory conditions, shared mechanics and reward-card behavior.
+- [Leader rules](encounter-civil-war-leaders.md): leader stages, signature cards and main-scheme interactions.
 
 ## New hero and player-card rules
 

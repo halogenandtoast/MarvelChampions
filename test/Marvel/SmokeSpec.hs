@@ -14,6 +14,8 @@ import SmokeSelection (selectSmokeCases)
 import TestImport
 import SmokeMonitor (withQuestionMonitor)
 import Marvel.Campaign
+import Marvel.Scenario.CivilWar (civilWarLeaderCodes)
+import Marvel.CivilWar.Types qualified as CW
 import Data.HashMap.Strict qualified as HashMap
 import Data.ByteString.Lazy qualified as BL
 import Marvel.Game.Public (publicGameFor)
@@ -65,9 +67,27 @@ spec = parallel do
   let focused = not full && (notNull focusHeroes || notNull focusModulars || isJust sampleCount)
       matchesModular modular = Text.toCaseFold (Text.pack $ show modular) `elem` map Text.toCaseFold focusModulars
       tables i villain = if full then allTables villain else nub $ someTables i villain <> [pure hero | hero <- focusHeroes]
-      modularVillains i modular = if full || matchesModular modular then scenarioCodes else [scenarioCodes !! (i `mod` length scenarioCodes)]
+      modularSetup villain modular
+        | villain `elem` civilWarLeaderCodes = do
+            base <- recommendedSetup villain
+            let modifiers = [Encounter.StandardII,Encounter.StandardIII,Encounter.ExpertII]
+                sets = if modular `elem` modifiers then modular : base.modulars else take 4 $ nub $ modular : base.modulars
+                setup = base {modulars = sets}
+            _ <- lookupScenario setup
+            pure setup
+        | otherwise = Just $ ScenarioSetup villain [modular] Normal
+      modularVillains i modular =
+        let allowed = filter (isJust . (`modularSetup` modular)) scenarioCodes
+         in if full || matchesModular modular then allowed else take 1 $ drop (i `mod` max 1 (length allowed)) allowed
       scenarioName villain heroes' difficulty = show villain <> " against " <> show heroes' <> " on " <> show difficulty
       modularName villain modular = show villain <> " with " <> show modular
+      competitiveName registration resistance mode players = "Civil War competitive " <> show players <> " seats, " <> show registration <> " vs " <> show resistance <> ", " <> show mode
+      competitive =
+        [(competitiveName registration resistance mode (length heroes'),setup,heroes')
+        | registration <- ["56059","56092"],resistance <- ["56137","56168"],mode <- [Normal,Expert]
+        ,heroes' <- [["spider-man","thor"],["spider-man","thor","black-panther","hawkeye"]]
+        ,Just reg <- [CW.defaultTeamScenario registration],Just res <- [CW.defaultTeamScenario resistance]
+        ,let setup = CivilWarScenarioSetup registration [] mode [] $ Just $ CW.CompetitionSetup reg res]
       campaignName villain n mode = show villain <> " as scenario #" <> show (n + 1) <> ", " <> show mode
       scenarios = [(scenarioName villain heroes' difficulty, villain, heroes', difficulty)
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
@@ -76,6 +96,7 @@ spec = parallel do
       campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign, campaignScenarios AgentsOfShieldCampaign], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
+               <> [(name,any (`elem` focusHeroes) heroes') | (name,_,heroes') <- competitive]
                <> [(name, baselineRelevant || matchesModular modular) | (name, _, modular) <- modulars]
                <> [(name, baselineRelevant || (any (`elem` focusHeroes) ["colossus", "shadowcat"] && name `elem` mutantCampaignCases) || (any (`elem` focusHeroes) ["cable", "domino"] && name `elem` nextEvolutionCampaignCases) || (any (`elem` focusHeroes) ["bishop", "magik"] && name `elem` apocalypseCampaignCases) || (any (`elem` focusHeroes) ["maria-hill", "nick-fury"] && name `elem` shieldCampaignCases)) | name <- campaigns]
       mutantCampaignCases = [campaignName villain n mode | (n, villain) <- zip [0 :: Int ..] (campaignScenarios MutantGenesis), mode <- [StandardCampaign, ExpertCampaign]]
@@ -102,7 +123,9 @@ spec = parallel do
         playSetup (fromMaybe (error "no setup") (recommendedSetup villain)) {difficulty} heroes'
     for_ modulars $ \(name, villain, modular) ->
       when (selectedCase name) $ it name do
-        playSetup (ScenarioSetup villain [modular] Normal) ["spider-man", "she-hulk"]
+        for_ (modularSetup villain modular) $ \setup -> playSetup setup ["spider-man", "she-hulk"]
+    for_ competitive $ \(name,setup,heroes') ->
+      when (selectedCase name) $ it name $ playSetup setup heroes'
     describe "The Hood alternate encounter sets" do
       for_ ["01094", "24001"] $ \villain ->
         for_ [(Normal,[Encounter.StandardII]), (Expert,[Encounter.StandardII,Encounter.ExpertII]), (Expert,[Encounter.ExpertII])] $ \(mode,sets) ->

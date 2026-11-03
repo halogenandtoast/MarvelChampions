@@ -4,7 +4,7 @@ module Marvel.CivilWar.Types where
 
 import Data.List (nub)
 import Marvel.Prelude
-import Marvel.Area (AreaId (..))
+import Marvel.Area (AreaId (..),DeckKey (..))
 import Marvel.Card.Code
 import Marvel.EncounterSet
 import Marvel.Id (IdentityId)
@@ -202,3 +202,9 @@ validateTeamScenario team config = do
   unless (all (`elem` allowed) chosen) $ Left "error.cwModularFaction"
   unless (case teamScenarioMainSchemes config of [one,two] -> one `elem` first && two `elem` second; _ -> False) $
     Left "error.cwMainSchemes"
+
+-- | Identity setup precedes leader creation. These temporary piles keep each
+-- team's obligations separate until the leader's actual encounter deck exists.
+pendingEncounterDeck :: Team -> DeckKey
+pendingEncounterDeck Registration = NamedDeckKey "cwRegistrationSetup"
+pendingEncounterDeck Resistance = NamedDeckKey "cwResistanceSetup"

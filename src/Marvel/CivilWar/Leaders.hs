@@ -50,7 +50,7 @@ instance HasModifiersFor CivilWarLeader where
 instance HasAbilities CivilWarLeader where
   getAbilities (CivilWarLeader a) =
     [windowAbility a 1 (W.VillainRevealed W.When (VillainWithId $ villainId a) W.RevealedFromVillain) WhenRevealed NoCost (runAbility a 1)
-    | villainStage a /= 1]
+    | even (villainStage a) || (villainStage a == 3 && leaderFamily a == E.CwIronMan)]
     <> case leaderFamily a of
       E.CwCaptainMarvel -> [windowAbility a 2 (W.CharacterDefeatedByEnemyAttack W.After $ EnemyWithId $ toEnemyId a) ForcedResponse NoCost (runAbility a 2)]
       E.CwSpiderWoman -> [windowAbility a 2 (W.EnemyAttackedAnyTarget W.When $ EnemyWithId $ toEnemyId a) ForcedInterrupt NoCost (runAbility a 2)]
@@ -76,6 +76,9 @@ instance RunMessage CivilWarLeader where
         traverse_ dealEncounterCard =<< playersAtLeader (villainId a)
         lastingModifiers a (SourceEntity $ toSource a) [CannotTakeDamage] False
       else cardSpecific a "cwLeaderSetup" ()
+      pure e
+    CardSpecific (isTarget a -> True) "cwInitialLeaderSetup" _ -> do
+      when (villainStage a == 1 || (villainStage a == 3 && leaderFamily a /= E.CwIronMan)) $ cardSpecific a "cwLeaderSetup" ()
       pure e
     CardSpecific (isTarget a -> True) "cwLeaderSetup" _ -> do
       you <- firstPlayerAtLeader (villainId a)
