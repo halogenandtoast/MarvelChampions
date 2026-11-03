@@ -9,7 +9,11 @@
   "phaseTracker": "Round and phase",
   "phases": {
     "PlayerPhase": "Player phase",
-    "VillainPhase": "Villain phase"
+    "VillainPhase": "Villain phase",
+    "RegistrationPlayerPhase": "Registration · Player",
+    "ResistancePlayerPhase": "Resistance · Player",
+    "RegistrationVillainPhase": "Registration · Villain",
+    "ResistanceVillainPhase": "Resistance · Villain"
   },
   "loading": "Loading the game…",
   "notDealt": "The game has not been dealt yet.",
@@ -158,7 +162,10 @@
   "outcome": {
     "won": "The heroes win",
     "lost": "The villain wins",
-    "toCampaign": "Continue the campaign"
+    "toCampaign": "Continue the campaign",
+    "RegistrationWon": "Registration wins",
+    "ResistanceWon": "Resistance wins",
+    "CompetitiveDraw": "Draw"
   },
   "waitingOn": "Waiting for {name}…",
   "seats": {

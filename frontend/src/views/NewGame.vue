@@ -10,7 +10,7 @@ import SetupBar from '../components/SetupBar.vue'
 import { campaignArt } from '../campaigns'
 import { useServerText } from '../i18n'
 import { baseCode, useScenarios, type Release } from '../scenarios'
-import type { CampaignKind, CampaignMode, ScenarioOption } from '../server'
+import type { CampaignKind, CampaignMode, ScenarioOption, ScenarioList } from '../server'
 
 const tr = useServerText()
 const { t } = useI18n()
@@ -18,6 +18,7 @@ const router = useRouter()
 
 const scenarios = ref<ScenarioOption[]>([])
 const modularSets = ref<string[]>([])
+const civilWar = ref<ScenarioList['civilWar'] | null>(null)
 const error = ref<string | null>(null)
 const creating = ref(false)
 
@@ -41,6 +42,7 @@ onMounted(async () => {
   try {
     const list = await fetchScenarios()
     ;[scenarios.value, modularSets.value] = [list.scenarios, list.modulars]
+    civilWar.value = list.civilWar ?? null
   } catch (e) {
     error.value = e instanceof Error ? e.message : t('newGame.couldNotCreateGame')
   }
@@ -93,7 +95,15 @@ const modularReleases = computed(() => releasesOf(modularSets.value, modularRele
 const modularFilter = ref('')
 const modularSearch = ref('')
 // Keep the common choices and current lineup visible without opening the library.
-const sortedModulars = computed(() => byRelease(modularSets.value, modularRelease, modularName))
+const civilWarFaction = computed(() => {
+  if (!scenario.value || !civilWar.value) return null
+  return (['registration', 'resistance'] as const).find((faction) => civilWar.value![faction].presets.some((preset) => preset.leader === scenario.value!.code)) ?? null
+})
+const sortedModulars = computed(() => byRelease(modularSets.value.filter((set) => {
+  if (!civilWarFaction.value || !civilWar.value) return true
+  const opposite = civilWarFaction.value === 'registration' ? 'resistance' : 'registration'
+  return !civilWar.value[opposite].modulars.includes(set)
+}), modularRelease, modularName))
 const pinnedModulars = computed(() => sortedModulars.value.filter(
   (set) => !(isMagog.value && genreSets.includes(set)) && (modularRelease(set).code === 'core'
     || (!!scenario.value && modularRelease(set).code === releaseOf(scenario.value.code).code)
@@ -131,7 +141,7 @@ const makeDefault = async () => {
 const defaultName = computed(() => (scenario.value ? t('home.versus', { villain: villainName(scenario.value.code) }) : ''))
 const isHood = computed(() => scenario.value?.code === '24001')
 const modularGuidance = computed(() => scenario.value ? modularRules(scenario.value.code) : null)
-const canCreate = computed(() => !!scenario.value && !creating.value && (!isHood.value || modulars.value.length === 7))
+const canCreate = computed(() => !!scenario.value && !creating.value && (!isHood.value || modulars.value.length === 7) && (!civilWarFaction.value || [3, 4].includes(modulars.value.length)))
 
 const create = async () => {
   if (!canCreate.value || !scenario.value) return
@@ -203,6 +213,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
     <form class="page-content new-game" @submit.prevent="step === 2 && submit()">
       <header class="head">
         <h1 class="page-title">{{ $t('newGame.title') }}</h1>
+        <RouterLink to="/new-game/civil-war" class="btn primary">{{ $t('civilWar.entry') }}</RouterLink>
         <RouterLink to="/" class="btn ghost">{{ $t('common.cancel') }}</RouterLink>
       </header>
 
@@ -307,6 +318,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
             <SegmentedToggle :model-value="scenario.code" :options="versionOptions" :label="$t('newGame.version.title')" @update:model-value="choose(versions.find((v) => v.code === $event)!)" />
             <p class="hint">{{ $t('newGame.version.hint') }}</p>
           </template>
+          <p v-if="civilWarFaction" class="hint">{{ $t('civilWar.cooperativeHint') }}</p>
           <h3 class="field-title">{{ $t('newGame.modulars') }}</h3>
           <div v-if="modularGuidance" class="modular-guidance">
             <p class="hint">{{ modularGuidance.text }}</p>

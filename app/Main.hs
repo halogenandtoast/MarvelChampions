@@ -26,6 +26,7 @@ import Database.Persist.Postgresql
 import Decks
 import GameLog
 import Marvel.Campaign
+import Marvel.CivilWar.Types qualified as CW
 import Marvel.Card.Code (CardCode (..), toHeroCardCode)
 import Marvel.Difficulty (Difficulty (..))
 import Marvel.Card.Def (cdAspect, cdName)
@@ -45,10 +46,11 @@ import Marvel.Identity.Types (Attrs (..))
 import Marvel.Log (chat)
 import Marvel.Log.Entry
 import Marvel.Message (FinishedStatus (..), Message (StartGame))
-import Marvel.Name (display)
+import Marvel.Name (display, title)
 import Marvel.Phase
 import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
-import Marvel.Scenario.Types (ScenarioSetup (..))
+import Marvel.Scenario.CivilWar (civilWarLeaderCodes, validateCivilWarSetup)
+import Marvel.Scenario.Types (ScenarioSetup (..), setupCompetition)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Villain.Cards (allVillainsMap)
 import Marvel.MainScheme.Cards qualified as MainSchemes
@@ -74,6 +76,7 @@ data Table = Table
   , seats :: Int
   , owner :: UserId
   , seated :: [SeatView]
+  , competition :: Maybe CW.CompetitionSetup
   , campaign :: Maybe MarvelCampaignId
   -- ^ the campaign a game is the current scenario of
   }
@@ -403,7 +406,9 @@ tableFor gid row = do
             Just (Success (d :: DeckList)) -> Just d.hero
             _ -> Nothing
       pure $ SeatView seat.marvelSeatPosition seat.marvelSeatUserId name hero
-  pure Table {withFriends = row.marvelGameWithFriends, seats = row.marvelGameSeats, owner = row.marvelGameUserId, seated, campaign}
+  setup <- decodeOrFail "scenario" row.marvelGameScenario
+  let competition = setupCompetition setup
+  pure Table {withFriends = row.marvelGameWithFriends, seats = row.marvelGameSeats, owner = row.marvelGameUserId, seated, campaign, competition}
 
 -- | The game as a viewer may see it: with friends, only your own seat's hand, and only
 -- the log entries meant for whoever sees it.
@@ -526,7 +531,7 @@ data NewGame = NewGame
   deriving stock (Generic)
   deriving anyclass (FromJSON)
 
-newtype JoinGame = JoinGame {deck :: DeckChoice}
+data JoinGame = JoinGame {deck :: DeckChoice, position :: Maybe Int}
   deriving stock (Generic)
   deriving anyclass (FromJSON)
 
@@ -559,6 +564,15 @@ refuseSharedHeroes :: [DeckList] -> Handler ()
 refuseSharedHeroes deckLists = case sharedHeroes deckLists of
   [] -> pure ()
   titles -> sendResponseStatus status400 (ikeyWith "error.sharedHeroes" [textVar "heroes" (intercalate ", " titles)])
+
+-- | Civil War compares printed hero titles with the leader chosen by that team.
+refuseLeaderHero :: ScenarioSetup -> Int -> Int -> DeckList -> Handler ()
+refuseLeaderHero setup total position deckList = for_ (setupCompetition setup) \competition -> do
+  let team = if position < total `div` 2 then CW.Registration else CW.Resistance
+      leader = CW.teamScenarioLeader $ CW.scenarioForTeam competition team
+      heroTitle = title . cdName <$> HashMap.lookup (toHeroCardCode deckList.hero) allHeroesMap
+      leaderTitle = title . cdName <$> HashMap.lookup leader allVillainsMap
+  when (isJust heroTitle && heroTitle == leaderTitle) $ sendResponseStatus status400 (ikey "error.cwLeaderHero")
 
 -- | Your seats in multi-handed solo, numbered when there are several.
 soloSeats :: Text -> NonEmpty DeckList -> NonEmpty (Text, DeckList)
@@ -598,6 +612,10 @@ postGamesR = do
   -- you play under your username
   let playerName = user.userUsername
   setup <- maybe (sendResponseStatus status400 (ikey "error.noScenario")) pure (new.scenario <|> recommendedSetup "01094")
+  when (isJust (setupCompetition setup) && setup.scenarioCode `notElem` civilWarLeaderCodes) $
+    sendResponseStatus status400 (ikey "error.cwContentUnavailable")
+  when (setup.scenarioCode `elem` civilWarLeaderCodes) $
+    either (sendResponseStatus status400 . ikey) pure (validateCivilWarSetup setup)
   when (isNothing $ lookupScenario setup) $ sendResponseStatus status400 (ikeyWith "error.noSuchScenario" [textVar "scenario" (unCardCode setup.scenarioCode)])
   deckLists <- traverse (resolveDeck userId) new.decks
   refuseSharedHeroes deckLists
@@ -605,6 +623,8 @@ postGamesR = do
       -- seats left open are for friends, and the game waits for them
       friends = seatCount > length deckLists
   when (seatCount < max 1 (length deckLists) || seatCount > 4) $ sendResponseStatus status400 (ikey "error.seatCount")
+  when (isJust (setupCompetition setup) && seatCount `notElem` [2, 4]) $ sendResponseStatus status400 (ikey "error.cwSeatCount")
+  for_ (zip [0 ..] deckLists) \(position, deckList) -> refuseLeaderHero setup seatCount position deckList
   now <- liftIO getCurrentTime
   let newGame' g queue gen =
         MarvelGame
@@ -641,7 +661,8 @@ postGamesR = do
   pure $ object ["id" .= gid]
 
 -- | Take the first free seat at a game with friends, bringing a deck. The owner may take
--- several, anyone else one. Taking the last one deals the game.
+-- several, anyone else one. Taking the last one deals a cooperative game;
+-- a competitive game waits for the host to review both teams and start.
 postJoinR :: MarvelGameId -> Handler ()
 postJoinR gid = do
   userId <- requireUserId
@@ -652,13 +673,18 @@ postJoinR gid = do
   seated <- runDB $ selectList [MarvelSeatGameId ==. gid] []
   when (row.marvelGameUserId /= userId && any ((== userId) . (.marvelSeatUserId) . entityVal) seated) $ sendResponseStatus status409 (ikey "error.alreadySeated")
   refuseSharedHeroes . (deckList :) . map snd =<< friendSeats gid
-  case [0 .. row.marvelGameSeats - 1] \\ map ((.marvelSeatPosition) . entityVal) seated of
-    [] -> sendResponseStatus status409 (ikey "error.noFreeSeat")
-    (position : rest) -> do
-      runDB $ insert_ $ MarvelSeat gid position userId (Just $ toJSON deckList)
-      if null rest
-        then deal gid row =<< maybe (error "no seats") pure . nonEmpty =<< friendSeats gid
-        else broadcast gid row Nothing Nothing
+  setup <- decodeOrFail "scenario" row.marvelGameScenario
+  let available = [0 .. row.marvelGameSeats - 1] \\ map ((.marvelSeatPosition) . entityVal) seated
+  position <- case joining.position of
+    Just requested | requested `elem` available -> pure requested
+    Just _ -> sendResponseStatus status409 (ikey "error.noFreeSeat")
+    Nothing -> maybe (sendResponseStatus status409 (ikey "error.noFreeSeat")) pure (listToMaybe available)
+  refuseLeaderHero setup row.marvelGameSeats position deckList
+  inserted <- runDB $ insertUnique $ MarvelSeat gid position userId (Just $ toJSON deckList)
+  when (isNothing inserted) $ sendResponseStatus status409 (ikey "error.noFreeSeat")
+  if length available == 1 && isNothing (setupCompetition setup)
+    then deal gid row =<< maybe (error "no seats") pure . nonEmpty =<< friendSeats gid
+    else broadcast gid row Nothing Nothing
 
 -- | Give up your seats at a game with friends before it is dealt.
 postLeaveR :: MarvelGameId -> Handler ()
@@ -677,7 +703,10 @@ postStartR gid = do
   unless (awaitingPlayers row) $ sendResponseStatus status409 (ikey "error.notWaitingForPlayers")
   seats <- runDB $ selectList [MarvelSeatGameId ==. gid] [Asc MarvelSeatPosition]
   when (null seats) $ sendResponseStatus status409 (ikey "error.noSeatTaken")
-  row' <- runDB do
+  setup <- decodeOrFail "scenario" row.marvelGameScenario
+  when (isJust (setupCompetition setup) && (length seats /= row.marvelGameSeats || row.marvelGameSeats `notElem` [2, 4])) $
+    sendResponseStatus status409 (ikey "error.cwSeatsUnfilled")
+  row' <- if isJust (setupCompetition setup) then pure row else runDB do
     -- out of the way first, as positions are unique
     for_ (zip [0 :: Int ..] seats) \(n, Entity sid _) -> update sid [MarvelSeatPosition =. -1 - n]
     for_ (zip [0 :: Int ..] seats) \(n, Entity sid _) -> update sid [MarvelSeatPosition =. n]
@@ -910,7 +939,21 @@ getScenariosR =
              | Just s <- map recommendedSetup scenarioCodes
              ]
       , "modulars" .= modularSets
+      , "civilWar" .= object
+          [ "registration" .= factionOptions CW.Registration
+          , "resistance" .= factionOptions CW.Resistance
+          ]
       ]
+ where
+  factionOptions team =
+    let (firstSchemes, secondSchemes) = if team == CW.Registration then CW.registrationSchemes else CW.resistanceSchemes
+        factionModulars = if team == CW.Registration then CW.registrationModulars else CW.resistanceModulars
+     in object
+          [ "presets" .= [config | code <- civilWarLeaderCodes, CW.leaderTeam code == Just team, Just config <- [CW.defaultTeamScenario code]]
+          , "modulars" .= filter (`elem` modularSets) factionModulars
+          , "firstSchemes" .= take 4 firstSchemes
+          , "secondSchemes" .= take 4 secondSchemes
+          ]
 
 -- * Campaigns
 
@@ -1028,7 +1071,7 @@ campaignView (Entity cid row) = do
       , campaign = redactCampaign c
       , difficulty
       , heroes = [d.hero | (_, _, d) <- seats]
-      , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated, campaign = Just cid}
+      , table = Table {withFriends = row.marvelCampaignWithFriends, seats = row.marvelCampaignSeats, owner = row.marvelCampaignUserId, seated, campaign = Just cid, competition = Nothing}
       , waitingForPlayers = awaitingCampaignPlayers row c (length seats)
       , deckShort = [campaignDeckShortBy c d | (_, _, d) <- seats]
       , market = if c.kind == GalaxysMostWanted then marketLeft c else []

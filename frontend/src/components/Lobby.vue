@@ -7,23 +7,34 @@ import { Copy, Check } from 'lucide-vue-next'
 import DeckPicker from './DeckPicker.vue'
 import HeroPortrait from './HeroPortrait.vue'
 import { useCards } from '../cards'
+import { useScenarios } from '../scenarios'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { currentUser } from '../auth'
 import { fetchStarterDecks, type DeckChoice } from '../api'
-import { heroFace, toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
+import { deckFaces, heroFace, toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import type { StarterDeck, Table } from '../server'
 
 const { table } = defineProps<{ table: Table }>()
-const emit = defineEmits<{ join: [deck: DeckChoice]; leave: []; start: [] }>()
+const emit = defineEmits<{ join: [deck: DeckChoice, position?: number]; leave: []; start: [] }>()
 const cards = useCards()
+const { modularName } = useScenarios(ref([]))
 
 const seats = computed(() => Array.from({ length: table.seats }, (_, position) => table.seated.find((s) => s.position === position) ?? null))
 const mine = computed(() => table.seated.filter((s) => s.userId === currentUser.value?.id).length)
+const selectedPosition = ref<number | null>(null)
+const openPositions = computed(() => Array.from({ length: table.seats }, (_, position) => position).filter((position) => !table.seated.some((s) => s.position === position)))
+watch(openPositions, (available) => { if (selectedPosition.value === null || !available.includes(selectedPosition.value)) selectedPosition.value = available[0] ?? null }, { immediate: true })
+const faction = (position: number) => position < table.seats / 2 ? 'registration' : 'resistance'
 const full = computed(() => table.seated.length >= table.seats)
 const owner = computed(() => table.owner === currentUser.value?.id)
 // heroes are unique: those already brought to a seat
-const taken = computed(() => table.seated.flatMap((s) => (s.hero ? [s.hero] : [])))
+const ownLeader = computed(() => table.competition && selectedPosition.value !== null ? table.competition[faction(selectedPosition.value)].leader : null)
+const ownLeaderName = computed(() => cards.card(ownLeader.value)?.name ?? '')
+const taken = computed(() => [
+  ...table.seated.flatMap((s) => (s.hero ? [s.hero] : [])),
+  ...cards.store.all.filter((card) => card.type === 'hero' && card.name === ownLeaderName.value).map((card) => card.code),
+])
 
 const link = window.location.href
 const copied = ref(false)
@@ -54,8 +65,16 @@ onMounted(async () => {
 const loaded = ref<{ face: DeckFace; list: DeckList } | null>(null)
 const loading = ref(false)
 const choice = (): DeckChoice => (deck.value === 'loaded' && loaded.value ? { list: loaded.value.list } : toDeckChoice(deck.value))
+const selectedFace = computed(() => deck.value === 'loaded' ? loaded.value?.face : deckFaces(starters.value, decks.value).find((face) => face.key === deck.value))
+const joinProblem = computed(() => {
+  const face = selectedFace.value
+  if (!face) return null
+  if (ownLeaderName.value && cards.card(heroFace(face.hero))?.name === ownLeaderName.value) return 'error.cwLeaderHero'
+  return table.seated.some((seat) => seat.hero?.replace(/[ab]$/, '') === face.hero.replace(/[ab]$/, '')) ? 'newGame.heroTaken' : null
+})
 const join = () => {
-  emit('join', choice())
+  if (!selectedFace.value || joinProblem.value) return
+  emit('join', choice(), table.competition ? selectedPosition.value ?? undefined : undefined)
   preset.value = false
   deck.value = ''
 }
@@ -71,9 +90,19 @@ watch(deck, () => deck.value && !preset.value && join())
       <h2>{{ $t('game.lobby.waiting') }}</h2>
     </header>
 
+    <details v-if="table.competition" class="team-scenarios">
+      <summary>{{ $t('civilWar.reviewScenarios') }}</summary>
+      <section v-for="faction in (['registration', 'resistance'] as const)" :key="faction">
+        <h3>{{ $t(`civilWar.${faction}`) }} · {{ cards.name(table.competition[faction].leader) }}</h3>
+        <p class="hint">{{ $t('civilWar.opponentsFace') }}</p>
+        <p>{{ table.competition[faction].mainSchemes.map((code) => cards.name(code, code)).join(' → ') }}</p>
+        <p>{{ table.competition[faction].modulars.map(modularName).join(', ') }}</p>
+      </section>
+    </details>
     <ol class="seats">
       <li v-for="(seat, position) in seats" :key="position" class="seat" :class="{ open: !seat, you: seat?.userId === currentUser?.id }">
         <span class="number">{{ position + 1 }}</span>
+        <span v-if="table.competition">{{ $t(`civilWar.${faction(position)}`) }}</span>
         <HeroPortrait v-if="seat?.hero" class="face square" :code="seat.hero" />
         <span v-if="seat" class="who">
           <span class="name">{{ seat.username }}<template v-if="seat.userId === currentUser?.id"> · {{ $t('game.lobby.you') }}</template></span>
@@ -95,14 +124,19 @@ watch(deck, () => deck.value && !preset.value && join())
     </div>
 
     <template v-if="!full && (owner || mine === 0)">
+      <label v-if="table.competition">{{ $t('civilWar.chooseSeat') }}
+        <select v-model="selectedPosition" class="input"><option v-for="position in openPositions" :key="position" :value="position">{{ $t(`civilWar.${faction(position)}`) }} · {{ position + 1 }}</option></select>
+      </label>
+      <p v-if="ownLeaderName" class="hint">{{ $t('civilWar.leaderRestriction', { leader: ownLeaderName }) }}</p>
       <h3>{{ $t('game.lobby.chooseDeck') }}</h3>
       <DeckPicker v-model="deck" v-model:loading="loading" :decks="decks" :starters="starters" :loaded="loaded?.face" :taken="taken" @load="(face, list) => (loaded = { face, list })" @saved="refresh" />
-      <button v-if="!loading && preset" type="button" class="btn primary big" @click="join">{{ $t(mine > 0 ? 'game.lobby.takeAnother' : 'game.lobby.join') }}</button>
+      <p v-if="joinProblem" class="hint" role="status">{{ $t(joinProblem) }}</p>
+      <button v-if="!loading && preset" :disabled="!!joinProblem || !selectedFace" type="button" class="btn primary big" @click="join">{{ $t(mine > 0 ? 'game.lobby.takeAnother' : 'game.lobby.join') }}</button>
     </template>
     <template v-if="mine > 0">
-      <p class="hint">{{ $t('game.lobby.dealtWhenFull') }}</p>
+      <p class="hint">{{ $t(table.competition ? 'civilWar.lobbyHint' : 'game.lobby.dealtWhenFull') }}</p>
       <div class="actions">
-        <button v-if="owner" type="button" class="btn primary big" @click="emit('start')">{{ $t('game.lobby.startNow', table.seated.length) }}</button>
+        <button v-if="owner" :disabled="!!table.competition && !full" type="button" class="btn primary big" @click="emit('start')">{{ $t('game.lobby.startNow', table.seated.length) }}</button>
         <button type="button" class="btn big" @click="emit('leave')">{{ $t('game.lobby.leave', mine) }}</button>
       </div>
     </template>

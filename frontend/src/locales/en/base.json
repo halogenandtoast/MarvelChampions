@@ -152,7 +152,8 @@
       "next_evol": "You can swap the recommended modular sets for others. Required sets are included automatically.",
       "aoa": "Use the required encounter sets and the recommended modular sets shown, or replace modular sets to customize the scenario. Standard III may replace the core Standard set.",
       "tt": "Each scenario uses one modular encounter set. Trickster Magic is recommended. God of Lies uses Single Group Mode.",
-      "ron": "Kree Fanatic is a seven-card modular encounter set. Use it in place of a scenario’s recommended modular set."
+      "ron": "Kree Fanatic is a seven-card modular encounter set. Use it in place of a scenario’s recommended modular set.",
+      "cw": "Choose 3 or 4 different modular sets. Civil War faction sets must match the leader; ordinary encounter modulars can also be used in cooperative play."
     },
     "modularsHint": "The scenario's recommended set is chosen to begin with; add or swap others to vary it.",
     "difficulty": "Difficulty",
@@ -336,5 +337,41 @@
     "activeUsers": "Active users (14 days)",
     "games": "Games",
     "recentGames": "Recent games"
+  },
+  "civilWar": {
+    "title": "Civil War",
+    "entry": "Civil War · Competitive",
+    "intro": "Build a scenario for the opposing team. Choose heroes in the lobby next; one person can control seats on both teams.",
+    "registration": "Registration",
+    "resistance": "Resistance",
+    "seats": "Hero seats",
+    "duel": "2 · One per team",
+    "teams": "4 · Two per team",
+    "leader": "Team leader",
+    "firstScheme": "First main scheme",
+    "secondScheme": "Second main scheme",
+    "modulars": "Modular sets",
+    "modularHint": "Choose 3 or 4 different sets from your faction. Your opponents will face these cards.",
+    "name": "Game name",
+    "spectators": "Allow spectators",
+    "create": "Create team lobby",
+    "loading": "Loading faction options…",
+    "chooseSeat": "Choose your team and seat",
+    "lobbyHint": "Fill every seat, then the host starts the game. The host may control both teams.",
+    "replyPending": "A result has been recorded. The other team still has its reply phase before the winner is decided.",
+    "leaderRestriction": "Your team leader is {leader}. Choose a hero with a different title.",
+    "cooperativeHint": "Cooperative Civil War: choose 3 or 4 modular sets. For teams playing against one another, use Civil War · Competitive.",
+    "status": "Team status",
+    "heroHealth": "Hero health",
+    "mainThreat": "Main threat",
+    "schemeStage": "Main scheme {stage}",
+    "teamResult": {
+      "EnemyLeaderDefeated": "Enemy leader defeated",
+      "MainSchemeCompleted": "Final main scheme completed",
+      "AllHeroesDefeated": "All heroes defeated"
+    },
+    "reviewScenarios": "Review both team scenarios",
+    "opponentsFace": "The opposing team faces this leader and encounter scenario.",
+    "eliminated": "Eliminated"
   }
 }

@@ -308,13 +308,30 @@ export interface MissionView {
 }
 
 export interface GameView {
+  competition?: {
+    phase: 'RegistrationPlayerPhase' | 'ResistancePlayerPhase' | 'RegistrationVillainPhase' | 'ResistanceVillainPhase'
+    replyPending: boolean
+    teams: {
+      team: 'Registration' | 'Resistance'
+      area: number
+      leader: string | null
+      enemyLeader: string | null
+      roster: { id: string; name: string; code: string; eliminated: boolean }[]
+      outcome: 'EnemyLeaderDefeated' | 'MainSchemeCompleted' | 'AllHeroesDefeated' | null
+      advancedMainScheme: boolean
+      mainThreat: number
+      remainingHeroHitPoints: number
+      minionsAndSideSchemes: number
+      leaderAttachments: number
+    }[]
+  } | null
   trickster?: { lokiHitPoints: number; lokiFlipped: boolean; worldsCollideThreat: number; worldsCollideComplete: boolean } | null
   mission: MissionView | null
   uncontrolledAllies?: AllyView[]
   futurePastDeckCount?: number | null
   round: number
   phase: 'PlayerPhase' | 'VillainPhase' | string
-  outcome: 'Won' | 'Lost' | null
+  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
   activePlayer: string
   playerOrder: string[]
   seats: string[]
@@ -358,6 +375,7 @@ export interface GameView {
 
 /** Who plays: with friends, who sits where (seat n plays the nth player); otherwise the owner plays every seat. */
 export interface Table {
+  competition?: { registration: CivilWarTeamScenario; resistance: CivilWarTeamScenario } | null
   withFriends: boolean
   seats: number
   owner: number
@@ -404,7 +422,7 @@ export interface GameSummary {
   difficulty: 'Normal' | 'Expert' | string
   round: number
   phase: string
-  outcome: 'Won' | 'Lost' | null
+  outcome: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
   /** Waiting for friends to take the rest of the seats. */
   waiting: boolean
   /** Who plays, in turn order, as whom; none until the game is dealt. */
@@ -423,6 +441,23 @@ export interface ScenarioOption {
 export interface ScenarioList {
   scenarios: ScenarioOption[]
   modulars: string[]
+  civilWar: {
+    registration: CivilWarFactionOptions
+    resistance: CivilWarFactionOptions
+  }
+}
+
+export interface CivilWarTeamScenario {
+  leader: string
+  modulars: string[]
+  mainSchemes: string[]
+}
+
+export interface CivilWarFactionOptions {
+  presets: CivilWarTeamScenario[]
+  modulars: string[]
+  firstSchemes: string[]
+  secondSchemes: string[]
 }
 
 export interface StarterDeck {

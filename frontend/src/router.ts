@@ -6,6 +6,7 @@ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     { path: '/', component: Home, meta: { title: 'appName', requiresAuth: true } },
+    { path: '/new-game/civil-war', component: () => import('./views/NewCivilWar.vue'), meta: { title: 'civilWar.title', requiresAuth: true } },
     { path: '/new-game', component: () => import('./views/NewGame.vue'), meta: { title: 'newGame.title', requiresAuth: true } },
     { path: '/campaigns/:id', component: () => import('./views/Campaign.vue'), meta: { title: 'campaign.log', requiresAuth: true } },
     { path: '/games/:id/spectate', component: () => import('./views/Game.vue'), meta: { title: 'common.game', spectate: true } },

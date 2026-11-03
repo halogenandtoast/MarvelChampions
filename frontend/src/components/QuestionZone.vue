@@ -22,7 +22,7 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
   asking?: string | null
   /** the seat being asked, when it is someone else's */
   waitingOn?: string | null
-  outcome?: 'Won' | 'Lost' | null
+  outcome?: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | null
   /** everything in the game by id, to name and show what a choice is about */
   things?: Record<string, { code: string; name: string }>
   /** the question is answered in a window over the board: only a button to open it here */
@@ -58,9 +58,9 @@ const tone = (choice: ChoiceView) =>
   <section class="question" :class="{ idle: !buttons.length && !onBoard }">
     <template v-if="outcome">
       <div class="outcome" :class="outcome.toLowerCase()">
-        <Trophy v-if="outcome === 'Won'" aria-hidden="true" />
+        <Trophy v-if="outcome !== 'Lost'" aria-hidden="true" />
         <Skull v-else aria-hidden="true" />
-        <span>{{ t(outcome === 'Won' ? 'game.outcome.won' : 'game.outcome.lost') }}</span>
+        <span>{{ t(`game.outcome.${outcome === 'Won' ? 'won' : outcome === 'Lost' ? 'lost' : outcome}`) }}</span>
       </div>
     </template>
     <template v-else-if="popOut">

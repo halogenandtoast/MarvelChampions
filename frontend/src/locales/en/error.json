@@ -30,6 +30,11 @@
   "campaignDeckTooSmall": "{hero}'s deck is {count} short of the 40 cards a deck needs, now that the campaign has taken allies from it: add cards to it (change the deck) before the next scenario.",
   "campaignGameInProgress": "Decks change between the campaign's games, not during one.",
   "campaignSameHero": "A player keeps their hero for the whole campaign: choose a deck for the same hero.",
+  "cwLeaderFaction": "Choose a leader from the selected Civil War faction.",
+  "cwModularCount": "Choose three or four different modular encounter sets.",
+  "cwModularFaction": "The selected modular sets cannot be used with this Civil War faction.",
+  "cwMainSchemes": "Choose a stage 1 and a stage 2 main scheme from the selected faction.",
+  "cwContentUnavailable": "One of the selected Civil War leaders or encounter sets is not available.",
   "marketCards": "Cards from The Market are bought with units in The Galaxy's Most Wanted campaign, not put in a deck: {cards}",
   "campaignOnlyCards": "The Mad Titan's Shadow's campaign cards are added by its Campaign Instructions, not put in a deck: {cards}",
   "cannotBuy": "That card of The Market cannot be bought: it is bought already, or costs more units than are unspent.",
@@ -40,5 +45,8 @@
   "cableAspects": "Cable may include player side schemes from any aspect. Other aspect cards must match his chosen aspect.",
   "mariaHillSupports": "Maria Hill must include a full playset of exactly three different off-aspect S.H.I.E.L.D. supports, or none.",
   "startingCardLimit": "A deck can include only one card with Starting.",
-  "wonderManEvents": "Wonder Man may use printed energy events from any aspect; his other aspect cards must use his chosen aspect."
+  "wonderManEvents": "Wonder Man may use printed energy events from any aspect; his other aspect cards must use his chosen aspect.",
+  "cwSeatCount": "Civil War requires two or four hero seats.",
+  "cwSeatsUnfilled": "Fill every seat before starting Civil War.",
+  "cwLeaderHero": "Choose a hero with a different title from your own team leader."
 }

@@ -74,11 +74,11 @@ const phases = ['PlayerPhase', 'VillainPhase']
       <span v-if="name" class="game-name">{{ name }}</span>
       <span class="round"><RotateCcw aria-hidden="true" />{{ $t('game.round', { round }) }}</span>
       <ol class="phases">
-        <li v-for="p in phases" :key="p" :class="[p, { current: p === phase }]" :aria-current="p === phase ? 'step' : undefined">
+        <li v-for="p in (phase?.startsWith('Registration') || phase?.startsWith('Resistance') ? ['RegistrationPlayerPhase', 'ResistancePlayerPhase', 'RegistrationVillainPhase', 'ResistanceVillainPhase'] : phases)" :key="p" :class="[p, { current: p === phase }]" :aria-current="p === phase ? 'step' : undefined">
           {{ $t(`game.phases.${p}`) }}
         </li>
       </ol>
-      <span v-if="turn && phase === 'PlayerPhase'" class="turn">{{ $t('game.turnOf', { name: turn }) }}</span>
+      <span v-if="turn && phase?.endsWith('PlayerPhase')" class="turn">{{ $t('game.turnOf', { name: turn }) }}</span>
     </div>
 
     <div class="right">
@@ -150,8 +150,8 @@ const phases = ['PlayerPhase', 'VillainPhase']
 .round { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 .phases { display: flex; margin: 0; padding: 2px; list-style: none; border-radius: 8px; background: var(--ink-0); border: 1px solid var(--line); }
 .phases li { padding: 3px 10px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-.phases li.current.PlayerPhase { background: var(--steel-deep); color: var(--steel-bright); }
-.phases li.current.VillainPhase { background: var(--crimson-deep); color: #ffb3b7; }
+.phases li.current.PlayerPhase, .phases li.current.RegistrationPlayerPhase, .phases li.current.ResistancePlayerPhase { background: var(--steel-deep); color: var(--steel-bright); }
+.phases li.current.VillainPhase, .phases li.current.RegistrationVillainPhase, .phases li.current.ResistanceVillainPhase { background: var(--crimson-deep); color: #ffb3b7; }
 .turn { font-size: 0.78rem; color: var(--text-muted); }
 @media (width < 1100px) {
   .game-name, .turn { display: none; }

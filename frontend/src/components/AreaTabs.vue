@@ -5,6 +5,7 @@ import type { AreaView } from '../server'
 
 defineProps<{
   areas: AreaView[]
+  labels?: Record<number, string>
   shown: number | null
   own: number | null
   /** the areas a choice open to you is about */
@@ -28,7 +29,7 @@ const emit = defineEmits<{ show: [areaId: number] }>()
       :aria-selected="area.id === shown"
       @click="emit('show', area.id)"
     >
-      <span class="name">{{ $t('game.areas.area', { n: numbers[area.id] ?? '' }) }}<span v-if="area.id === own" class="yours">{{ $t('game.areas.yours') }}</span></span>
+      <span class="name">{{ labels?.[area.id] ?? $t('game.areas.area', { n: numbers[area.id] ?? '' }) }}<span v-if="area.id === own" class="yours">{{ $t('game.areas.yours') }}</span></span>
       <span class="meta">{{ area.players.map((p) => names[p]).filter(Boolean).join(', ') || $t('game.areas.empty') }}</span>
     </button>
   </nav>

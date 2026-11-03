@@ -210,7 +210,7 @@ export const useGame = (gameId: string, spectate = false) => {
     // answered as the seat it was asked of
     answer: (questionVersion: number, choice: number, player: string) => post('', { choice, questionVersion, player }),
     debug: (message: unknown) => post('/debug', message),
-    join: (deck: DeckChoice) => post('/join', { deck }),
+    join: (deck: DeckChoice, position?: number) => post('/join', { deck, position }),
     leave: () => post('/leave'),
     start: () => post('/start'),
     refresh,

@@ -14,6 +14,7 @@ import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
 import FileBug from '../components/FileBug.vue'
 import GameBar from '../components/GameBar.vue'
+import CompetitionStatus from '../components/CompetitionStatus.vue'
 import GameLog from '../components/GameLog.vue'
 import HandFan from '../components/HandFan.vue'
 import Lobby from '../components/Lobby.vue'
@@ -309,7 +310,7 @@ const resetGame = () => {
       :spectate="spectate"
       :guest="guest"
       :round="game?.round ?? null"
-      :phase="game?.phase ?? null"
+      :phase="game?.competition?.phase ?? game?.phase ?? null"
       :turn="active ? playerName[active] : null"
       :name="scenarioName"
       :campaign="game?.campaign ?? null"
@@ -320,6 +321,8 @@ const resetGame = () => {
       @debug="debugging = true"
       @toggle-sidebar="showSidebar = !showSidebar"
     />
+    <CompetitionStatus v-if="game?.competition" :competition="game.competition" :shown-area="shownArea?.id ?? null" @show="showArea" />
+    <p v-if="game?.competition?.replyPending && !game.outcome" class="competitive-reply" role="status">{{ t('civilWar.replyPending') }}</p>
     <StoryReading
       v-if="reading && popOut === 'open'"
       :sections="reading[1].reading ?? []"
@@ -347,9 +350,9 @@ const resetGame = () => {
         <Lobby v-if="inLobby && table" :table="table" @join="join" @leave="leave" @start="start">
           <SetupBar
             v-if="data?.setup"
-            :portraits="chosen.portraits(data.setup.scenarioCode)"
-            :name="chosen.scenarioName(data.setup.scenarioCode)"
-            :details="chosen.details(data.setup).concat(t('newGame.playerCount', table.seats))"
+            :portraits="table.competition ? [table.competition.registration.leader, table.competition.resistance.leader] : chosen.portraits(data.setup.scenarioCode)"
+            :name="table.competition ? t('civilWar.title') : chosen.scenarioName(data.setup.scenarioCode)"
+            :details="table.competition ? [t('difficulty.' + data.setup.difficulty), t('newGame.playerCount', table.seats)] : chosen.details(data.setup).concat(t('newGame.playerCount', table.seats))"
           />
         </Lobby>
         <p v-else-if="!data" class="notice">{{ t('game.loading') }}</p>
@@ -357,7 +360,7 @@ const resetGame = () => {
 
         <template v-if="game">
           <div class="half villain-half">
-            <AreaTabs v-if="splitAreas" :areas="orderedAreas" :numbers="Object.fromEntries(areas.map((a, n) => [a.id, n + 1]))" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
+            <AreaTabs :labels="game.competition ? Object.fromEntries(game.competition.teams.map((team) => [team.area, t(`civilWar.${team.team.toLowerCase()}`)])) : undefined" v-if="splitAreas" :areas="orderedAreas" :numbers="Object.fromEntries(areas.map((a, n) => [a.id, n + 1]))" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
             <VillainArea :game="game" :area="shownArea" />
             <MissionArea v-if="game.mission" :mission="game.mission" />
           </div>

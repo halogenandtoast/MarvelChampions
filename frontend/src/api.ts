@@ -1,7 +1,7 @@
 import type { DeckList } from './browser/types/deck'
 import { authHeaders, signOut } from './auth'
 import { router } from './router'
-import type { CampaignKind, CampaignMode, CampaignView, GameSummary, ScenarioList, StarterDeck } from './server'
+import type { CampaignKind, CampaignMode, CampaignView, CivilWarTeamScenario, GameSummary, ScenarioList, StarterDeck } from './server'
 
 /** A fetch that signs the request and sends a signed-out user to sign in. */
 export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Response> => {
@@ -45,7 +45,7 @@ export type DeckChoice = { starter: string } | { deckId: number } | { list: Deck
 export interface NewGame {
   name: string
   seed?: number
-  scenario?: { scenarioCode: string; modulars: string[]; difficulty: 'Normal' | 'Expert' }
+  scenario?: { scenarioCode: string; modulars: string[]; difficulty: 'Normal' | 'Expert'; mainSchemes?: string[]; competition?: { registration: CivilWarTeamScenario; resistance: CivilWarTeamScenario } }
   decks: DeckChoice[]
   seats?: number
   allowSpectators?: boolean

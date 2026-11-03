@@ -20,7 +20,7 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
     <div class="body">
       <div class="title-line">
         <RouterLink class="title" :to="link">{{ game.name }}</RouterLink>
-        <span v-if="game.outcome" class="badge" :class="game.outcome.toLowerCase()">{{ $t(game.outcome === 'Won' ? 'home.won' : 'home.lost') }}</span>
+        <span v-if="game.outcome" class="badge" :class="game.outcome.toLowerCase()">{{ $t(game.outcome === 'Won' ? 'home.won' : game.outcome === 'Lost' ? 'home.lost' : `game.outcome.${game.outcome}`) }}</span>
         <span v-if="game.difficulty === 'Expert'" class="badge expert">{{ $t('difficulty.Expert') }}</span>
       </div>
       <p class="meta">
