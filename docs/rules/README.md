@@ -196,6 +196,8 @@ Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasy
 
 ## Synthezoid Smackdown modulars
 
+Leader reward dependencies are tracked in [player-synthezoid.md](player-synthezoid.md).
+
 - [Modular behavior and verification](encounter-synthezoid-modulars.md).
 
 ## Civil War scenarios

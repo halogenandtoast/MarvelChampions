@@ -16,6 +16,7 @@ import Marvel.Payment
 import Marvel.Modifier
 import Marvel.Query
 import Marvel.Ref
+import Marvel.Window qualified as W
 import Marvel.Resource.Types
 
 newtype LeaderRewardEvent = LeaderRewardEvent (Attrs Event)
@@ -27,10 +28,21 @@ leaderRewardEvents = map (event LeaderRewardEvent) C.rewardEvents
 
 instance RunMessage LeaderRewardEvent where
   runMessage msg e@(LeaderRewardEvent a) = runQueueT $ case msg of
-    EventMessage eid (PlayedEvent you payment _) | eid == eventId a -> do
+    EventMessage eid (PlayedEvent you payment window) | eid == eventId a -> do
       friendly <- friendlyLeaderFor you
       enemy <- enemyLeaderFor you
       case toCardCode a of
+        "57032" -> for_ window $ \case
+          W.ThreatPlaced _ scheme n -> insteadOf (isThreatPlacement scheme) $ placeThreatWithoutWindow scheme (subtractNatural 3 n)
+          _ -> pure ()
+        "57074" -> for_ friendly $ \vid -> do
+          keys <- getDeckKeys
+          let key = if VillainDeckKey vid `elem` keys then VillainDeckKey vid else EncounterDeckKey
+          cards <- take 5 . pileDeck <$> getPile key
+          recipient <- enemyTeamChooser you
+          unless (null cards) $ lookingAt you (map EncounterCard cards) $ chooseOne you
+            [cardLabeled (toCardCode card) $ fromDeck key $ dealFoundEncounterCard recipient card | card <- cards]
+          fromDeck key shuffleEncounterDeck
         "56129" -> for_ friendly $ \vid -> do
           resolvingPlayer <- enemyTeamChooser you
           previous <- getActivePlayerId
@@ -64,7 +76,7 @@ instance RunMessage LeaderRewardEvent where
             pure $ not blanked && not permanent && all (`notElem` modifiers) [CannotBeDiscarded,CannotLeavePlay,CannotLeavePlayByCardAbilities] && any ((`elem` [HeroResponse,HeroInterrupt]) . abilityType) abilities) attachments
           unless (null eligible) $ chooseOne you [targeting aid $ removeFromPlay aid | aid <- eligible]
         "56134" -> whenM (paidWith Energy payment) $ confuse defender a
-        "56208" -> whenM (paidWith Physical payment) $ stun defender a
+        code | code `elem` ["56208","57033"] -> whenM (paidWith Physical payment) $ stun defender a
         "56212" -> whenM (paidWith Mental payment) $ confuse defender a
         _ -> pure ()
       pure e

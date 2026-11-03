@@ -10,6 +10,7 @@ import Marvel.Modifier (Modifier (CannotBeDiscarded))
 import Marvel.Minion.Cards qualified as M
 import Marvel.MainScheme.Types qualified as Main
 import Marvel.Villain.Types qualified as V
+import Marvel.Window qualified as W
 import TestImport
 
 leaders :: TestGame -> CardCode -> CardCode -> GameAppT (VillainId,VillainId)
@@ -259,3 +260,75 @@ spec = describe "Civil War leader reward events" do
       offers (isTargetChoice aid) `shouldReturn` False
       pass
       getAttachedCharacter aid `shouldReturn` Just (VillainCharacter enemy)
+
+  for_ [("01090",True),("01088",False)] $ \(resource,physical) ->
+    it ("She-Hulk Smash attacks and checks the resource actually spent: physical " <> show physical) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        (own,enemy) <- leaders tg "57001" "56137"
+        _ <- stackEncounterDeck [M.hydraMercenary,M.hydraSoldier]
+        before <- leaderHp enemy
+        card <- putInHand you "57033"
+        payment <- putInHand you resource
+        playWith card [payment]
+        whenM (offers $ isAbilityOf own) $ choose "resolve She-Hulk's interrupt" (isAbilityOf own)
+        pass
+        leaderHp enemy >>= (`shouldSatisfy` (< before))
+        getCharacterStatusCount (VillainCharacter enemy) StunnedStatus `shouldReturn` if physical then 1 else 0
+        damageOf you `shouldReturn` 0
+
+  it "She-Hulk Smash is not playable with a different friendly leader" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      _ <- leaders tg "56137" "57001"
+      card <- putInHand you "57033"
+      _ <- putInHand you "01090"
+      offers (isPlay card) `shouldReturn` False
+
+  for_ [W.ThreatFromAbility,W.ThreatFromVillain,W.ThreatFromAcceleration] $ \source ->
+    for_ [2,5] $ \amount ->
+      it ("You're Out of Order prevents up to three main-scheme threat: " <> show (source,amount)) do
+        tg <- testGame ["spider-man"]
+        inGame tg do
+          let you = player1 tg
+          card <- putInHand you "57032"
+          payment <- putInHand you "01088"
+          scheme <- mainSchemeIdNow
+          before <- mainSchemeThreat
+          messages <- L.runQueueT $ L.capture $ L.placeThreatFrom source (SchemeMainSchemeId scheme) amount
+          start messages
+          playWith card [payment]
+          pass
+          mainSchemeThreat `shouldReturn` (before + subtractNatural 3 amount)
+          discardOf you >>= (`shouldSatisfy` elem card)
+
+  for_ [2,6] $ \size ->
+    it ("Calculated Risk searches only the friendly leader's top five and deals to the enemy first player: size " <> show size) do
+      tg <- competitive ["spider-man","captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+            opponent = player2 tg
+        (own,enemy) <- leaders tg "57040" "56137"
+        cards <- traverse encounterCard $ take size [M.hydraMercenary,M.hydraSoldier,M.shocker,M.weaponsRunner,C.cw57013,C.cw57014]
+        filler <- encounterCard M.hydraMercenary
+        resolve [CreateDeck (VillainDeckKey own) cards,CreateDeck (VillainDeckKey enemy) [filler]]
+        ordered <- pileDeck <$> getPile (VillainDeckKey own)
+        card <- putInHand you "57074"
+        payment <- putInHand you "01088"
+        playWith card [payment]
+        fmap fst <$> openQuestion `shouldReturn` Just you
+        for_ (take 5 ordered) $ \visible ->
+          offers (\case CardLabel code _ -> code == toCardCode visible; _ -> False) `shouldReturn` True
+        for_ (drop 5 ordered) $ \hidden ->
+          offers (\case CardLabel code _ -> code == toCardCode hidden; _ -> False) `shouldReturn` False
+        let selected = ordered !! min 4 (size - 1)
+        choose "select a searched card" (\case CardLabel code _ -> code == toCardCode selected; _ -> False)
+        pass
+        dealtTo opponent `shouldReturn` [selected]
+        dealtTo you `shouldReturn` []
+        pileDeck <$> getPile (VillainDeckKey enemy) `shouldReturn` [filler]
+        remaining <- pileDeck <$> getPile (VillainDeckKey own)
+        length remaining `shouldBe` (size - 1)
+        remaining `shouldSatisfy` notElem selected

@@ -1,7 +1,7 @@
 module Marvel.CivilWar.RewardCards where
 
 import Marvel.Prelude
-import Marvel.Ability.Types (AbilityType (Action))
+import Marvel.Ability.Types (AbilityType (Action,Interrupt))
 import Marvel.Aspect (Aspect (Neutral))
 import Marvel.Card
 import Marvel.Cost.Types (Cost (NoCost))
@@ -9,6 +9,7 @@ import Marvel.Criteria
 import Marvel.Name (Name)
 import Marvel.Matchers
 import Marvel.Trait qualified as T
+import Marvel.Window qualified as W
 import Marvel.Resource.Types
 
 rewardEvent :: CardCode -> Name -> Int -> Maybe CardCode -> CardDef
@@ -28,7 +29,10 @@ rewardEvent code name cost leader = CardDef
 
 rewardEvents :: [CardDef]
 rewardEvents =
-  [rewardEvent "56129" "The Futurist" 2 (Just "56059")
+  [(rewardEvent "57032" "You're Out of Order!" 1 Nothing) {cdCriteria = NoCriteria,cdAbilityType = Just Interrupt,cdResponseWindow = Just $ W.ThreatWouldBePlaced W.AnyThreatSource EncounterMainScheme}
+  ,rewardEvent "57033" "She-Hulk Smash" 2 (Just "57001")
+  ,rewardEvent "57074" "Calculated Risk" 2 Nothing
+  ,rewardEvent "56129" "The Futurist" 2 (Just "56059")
   ,rewardEvent "56130" "Target Lock" 2 (Just "56059")
   ,rewardEvent "56134" "You Started This" 2 (Just "56092")
   ,rewardEvent "56208" "Fighting Dirty" 2 (Just "56137")

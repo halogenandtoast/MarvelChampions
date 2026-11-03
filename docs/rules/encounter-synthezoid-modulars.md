@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-All eight modular sets are implemented and verified. Eight leader reward dependencies and native Synthezoid scenario/UI integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+All eight modular sets are implemented and verified. Three leader reward dependencies are verified; the remaining five and native Synthezoid scenario/UI integration remain unfinished. See [leader reward dependencies](player-synthezoid.md). Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
