@@ -3,6 +3,8 @@ module Marvel.SmokeSpec (spec) where
 import Control.Exception (SomeException, displayException, evaluate, try)
 import Data.Text (unpack)
 import System.Random (mkStdGen, randomR)
+import System.Random.Internal (unStdGen)
+import System.Random.SplitMix (unseedSMGen)
 import Marvel.EncounterSet (modularSets)
 import Marvel.EncounterSet qualified as Encounter
 import System.Environment (lookupEnv)
@@ -263,15 +265,25 @@ spec = parallel do
    seeds <- maybe 4 read <$> lookupEnv "SMOKE_SEEDS"
    for_ [1 .. seeds :: Int] \seed -> do
       recent <- newIORef Nothing
+      recentApp <- newIORef Nothing
       result <- try $ withQuestionMonitor 5000000 $ \onQuestion -> do
         (app, ran, _) <- dealtGameWith f (withTestModulars setup) (map starter heroes) seed
         writeIORef recent (Just ran)
+        writeIORef recentApp (Just app)
         _ <- runGameApp app (playRandomly onQuestion (setup.scenarioCode `elem` hastened) (seed * 31) 2000)
         g <- runGameApp app getGame
         evaluate (length (show g))
       case result of
         Right _ -> pure ()
         Left (err :: SomeException) -> do
+          -- Opt in for a single focused example: preserve the exact failing
+          -- calculation for replay without dumping a whole game into Hspec.
+          snapshot <- lookupEnv "SMOKE_FAILURE_SNAPSHOT"
+          for_ snapshot \path -> do
+            saved <- readIORef recentApp
+            for_ saved \app -> do
+              (game, queue, generator) <- currentState app
+              BL.writeFile path $ encode $ object ["game" .= game, "queue" .= queue, "generator" .= unseedSMGen (unStdGen generator)]
           latest <- readIORef recent >>= maybe (pure []) readIORef
           expectationFailure $ unlines $ ("scenario " <> show setup.scenarioCode <> ", heroes " <> show heroes <> ", difficulty " <> show setup.difficulty <> ", seed " <> show seed <> ": " <> displayException err <> "\n" <> show err) : "the last messages run, latest last:" : map unpack (reverse latest)
   heroes = map fst starterDecks
