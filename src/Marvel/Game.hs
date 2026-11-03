@@ -918,6 +918,13 @@ getDeckKeys = getsGame $ deckKeys . toAttrs . gameScenario
 getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
 getSetAsideEncounterCards = getsGame $ onlyEncounterCards . scenarioSetAsideCards . toAttrs . gameScenario
 
+getSetAsideEncounterCardsForDeck :: HasGame m => DeckKey -> m [EncounterCard]
+getSetAsideEncounterCardsForDeck key = getsGame $ \g ->
+  let scenario = toAttrs $ gameScenario g
+   in [card | EncounterCard card <- scenarioSetAsideCards scenario
+      ,fromMaybe EncounterDeckKey (lookup (ecCardId card) $ scenarioCardDecks scenario) == key]
+
+
 getPile :: (HasGame m) => DeckKey -> m Pile
 getPile = \case
   EncounterDeckKey -> getsGame \g -> let a = toAttrs (g.gameScenario) in Pile (scenarioEncounterDeck a) (scenarioDiscard a)

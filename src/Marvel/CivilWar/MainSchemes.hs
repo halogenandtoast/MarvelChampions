@@ -5,7 +5,7 @@ import Marvel.Ability
 import Marvel.Attack (attackDefended)
 import Marvel.Card
 import Marvel.CivilWar.Cards qualified as C
-import Marvel.CivilWar.Helpers (lookForEnemyTeam)
+import Marvel.CivilWar.Helpers (lookForEnemyTeam,civilWarDef)
 import Marvel.CivilWar.Types qualified as CW
 import Marvel.Cost
 import Marvel.Damage (DamageSource (FromAbility),toDamage)
@@ -15,10 +15,11 @@ import Marvel.GameValue
 import Marvel.Id
 import Marvel.Keyword qualified as K
 import Marvel.MainScheme.Types
+import Marvel.Name (title)
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query (selectJust)
+import Marvel.Query (selectJust,selectList)
 import Marvel.Question (Choice (CardLabel),runAbility)
 import Marvel.Ref
 import Marvel.Window qualified as W
@@ -48,15 +49,15 @@ instance FromJSON CivilWarMainScheme where
     CivilWarMainScheme <$> (With <$> parseJSON (Object o) <*> parseJSON (Object o))
 
 civilWarMainSchemeDefinitions :: [CardDef]
-civilWarMainSchemeDefinitions = filter ((`elem` implementedSchemes) . toCardCode) C.civilWarDefinitions
+civilWarMainSchemeDefinitions = filter ((`elem` (implementedSchemes <> map flipCardCode implementedSchemes)) . toCardCode) C.civilWarDefinitions
  where
   implementedSchemes = ["56063b","56172b","56121b","56199b","56122b","57044b","57005b","56200b","56124b","57045b","56142b","57006b","56064b","56201b","56096b","56141b","56123b","56173b","56202b","56097b"]
 
 civilWarMainSchemes :: [MainSchemeCard CivilWarMainScheme]
-civilWarMainSchemes = [mainSchemeWith (\a -> CivilWarMainScheme (a `With` emptyCivilWarMainMeta)) def (PerPlayer $ if firstStage def then 7 else 9) (Static 0) (PerPlayer 1) (\a -> a {mainSchemeHeldCardsFacedown = toCardCode def == "56064b"}) | def <- civilWarMainSchemeDefinitions]
+civilWarMainSchemes = [mainSchemeWith (\a -> CivilWarMainScheme (a `With` emptyCivilWarMainMeta)) def (PerPlayer $ if firstStage def then 7 else 9) (Static 0) (PerPlayer 1) (\a -> a {mainSchemeHeldCardsFacedown = toCardCode def `elem` ["56064a","56064b"]}) | def <- civilWarMainSchemeDefinitions]
 
 firstStage :: HasCardCode a => a -> Bool
-firstStage card = toCardCode card `elem` (fst CW.registrationSchemes <> fst CW.resistanceSchemes)
+firstStage card = any (`elem` (fst CW.registrationSchemes <> fst CW.resistanceSchemes)) [toCardCode card,flipCardCode $ toCardCode card]
 
 instance IsMainScheme CivilWarMainScheme where
   toMainSchemeAttrs (CivilWarMainScheme (a `With` _)) = a
@@ -93,6 +94,32 @@ instance IsMainScheme CivilWarMainScheme where
 
 instance RunMessage CivilWarMainScheme where
   runMessage msg e@(CivilWarMainScheme (a `With` meta)) = runQueueT $ case msg of
+    SetupMainScheme | cdCardCode (getCardDef a) /= gameplayCode a -> do
+      when (firstStage a) $ do
+        first <- firstPlayerAtScheme a
+        key <- getDeckKeyFor first
+        pile <- getPile key
+        aside <- getSetAsideEncounterCardsForDeck key
+        live <- asYou first $ selectList AnySideScheme
+        inPlay <- catMaybes <$> for live (\sid -> getsGame $ \g -> case cardInPlay g (SideSchemeRef sid) of
+          Just (EncounterCard card) -> Just card
+          _ -> Nothing)
+        competition <- getCompetition
+        leader <- getActiveVillainIn =<< getAreaOfTarget a
+        family <- case leader of
+          Nothing -> pure Nothing
+          Just vid -> getsGame $ \g -> cdEncounterSet =<< abilityCardDef g (VillainRef vid)
+        let eligible card = cdCardType (getCardDef card) == SideSchemeType &&
+              if isJust competition then title (cdName $ getCardDef card) == "Choosing Sides"
+              else isJust family && cdEncounterSet (getCardDef card) == family
+            choices = filter eligible (pileDeck pile <> pileDiscard pile <> aside <> inPlay)
+        lookForEnemyTeam first a choices
+          [cardLabeled (toCardCode card) $ revealEncounterCard first card | card <- choices]
+        fromDeck key shuffleEncounterDeck
+      cardSpecific a "cwFlipSetup" ()
+      pure e
+    CardSpecific (isTarget a -> True) "cwFlipSetup" _ ->
+      pure $ CivilWarMainScheme (a {mainSchemeCardDef = civilWarDef $ gameplayCode a} `With` meta)
     CardSpecific GameRef "cwRevealedUnregistered" (fromJSON -> Success (cid,heroes :: [IdentityId])) | toCardCode a == "56097b" -> do
       here <- getAreaOfTarget a
       affected <- filterM (fmap (== here) . getAreaOfTarget) heroes
@@ -219,3 +246,8 @@ firstPlayerAtScheme a = do
   case competition of
     Just c -> pure $ CW.teamFirstPlayer c $ if here == CW.teamArea CW.Registration then CW.Registration else CW.Resistance
     Nothing -> selectJust FirstPlayer
+
+
+gameplayCode :: HasCardCode a => a -> CardCode
+gameplayCode card = if code `elem` (fst CW.registrationSchemes <> snd CW.registrationSchemes <> fst CW.resistanceSchemes <> snd CW.resistanceSchemes) then code else flipCardCode code
+ where code = toCardCode card

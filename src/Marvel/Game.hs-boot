@@ -532,3 +532,5 @@ allyMatchesAtDefeat :: HasGame m => AllyMatcher -> AllyId -> m Bool
 competitiveBoardFinishedFor :: Game -> IdentityId -> Bool
 
 canPutPlayerAllyIntoPlay :: HasGame m => IdentityId -> PlayerCard -> m Bool
+
+getSetAsideEncounterCardsForDeck :: HasGame m => DeckKey -> m [EncounterCard]

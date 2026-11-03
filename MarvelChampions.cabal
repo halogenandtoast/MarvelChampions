@@ -2915,6 +2915,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.NamorSpec
       Marvel.CivilWar.PaladinSpec
       Marvel.CivilWar.ResistanceAvengersSpec
+      Marvel.CivilWar.SetupFaceSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.SwitchingSidesSpec

@@ -242,3 +242,15 @@ The compiled registry now contains 153 of 169 Civil War non-player faces (91%), 
 Validation: twenty-one new behavior examples cover all four printings' initial threat and flips, damage scope and nonattack damage, partial removal and permanent protection, original-five-card search and one card per teammate, empty search, physical identity and ownership of both faces, Game JSON round trips with an outstanding search, action removal, shared reward-pool movement and ownership, first-player choice of reward resolution order, same-set and outside-set blanking, and attachment cleanup without a defeat response. The Civil War and coverage gate passes 827 examples; the frontend production build passes.
 
 The final full unit suite passes 8,589 examples after adding reward resolution order.
+
+
+## Native main-scheme setup faces
+
+The twenty A faces from Civil War and Synthezoid Smackdown are registered as their own main-scheme faces. Stage 1A finds and reveals Choosing Sides in competitive play, with the enemy team answering the search. In cooperative play it finds the chosen leader's own side scheme, irrespective of which compatible stage 1 was selected. The source leader and receiving first player are determined from the scheme's board. Searches use that board's deck, discard pile, in-play schemes, and set-aside encounter cards recorded for that deck; another board's set-aside copy is excluded.
+
+After the setup work finishes, the A face flips to its own B face while keeping its main-scheme ID and area. Ordinary initial threat and reveal handling can then run on B. The stage 2 A faces have no printed setup effect and simply flip when their setup is resolved. First-stage initial threat, target values and Negative Zone Prison's facedown-card presentation are retained correctly across the setup transition. The Contents instruction still requires complete scenario construction; this registry work alone does not make the Civil War scenario selectable.
+
+Validation: twenty-two new behavior examples cover every A-to-B transition, the chosen leader's cooperative side scheme, the actual setup prompt and competitive opposing chooser, initial threat and Choosing Sides entry, and isolation of the two encounter decks' set-aside copies. The focused setup-face suite passes all twenty-two examples. The compiled registry contains all 169 Civil War non-player faces; end-to-end scenario construction, leader reward dependencies and the dedicated multiplayer creation flow remain incomplete.
+
+
+The full unit suite passes 8,611 examples. Its first launch exited with SIGSEGV before producing test output; an unchanged retry passed. Earlier macOS reports of this intermittent runner crash show a `ghc_worker` frame in `stg_ap_pppp_info`; the cause has not been established, and a passing retry does not establish that the runner issue is fixed.
