@@ -130,7 +130,7 @@ import Marvel.Phase
 import Marvel.Projection
 import Marvel.Query
 import Marvel.Question
-import Marvel.Boost (boostCount)
+import Marvel.Boost (boostCount,BoostIcon(Star))
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
@@ -307,6 +307,10 @@ data Game = Game
   -- ^ the player resolving a card with peril: the others cannot help them (RR Peril)
   , gameDefeatedMinionBoosts :: [(MinionId, EnemyId)]
   -- ^ Defeat interrupts choosing a boost destination after printed defeat effects.
+  , gameInPlayBoosts :: [(MinionId, IdentityId, Minion)]
+  -- ^ Scoped boost text resolutions on minions that remain in play, innermost first.
+  , gameBoostPlayerOverride :: Maybe IdentityId
+  -- ^ Query-only override while dispatching one in-play minion's boost text.
   , gamePlayerBoostCards :: [(CardId, PlayerCard)]
   -- ^ Original player cards temporarily represented by facedown boost cards.
   , gameCollection :: [Card]
@@ -437,6 +441,8 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playerVictoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "defeatedMinionBoosts" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "inPlayBoosts" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "boostPlayerOverride" Null
             . KeyMap.insertWith (\_ existing -> existing) "playerBoostCards" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))
@@ -1006,7 +1012,10 @@ whenRevealedTimes ident = (+ 1) . fromIntegral . count (== ResolveWhenRevealedAg
 -- | The player a boost card turned up for the enemy's activation is resolved by: the
 -- one the villain's activation is against, or the player whose turn it is.
 getBoostedPlayer :: (HasGame m) => EnemyId -> m IdentityId
-getBoostedPlayer enemy = do
+getBoostedPlayer enemy = getsGame gameBoostPlayerOverride >>= maybe (getActualBoostedPlayer enemy) pure
+
+getActualBoostedPlayer :: HasGame m => EnemyId -> m IdentityId
+getActualBoostedPlayer enemy = do
   attacking <- case enemy of
     EnemyAttachmentId _ -> pure Nothing
     EnemyVillainId vid -> getVillainAttack vid
@@ -2881,6 +2890,24 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source matcher modifiers (Just $ if roundEnd then Effect.DisableAtEndOfRound else Effect.DisableAtEndOfPhase)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "beginInPlayMinionBoost" (fromJSON -> Success (mid,you,actor)) -> do
+    blanked <- isBlanked (MinionRef mid)
+    case lookup mid (gameMinions g) of
+      Just minion | not blanked, Star `elem` cdBoostIcons (getCardDef minion) -> do
+        current <- withQueue $ \queue -> (queue,headMay [enemy | CheckWindows windows <- queue, W.Window W.After (W.EnemyActivation enemy _) <- windows])
+        let enemy = fromMaybe (EnemyAttachmentId $ AttachmentId $ unMinionId mid) (actor <|> current)
+        revealedAsBoost (MinionRef mid) enemy
+        cardSpecific GameRef "endInPlayMinionBoost" mid
+        pure g {gameInPlayBoosts = (mid,you,minion) : gameInPlayBoosts}
+      _ -> pure g
+  CardSpecific GameRef "endInPlayMinionBoost" (fromJSON -> Success mid) -> do
+    active <- isQueued (== ClearBoosts)
+    if active then do
+      afterMatching (== ClearBoosts) $ cardSpecific GameRef "finishInPlayMinionBoost" (mid :: MinionId)
+      pure g
+    else pure g {gameInPlayBoosts = dropFirstInPlayBoost mid gameInPlayBoosts}
+  CardSpecific GameRef "finishInPlayMinionBoost" (fromJSON -> Success mid) ->
+    pure g {gameInPlayBoosts = dropFirstInPlayBoost mid gameInPlayBoosts}
   CardSpecific GameRef "giveDefeatedMinionAsBoost" (fromJSON -> Success (mid :: MinionId, enemy :: EnemyId)) -> do
     pending <- isQueued $ \case
       MinionMessage other MinionDefeated -> other == mid
@@ -3109,6 +3136,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     eventStep (toId event) (PlayedEvent ident NoPayment Nothing)
     eventStep (toId event) ResolvedEvent
     pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
+  PutBoostIntoPlay (MinionRef mid) _ | HashMap.member mid (gameMinions g) -> pure g
   PutBoostIntoPlay target ident -> case target of
     MinionRef minionId ->
       case g ^. boostEntitiesL . minionsL . at minionId of
@@ -3133,6 +3161,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       Nothing -> pure g
   -- "Boost: reveal this card": it is no longer a boost card, and is revealed for the
   -- player
+  RevealBoost target ident | Just card <- inPlayBoostCard g target -> g <$ revealEncounterCard ident card
   RevealBoost target ident -> case lookup target gameBoostCards of
     Just card -> do
       revealEncounterCard ident card
@@ -4860,6 +4889,18 @@ rememberCompetitiveEffects before after = case gameCompetition after of
 
 dispatchGameMessageCoreBody :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 dispatchGameMessageCoreBody (PutCardIntoPlay _ card _ _ _) g | not (playerCardEntryAllowedIn g card) = pure g
+dispatchGameMessageCoreBody (ShuffleIntoEncounterDeck cards) g
+  | let live = [(mid,card) | card <- cards, let mid = MinionId $ unCardId $ ecCardId card
+                 , Just minion <- [lookup mid (gameMinions g)], toCard minion == EncounterCard card]
+  , not (null live) = runQueueT do
+      traverse_ (shuffleMinionIntoEncounterDeck . fst) live
+      let remaining = filter (`notElem` map snd live) cards
+      unless (null remaining) $ shuffleIntoEncounterDeck remaining
+      pure g
+-- With no activating enemy, effects on that enemy have no target.
+dispatchGameMessageCoreBody (DealBoost (AttachmentRef aid)) g
+  | any (\(mid,_,_) -> unMinionId mid == unAttachmentId aid) (gameInPlayBoosts g)
+  , not (HashMap.member aid $ gameAttachments g) = pure g
 dispatchGameMessageCoreBody original g =
   let normalized = resolveMessageCardCosts (startingPlayerCountIn g) original
       msg = case normalized of
@@ -4875,10 +4916,14 @@ dispatchGameMessageCoreBody original g =
    in runPreGameMessage msg g
     >>= traverseOf scenarioL (runMessage msg)
     >>= traverseOf entitiesL (dispatchEntitiesMessage msg)
+    >>= dispatchInPlayMinionBoosts msg
     >>= traverseOf removedEntitiesL (\removed -> do
       -- Eliminated identities remain available as snapshots, but no longer act.
-      updated <- runMessage msg removed {entitiesPlayers = mempty}
-      pure updated {entitiesPlayers = entitiesPlayers removed})
+      scopes <- getsGame gameInPlayBoosts
+      let source = inPlayBoostCallbackTarget msg
+          held = HashMap.filterWithKey (\mid _ -> source == Just (MinionRef mid) && any (\(other,_,_) -> other == mid) scopes) (entitiesMinions removed)
+      updated <- runMessage msg removed {entitiesPlayers = mempty,entitiesMinions = entitiesMinions removed `HashMap.difference` held}
+      pure updated {entitiesPlayers = entitiesPlayers removed,entitiesMinions = entitiesMinions updated <> held})
     >>= traverseOf boostEntitiesL (runMessage (Boost msg))
     >>= traverseOf (activeCostL . ix 0) (\c -> asYou (activeCostIdentityId c) $ runMessage msg c)
     >>= runHandCardMessage msg
@@ -5098,6 +5143,8 @@ newGame player scenario =
     , gamePlayerVictoryDisplay = []
     , gamePeril = Nothing
     , gameDefeatedMinionBoosts = []
+    , gameInPlayBoosts = []
+    , gameBoostPlayerOverride = Nothing
     , gamePlayerBoostCards = []
     , gameCollection = []
     , gameCollecting = []
@@ -7193,7 +7240,7 @@ isCurrentBoostCard :: (HasGame m) => EncounterCard -> m Bool
 isCurrentBoostCard card = getsGame $ any ((== ecCardId card) . ecCardId) . HashMap.elems . gameBoostCards
 
 getBoostCard :: (HasGame m) => Target -> m (Maybe EncounterCard)
-getBoostCard target = getsGame $ lookup target . gameBoostCards
+getBoostCard target = getsGame $ \g -> lookup target (gameBoostCards g) <|> inPlayBoostCard g target
 
 countControlledCardsWithTrait :: (HasGame m) => IdentityId -> Trait -> m Natural
 countControlledCardsWithTrait you trait = do
@@ -8967,7 +9014,13 @@ dispatchEntitiesMessage msg@(MinionMessage mid MinionDefeated) entities
       rest <- runMessage msg entities {entitiesMinions = deleteMap mid $ entitiesMinions entities}
       updated <- runQueueT $ MinionRunner.runMinionMessage MinionDefeated (toAttrs minion)
       pure rest {entitiesMinions = insertMap mid (Minion.overMinion (const updated) minion) (entitiesMinions rest)}
-dispatchEntitiesMessage msg entities = runMessage msg entities
+dispatchEntitiesMessage msg entities = do
+  scopes <- getsGame gameInPlayBoosts
+  let source = inPlayBoostCallbackTarget msg
+      withheld = [mid | (mid,_,_) <- scopes, source == Just (MinionRef mid)]
+      held = HashMap.filterWithKey (\mid _ -> mid `elem` withheld) (entitiesMinions entities)
+  updated <- runMessage msg entities {entitiesMinions = foldr deleteMap (entitiesMinions entities) withheld}
+  pure updated {entitiesMinions = entitiesMinions updated <> held}
 
 -- | Printed stats of an out-of-play encounter card, without creating a game entity.
 encounterCardPrintedAttack :: IdentityId -> EncounterCard -> Natural
@@ -9289,3 +9342,54 @@ allyMatchesAtDefeat matcher aid = do
   let departed = lookup aid (gameAllies g) <|> lookup aid (entitiesAllies $ gameRemovedEntities g)
       view = maybe g (\ally -> g & entitiesL . alliesL . at aid ?~ ally) departed
   runReaderT (allyMatches matcher aid) view
+
+-- | A scoped boost view keeps its callbacks and delayed boost text independent
+-- from the real minion's live state. It never enters the actual boost pile.
+dispatchInPlayMinionBoosts :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
+dispatchInPlayMinionBoosts msg g = foldM dispatch g chosen
+ where
+  scopes = zip [0 :: Int ..] (gameInPlayBoosts g)
+  matching target = take 1 [(index,scope) | (index,scope@(mid,_,_)) <- scopes, target == MinionRef mid]
+  chosen = case msg of
+    RevealedAsBoost target _ -> matching target
+    CheckWindows windows | any (\case W.Window _ (W.CountingBoostIcons _) -> True; _ -> False) windows ->
+      [(index,scope) | (index,scope@(mid,_,_)) <- scopes, HashMap.member mid (gameMinions g)]
+    CheckWindows _ -> scopes
+    _ -> maybe [] matching (inPlayBoostCallbackTarget msg)
+  dispatch current (index,(mid,you,view)) = do
+    before <- withQueue $ \queue -> (queue,queue)
+    let scoped = current {gameBoostPlayerOverride = Just you,gameActivePlayer = you,gameYou = Just you}
+    updated <- runReaderT (runMessage (Boost msg) view) scoped
+    after <- withQueue $ \queue -> (queue,queue)
+    let handled = updated /= view || before /= after
+        withView = current {gameInPlayBoosts = [if i == index then (mid,you,updated) else scope | (i,scope) <- zip [0 :: Int ..] (gameInPlayBoosts current)]}
+    case (inPlayBoostCallbackTarget msg,lookup mid $ gameMinions current) of
+      (Just _,Just live) | not handled -> do
+        ordinary <- runMessage msg live
+        pure $ withView & entitiesL . minionsL %~ insertMap mid ordinary
+      (Just _,Nothing) | not handled, Just removed <- lookup mid (entitiesMinions $ gameRemovedEntities current) -> do
+        ordinary <- runMessage msg removed
+        pure $ withView & removedEntitiesL . minionsL %~ insertMap mid ordinary
+      _ -> pure withView
+
+inPlayBoostCallbackTarget :: Message -> Maybe Target
+inPlayBoostCallbackTarget = \case
+  CardSpecific target _ _ -> Just target
+  WithDiscarded target _ _ -> Just target
+  WithDiscardedMatch target _ _ -> Just target
+  WithChosen target _ _ -> Just target
+  WithBoostIcons target _ _ -> Just target
+  _ -> Nothing
+
+inPlayBoostCard :: Game -> Target -> Maybe EncounterCard
+inPlayBoostCard g target = do
+  mid <- case target of MinionRef ident -> Just ident; _ -> Nothing
+  guard $ any (\(source,_,_) -> source == mid) (gameInPlayBoosts g)
+  minion <- lookup mid (gameMinions g)
+  case toCard minion of EncounterCard card -> Just card; _ -> Nothing
+
+dropFirstInPlayBoost :: MinionId -> [(MinionId,IdentityId,Minion)] -> [(MinionId,IdentityId,Minion)]
+dropFirstInPlayBoost _ [] = []
+dropFirstInPlayBoost mid (scope@(other,_,_) : rest)
+  | mid == other = rest
+  | otherwise = scope : dropFirstInPlayBoost mid rest

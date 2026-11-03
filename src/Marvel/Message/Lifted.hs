@@ -3529,3 +3529,8 @@ recordPendingVillainSchemeThreat vid scheme = do
   replaceMatchingMessage (const [Msg.cardSpecific (VillainRef vid) "villainSchemeResultOn" (scheme,receipt)]) $ \case
     CardSpecific (VillainRef who) "villainSchemeResult" _ -> who == vid
     _ -> False
+
+-- | Resolve only the boost text of a minion that is already in play. No boost
+-- icons, card flip, entry keywords or boost discard are implied.
+resolveInPlayMinionBoost :: ReverseQueue m => IdentityId -> MinionId -> Maybe EnemyId -> m ()
+resolveInPlayMinionBoost you mid actor = cardSpecific GameRef "beginInPlayMinionBoost" (mid,you,actor)
