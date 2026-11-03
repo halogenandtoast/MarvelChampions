@@ -314,6 +314,7 @@ modularSets =
   , CwMightyAvengers
   , CwTheInitiative
   , CwMariaHillModular
+  , CwDangerousRecruits
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

@@ -305,6 +305,10 @@ data Game = Game
   -- victory X go to as they are defeated (RR Victory Display), the first added first
   , gamePeril :: Maybe IdentityId
   -- ^ the player resolving a card with peril: the others cannot help them (RR Peril)
+  , gameDefeatedMinionBoosts :: [(MinionId, EnemyId)]
+  -- ^ Defeat interrupts choosing a boost destination after printed defeat effects.
+  , gamePlayerBoostCards :: [(CardId, PlayerCard)]
+  -- ^ Original player cards temporarily represented by facedown boost cards.
   , gameCollection :: [Card]
   -- ^ The Collection (Infiltrate the Museum): an out-of-play area shared by all players,
   -- player and encounter cards faceup in it, the first added first
@@ -432,6 +436,8 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "removedFromGameEncounterCards" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playerVictoryDisplay" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "defeatedMinionBoosts" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "playerBoostCards" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "aosHostages" (toJSON ([] :: [Value]))
@@ -2380,7 +2386,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         isVictory = \case
           Victory _ -> True
           _ -> False
-    let departure = if victory then AddToVictoryDisplay target else case target of
+    let departure = case target of
+          MinionRef mid | Just enemy <- Data.List.lookup mid gameDefeatedMinionBoosts ->
+            CardSpecific GameRef "moveDefeatedMinionToBoost" (toJSON (mid,enemy))
+          _ | victory -> AddToVictoryDisplay target
           MinionRef mid -> CardSpecific GameRef "removeDefeatedMinion" (toJSON mid)
           _ -> RemoveFromPlay target
     -- The defeated minion already answered its would-leave window before cleanup.
@@ -2870,6 +2879,48 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source matcher modifiers (Just $ if roundEnd then Effect.DisableAtEndOfRound else Effect.DisableAtEndOfPhase)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "giveDefeatedMinionAsBoost" (fromJSON -> Success (mid :: MinionId, enemy :: EnemyId)) -> do
+    pending <- isQueued (== MinionMessage mid MinionDefeated)
+    present <- inAnyArea $ selectAny $ EnemyWithId enemy
+    if not (pending && present && HashMap.member mid (gameMinions g)) then pure g else do
+      -- The printed When Defeated resolves while its card is still in play (RR p48).
+      -- Cleanup also survives an interrupt cancelling the defeat and its after window.
+      replaceMatchingMessage
+        (\message -> [message,CardSpecific GameRef "clearDefeatedMinionBoost" (toJSON mid)])
+        (\case CheckWindows ws -> any (\case W.Window W.After (W.DefeatedMinion other _ _ _) -> other == mid; _ -> False) ws; _ -> False)
+      pure g {gameDefeatedMinionBoosts = (mid,enemy) : filter ((/= mid) . fst) gameDefeatedMinionBoosts}
+  CardSpecific GameRef "clearDefeatedMinionBoost" (fromJSON -> Success (mid :: MinionId)) ->
+    pure g {gameDefeatedMinionBoosts = filter ((/= mid) . fst) gameDefeatedMinionBoosts}
+  CardSpecific GameRef "moveDefeatedMinionToBoost" (fromJSON -> Success (mid :: MinionId, enemy :: EnemyId)) -> do
+    case lookup mid (gameMinions g) of
+      Nothing -> pure g
+      Just minion -> do
+        present <- inAnyArea $ selectAny $ EnemyWithId enemy
+        modifiers <- getModifiers (MinionRef mid)
+        if not present || any (`elem` modifiers) [CannotLeavePlay,CannotLeavePlayByCardAbilities] then do
+          cardSpecific GameRef "clearDefeatedMinionBoost" mid
+          defeatedLeavesPlay mid
+          pure g
+        else do
+          transferMojoThreat (MinionCharacter mid)
+          cancelEnemyActivation mid
+          let a = toAttrs minion
+              (card, original) = case toCard minion of
+                EncounterCard c -> (c,[])
+                PlayerCard c -> (MkEncounterCard (pcCardId c) (pcCardDef c),[(pcCardId c,c)])
+          frameworkDiscard $ for_ (minionUpgrades a) removeFromPlay
+          frameworkDiscard $ for_ (minionAttachments a) defeatedLeavesPlay
+          for_ (Minion.minionHeldCards a) discardCard
+          for_ (Minion.minionHeldTreacheries a) discardCard
+          for_ (Minion.minionBoostCards a) discardCard
+          minionDisengages (minionEngagedIdentity a) mid
+          case enemy of
+            EnemyVillainId vid -> villainStep vid $ VillainDealtBoost card
+            EnemyMinionId host -> minionStep host $ MinionDealtBoost card
+            EnemyAttachmentId _ -> pure ()
+          pure $ (g {gamePlayerBoostCards = original <> g.gamePlayerBoostCards,gameDefeatedMinionBoosts = filter ((/= mid) . fst) gameDefeatedMinionBoosts})
+            & entitiesL . minionsL %~ deleteMap mid
+            & removedEntitiesL . minionsL %~ insertMap mid minion
   CardSpecific GameRef "giveCardAsBoost" (fromJSON -> Success (EncounterCard card, enemy)) -> do
     let target = CardIdRef $ ecCardId card
     removeFromGame target
@@ -3065,6 +3116,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             g
               & (boostEntitiesL . minionsL %~ deleteMap (toId minion))
               & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+              & (removedEntitiesL . minionsL %~ deleteMap (toId minion))
               & (boostCardsL %~ deleteMap target)
         _ -> error "messed up somewhere"
     -- any other card ("put Goblin Nation into play") enters play as it would revealed,
@@ -3289,6 +3341,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
       push $ EntersPlayUnlessUnique ident False (toTarget minion) rest
       pure $ g & (entitiesL . minionsL %~ insertMap (toId minion) minion)
+        & removedEntitiesL . minionsL %~ deleteMap (toId minion)
         & attacksThisTurnL %~ filter ((/= EnemyMinionId (toId minion)) . snd)
     -- put into play, not revealed: no surge
     EnvironmentType -> do
@@ -4438,6 +4491,11 @@ instance RunMessage Game where
         pure after
   runMessage (MinionMessage mid MinionDefeated) g
     | Just m <- lookup mid (gameMinions g), isJust (Minion.minionAttachedTo $ toAttrs m) = pure g
+  -- Player-backed minions keep their original owner while serving as boost cards.
+  runMessage (DiscardedCard (EncounterCard card)) g
+    | Just original <- Data.List.lookup (ecCardId card) (gamePlayerBoostCards g) =
+        runMessage (DiscardedCard (PlayerCard original))
+          (g {gamePlayerBoostCards = filter ((/= ecCardId card) . fst) (gamePlayerBoostCards g)})
   -- Labor cards have their own deck and never enter the encounter discard.
   runMessage (DiscardedCard (EncounterCard card)) g
     | toCardCode card `elem` ["59002", "59003", "59004"] = runQueueT do
@@ -5032,6 +5090,8 @@ newGame player scenario =
     , gameVictoryDisplay = []
     , gamePlayerVictoryDisplay = []
     , gamePeril = Nothing
+    , gameDefeatedMinionBoosts = []
+    , gamePlayerBoostCards = []
     , gameCollection = []
     , gameCollecting = []
     , gameUncontrolledAllies = []

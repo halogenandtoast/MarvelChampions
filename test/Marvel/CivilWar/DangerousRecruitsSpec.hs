@@ -4,6 +4,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.LeaderSpec (attachmentIdOf,withLeader,leaderHp)
 import Marvel.Minion.Cards qualified as M
+import Marvel.Villain.Types qualified as V
 import Marvel.Modifier
 import Marvel.Keyword qualified as K
 import Marvel.Matchers
@@ -372,3 +373,152 @@ spec = describe "Civil War Dangerous Recruits" do
       resolve [RevealEncounterCard p card]
       mainSchemeThreat `shouldReturn` 1
       asYou q (enemyMatches ConfusedEnemy $ EnemyMinionId mid) `shouldReturn` True
+
+
+  it "Dangerous Recruits starts with three threat plus hinder and an acceleration icon" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard (player1 tg) side]
+      sideSchemeThreat (SideSchemeId $ unCardId $ ecCardId side) `shouldReturn` 5
+      cdAcceleration (getCardDef side) `shouldBe` 1
+
+  it "a defeated minion becomes the enemy leader's physical boost card and later discards normally" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57040"
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard you side]
+      mid <- addMinion you M.hydraMercenary
+      let cid = CardId $ unMinionId mid
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+      resolve damage
+      minionDamageOf mid `shouldReturn` Nothing
+      getsGame (map ecCardId . V.villainBoostCards . toAttrs . fromMaybe (error "missing test leader") . lookup vid . gameVillains) `shouldReturn` [cid]
+      fmap (any ((== cid) . ecCardId)) getEncounterDiscard `shouldReturn` False
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      resolve [VillainMessage vid VillainSchemes]
+      mainSchemeThreat `shouldReturn` 3
+      fmap (length . filter ((== cid) . ecCardId)) getEncounterDiscard `shouldReturn` 1
+
+  it "moving a defeated minion to boost still resolves its printed When Defeated" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard you side]
+      mid <- addMinion you M.hydraSoldier
+      [next] <- stackEncounterDeck [M.hydraMercenary]
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+      resolve damage
+      playerIdentityEncounterCards <$> playerAttrs you `shouldReturn` [next]
+      fmap (any ((== CardId (unMinionId mid)) . ecCardId)) getEncounterDiscard `shouldReturn` False
+
+  it "the defeated host's upgrades and stored boosts discard instead of following it" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard you side]
+      mid <- addMinion you M.hydraMercenary
+      changeForm you
+      tracer <- putInHand you "01007"
+      energy <- putInHand you "01088"
+      playOn tracer mid [energy]
+      stored <- encounterCard M.hydraSoldier
+      resolve [MinionMessage mid $ MinionDealtBoost stored]
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+      resolve damage
+      getsGame (HashMap.member (upgradeIdOf tracer) . gameUpgrades) `shouldReturn` False
+      fmap (any ((== pcCardId tracer) . pcCardId)) (discardOf you) `shouldReturn` True
+      fmap (any ((== ecCardId stored) . ecCardId)) getEncounterDiscard `shouldReturn` True
+
+  it "player-backed drones keep their owner through save/load and boost resolution" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57040"
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard you side]
+      resolve [PutTopOfDeckIntoPlayAsDrone you]
+      [drone] <- getsGame (HashMap.elems . gameMinions)
+      let mid = toId drone
+          original = fromMaybe (error "missing drone player card") $ minionFacedownCard $ toAttrs drone
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+      resolve damage
+      fmap (any ((== pcCardId original) . pcCardId)) (discardOf you) `shouldReturn` False
+      g <- getGame
+      fromJSON (toJSON g) `shouldBe` Success g
+      case fromJSON (toJSON g) of
+        Success restored -> withGame_ $ const restored
+        Error err -> error $ "could not restore boosted drone: " <> err
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      resolve [VillainMessage vid VillainSchemes]
+      mainSchemeThreat `shouldReturn` 2
+      fmap (length . filter ((== pcCardId original) . pcCardId)) (discardOf you) `shouldReturn` 1
+      fmap (any ((== pcCardId original) . ecCardId)) getEncounterDiscard `shouldReturn` False
+      getsGame gamePlayerBoostCards `shouldReturn` []
+
+  it "Dangerous Recruits only catches defeats on its own board" do
+    tg <- competitive ["spider-man","captain-marvel"]
+    inGame tg do
+      let p = player1 tg
+          q = player2 tg
+      own <- withLeader "57040"
+      other <- addSecondBoard tg
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard p side]
+      mid <- addMinion q M.hydraMercenary
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid q (toDamage 10 FromAbility)
+      resolve damage
+      for_ [own,other] $ \vid ->
+        getsGame (map ecCardId . V.villainBoostCards . toAttrs . fromMaybe (error "missing test leader") . lookup vid . gameVillains) `shouldReturn` []
+      fmap (any ((== CardId (unMinionId mid)) . ecCardId)) (asYou q getEncounterDiscard) `shouldReturn` True
+
+
+  it "a defeated Weapons Runner can return from boost as a fresh minion" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- withLeader "57040"
+      side <- encounterCard C.cw56091
+      resolve [RevealEncounterCard you side]
+      runner <- encounterCard M.weaponsRunner
+      resolve [PutEncounterCardIntoPlay you runner]
+      let mid = MinionId $ unCardId $ ecCardId runner
+      damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+      resolve damage
+      minionDamageOf mid `shouldReturn` Nothing
+      _ <- stackEncounterDeck [M.hydraMercenary]
+      resolve [VillainMessage vid VillainSchemes]
+      minionDamageOf mid `shouldReturn` Just 0
+      getsGame (HashMap.member mid . entitiesMinions . gameRemovedEntities) `shouldReturn` False
+      fmap (any ((== ecCardId runner) . ecCardId)) getEncounterDiscard `shouldReturn` False
+
+
+  for_ [False,True] $ \recruitsFirst ->
+    it ("a cancelled defeat does not move Loki or leave a boost destination behind: recruits first " <> show recruitsFirst) do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        side <- encounterCard C.cw56091
+        let sid = SideSchemeId $ unCardId $ ecCardId side
+        resolve [RevealEncounterCard you side]
+        mid <- addMinion you M.loki
+        _ <- stackEncounterDeck [C.cw56089]
+        damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
+        start damage
+        choose "order forced defeat interrupts" (if recruitsFirst then isAbilityOf sid else isAbilityOf mid)
+        whenM (offers $ isAbilityOf mid) $ choose "resolve Loki" (isAbilityOf mid)
+        whenM (offers $ isAbilityOf sid) $ choose "resolve Dangerous Recruits" (isAbilityOf sid)
+        pass
+        minionDamageOf mid `shouldReturn` Just 0
+        getsGame gameDefeatedMinionBoosts `shouldReturn` []
+        vid <- villainIdNow
+        getsGame (map ecCardId . V.villainBoostCards . toAttrs . fromMaybe (error "missing test leader") . lookup vid . gameVillains) `shouldReturn` []
+        resolve [RemoveFromPlay $ SideSchemeRef sid]
+        _ <- stackEncounterDeck [M.hydraMercenary]
+        resolve damage
+        minionDamageOf mid `shouldReturn` Nothing
+        fmap (any ((== CardId (unMinionId mid)) . ecCardId)) getEncounterDiscard `shouldReturn` True

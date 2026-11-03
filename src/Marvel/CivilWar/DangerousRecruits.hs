@@ -5,6 +5,10 @@ import Marvel.Ability
 import Marvel.Card
 import Marvel.CivilWar.Cards qualified as C
 import Marvel.CivilWar.Helpers
+import Marvel.Cost
+import Marvel.GameValue
+import Marvel.SideScheme.Types
+import Marvel.Window qualified as W
 import Marvel.Game.Source
 import Marvel.Keyword
 import Marvel.Matchers
@@ -105,3 +109,27 @@ instance RunMessage JusticeLikeLightning where
             [targeting (MinionRef mid) (activate pair) | pair@(mid,_) <- pairs]
       pure e
     _ -> JusticeLikeLightning <$> runMessage msg a
+
+
+newtype DangerousRecruits = DangerousRecruits (Attrs SideScheme)
+  deriving anyclass HasModifiersFor
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+
+dangerousRecruits :: SideSchemeCard DangerousRecruits
+dangerousRecruits = sideScheme DangerousRecruits C.cw56091 (Static 3)
+
+instance IsSideScheme DangerousRecruits where
+  toSideSchemeAttrs (DangerousRecruits a) = a
+  sideSchemeAbilities (DangerousRecruits a) =
+    [windowAbility a 1 (W.MinionDefeated W.When $ MinionEngagedWith AnyIdentity) ForcedInterrupt NoCost (runAbility a 1)]
+
+instance RunMessage DangerousRecruits where
+  runMessage msg e@(DangerousRecruits a) = runQueueT $ case msg of
+    RanAbility _ (isTarget a -> True) 1 windows _ -> do
+      for_ [mid | W.DefeatedMinion mid _ _ _ <- windows] $ \mid -> do
+        sameBoard <- (==) <$> getAreaOfTarget a <*> getAreaOfTarget mid
+        when sameBoard $ do
+          you <- getMinionEngagedPlayer mid
+          for_ you $ \owner -> enemyLeaderFor owner >>= traverse_ (giveDefeatedMinionAsBoost mid)
+      pure e
+    _ -> DangerousRecruits <$> runMessage msg a

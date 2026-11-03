@@ -69,6 +69,7 @@ modularSets =
   [ "mighty_avengers"
   , "the_initiative"
   , "maria_hill_modular"
+  , "dangerous_recruits"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

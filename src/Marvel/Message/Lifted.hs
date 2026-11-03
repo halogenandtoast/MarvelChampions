@@ -3255,6 +3255,10 @@ lastingModifiers source matcher modifiers roundEnd = cardSpecific GameRef "lasti
 addToIdentityBasicPower :: (HasQueue m, HasGame m) => IdentityId -> Natural -> m ()
 addToIdentityBasicPower = addToBasicPower
 
+-- | Move a defeated minion out of play into an enemy's facedown boost cards.
+giveDefeatedMinionAsBoost :: (ReverseQueue m, IsEnemy enemy) => MinionId -> enemy -> m ()
+giveDefeatedMinionAsBoost mid enemy = cardSpecific GameRef "giveDefeatedMinionAsBoost" (mid, toEnemy enemy)
+
 -- | Give this physical encounter card to an enemy as a facedown boost card.
 giveCardAsBoost :: (ReverseQueue m, IsCard card, IsEnemy enemy) => card -> enemy -> m ()
 giveCardAsBoost card enemy = cardSpecific GameRef "giveCardAsBoost" (toCard card, toEnemy enemy)
