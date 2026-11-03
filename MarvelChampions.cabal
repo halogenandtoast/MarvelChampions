@@ -597,6 +597,7 @@ library
       Marvel.CivilWar.RewardEvents
       Marvel.CivilWar.RewardResources
       Marvel.CivilWar.RewardUpgrades
+      Marvel.CivilWar.RoyalGuard
       Marvel.CivilWar.ScarletTwins
       Marvel.CivilWar.ShieldOps
       Marvel.CivilWar.SignatureAttachments
@@ -2932,6 +2933,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.RewardEventSpec
       Marvel.CivilWar.RewardResourceSpec
       Marvel.CivilWar.RewardUpgradeSpec
+      Marvel.CivilWar.RoyalGuardSpec
       Marvel.CivilWar.ScarletTwinsSpec
       Marvel.CivilWar.ScenarioSpec
       Marvel.CivilWar.SetupFaceSpec

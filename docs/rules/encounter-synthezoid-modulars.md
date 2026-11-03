@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster, Deadly Duo, Scarlet Twins and Moon Knight are verified. The remaining modular, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+All eight modular sets are implemented and verified. Eight leader reward dependencies and native Synthezoid scenario/UI integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Royal Guard, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). The leader reward dependencies and native Synthezoid scenario integration remain unfinished.
 
 ## Thunderbolts
 
@@ -69,3 +69,13 @@ Crescent Dart attaches to an eligible Moon Knight, otherwise to the local enemy 
 Khonshu's Avatar starts with three threat plus hinder one per player and has a hazard icon. Its defeat discards through a treachery in its own encounter deck, discards that found card once, then resolves its When Revealed ability. The replay uses the player who defeated the scheme for “you.”
 
 Validation: eleven Moon Knight behavior/inventory examples pass alongside Paladin, Wonder Man aspect cards and coverage (233 examples, zero failures). These include printed and gained surge, discard-pile identity preservation, piercing and ranged, and the defeat search. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).
+
+## Royal Guard
+
+Janus and Amir activate against the revealing player if that identity has Hunted and the minion can activate; otherwise they discard the top two cards of that player's deck. Blood Debt grants Hunted only to its owner in either identity form and remains in that player's play area. Its Alter-Ego Action uses the existing eight-card deck-discard cost, which requires eight cards to be available before the ability can be used. Costs before an arrow must be paid in full (Rules Reference v1.8, Cost Arrow Icon, p.14).
+
+Atlanteans reuses its identical Civil War printing's handler: discard the top three cards, count distinct types actually discarded, then place that much main-scheme threat in alter-ego form or take that much indirect damage in hero form.
+
+The Royal Guard starts with three threat plus hinder one per player. Its defeat lets the opposing team search the relevant encounter deck and discard pile for Blood Debt, then deals the selected physical copy facedown to the player who defeated the scheme. It does not reveal that obligation or grant Hunted immediately. The searched deck is shuffled even when no matching card is found.
+
+Validation: nineteen Royal Guard behavior/inventory examples pass alongside Atlanteans, Adam Warlock and coverage (248 examples, zero failures). They cover both identity forms, owner-specific Hunted, prohibited activation, full cost payment boundaries, both search piles, facedown dealing and the opposing chooser. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).

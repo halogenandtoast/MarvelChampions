@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Obligation where
 
+import Marvel.CivilWar.RoyalGuard qualified as SynthRoyal
 import Marvel.CivilWar.ScarletTwins qualified as SynthTwins
 import Marvel.CivilWar.ChoosingSides qualified as CwChoosing
 
@@ -39,7 +40,7 @@ withObligationCardCode cCode f = case lookup cCode allObligations of
   Just (SomeObligationCard a) -> f a
 
 allObligations :: HashMap CardCode SomeObligationCard
-allObligations = fromList $ [("57063",SomeObligationCard SynthTwins.spellcasting)] <> [(toCardCode card,SomeObligationCard card) | card <- CwChoosing.nowItsPersonal] <>  [(toCardCode card,SomeObligationCard card) | card <- CW.unregisteredSupers] <> map
+allObligations = fromList $ [("57072",SomeObligationCard SynthRoyal.bloodDebt)] <> [("57063",SomeObligationCard SynthTwins.spellcasting)] <> [(toCardCode card,SomeObligationCard card) | card <- CwChoosing.nowItsPersonal] <>  [(toCardCode card,SomeObligationCard card) | card <- CW.unregisteredSupers] <> map
   (toFst someObligationCardCode)
   [ SomeObligationCard CN.cn56023, SomeObligationCard CN.cn56054, SomeObligationCard CN.cn60032, SomeObligationCard CN.cn60060
   , SomeObligationCard wm58025, SomeObligationCard hc59004, SomeObligationCard hc59035

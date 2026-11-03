@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 data Trait
   = Unregistered
+  | Hunted
   | Rescued
   | Aim
   | Adaptoid
