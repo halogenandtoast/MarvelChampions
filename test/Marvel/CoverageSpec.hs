@@ -71,6 +71,7 @@ modularSets =
   , "maria_hill_modular"
   , "dangerous_recruits"
   , "martial_law"
+  , "cape_killer"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

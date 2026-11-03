@@ -316,6 +316,7 @@ modularSets =
   , CwMariaHillModular
   , CwDangerousRecruits
   , CwMartialLaw
+  , CwCapeKiller
   , AllVersusAllSet
   , ExtremeRiskSet, GrowingStrongSet, TechnoSet, WhiteoutSet
   , AosAimAbduction, AosAimScience, AosBatrocsBrigade, AosScientistSupreme

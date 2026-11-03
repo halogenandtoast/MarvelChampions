@@ -567,6 +567,7 @@ library
       Marvel.Card.WhenRevealed
       Marvel.Choice
       Marvel.CivilWar.AttackTreacheries
+      Marvel.CivilWar.CapeKiller
       Marvel.CivilWar.Cards
       Marvel.CivilWar.DangerousRecruits
       Marvel.CivilWar.Helpers
@@ -2879,6 +2880,7 @@ test-suite MarvelChampions-test
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest
       Marvel.CivilWar.AttackTreacherySpec
+      Marvel.CivilWar.CapeKillerSpec
       Marvel.CivilWar.DangerousRecruitsSpec
       Marvel.CivilWar.InitiativeSpec
       Marvel.CivilWar.IronManSpec

@@ -58,3 +58,13 @@ Rapid Response discards through the first minion, including that matching minion
 S.H.I.E.L.D. Patrol's guard is a continuous modifier for minions on its own board, including minions entering after the scheme. Leaving play or blanking the scheme ends that modifier. Its hinder and amplify use the ordinary keyword and icon handling.
 
 Validation: Martial Law is selectable with all three card faces implemented (five physical cards). Thirteen behavior examples cover discard order, no reveal chaining, boost entry, separate encounter piles, both identity forms, tough and stun, no matching minion, out-of-play stats, hinder, amplify, continuous guard, board boundaries, and blanking. The focused run passes 400 Civil War examples and 168 coverage examples; the full unit suite passes 8,330 examples. Randomized Rhino, Klaw, and Ultron checks with Martial Law pass with two seeds.
+
+## Cape-Killer
+
+Cape-Killer's attack interrupt checks the character it is attacking when the attack begins. An Unregistered identity grants +2 ATK to that attack through the ordinary stored attack change; the bonus expires with the attack. A direct attack against an ally does not qualify, while an ally defending an attack that already began against an Unregistered identity does not undo the bonus (Rules Reference v1.8, page 8).
+
+Bring Them In exhausts ready Unregistered identities on the revealing player's board. If none can be exhausted, including when all are already exhausted, its otherwise search resolves. Exhausting at least one identity prevents that fallback (Rules Reference v1.8, page 31). The opponent privately chooses a matching Unregistered Super from the receiving team's deck and discard; the card is dealt facedown without revealing it, and that team's deck is shuffled. With no match, no empty question is asked. The first player makes that choice in cooperative play. A recent rulings search found no specific exception for these cards.
+
+Arrest Order deals only the topmost S.H.I.E.L.D. minion in the defeating player's encounter discard pile as a facedown encounter card. It does not reveal or put that minion into play.
+
+Validation: Cape-Killer is selectable with all four card faces implemented (five physical cards), including the previously implemented Unregistered Super. Fourteen new behavior examples cover Quickstrike, attack-only bonuses, direct ally attacks versus later defense, stun, full and partial exhaustion, searches from both piles, facedown deals, opponent choices, and board boundaries. The focused run passes 414 Civil War examples and 169 coverage examples. Randomized Rhino, Klaw, and Ultron checks with Cape-Killer pass with two seeds.

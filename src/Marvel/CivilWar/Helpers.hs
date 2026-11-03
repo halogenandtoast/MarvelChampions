@@ -121,3 +121,14 @@ returnCaptainAmericaShield you vid = do
   case shields of
     [] -> searchEverywhereAndRevealEncounterCard you $ CardIs C.cw56143
     _ -> traverse_ (`attachTo` vid) shields
+
+-- | The opponent searches only the receiving team's own encounter piles.
+dealUnregisteredSuperForEnemyTeam :: (ReverseQueue m, IsRef source) => IdentityId -> source -> m ()
+dealUnregisteredSuperForEnemyTeam you source = do
+  deck <- asYou you getEncounterDeck
+  discard <- asYou you getEncounterDiscard
+  key <- getDeckKeyFor you
+  let candidates = filter (cardMatch $ CardWithTitle "Unregistered Super") (deck <> discard)
+  lookForEnemyTeam you source candidates
+    [cardLabeled (toCardCode card) $ dealFoundEncounterCard you card | card <- candidates]
+  fromDeck key shuffleEncounterDeck
