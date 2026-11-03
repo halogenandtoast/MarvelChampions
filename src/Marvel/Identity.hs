@@ -392,12 +392,17 @@ isPlayableWith ignoringCost attrs c = do
 -- actual deck and resources, but gives this card its as-if-in-hand cost text.
 previewHandPlay :: HasGame m => PlayerIdentity -> PlayerCard -> m PlayerIdentity
 previewHandPlay player card = do
-  available <- getPlayableHandCards (toId player)
-  modifiers <- getModifiers player
-  let topPermission = PlayTopOfDeckAsHand `elem` modifiers
   let attrs = toAttrs player
-      top = topPermission && card `elem` take 1 (unDeck $ playerIdentityDeck attrs) && card `notElem` unHand (playerIdentityHand attrs) && card `elem` available && Just card == headMay (unDeck $ playerIdentityDeck attrs)
-  pure $ if top then PlayerIdentity attrs {playerIdentityPendingTopDeckPlay = Just card} else player
+  -- A card already in hand, or not on top of the deck, cannot need a
+  -- hypothetical top-deck reservation. Avoid repeating modifier queries for it.
+  if card `elem` unHand (playerIdentityHand attrs) || Just card /= headMay (unDeck $ playerIdentityDeck attrs)
+    then pure player
+    else do
+      available <- getPlayableHandCards (toId player)
+      modifiers <- getModifiers player
+      let topPermission = PlayTopOfDeckAsHand `elem` modifiers
+          top = topPermission && card `elem` available
+      pure $ if top then PlayerIdentity attrs {playerIdentityPendingTopDeckPlay = Just card} else player
 
 isPlayableFromHand :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => PlayerIdentity -> PlayerCard -> m Bool
 isPlayableFromHand = isPlayableFromHandWith False

@@ -4170,27 +4170,28 @@ isWindowPlayable ::
   PlayerCard ->
   m Bool
 isWindowPlayable window original c = do
-  entryAllowed <- playerCardEntryAllowed c
-  attrs <- previewHandPlay original c
-  -- Ordinary actions and nonmatching responses cannot be played in this window.
-  -- Reject them before payment planning, which can search many resource choices.
+  -- Most cards cannot respond to this window. Reject them before preparing
+  -- top-deck play or checking entry restrictions, both of which query modifiers.
   passedWindow <- maybe (pure False) (\matcher -> windowMatches matcher window GameRef) (cdResponseWindow def)
-  if not (entryAllowed && passedWindow) then pure False else do
-    effectiveDef <- effectivePlayerCardDef ident c
-    blockedDefense <- if Ability.Defense `elem` cdAbilitySubTypes effectiveDef
-      then getsGame $ isDefendingOtherSimultaneousAttack ident
-      else pure False
-    if blockedDefense then pure False else do
-      affordable <- notNull <$> playableTargets attrs c
-      passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
-      passedPlayLimits <- checkPlayLimits attrs c
-      forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
-      permitted <- canResolvePlayerCardAbilities ident
-      canDefend <- if toCardCode c == "45031" then case window of
-        W.Window _ (W.EnemyAttack enemy _) -> notElem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
-        _ -> pure False
-        else pure True
-      pure $ permitted && canDefend && not forbidden && affordable && passedCriteria && passedPlayLimits
+  if not passedWindow then pure False else do
+    entryAllowed <- playerCardEntryAllowed c
+    attrs <- previewHandPlay original c
+    if not entryAllowed then pure False else do
+      effectiveDef <- effectivePlayerCardDef ident c
+      blockedDefense <- if Ability.Defense `elem` cdAbilitySubTypes effectiveDef
+        then getsGame $ isDefendingOtherSimultaneousAttack ident
+        else pure False
+      if blockedDefense then pure False else do
+        affordable <- notNull <$> playableTargets attrs c
+        passedCriteria <- passesCardCriteria ident c (cdCriteria effectiveDef <> toAdditionalCriteria effectiveDef)
+        passedPlayLimits <- checkPlayLimits attrs c
+        forbidden <- any (\case CannotPlayCards matcher -> cardMatch matcher c; _ -> False) <$> getModifiers ident
+        permitted <- canResolvePlayerCardAbilities ident
+        canDefend <- if toCardCode c == "45031" then case window of
+          W.Window _ (W.EnemyAttack enemy _) -> notElem AttacksCannotBeDefended <$> getModifiers (enemyRef enemy)
+          _ -> pure False
+          else pure True
+        pure $ permitted && canDefend && not forbidden && affordable && passedCriteria && passedPlayLimits
  where
   ident = toId original
   def = getCardDef c
