@@ -595,6 +595,7 @@ library
       Marvel.CivilWar.RewardEvents
       Marvel.CivilWar.RewardResources
       Marvel.CivilWar.RewardUpgrades
+      Marvel.CivilWar.ShieldOps
       Marvel.CivilWar.SignatureAttachments
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
@@ -2925,6 +2926,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.RewardUpgradeSpec
       Marvel.CivilWar.ScenarioSpec
       Marvel.CivilWar.SetupFaceSpec
+      Marvel.CivilWar.ShieldOpsSpec
       Marvel.CivilWar.SpiderManSpec
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.SwitchingSidesSpec

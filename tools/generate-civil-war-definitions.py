@@ -51,7 +51,7 @@ def keywords(card):
     text = re.sub(r'<[^>]*>', '', card.get('text', '')).strip()
     found = []
     simple = ['Toughness', 'Guard', 'Quickstrike', 'Villainous', 'Steady', 'Stalwart',
-              'Ranged', 'Piercing', 'Surge', 'Peril', 'Permanent']
+              'Ranged', 'Piercing', 'Surge', 'Peril', 'Permanent', 'Patrol']
     while text:
         match = re.match(r'(' + '|'.join(simple) + r')\b[.,]?\s*', text, re.I)
         if match:

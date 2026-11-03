@@ -194,6 +194,10 @@ Kree Fanatic: official [print-and-play encounter set](https://images-cdn.fantasy
 - [Trickster Takeover](scenario-trickster-takeover.md): Enchantress, God of Lies
   (Single Group Mode), Trickster Magic; [FFG MC55 rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf).
 
+## Synthezoid Smackdown modulars
+
+- [Modular behavior and verification](encounter-synthezoid-modulars.md).
+
 ## Civil War scenarios
 
 - [Completion audit](civil-war-completion-audit.md): requirement-by-requirement evidence and final verification results.

@@ -1752,7 +1752,7 @@ cw57013 = civilWarCard
   { cdCardCode = "57013", cdName = "S.H.I.E.L.D. Operator"
   , cdCardType = MinionType, cdTraits = fromList [T.Shield]
   , cdUnique = False, cdBoostIcons = [Boost, Boost]
-  , cdKeywords = fromList []
+  , cdKeywords = fromList [K.Patrol]
   , cdEncounterSet = Just CwShieldOps, cdEncounterSetQuantity = Just 2
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   }
