@@ -589,6 +589,7 @@ library
       Marvel.CivilWar.MariaHill
       Marvel.CivilWar.MartialLaw
       Marvel.CivilWar.MightyAvengers
+      Marvel.CivilWar.MoonKnight
       Marvel.CivilWar.Namor
       Marvel.CivilWar.Paladin
       Marvel.CivilWar.ResistanceAvengers
@@ -2924,6 +2925,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.MariaHillSpec
       Marvel.CivilWar.MartialLawSpec
       Marvel.CivilWar.MightyAvengersSpec
+      Marvel.CivilWar.MoonKnightSpec
       Marvel.CivilWar.NamorSpec
       Marvel.CivilWar.PaladinSpec
       Marvel.CivilWar.ResistanceAvengersSpec

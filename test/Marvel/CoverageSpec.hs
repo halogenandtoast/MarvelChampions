@@ -65,7 +65,7 @@ inScope pack set = case pack of
 -- set code.
 modularSets :: [Text]
 modularSets =
-  [ "scarlet_twins", "deadly_duo", "taskmaster_modular", "thunderbolts_modular", "young_avengers"
+  [ "moon_knight_modular", "scarlet_twins", "deadly_duo", "taskmaster_modular", "thunderbolts_modular", "young_avengers"
   , "shield_ops"
   , "mighty_avengers"
   , "the_initiative"

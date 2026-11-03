@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster, Deadly Duo and Scarlet Twins are verified. The remaining two modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers, Thunderbolts, Taskmaster, Deadly Duo, Scarlet Twins and Moon Knight are verified. The remaining modular, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,7 +20,7 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Two other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Royal Guard, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
 
 ## Thunderbolts
 
@@ -59,3 +59,13 @@ Superspeed discards a random hand card using the stored game generator and assig
 Spellcasting remains in its owner's play area until that player plays a card. Its forced interrupt cancels the pending card effects, retains payment and played-card timing, discards the card and then the obligation. Event cancellation preserves event-specific played windows and ordinary event cleanup; other canceled cards do not enter play. The cancellation helper checks that an effect remains pending before consuming a second copy. Rules Reference v1.8 Cancel (p.11) keeps costs paid and treats a canceled event as played. A search for newer Spellcasting-specific rulings found no exception.
 
 Validation: nineteen Scarlet Twins behavior/inventory examples pass alongside Gamora and coverage (238 examples, zero failures). These include paid ally, support, upgrade and event cancellations, single discard, and Gamora’s response after a canceled attack event. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).
+
+## Moon Knight
+
+Moon Knight enters with Toughness and Retaliate 2, then resolves the topmost treachery's When Revealed ability from the local encounter discard pile. The physical treachery remains in that pile and is not discarded a second time. The shared replay helper now also resolves printed or gained surge at completion; it does not reveal the card again or apply reveal-only keywords such as Incite.
+
+Crescent Dart attaches to an eligible Moon Knight, otherwise to the local enemy leader. Its forced interrupt grants piercing and ranged to the attached character's next attack and discards the Dart after that attack ends. It supports both enemy and converted-ally hosts. Fist of Khonshu exhausts the revealing identity and deals two ability damage; its boost exhausts only.
+
+Khonshu's Avatar starts with three threat plus hinder one per player and has a hazard icon. Its defeat discards through a treachery in its own encounter deck, discards that found card once, then resolves its When Revealed ability. The replay uses the player who defeated the scheme for “you.”
+
+Validation: eleven Moon Knight behavior/inventory examples pass alongside Paladin, Wonder Man aspect cards and coverage (233 examples, zero failures). These include printed and gained surge, discard-pile identity preservation, piercing and ranged, and the defeat search. Randomized Rhino, Klaw and cooperative Civil War Captain America checks pass with two seeds each (three cases, zero failures).

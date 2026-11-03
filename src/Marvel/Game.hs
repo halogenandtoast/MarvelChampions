@@ -2934,7 +2934,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "resolveEncounterWhenRevealed" (fromJSON -> Success (you, card)) -> do
     let treachery = createTreachery card
     treacheryStep (toId treachery) (RevealTreachery you)
-    cardSpecific GameRef "clearWhenRevealedTreachery" (toId treachery)
+    cardSpecific GameRef "clearWhenRevealedTreachery" (you,toId treachery)
     pure $ g & entitiesL . treacheriesL %~ insertMap (toId treachery) treachery
   CardSpecific GameRef "dealMinionAsEncounterCard" (fromJSON -> Success (mid :: MinionId,you :: IdentityId)) -> do
     for_ (lookup mid $ gameMinions g) $ \minion -> do
@@ -2945,7 +2945,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "dealDepartedMinion" (fromJSON -> Success (you,EncounterCard card)) -> do
     unless (HashMap.member (MinionId $ unCardId $ ecCardId card) (gameMinions g)) $ dealFoundEncounterCard you card
     pure g
-  CardSpecific GameRef "clearWhenRevealedTreachery" (fromJSON -> Success tid) ->
+  CardSpecific GameRef "clearWhenRevealedTreachery" (fromJSON -> Success (you,tid)) -> do
+    for_ (lookup tid $ gameTreacheries g) $ \treachery ->
+      when (Treachery.treacherySurge (toAttrs treachery) || Marvel.Keyword.Surge `member` cdKeywords (getCardDef treachery)) $ surge you
     pure $ g & entitiesL . treacheriesL %~ deleteMap tid
   CardSpecific GameRef "playerCardSetup" (fromJSON -> Success (you :: IdentityId)) -> do
     let supports = [support | support <- HashMap.elems (gameSupports g), getSupportController support == you]
