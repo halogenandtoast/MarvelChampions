@@ -78,6 +78,7 @@ modularSets =
   , "defenders"
   , "hells_kitchen"
   , "cloak_and_dagger_modular"
+  , "namor_modular"
   , "the_hood"
   , "risky_business"
   , "mutagen_formula"

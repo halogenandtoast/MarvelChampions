@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Treachery where
 
+import Marvel.CivilWar.Namor qualified as CwN
+
 import Marvel.CivilWar.CloakAndDagger qualified as CwCD
 
 import Marvel.CivilWar.Defenders qualified as CwD
@@ -93,7 +95,7 @@ withTreacheryCardCode cCode f = case lookup cCode allTreacheries of
   Just (SomeTreacheryCard a) -> f a
 
 allTreacheries :: HashMap CardCode SomeTreacheryCard
-allTreacheries = fromList $ [(toCardCode CwCD.lightforce,SomeTreacheryCard CwCD.lightforce)] <> [(toCardCode CwD.protectTheInnocent,SomeTreacheryCard CwD.protectTheInnocent)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwD.streetDefenders] <> [(toCardCode CwA.atlanteans,SomeTreacheryCard CwA.atlanteans)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwHFH.bountyHunting] <> [(toCardCode CwCK.bringThemIn,SomeTreacheryCard CwCK.bringThemIn)] <> [(toCardCode CwML.rapidResponse,SomeTreacheryCard CwML.rapidResponse)] <> [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce),(toCardCode CwDR.justiceLikeLightning,SomeTreacheryCard CwDR.justiceLikeLightning)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
+allTreacheries = fromList $ [(toCardCode CwN.imperiusRex,SomeTreacheryCard CwN.imperiusRex)] <> [(toCardCode CwCD.lightforce,SomeTreacheryCard CwCD.lightforce)] <> [(toCardCode CwD.protectTheInnocent,SomeTreacheryCard CwD.protectTheInnocent)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwD.streetDefenders] <> [(toCardCode CwA.atlanteans,SomeTreacheryCard CwA.atlanteans)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwHFH.bountyHunting] <> [(toCardCode CwCK.bringThemIn,SomeTreacheryCard CwCK.bringThemIn)] <> [(toCardCode CwML.rapidResponse,SomeTreacheryCard CwML.rapidResponse)] <> [(toCardCode CwDR.excessiveForce,SomeTreacheryCard CwDR.excessiveForce),(toCardCode CwDR.justiceLikeLightning,SomeTreacheryCard CwDR.justiceLikeLightning)] <> [(toCardCode CwMH.executiveOrder,SomeTreacheryCard CwMH.executiveOrder)] <> [(toCardCode card,SomeTreacheryCard card) | card <- CwMA.treacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWStandard.standardTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CW.leaderTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWVision.visionTreacheries] <> [(toCardCode card,SomeTreacheryCard card) | card <- CWAttack.attackTreacheries] <> map
   (toFst someTreacheryCardCode)
   [ SomeTreacheryCard CN.cn56058, SomeTreacheryCard CN.cn60036, SomeTreacheryCard CN.cn60064
   , SomeTreacheryCard KF.bringTheHammerDown, SomeTreacheryCard KF.youDareOpposeMe

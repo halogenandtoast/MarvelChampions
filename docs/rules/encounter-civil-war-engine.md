@@ -148,3 +148,17 @@ Validation: all five Cloak and Dagger card faces are implemented and the set is 
 The full unit suite passes 8,463 examples after the shared scheme-result change.
 
 Randomized Rhino, Klaw, and Ultron checks with Cloak and Dagger pass with two seeds each.
+
+## Namor
+
+Namor enters with toughness, stalwart and villainous, and immediately activates against the revealing player. His activation uses that player's form and the ordinary villainous boost pipeline. Imperius Rex activates the local Namor when present, otherwise the local enemy leader; its boost gives the activating enemy another boost card, which is flipped and counted during the same activation, including for a villainous minion.
+
+Neptune's Trident and Horn of Proteus attach to the local encounter Namor first, including Namor already controlled as an ally, otherwise to the local enemy leader. They respect restrictions on receiving encounter attachments. The Trident supplies +1 ATK and piercing to its host's attacks. The Horn supplies +1 SCH and gives its host tough when that enemy schemes. The minion engine now opens its existing “when this minion schemes” window after would-scheme interrupts and before boosts; an activation replaced by confusion does not open it. Each equipment card can be discarded through its printed Hero Action by paying its two specified resources. These use the ordinary attachment, resource-payment and keyword rules (Rules Reference v1.8, pages 8, 37 and 47).
+
+Ruler of Atlantis continuously prevents damage to Atlantis minions on its own board. It does not protect other traits or the opposing board, and its protection ends when the scheme leaves play or is blanked. Its hinder and amplify use the existing side-scheme engine. A search of published rulings found no Namor-specific exception to these rules.
+
+Validation: all five Namor card faces are implemented and the set is selectable. Nineteen behavior examples cover both revealing forms, toughness and stalwart, villainous boosts, equipment placement and bonuses, piercing, the Horn's minion and leader scheme interrupts, confusion, Hero Action resource costs, Imperius Rex's activation targets and extra boosts for both enemy types, continuous damage protection, hinder, and board boundaries. The focused run passes 545 Civil War behavior examples and 176 coverage examples. The compiled native registry contains 135 of the 169 Civil War non-player faces (80%).
+
+The full unit suite passes 8,483 examples after adding the minion's when-scheme window.
+
+Randomized Rhino, Klaw, and Ultron checks with Namor pass with two seeds each.
