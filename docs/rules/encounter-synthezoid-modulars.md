@@ -1,6 +1,6 @@
 # Synthezoid Smackdown modular sets
 
-The expansion has eight modular sets. S.H.I.E.L.D. Ops and Young Avengers are verified. The remaining six modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
+The expansion has eight modular sets. S.H.I.E.L.D. Ops, Young Avengers and Thunderbolts are verified. The remaining five modulars, eight leader reward dependencies and native scenario integration remain unfinished. Existing leader/signature/main-scheme and shared Standard PvP handlers are documented alongside the Civil War foundations.
 
 ## S.H.I.E.L.D. Ops
 
@@ -20,4 +20,14 @@ Teenage Superheroes shares the exact reveal-repetition handler used by Avengers 
 
 The Young Avengers side scheme has the same first-minion surge text as Homeland Security and reuses that handler with its own physical card and limit. It begins with three threat plus hinder one per player, and its limit is shared across teammates.
 
-Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Six other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+Eleven Young Avengers examples pass alongside S.H.I.E.L.D. Ops and coverage (202 examples total). Randomized Rhino, Klaw and cooperative Captain America checks pass with two seeds each (three cases, zero failures). Five other modular sets, the leader reward dependencies and native Synthezoid scenario integration remain unfinished.
+
+## Thunderbolts
+
+Atlas and Songbird attempt to stun or confuse the friendly leader, then apply the status to the revealing player if no new status was placed. Their boost abilities retain the callback needed to check the result. A steady leader can receive its second status; an already affected or stalwart leader triggers the fallback. These follow “Otherwise” in Rules Reference v1.8, p.31.
+
+Penance deals two damage to the friendly leader. Without a friendly leader, the player chooses a controlled character for two damage when revealed or one damage as a boost. Damage prevented by tough still counts as damage dealt: the rules distinguish modification of damage taken from modification of damage dealt (Damage, p.12). Thus removing a friendly leader's tough does not also damage the player.
+
+Justice Like Lightning reuses the identical Civil War printing's handler. The Thunderbolts starts with three threat plus hinder one per player, contributes a hazard icon, and blocks threat removal while a Thunderbolt minion is present on its own board. Opposing-board minions do not protect it.
+
+Validation: the Thunderbolts, Defenders, S.H.I.E.L.D. Ops, Young Avengers and coverage checks pass together (256 examples, zero failures). Randomized Rhino, Klaw and cooperative Civil War Iron Man checks pass with two seeds each (three cases, zero failures).

@@ -600,6 +600,7 @@ library
       Marvel.CivilWar.SpiderMan
       Marvel.CivilWar.StandardTreacheries
       Marvel.CivilWar.SwitchingSides
+      Marvel.CivilWar.Thunderbolts
       Marvel.CivilWar.Types
       Marvel.CivilWar.Unregistered
       Marvel.CivilWar.VisionTreacheries
@@ -2932,6 +2933,7 @@ test-suite MarvelChampions-test
       Marvel.CivilWar.StandardTreacherySpec
       Marvel.CivilWar.SwitchingSidesSpec
       Marvel.CivilWar.TeamSpec
+      Marvel.CivilWar.ThunderboltsSpec
       Marvel.CivilWar.VisionTreacherySpec
       Marvel.CivilWar.YoungAvengersSpec
       Marvel.CoverageSpec
