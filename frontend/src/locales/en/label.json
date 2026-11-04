@@ -750,5 +750,10 @@
   "slNameMainScheme": "Name main scheme",
   "slProtegeAttacks": "The Dark Protégé attacks you",
   "fneTakeVehicle": "Spend 3 resources of the same type to take the vehicle",
-  "fneRevealVehicle": "Reveal the vehicle"
+  "fneRevealVehicle": "Reveal the vehicle",
+  "fneSpendTwoResources": "Spend 2 resources of any type",
+  "fneDoNotReadyUpgrade": "Do not ready this upgrade",
+  "fneExhaustCharacter": "Exhaust this character",
+  "fneLightningDamage": "Deal damage and remove a charge counter",
+  "fneTakeIndirectDamage": "Take 1 indirect damage"
 }
