@@ -82,7 +82,7 @@ import Marvel.Trait
 
 allEnvironments :: HashMap CardCode CardDef
 allEnvironments = fromList $ map (toFst toCardCode)
-  [ FNE.street60163a, FNE.street60163b, FNE.street60152, FNE.street60112, FNE.street60177, FNE.street60178, FNE.street60179, PositionsDefs.street65003a, PositionsDefs.street65003b, PositionsDefs.street65004a, PositionsDefs.street65004b, TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
+  [ FNE.street60205a, FNE.street60205b, FNE.street60206a, FNE.street60206b, FNE.street60207a, FNE.street60207b, FNE.street60208a, FNE.street60208b, FNE.street60209a, FNE.street60209b, FNE.street60163a, FNE.street60163b, FNE.street60152, FNE.street60112, FNE.street60177, FNE.street60178, FNE.street60179, PositionsDefs.street65003a, PositionsDefs.street65003b, PositionsDefs.street65004a, PositionsDefs.street65004b, TT.tt55052, TT.tt55053, TT.tt55054, TT.tt55055
   , aos50090a, aos50090b, aos50105a, aos50106a, aos50107a, aos50108a, aos50109, aos50110, aos50111, aos50112, aos50131a, aos50131b, aos50181a, aos50182a, aos50183a
   , aosP50032
   , pursuedByThePastFront, pursuedByThePastBack, theSavageLand, genosha, blueAreaOfTheMoon

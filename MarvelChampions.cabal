@@ -1163,6 +1163,8 @@ library
     Marvel.FearNoEvil.KingpinEquipment
     Marvel.FearNoEvil.KingpinMinions
     Marvel.FearNoEvil.KingpinTreacheries
+    Marvel.FearNoEvil.CampaignCards
+    Marvel.Campaign.FearNoEvil
     Marvel.Scenario.FearNoEvil
       Marvel.FearNoEvil.OwlTombstone
       Marvel.FearNoEvil.TracksuitMafia

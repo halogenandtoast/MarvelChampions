@@ -5303,6 +5303,10 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
+      "health": 3,
+      "thwart": 2,
+      "attack": 1,
+      "aspect": "justice",
       "doubleSided": true,
       "linkedTo": "60210b",
       "hidden": false
@@ -5335,6 +5339,10 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
+      "health": 3,
+      "thwart": 1,
+      "attack": 2,
+      "aspect": "aggression",
       "doubleSided": true,
       "linkedTo": "60210a",
       "hidden": true

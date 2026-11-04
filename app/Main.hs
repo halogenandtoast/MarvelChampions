@@ -34,7 +34,7 @@ import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Card.Def qualified as CardDef
 import Marvel.Decklist
 import Marvel.EncounterSet (modularSets)
-import Marvel.Entity (toAttrs)
+import Marvel.Entity (toAttrs,toId)
 import Marvel.Frontend (FrontendMessage (..))
 import Marvel.Game
 import Marvel.Game.Public (publicGameFor)
@@ -50,7 +50,7 @@ import Marvel.Name (display, title)
 import Marvel.Phase
 import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
 import Marvel.Scenario.CivilWar (civilWarLeaderCodes, validateCivilWarSetup)
-import Marvel.Scenario.Types (ScenarioSetup (..), setupCompetition)
+import Marvel.Scenario.Types (ScenarioSetup (..), setupCompetition,getScenarioDifficulty)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Villain.Cards (allVillainsMap)
 import Marvel.MainScheme.Cards qualified as MainSchemes
@@ -444,7 +444,7 @@ broadcast gid row g entries = do
 
 villainOf :: ScenarioSetup -> (Text, CardCode)
 -- a scenario of several villains (Breakout) is set up by, and named for, its main scheme
-villainOf setup = (fromMaybe (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes)) (lookup setup.scenarioCode [("65001a","Shadows in the Night"),("65038a","Shadow Labyrinth"),("65060a","Heart of Shadow")]), setup.scenarioCode)
+villainOf setup = (fromMaybe (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes)) (lookup setup.scenarioCode [("60121a","Art Museum Heist"),("60128a","The Getaway"),("60134a","Protection Racket"),("60142a","The Raft Breakout"),("60151a","Stop the Presses!"),("60161a","Kingpin"),("65001a","Shadows in the Night"),("65038a","Shadow Labyrinth"),("65060a","Heart of Shadow")]), setup.scenarioCode)
 
 summaries :: MonadIO m => [Entity MarvelGame] -> ReaderT SqlBackend m [GameSummary]
 summaries games = do
@@ -862,12 +862,12 @@ advance gid row prepare = do
         }
     updateGet
       gid
-      [ MarvelGameCurrentData =. toJSON after
+      ([ MarvelGameCurrentData =. toJSON after
       , MarvelGameCurrentQueue =. toJSON queue'
       , MarvelGameRandomGen =. showGen gen'
       , MarvelGameStep =. step
       , MarvelGameUpdatedAt =. now
-      ]
+      ] <> campaignScenarioMetadata row after)
       <&> (,stored)
   publish gid row' (gameSeats after) stored
   broadcast gid row' (Just after) Nothing
@@ -1059,7 +1059,7 @@ campaignNow row = do
     Just (gid, g) -> case fromJSON g.marvelGameCurrentData of
       Success (game' :: Game) -> case gameState game' of
         -- unless the log has been written in since, as cards are bought from The Market
-        Finished Won -> pure (maybe stored (\won -> if stored.completed >= won.completed then stored else won) (gameCampaign game'), Nothing)
+        Finished Won -> pure (maybe stored (\won -> if stored.kind == FearNoEvilCampaign then retainNextEvolutionRetryChoice stored won else if stored.completed >= won.completed then stored else won) (gameCampaign game'), Nothing)
         Finished Lost -> pure (maybe stored (\c -> if c.lost then c else retainNextEvolutionRetryChoice stored c) (gameCampaign game'), Nothing)
         _ -> pure (maybe stored (retainNextEvolutionRetryChoice stored) (gameCampaign game'), Just gid)
       Error _ -> pure (stored, Just gid)
@@ -1367,12 +1367,12 @@ postUndoR gid = do
       (,)
         <$> updateGet
           gid
-          [ MarvelGameCurrentData =. previous
+          ([ MarvelGameCurrentData =. previous
           , MarvelGameCurrentQueue =. oldest.marvelStepQueue
           , MarvelGameRandomGen =. oldest.marvelStepRandomGen
           , MarvelGameStep =. step
           , MarvelGameUpdatedAt =. now
-          ]
+          ] <> campaignScenarioMetadata row g)
         <*> logTail gid
     broadcast gid row' (Just g) (Just entries)
  where
@@ -1544,3 +1544,14 @@ main = do
   cardDb <- loadCardDb cardsPath >>= either (\err -> error $ "could not load " <> cardsPath <> ": " <> err) pure
   manager <- newTlsManager
   warp port App {pool, jwtSecret, channels, cardDb, manager}
+
+-- Campaign planning runs inside the game's stored generator. The database title
+-- and setup are updated after its players choose the actual next scenario.
+campaignScenarioMetadata :: MarvelGame -> Game -> [Update MarvelGame]
+campaignScenarioMetadata row game = case gameCampaign game of
+  Just campaign | campaign.kind == FearNoEvilCampaign -> case recommendedSetup (toId $ gameScenario game) of
+    Just base -> let setup=base {difficulty=getScenarioDifficulty $ gameScenario game}
+                    name=maybe row.marvelGameName (\campaignName -> campaignName <> " – " <> fst (villainOf setup)) campaign.campaignName
+                in [MarvelGameScenario =. toJSON setup,MarvelGameName =. name]
+    Nothing -> []
+  _ -> []

@@ -12,6 +12,7 @@ import Data.List qualified as List
 import Control.Monad (mfilter)
 import Data.Maybe (maybeToList)
 import Marvel.Card.Code
+import Marvel.Card.Id (CardId)
 import Marvel.Aspect (Aspect (..))
 
 data CampaignMode = StandardCampaign | ExpertCampaign
@@ -69,6 +70,7 @@ data CampaignLog = CampaignLog
   , apocalypse :: ApocalypseLog
   , shield :: ShieldLog
   , nextEvolution :: NextEvolutionLog
+  , fearNoEvil :: FearNoEvilLog
   , shadowland :: ShadowlandLog
   , sinister :: SinisterLog
   -- ^ Sinister Motives: reputation and the campaign log (MC27 pp.22–23)
@@ -291,6 +293,8 @@ nextEvolutionSchemes =
 -- It must be chosen again on replay even if its reverse was earned in the lost game.
 retainNextEvolutionRetryChoice :: Campaign -> Campaign -> Campaign
 retainNextEvolutionRetryChoice previous current
+  | previous.kind == FearNoEvilCampaign,current.kind == FearNoEvilCampaign =
+      if current.campaignLog.fearNoEvil.revision >= previous.campaignLog.fearNoEvil.revision then current else previous
   | previous.kind == AgentsOfShieldCampaign, current.kind == AgentsOfShieldCampaign =
       let before = previous.campaignLog.shield
           now = current.campaignLog.shield
@@ -372,8 +376,43 @@ instance FromJSON ShadowlandLog where
 noShadowlandLog :: ShadowlandLog
 noShadowlandLog = ShadowlandLog [] [] []
 
+data FearNoEvilLog = FearNoEvilLog
+  { progress :: [(CardCode,Natural)]
+  , resolved :: [(CardCode,Bool)]
+  , underlings :: [(CardCode,CardCode)]
+  , selectedScenario :: Maybe CardCode
+  , removedTitles :: [Text]
+  , pendingRemoved :: [(CardId,Text)]
+  , trustEstablished :: Bool
+  , maryDefeated :: Bool
+  , gamesPlayed :: Natural
+  , victorious :: Bool
+  , revision :: Natural
+  , recommendedOrder :: Bool
+  }
+  deriving stock (Show,Eq,Generic)
+  deriving anyclass ToJSON
+instance FromJSON FearNoEvilLog where
+  parseJSON = genericParseJSON defaultOptions
+  omittedField = Just noFearNoEvilLog
+noFearNoEvilLog :: FearNoEvilLog
+noFearNoEvilLog = FearNoEvilLog [] [] [] Nothing [] [] False False 0 False 0 True
+
+fearNoEvilScenarioPool :: [CardCode]
+fearNoEvilScenarioPool = ["60134a","60128a","60121a","60142a","60151a"]
+fearNoEvilUnresolved :: Campaign -> [CardCode]
+fearNoEvilUnresolved c = filter (`notElem` map fst c.campaignLog.fearNoEvil.resolved) fearNoEvilScenarioPool
+
+progressFearNoEvil :: [CardCode] -> FearNoEvilLog -> FearNoEvilLog
+progressFearNoEvil codes log = foldl' advance log codes
+ where
+  advance log code =
+    let n = min 3 $ 1 + fromMaybe 0 (List.lookup code log.progress)
+        results = if n == 3 then (code,False):filter ((/= code) . fst) log.resolved else log.resolved
+    in log {progress=(code,n):filter ((/= code) . fst) log.progress,resolved=results}
+
 -- | Which box's campaign: a campaign saved before there were two is The Rise of Red Skull.
-data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign | AgentsOfShieldCampaign | ShadowlandCampaign
+data CampaignKind = RiseOfRedSkull | GalaxysMostWanted | MadTitansShadow | SinisterMotives | MutantGenesis | NextEvolution | AgeOfApocalypseCampaign | AgentsOfShieldCampaign | ShadowlandCampaign | FearNoEvilCampaign
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON)
 
@@ -411,7 +450,12 @@ data CampaignStepKind
 
 -- | What a scenario writes in the log, the player named by their identity's code.
 data CampaignRecord
-  = RecordShadowlandProtege CardCode
+  = RecordFearNoEvilLog FearNoEvilLog
+  | RecordFearNoEvilScenario CardCode
+  | RecordFearNoEvilUnderling CardCode CardCode
+  | RecordFearNoEvilOutcome Bool
+  | RecordFearNoEvilRemoved CardId Text
+  | RecordShadowlandProtege CardCode
   | RecordShadowlandOverpowered CardCode
   | RecordShadowlandPreparedCard CardCode CardCode
   | RecordShieldLog ShieldLog
@@ -505,6 +549,7 @@ campaignScenarios = \case
   AgeOfApocalypseCampaign -> ["45059", "45081a", "45101b", "45118", "45184a"]
   AgentsOfShieldCampaign -> ["50064", "50086a", "50103a", "50129a", "50165a"]
   ShadowlandCampaign -> ["65001a","65038a","65060a"]
+  FearNoEvilCampaign -> []
 
 -- | The cards of The Market and their Unit Cost (rulebook p.5), four at each cost.
 marketUnitCosts :: [(CardCode, Natural)]
@@ -565,6 +610,7 @@ newCampaignOf kind mode identities =
           , alliesRemoved = []
           , galaxy = noGalaxyLog {galaxyPlayers = [GalaxyPlayer (toHeroCardCode i) 0 [] [] | kind == GalaxysMostWanted, i <- identities]}
           , titan = TitanLog []
+          , fearNoEvil = noFearNoEvilLog
           , shadowland = noShadowlandLog
           , shield = noShieldLog
           , apocalypse = noApocalypseLog
@@ -583,6 +629,8 @@ isExpertCampaign c = c.mode == ExpertCampaign
 currentScenario :: Campaign -> Maybe CardCode
 currentScenario c
   | c.lost = Nothing
+  | c.kind == FearNoEvilCampaign = if c.campaignLog.fearNoEvil.victorious then Nothing else
+      c.campaignLog.fearNoEvil.selectedScenario <|> headMay (fearNoEvilUnresolved c) <|> Just "60161a"
   | otherwise = headMay (drop c.completed c.scenarios)
 
 -- | The place in the campaign of the scenario played next: 1 to 5.
@@ -590,7 +638,7 @@ scenarioNumber :: Campaign -> Int
 scenarioNumber c = c.completed + 1
 
 campaignWon :: Campaign -> Bool
-campaignWon c = not c.lost && c.completed >= length c.scenarios
+campaignWon c = not c.lost && if c.kind == FearNoEvilCampaign then c.campaignLog.fearNoEvil.victorious else c.completed >= length c.scenarios
 
 campaignPlayer :: CardCode -> Campaign -> Maybe CampaignPlayer
 campaignPlayer ident c = find ((== toHeroCardCode ident) . (.identity)) c.campaignLog.players
@@ -660,6 +708,18 @@ lastOnesStandingMinions c = mapMaybe (`List.lookup` sinisterAssaultVillains) c.c
 -- | The campaign's record written in its log.
 recordInLog :: CampaignRecord -> Campaign -> Campaign
 recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis = f c.campaignLog.mutantGenesis}} in case r of
+  RecordFearNoEvilLog log -> logged $ \l -> l {fearNoEvil=log {revision=l.fearNoEvil.revision+1}}
+  RecordFearNoEvilScenario code -> (logged $ \l -> l {fearNoEvil=l.fearNoEvil {selectedScenario=Just code,revision=l.fearNoEvil.revision+1}}) {scenarios=c.scenarios <> [code]}
+  RecordFearNoEvilUnderling scenario villain -> logged $ \l -> l {fearNoEvil=l.fearNoEvil {underlings=(scenario,villain):filter ((/= scenario) . fst) l.fearNoEvil.underlings,revision=l.fearNoEvil.revision+1}}
+  RecordFearNoEvilRemoved cid name -> logged $ \l -> l {fearNoEvil=l.fearNoEvil {pendingRemoved=nub $ (cid,name):l.fearNoEvil.pendingRemoved,revision=l.fearNoEvil.revision+1}}
+  RecordFearNoEvilOutcome won -> case c.campaignLog.fearNoEvil.selectedScenario of
+    Nothing -> c
+    Just code ->
+      let log = c.campaignLog.fearNoEvil
+          progressed = if not won && isExpertCampaign c && code /= "60161a" then progressFearNoEvil [code] log else log
+          outcomes = if won && code /= "60161a" then (code,True):filter ((/= code) . fst) progressed.resolved else progressed.resolved
+          next = progressed {resolved=outcomes,selectedScenario=Nothing,gamesPlayed=log.gamesPlayed+1,victorious=won && code == "60161a",pendingRemoved=[],revision=log.revision+1}
+      in c {completed=c.completed+if won then 1 else 0,campaignLog=c.campaignLog {fearNoEvil=next}}
   RecordShadowlandProtege code -> logged $ \l -> l {shadowland = l.shadowland {removedProteges = nub (toHeroCardCode code : l.shadowland.removedProteges)}}
   RecordShadowlandOverpowered ident -> logged $ \l -> let entries = l.shadowland.overpoweringHistory; code = toHeroCardCode ident; n = fromMaybe 0 (List.lookup code entries)
     in l {shadowland = l.shadowland {overpoweringHistory = (code,n+1) : filter ((/=code) . fst) entries}}

@@ -14,6 +14,7 @@ import Marvel.Campaign.GalaxysMostWanted (runGalaxyStep)
 import Marvel.Campaign.MadTitansShadow (runTitanStep)
 import Marvel.Campaign.SinisterMotives (runSinisterStep)
 import Marvel.Campaign.MutantGenesis (runMutantGenesisStep)
+import Marvel.Campaign.FearNoEvil (runFearNoEvilStep)
 import Marvel.Campaign.Shadowland (runShadowlandStep)
 import Marvel.Campaign.NextEvolution (runNextEvolutionStep)
 import Marvel.Campaign.AgentsOfShield (runShieldStep)
@@ -44,6 +45,7 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case c.kind of
  AgentsOfShieldCampaign -> runShieldStep c step
  AgeOfApocalypseCampaign -> runApocalypseStep c step
  ShadowlandCampaign -> runShadowlandStep c step
+ FearNoEvilCampaign -> runFearNoEvilStep c step
  RiseOfRedSkull -> case step of
   CampaignChoices -> do
     players <- getPlayers

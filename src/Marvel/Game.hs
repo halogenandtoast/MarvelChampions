@@ -1991,11 +1991,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     campaignStep CampaignVictory
     gameOver Won
     pure g
+  GameOver Lost | Just c <- gameCampaign,c.kind == Campaign.FearNoEvilCampaign,isJust c.campaignLog.fearNoEvil.selectedScenario -> do
+    clearQueue
+    campaignStep $ CampaignSetupThen "fearNoEvil:defeat"
+    gameOver Lost
+    pure g
   -- an expert campaign's last scenario lost: Red Skull conquers the world
   GameOver Lost
     | Just c <- gameCampaign
     , Campaign.isExpertCampaign c
-    , c.kind `notElem` [Campaign.AgeOfApocalypseCampaign,Campaign.ShadowlandCampaign]
+    , c.kind `notElem` [Campaign.AgeOfApocalypseCampaign,Campaign.ShadowlandCampaign,Campaign.FearNoEvilCampaign]
     , Campaign.scenarioNumber c == length c.scenarios -> do
         clearQueue
         pure $ g & stateL .~ Finished Lost & campaignL .~ Just c {Campaign.lost = True}
@@ -2127,6 +2132,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
+  CardSpecific GameRef "chooseFearNoEvilScenario" (fromJSON -> Success code) -> case gameCampaign g of
+    Just campaign | campaign.kind == Campaign.FearNoEvilCampaign,code `elem` (if null (Campaign.fearNoEvilUnresolved campaign) then ["60161a"] else Campaign.fearNoEvilUnresolved campaign) ->
+      case recommendedSetup code >>= \setup -> lookupScenario setup {difficulty=scenarioDifficulty $ toAttrs $ gameScenario g} of
+        Nothing -> pure g
+        Just selected -> pure g {gameScenario=selected,gameCampaign=Just $ Campaign.recordInLog (Campaign.RecordFearNoEvilScenario code) campaign}
+    _ -> pure g
   CardSpecific GameRef "blackCatCheckAlly" (fromJSON -> Success (aid :: AllyId)) -> do
     threat <- getCharacterThreat $ AllyCharacter aid
     when (threat /= 4) $ restoreControlledMinion aid
@@ -5219,7 +5230,7 @@ dispatchGameMessageCore msg g = do
   when prevented $ runQueueT $ for_ (characterDamageMessage msg) $ \(target,_,damage) ->
     when (damageAmount damage > 0 && piercesTough damage) $ removeAllTough target
   changed <- if prevented then pure g else dispatchGameMessageCoreBody msg g
-  let after = rememberCompetitiveEffects g changed
+  let after = rememberFearNoEvilRemoval msg g $ rememberCompetitiveEffects g changed
   case msg of
     AddToVictoryDisplay _ -> do
       let beforeIds = map ecCardId (gameVictoryDisplay g) <> map pcCardId (gamePlayerVictoryDisplay g)
@@ -10072,3 +10083,48 @@ setBlackCatAllyAttrs controller aid attrs = case lookupAlly "60169" controller a
   Ally.Ally (_ :: a) -> case fromJSON (toJSON attrs) of
     Success (value :: a) -> Ally.Ally value
     Error err -> error $ "invalid Black Cat ally state: " <> err
+
+-- Track the physical card, then commit only cards still removed at victory.
+-- Removing a card temporarily in order to tuck it or make it a boost is not a
+-- campaign removal once that same card is present in its new zone.
+knownGameCards :: Game -> [Card]
+knownGameCards g =
+  [PlayerCard card | player <- HashMap.elems $ gamePlayers g,let a=toAttrs player,card <- unHand a.playerIdentityHand <> unDeck a.playerIdentityDeck <> unDiscard a.playerIdentityDiscard]
+  <> map toCard (HashMap.elems $ gameAllies g)
+  <> map (toCard . toAttrs) (HashMap.elems $ gameSupports g)
+  <> map toCard (HashMap.elems $ gameUpgrades g)
+  <> map toCard (HashMap.elems $ gameMinions g)
+  <> map toCard (HashMap.elems $ gameAttachments g)
+  <> map PlayerCard (concatMap (Ally.allyHeldCards . toAttrs) (HashMap.elems $ gameAllies g)
+      <> concatMap (Minion.minionHeldCards . toAttrs) (HashMap.elems $ gameMinions g)
+      <> concatMap (supportHeldCards . toAttrs) (HashMap.elems $ gameSupports g)
+      <> concatMap (upgradeHeldCards . toAttrs) (HashMap.elems $ gameUpgrades g)
+      <> concatMap (SideScheme.sideSchemeHeldCards . toAttrs) (HashMap.elems $ gameSideSchemes g)
+      <> concatMap (MS.mainSchemeHeldCards . toAttrs) (HashMap.elems $ gameMainSchemes g)
+      <> concatMap (MGEnvironment.environmentHeldCards . toAttrs) (HashMap.elems $ gameEnvironments g)
+      <> concatMap (Obligation.obligationHeldCards . toAttrs) (HashMap.elems $ gameObligations g))
+  <> scenarioSetAsideCards (toAttrs $ gameScenario g) <> gameCollection g
+  <> map EncounterCard (scenarioEncounterDeck (toAttrs $ gameScenario g) <> scenarioDiscard (toAttrs $ gameScenario g)
+      <> concat [pileDeck pile <> pileDiscard pile | pile <- HashMap.elems $ scenarioDecks $ toAttrs $ gameScenario g]
+      <> HashMap.elems (gameBoostCards g) <> gameVictoryDisplay g)
+  <> map PlayerCard (gamePlayerVictoryDisplay g)
+  <> [EncounterCard card | player <- HashMap.elems $ gamePlayers g,card <- playerIdentityEncounterCards $ toAttrs player]
+
+rememberFearNoEvilRemoval :: Message -> Game -> Game -> Game
+rememberFearNoEvilRemoval message before after = case (message,gameCampaign after) of
+  (RemoveFromGame target,Just campaign) | campaign.kind == Campaign.FearNoEvilCampaign ->
+    let card = cardInPlay before target <|> case target of CardIdRef cid -> find ((== cid) . toCardId) $ knownGameCards before; _ -> Nothing
+    in case card of
+      Just physical | let def=fromMaybe (getCardDef physical) (abilityCardDef before target),cdUnique def,cdCardType def `elem` [AllyType,SupportType] ->
+        after {gameCampaign=Just $ Campaign.recordInLog (Campaign.RecordFearNoEvilRemoved (toCardId physical) $ title $ cdName def) campaign}
+      _ -> after
+  _ -> after
+
+fearNoEvilRemovedTitles :: HasGame m => m [Text]
+fearNoEvilRemovedTitles = getsGame $ \g -> case gameCampaign g of
+  Nothing -> []
+  Just campaign -> let live=map toCardId $ knownGameCards g
+    in nub [name | (cid,name) <- campaign.campaignLog.fearNoEvil.pendingRemoved,cid `notElem` live]
+
+getRound :: HasGame m => m Int
+getRound = getsGame gameRound

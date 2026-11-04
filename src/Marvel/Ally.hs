@@ -7,6 +7,8 @@ module Marvel.Ally
   , module X
   ) where
 
+import Marvel.FearNoEvil.CampaignCards qualified as FneCampaign
+
 import Marvel.FearNoEvil.KingpinMinions qualified as KingpinMinions
 
 import Marvel.FearNoEvil.Racket qualified as Racket
@@ -47,7 +49,7 @@ lookupAlly cardCode identityId allyId = case lookup cardCode allAllies of
   Nothing -> error $ "Invalid card code for ally " <> show cardCode
 
 allAllies :: HashMap CardCode SomeAllyCard
-allAllies = fromList $ [(toCardCode KingpinMinions.blackCatAlly,SomeAllyCard KingpinMinions.blackCatAlly)] <>  [(toCardCode Racket.shopProprietor,SomeAllyCard Racket.shopProprietor)] <>  map
+allAllies = fromList $ [(toCardCode card,SomeAllyCard card) | card <- FneCampaign.campaignMaryFaces] <>  [(toCardCode KingpinMinions.blackCatAlly,SomeAllyCard KingpinMinions.blackCatAlly)] <>  [(toCardCode Racket.shopProprietor,SomeAllyCard Racket.shopProprietor)] <>  map
   (toFst someAllyCardCode)
   $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
   [ SomeAllyCard cw56002, SomeAllyCard cw56010, SomeAllyCard cw56019, SomeAllyCard cw56030, SomeAllyCard cw56041, SomeAllyCard cw56052, SomeAllyCard fne60007, SomeAllyCard fne60019, SomeAllyCard fne60020, SomeAllyCard fne60021, SomeAllyCard fne60022, SomeAllyCard fne60039

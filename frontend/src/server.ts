@@ -506,6 +506,20 @@ export interface CampaignLog {
   apocalypse: ApocalypseLog
   shield: ShieldLog
   nextEvolution: NextEvolutionLog
+  fearNoEvil: {
+    progress: [string, number][]
+    resolved: [string, boolean][]
+    underlings: [string, string][]
+    selectedScenario: string | null
+    removedTitles: string[]
+    pendingRemoved: [string, string][]
+    trustEstablished: boolean
+    maryDefeated: boolean
+    gamesPlayed: number
+    victorious: boolean
+    revision: number
+    recommendedOrder: boolean
+  }
   shadowland: { removedProteges: string[]; overpoweringHistory: [string, number][]; preparedCards: [string, string[]][] }
 }
 
@@ -594,7 +608,7 @@ export interface GalaxyLog {
 }
 
 /** Which box's campaign. */
-export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign' | 'AgentsOfShieldCampaign' | 'ShadowlandCampaign'
+export type CampaignKind = 'RiseOfRedSkull' | 'GalaxysMostWanted' | 'MadTitansShadow' | 'SinisterMotives' | 'MutantGenesis' | 'NextEvolution' | 'AgeOfApocalypseCampaign' | 'AgentsOfShieldCampaign' | 'ShadowlandCampaign' | 'FearNoEvilCampaign'
 
 export type CampaignMode = 'StandardCampaign' | 'ExpertCampaign'
 

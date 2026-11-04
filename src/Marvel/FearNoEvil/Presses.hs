@@ -45,6 +45,7 @@ instance RunMessage StopThePresses where
       environments <- findEncounterCards $ CardIs Cards.street60152
       for_ (headMay environments) $ putEncounterCardIntoPlay first
       cards <- shuffleM =<< traverse genEncounterCard [Cards.street60153,Cards.street60154,Cards.street60155,Cards.street60156]
+      setAside $ map EncounterCard cards
       for_ (zip players cards) $ \(you,card) -> putEncounterCardIntoPlay you card
       traverse_ removeFromGame $ drop (length players) cards
       pure e

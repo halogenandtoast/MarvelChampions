@@ -24,7 +24,7 @@ import Data.List (find, nub)
 import Data.Text qualified as T
 import Marvel.AlterEgo.Cards (allAlterEgosMap)
 import Marvel.Aspect (Aspect (..))
-import Marvel.Campaign (Campaign (..), CampaignLog (..), CampaignKind (AgeOfApocalypseCampaign), apocalypseRewardsFor, campaignCardsOf)
+import Marvel.Campaign (FearNoEvilLog(..),Campaign (..), CampaignLog (..), CampaignKind (AgeOfApocalypseCampaign), apocalypseRewardsFor, campaignCardsOf)
 import Marvel.Card.Code
 import Marvel.Card.Def
 import Marvel.Deck
@@ -221,7 +221,7 @@ campaignDeck :: Campaign -> DeckList -> DeckList
 campaignDeck c d =
   d
     { cards =
-        [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved]
+        [(code, n) | (code, n) <- d.cards, code `notElem` c.campaignLog.alliesRemoved, not (removedByFearNoEvil c code)]
           <> [(code, 1) | code <- campaignCardsOf d.hero c, c.kind /= AgeOfApocalypseCampaign || not (any (sameCampaignCard code . fst) d.cards)]
     }
 
@@ -238,7 +238,7 @@ campaignDeckShortBy c d = max 0 (40 - counted)
     sum
       [ n
       | (code, n) <- d.cards
-      , code `notElem` c.campaignLog.alliesRemoved
+      , code `notElem` c.campaignLog.alliesRemoved, not (removedByFearNoEvil c code)
       , Just def <- [HashMap.lookup code allPlayerCards]
       , Permanent `notElem` cdKeywords def
       ] - length
@@ -389,3 +389,6 @@ starterDecks =
 
 lookupStarterDeck :: Text -> Maybe DeckList
 lookupStarterDeck k = snd <$> find ((== k) . fst) starterDecks
+
+removedByFearNoEvil :: Campaign -> CardCode -> Bool
+removedByFearNoEvil c code = maybe False (\def -> title (cdName def) `elem` c.campaignLog.fearNoEvil.removedTitles) $ HashMap.lookup code allPlayerCards

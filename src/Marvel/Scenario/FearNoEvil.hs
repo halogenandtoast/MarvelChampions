@@ -1,8 +1,12 @@
 module Marvel.Scenario.FearNoEvil where
 
 import Marvel.Prelude
+import Data.List qualified as List
 import Data.HashSet qualified as HashSet
 import Marvel.Card
+import Marvel.Campaign qualified as C
+import Marvel.GameValue
+import System.Random.Shuffle (shuffleM)
 import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.EncounterSet qualified as Set
@@ -37,9 +41,27 @@ instance RunMessage FearNoEvilScenario where
       entered <- selectAny $ MinionWithId $ MinionId $ unCardId cid
       unless entered $ Kingpin.findUnderling you
       pure e
+    CardSpecific GameRef "fneTankerCampaignThreat" (fromJSON -> Success expert) -> do
+      schemes <- selectList $ SideSchemeIs Cards.street60131
+      amount <- fromIntegral <$> fromGameValue (PerPlayer $ if expert then 2 else 1)
+      traverse_ (\sid -> placeThreatOn GameRef sid amount) schemes
+      pure e
     StartScenario -> do
       first <- selectJust FirstPlayer
-      chooseOne first [cardLabeled normal $ cardSpecific GameRef "fneChooseUnderling" normal | (normal,_,_) <- underlings]
+      campaign <- getCampaign
+      case campaign of
+        Just c | c.kind == C.FearNoEvilCampaign -> case List.lookup (scenarioId a) c.campaignLog.fearNoEvil.underlings of
+          Just assigned -> cardSpecific GameRef "fneChooseUnderling" assigned
+          Nothing -> do
+            let used = map snd c.campaignLog.fearNoEvil.underlings
+                available = filter (`notElem` used) ["60086","60065","60076","60097","60110a"]
+                assign normal = recordInCampaignLog (C.RecordFearNoEvilUnderling (scenarioId a) normal) >> cardSpecific GameRef "fneChooseUnderling" normal
+            if c.campaignLog.fearNoEvil.recommendedOrder then case available of
+              [] -> pure ()
+              normal:_ | normal `elem` ["60086","60065","60076"] -> assign normal
+              _ -> chooseOne first [cardLabeled normal (assign normal) | normal <- available]
+            else shuffleM available >>= traverse_ assign . headMay
+        _ -> chooseOne first [cardLabeled normal $ cardSpecific GameRef "fneChooseUnderling" normal | (normal,_,_) <- underlings]
       pure e
     CardSpecific GameRef "fneChooseUnderling" (fromJSON -> Success normal) -> do
       let chosen = headMay [entry | entry@(code,_,_) <- underlings,code == normal]

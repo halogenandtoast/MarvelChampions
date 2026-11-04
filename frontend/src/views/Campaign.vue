@@ -85,6 +85,12 @@ const useDeck = async () => {
 const log = computed(() => view.value?.campaign.campaignLog)
 const galaxy = computed(() => view.value?.campaign.kind === 'GalaxysMostWanted')
 const titan = computed(() => view.value?.campaign.kind === 'MadTitansShadow')
+const fearNoEvil = computed(() => view.value?.campaign.kind === 'FearNoEvilCampaign')
+const fneScenarios = ['60134a', '60128a', '60121a', '60142a', '60151a']
+const fneStatus = (code: string) => {
+  const entry = log.value?.fearNoEvil?.resolved.find(([scenario]) => scenario === code)
+  return entry ? t(entry[1] ? 'campaign.fneCompleted' : 'campaign.fneFailed') : t('campaign.fneUnresolved')
+}
 const shadowland = computed(() => view.value?.campaign.kind === 'ShadowlandCampaign')
 const shield = computed(() => view.value?.campaign.kind === 'AgentsOfShieldCampaign')
 const apocalypse = computed(() => view.value?.campaign.kind === 'AgeOfApocalypseCampaign')
@@ -135,6 +141,7 @@ const action = computed(() => {
   const v = view.value
   if (!v || !v.next) return null
   if (v.currentGame) return t('campaign.resume')
+  if (fearNoEvil.value && !v.campaign.campaignLog.fearNoEvil?.selectedScenario) return t('campaign.fneChooseNext')
   return t('campaign.continue', { villain: name(v.next) })
 })
 
@@ -168,8 +175,8 @@ const remove = async () => {
         <button v-if="view.table.owner === currentUser?.id" type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
       </header>
 
-      <ol class="track">
-        <li v-for="(code, i) in view.campaign.scenarios" :key="code" class="stop" :class="stage(i)">
+      <ol v-if="!fearNoEvil" class="track">
+        <li v-for="(code, i) in view.campaign.scenarios" :key="`${code}-${i}`" class="stop" :class="stage(i)">
           <span class="art" :style="{ backgroundImage: art(code) }" />
           <span class="label">{{ $t('campaign.scenario', { n: i + 1 }) }}</span>
           <span class="villain">{{ name(code) }}</span>
@@ -177,10 +184,24 @@ const remove = async () => {
         </li>
       </ol>
 
+      <section v-if="fearNoEvil && log.fearNoEvil" class="box">
+        <h2>{{ $t('campaign.fneCrimeWave') }}</h2>
+        <p>{{ $t('campaign.fneProgressionHelp') }}</p>
+        <table class="fne-progress">
+          <thead><tr><th>{{ $t('campaign.fneScenario') }}</th><th>{{ $t('campaign.fneProgress') }}</th><th>{{ $t('campaign.fneVillain') }}</th><th>{{ $t('campaign.fneResult') }}</th></tr></thead>
+          <tbody><tr v-for="code in fneScenarios" :key="code">
+            <td>{{ name(code) }}</td>
+            <td>{{ '×'.repeat(log.fearNoEvil.progress.find(([scenario]) => scenario === code)?.[1] ?? 0) || '—' }}</td>
+            <td>{{ log.fearNoEvil.underlings.find(([scenario]) => scenario === code)?.[1] ? name(log.fearNoEvil.underlings.find(([scenario]) => scenario === code)![1]) : '—' }}</td>
+            <td>{{ fneStatus(code) }}</td>
+          </tr></tbody>
+        </table>
+      </section>
+
       <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin" />
 
       <div v-else class="next box">
-        <p class="progress">{{ $t('campaign.progress', { done: view.campaign.completed, total: view.campaign.scenarios.length }) }}</p>
+        <p class="progress">{{ $t('campaign.progress', { done: fearNoEvil ? (log.fearNoEvil?.resolved.length ?? 0) + (log.fearNoEvil?.victorious ? 1 : 0) : view.campaign.completed, total: fearNoEvil ? 6 : view.campaign.scenarios.length }) }}</p>
         <p v-if="view.won" class="result good">{{ $t(mutant ? 'campaign.mutantWon' : galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : sinister ? 'campaign.sinisterWon' : 'campaign.won') }}</p>
         <p v-else-if="view.campaign.lost" class="result bad">{{ $t(mutant ? 'campaign.mutantLost' : galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : sinister ? 'campaign.sinisterLost' : 'campaign.lost') }}</p>
         <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
@@ -266,7 +287,12 @@ const remove = async () => {
 
       <section class="box">
         <h2>{{ $t('campaign.log') }}</h2>
-        <dl v-if="galaxy" class="scenario-log">
+        <dl v-if="fearNoEvil && log.fearNoEvil" class="scenario-log">
+          <dt>{{ $t('campaign.fneTrust') }}</dt><dd>{{ $t(log.fearNoEvil.trustEstablished ? 'campaign.fneYes' : 'campaign.fneNo') }}</dd>
+          <dt>{{ $t('campaign.fneMaryDefeated') }}</dt><dd>{{ $t(log.fearNoEvil.maryDefeated ? 'campaign.fneYes' : 'campaign.fneNo') }}</dd>
+          <dt>{{ $t('campaign.fneRemoved') }}</dt><dd>{{ log.fearNoEvil.removedTitles.join(', ') || $t('campaign.none') }}</dd>
+        </dl>
+        <dl v-else-if="galaxy" class="scenario-log">
           <dt>{{ $t('campaign.scenario', { n: 3 }) }} · {{ $t('campaign.galacticArtifacts') }}</dt>
           <dd>{{ names(log.galaxy.galacticArtifacts) }}</dd>
           <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.powerStoneControl') }}</dt>
@@ -433,4 +459,7 @@ dd { margin: 0; }
   .track { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .scenario-log { grid-template-columns: minmax(0, 1fr); }
 }
+
+.fne-progress { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.fne-progress th, .fne-progress td { text-align: left; padding: .65rem .4rem; border-bottom: 1px solid var(--border, #ddd); }
 </style>

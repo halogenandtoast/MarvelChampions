@@ -765,5 +765,14 @@
   "fneProximaAttackBonus": "Proxima Midnight gets +2 ATK for this attack",
   "fneKeepEncounterCard": "Keep this encounter card",
   "fneReplaceEncounterCard": "Discard this encounter card and deal a replacement",
-  "fneProtectingBusiness": "{name}’s business"
+  "fneProtectingBusiness": "{name}’s business",
+  "fneChooseCampaignScenario": "Choose the next scenario",
+  "fneVillainOrder": "Choose how campaign villains are selected",
+  "fneRecommendedVillains": "Use the recommended order",
+  "fneRandomVillains": "Choose unused villains at random",
+  "fneEncounterToHealRecovery": "Take a facedown encounter card and heal your REC",
+  "fneFailCompletedScenario": "Choose a completed scenario to fail",
+  "fneBeStunned": "Become stunned",
+  "fneBeConfused": "Become confused",
+  "fneSearchCampaignReward": "Search your deck and discard pile for the reward"
 }

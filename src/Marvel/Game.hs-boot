@@ -548,3 +548,7 @@ getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
 characterPlayAreaOwner :: HasGame m => CharacterId -> m (Maybe IdentityId)
 
 boostAssignmentEnemy :: Message -> Maybe EnemyId
+
+fearNoEvilRemovedTitles :: HasGame m => m [Text]
+
+getRound :: HasGame m => m Int

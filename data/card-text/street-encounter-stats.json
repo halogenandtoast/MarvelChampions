@@ -719,5 +719,17 @@
     "baseThreatPerHero": true,
     "boost": 2,
     "boostStar": false
+  },
+  "60210a": {
+    "health": 3,
+    "thwart": 2,
+    "attack": 1,
+    "aspect": "justice"
+  },
+  "60210b": {
+    "health": 3,
+    "thwart": 1,
+    "attack": 2,
+    "aspect": "aggression"
   }
 }
