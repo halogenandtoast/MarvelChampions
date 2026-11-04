@@ -3028,6 +3028,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.FearNoEvilMarySpec
       Marvel.Encounter.FearNoEvilPressesSpec
       Marvel.Encounter.FearNoEvilPurpleManSpec
+      Marvel.Encounter.FearNoEvilRaftSpec
       Marvel.Encounter.FearNoEvilScenarioSpec
       Marvel.Encounter.FearNoEvilSpec
       Marvel.Encounter.FearNoEvilUnderlingsSpec
