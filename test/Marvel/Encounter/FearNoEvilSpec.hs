@@ -14,6 +14,7 @@ import Marvel.EncounterSet qualified as Set
 import Marvel.Shadowland.Cards qualified as Shadow
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Keyword
+import Marvel.Attack (attackOverkill)
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Phase (Phase(VillainPhase))
@@ -52,6 +53,136 @@ recruitBlackCat you = do
 
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  it "Diamondback deals her interrupt damage in addition to her villainous attack" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      mid <- addMinion you Cards.street60170
+      _ <- setEncounterDeck (replicate 4 Cards.street60188) []
+      resolve [MinionMessage mid $ MinionAttacks you]
+      damageOf you `shouldReturn` 2
+
+  it "Kingpin's Influence reveals the defeating player's nemesis scheme and later adds three threat to that same physical scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      clearHand you
+      for_ [3,6 :: Natural] $ \expected -> do
+        card <- revealNow you Cards.street60173
+        pass
+        let sid = SideSchemeId $ unCardId $ ecCardId card
+        resolve =<< L.runQueueT (L.capture $ L.removeSchemeThreat you (SchemeSideSchemeId sid) 2)
+        nemesis <- selectJust $ SideSchemeIs SchemeCards.highwayRobbery
+        getSchemeThreatAmount (SchemeSideSchemeId nemesis) `shouldReturn` expected
+
+  it "Bag of Tricks reveals exactly one physical card from the player's set-aside nemesis set" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      clearHand you
+      before <- selectList $ NemesisSetFor you
+      length before `shouldBe` 5
+      card <- encounterCard Cards.street60175
+      resolve [RevealEncounterCard you card]
+      after <- selectList $ NemesisSetFor you
+      length after `shouldBe` 4
+      [selected] <- pure [c | c <- before,ecCardId c `notElem` map ecCardId after]
+      case cdCardType $ getCardDef selected of
+        MinionType -> selectAny (MinionWithId $ MinionId $ unCardId $ ecCardId selected) `shouldReturn` True
+        SideSchemeType -> selectAny (SideSchemeWithId $ SideSchemeId $ unCardId $ ecCardId selected) `shouldReturn` True
+        TreacheryType -> getEncounterDiscard >>= \cards -> liftIO $ map ecCardId cards `shouldContain` [ecCardId selected]
+        _ -> liftIO $ expectationFailure "a nemesis set supplied an unexpected card type"
+
+  it "Unrelenting Hate finds the physical nemesis minion and activates that minion on a later reveal" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      clearHand you
+      _ <- setEncounterDeck (replicate 4 Cards.street60188) []
+      first <- encounterCard Cards.street60176
+      resolve [RevealEncounterCard you first]
+      mid <- selectJust $ MinionIs MinionCards.vulture
+      mainSchemeThreatNow `shouldReturn` 0
+      second <- encounterCard Cards.street60176
+      resolve [RevealEncounterCard you second]
+      selectAny (MinionWithId mid) `shouldReturn` True
+      selectListCount AnyMinion `shouldReturn` 1
+      mainSchemeThreatNow `shouldReturn` 1
+
+  it "expert Kingpin behind the scenes replaces his attack with a scheme and cannot be dealt damage" do
+    tg <- testGame ["captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60160a" Advanced]
+      _ <- setEncounterDeck (replicate 4 Cards.street60188) []
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ withUnpreventable $ toDamage 5 FromAbility]
+      getVillainHitPoints vid `shouldReturn` 28
+      resolve [VillainMessage vid $ VillainAttacks you]
+      damageOf you `shouldReturn` 0
+      mainSchemeThreatNow `shouldReturn` 3
+
+  it "expert martial Kingpin gets his extra boost and overkill only while the attacked player has no engaged minion" do
+    tg <- testGame ["captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60160b" Advanced]
+      _ <- setEncounterDeck (replicate 5 Cards.street60188) []
+      runNow [VillainMessage vid $ VillainAttacks you]
+      choose "resolve Kingpin's first activation interrupt" (isAbilityOf vid)
+      fmap attackOverkill <$> getEnemyAttack (EnemyVillainId vid) `shouldReturn` Just True
+      pass
+      length <$> getEncounterDeck `shouldReturn` 3
+      _ <- addMinion you Cards.street60130
+      runNow [VillainMessage vid $ VillainAttacks you]
+      choose "resolve Kingpin's second activation interrupt" (isAbilityOf vid)
+      fmap attackOverkill <$> getEnemyAttack (EnemyVillainId vid) `shouldReturn` Just False
+      pass
+      length <$> getEncounterDeck `shouldReturn` 2
+      damageOf you `shouldReturn` 6
+
+  it "Towering Inferno rescues both civilians by exhausting a tough character without spending its tough status" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      resolve [GiveStatus (IdentityRef you) ToughStatus]
+      card <- revealNow you Cards.street60179
+      pass
+      let eid = EnvironmentId $ unCardId $ ecCardId card
+      getCountersOn eid `shouldReturn` 2
+      choose "exhaust to rescue the civilians" (isAbilityOf eid)
+      chooseIf (isTargetChoice you)
+      pass
+      selectAny (EnvironmentIs Cards.street60179) `shouldReturn` False
+      isExhaustedPlayer you `shouldReturn` True
+      getCharacterStatusCount (IdentityCharacter you) ToughStatus `shouldReturn` 1
+
+  it "Wanted stays in its owner's area until its hero action puts a physical Police minion into play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      card <- revealNow you Cards.street60184
+      pass
+      let oid = ObligationId $ unCardId $ ecCardId card
+      getObligationsOf you >>= (liftIO . (`shouldContain` [oid]))
+      ([discarded,cop,_,_],_) <- setEncounterDeck [Cards.street60085,Cards.street60182,Cards.street60188,Cards.street60188] []
+      choose "answer the Wanted obligation" (isAbilityOf $ ObligationRef oid)
+      pass
+      getObligationsOf you >>= (liftIO . (`shouldNotContain` [oid]))
+      selectAny (MinionWithId $ MinionId $ unCardId $ ecCardId cop) `shouldReturn` True
+      getEncounterDiscard >>= \cards -> liftIO $ map ecCardId cards `shouldContain` [ecCardId discarded]
+
   it "Establish Trust discards its attachments and tucked cards when flipped, and Mary Walker flips back with fresh threat and no old counters" do
     tg <- testGame ["spider-man"]
     inGame tg do

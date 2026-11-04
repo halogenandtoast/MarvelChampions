@@ -5,11 +5,67 @@ import Marvel.Attachment.Types qualified as Attachment
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Keyword
 import Marvel.Matchers
+import Marvel.Message.Lifted qualified as L
 import Marvel.Query
 import TestImport
 
+walkerFixture :: IdentityId -> GameAppT (VillainId,SideSchemeId)
+walkerFixture you = do
+  vid <- villainIdNow
+  resolve [ReplaceVillain vid "60110a" Advanced]
+  _ <- revealNow you Cards.street60112
+  pass
+  _ <- revealNow you Cards.street60113a
+  pass
+  sid <- selectJust $ SideSchemeIs Cards.street60113a
+  resolve =<< L.runQueueT (L.capture $ L.removeSchemeThreat GameRef (SchemeSideSchemeId sid) 8)
+  pure (vid,sid)
+
 spec :: Spec
 spec = describe "Fear No Evil Mary behaviors" do
+  for_ [(Cards.street60115,2,0),(Cards.street60118,0,1)] $ \(def,threat,damage) ->
+    it ("revealing " <> show (toCardCode def) <> " breaks trust before its printed activation, even in alter-ego form") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        (_,sid) <- walkerFixture you
+        _ <- setEncounterDeck (replicate 4 Cards.street60188) []
+        card <- encounterCard def
+        resolve [RevealEncounterCard you card]
+        selectAny (SideSchemeWithId sid) `shouldReturn` True
+        selectAny (AttachmentWithId $ AttachmentId $ unSideSchemeId sid) `shouldReturn` False
+        getSchemeThreatAmount (SchemeSideSchemeId sid) `shouldReturn` 8
+        mainSchemeThreatNow `shouldReturn` threat
+        damageOf you `shouldReturn` damage
+        length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 0
+
+  it "Scavenged Bulwark gives Mary tough and resolves one surge card" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60110a" Advanced]
+      _ <- setEncounterDeck [Cards.street60085,Cards.street60188,Cards.street60188,Cards.street60188] []
+      card <- encounterCard Cards.street60119
+      resolve [RevealEncounterCard you card]
+      getCharacterStatusCount (VillainCharacter vid) ToughStatus `shouldReturn` 1
+      length <$> getEncounterDeck `shouldReturn` 3
+
+  it "expert Typhoid Mary flips with her existing damage and does not resolve Bloody Mary's When Revealed" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60111a" Advanced]
+      getVillainHitPoints vid `shouldReturn` 13
+      getCharacterStatusCount (VillainCharacter vid) ToughStatus `shouldReturn` 1
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ toDamage 1 FromAbility]
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ toDamage 3 FromAbility,VillainMessage vid FlipVillain]
+      toCardCode . getCardDef <$> getVillain `shouldReturn` "60111b"
+      getVillainHitPoints vid `shouldReturn` 10
+      damageOf (player1 tg) `shouldReturn` 0
+      resolve [VillainMessage vid FlipVillain]
+      getCharacterStatusCount (VillainCharacter vid) ToughStatus `shouldReturn` 0
+
   it "flipping Typhoid Mary to Bloody Mary preserves damage and status without revealing her" do
     tg <- testGame ["spider-man"]
     inGame tg do
