@@ -59,7 +59,7 @@ instance HasAbilities ShadowMinion where
   getAbilities (ShadowMinion a _) =
     [windowAbility a 1 (W.MinionDefeated W.When $ MinionWithId $ minionId a) WhenRevealed NoCost (runAbility a 1) | toCardCode a `elem` ["65006","65067"]]
     <> [ability a 2 HeroAction hasCorruption NoCost (runAbility a 2) | toCardCode a == "65066"]
-    <> [ability a 3 HeroAction (EnemyExists (EnemyWithId (toEnemyId a) <> NotEnemy (EnemyWithRemainingHitPoints $ AtLeast $ Static 3))) ExhaustCost (runAbility a 3) | toCardCode a == "65067"]
+    <> [ability a 3 HeroAction (EnemyExists (EnemyWithId (toEnemyId a) <> NotEnemy (EnemyWithRemainingHitPoints $ AtLeast $ Static 3))) (ExhaustCharacterCost $ IdentityCharacters You) (runAbility a 3) | toCardCode a == "65067"]
     <> [windowAbility a 4 (W.EnemyWouldAttack (EnemyWithId $ toEnemyId a) AnyIdentity) Interrupt NoCost (runAbility a 4) | toCardCode a == "65068"]
    where hasCorruption = UpgradeExists (UpgradeControlledBy You <> UpgradeNamed "Creeping Corruption")
 instance RunMessage ShadowMinion where

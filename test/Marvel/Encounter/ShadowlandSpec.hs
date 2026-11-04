@@ -173,6 +173,49 @@ spec = describe "Shadowland encounter cards" do
       uid <- selectJust (UpgradeNamed "Creeping Corruption")
       getCountersOn uid `shouldReturn` 2
 
+  it "defeating a Shadows in the Night protege on side A flips it and deals an encounter card" do
+    tg <- shadowlandGame "65001a" Normal
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "65013a" Advanced]
+      resolve [VillainMessage vid $ VillainDamaged (IdentityRef you) $ toDamage 30 FromAbility]
+      selectAny (VillainWithCardCode "65013b") `shouldReturn` True
+      current <- villainIdNow
+      getVillainHitPoints current `shouldReturn` 18
+      Position.villainAtop `shouldReturn` True
+      length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 1
+
+  it "Dead End removes a passage instead of adding extra threat in Shifting Corridors" do
+    tg <- shadowlandGame "65038a" Normal
+    inGame tg do
+      vid <- villainIdNow
+      card <- encounterCard Cards.street65042
+      resolve [RevealEncounterCard (player1 tg) card]
+      getCountersOn vid `shouldReturn` 9
+      sid <- selectJust $ SideSchemeIs Cards.street65042
+      getSchemeThreatAmount (SchemeSideSchemeId sid) `shouldReturn` 2
+
+  it "Lord Deathstrike mixes two encounter cards into the trap deck while corridors remain" do
+    tg <- shadowlandGame "65038a" Normal
+    inGame tg do
+      void $ setEncounterDeck (replicate 4 FNE.street60188) []
+      void $ addMinion (player1 tg) Cards.street65041
+      length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 10
+      length <$> getEncounterDeck `shouldReturn` 2
+
+  it "defeating Krahllak's first stage advances both the villain and the main scheme" do
+    tg <- shadowlandGame "65060a" Normal
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [VillainMessage vid $ VillainDamaged (IdentityRef you) $ toDamage 30 FromAbility]
+      selectAny (VillainWithCardCode "65058") `shouldReturn` True
+      mainSchemeIdNow >>= \mid -> getsGame (fmap toCardCode . (`cardInPlay` MainSchemeRef mid)) `shouldReturn` Just "65061b"
+      current <- villainIdNow
+      getVillainHitPoints current `shouldReturn` 21
+      mainSchemeThreatNow `shouldReturn` 0
+
   it "Darkness Within does not ask a hero to change to their current form" do
     tg <- testGame ["spider-man"]
     inGame tg do

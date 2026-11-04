@@ -3093,6 +3093,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.ScarletWitchNemesisSpec
       Marvel.Encounter.ShadowlandCoverageSpec
       Marvel.Encounter.ShadowlandDarkProtegeSpec
+      Marvel.Encounter.ShadowlandEncountersSpec
       Marvel.Encounter.ShadowlandModularSpec
       Marvel.Encounter.ShadowlandProtegesSpec
       Marvel.Encounter.ShadowlandSpec
