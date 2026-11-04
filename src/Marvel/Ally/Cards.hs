@@ -1,5 +1,7 @@
 module Marvel.Ally.Cards where
 
+import Marvel.FearNoEvil.Cards qualified as FneRacket
+
 import Marvel.CampaignPlayers.Cards qualified as CampaignPlayers
 import Marvel.JessicaJones.Cards qualified as JL
 import Marvel.FalconWinter.Cards qualified as FalconWinter
@@ -191,7 +193,7 @@ import Marvel.Trait
 allAllies :: HashMap CardCode CardDef
 allAllies = fromList $ concatMap
   toCardCodePairs
-  [ CampaignPlayers.cw56002, CampaignPlayers.cw56010, CampaignPlayers.cw56019, CampaignPlayers.cw56030, CampaignPlayers.cw56041, CampaignPlayers.cw56052, CampaignPlayers.fne60007, CampaignPlayers.fne60019, CampaignPlayers.fne60020, CampaignPlayers.fne60021, CampaignPlayers.fne60022, CampaignPlayers.fne60039
+  [FneRacket.street60139,  CampaignPlayers.cw56002, CampaignPlayers.cw56010, CampaignPlayers.cw56019, CampaignPlayers.cw56030, CampaignPlayers.cw56041, CampaignPlayers.cw56052, CampaignPlayers.fne60007, CampaignPlayers.fne60019, CampaignPlayers.fne60020, CampaignPlayers.fne60021, CampaignPlayers.fne60022, CampaignPlayers.fne60039
   , WM.wm58012, WM.wm58013, WM.wm58014, WM.wm58015, WM.wm58022, HC.hc59008, HC.hc59018, HC.hc59019, HC.hc59020, HC.hc59025
   , JL.jl61003, JL.jl61015, JL.jl61016, JL.jl61017, JL.jl61025, JL.jl61038, JL.jl62002, JL.jl62012, JL.jl62013, JL.jl62014, JL.jl62020, JL.jl62021
   , TT.tt55063, TT.tt55064, TT.tt55065, TT.tt55066

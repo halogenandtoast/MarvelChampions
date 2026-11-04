@@ -1340,6 +1340,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
             pure $ PlayerIdentity $ removeOneIdentityTough attrs
           else do
             modifiedHp <- getModifiedHp pid
+            let excess = subtractNatural modifiedHp (playerIdentityDamage + damageAmount damage)
+            when (excess > 0 && attackDamage damage) $ for_ (sourceEnemy source) $ \enemy -> cardSpecific (enemyRef enemy) "attackExcessDamage" excess
             -- Caps count actual damage after prevention and tough, including each
             -- indirect/overkill share of the same attack, before its responses.
             let fromAttack = damageSource damage `elem` [FromAttack, FromOverkill]

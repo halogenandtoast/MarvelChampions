@@ -98,7 +98,8 @@ import Marvel.I18n (ikeyWith, textVar)
 import Marvel.Identity hiding (alliesL, minionsL, supportsL, upgradesL)
 import Marvel.Keyword
 import Marvel.MainScheme
-import Marvel.MainScheme.Types (Attrs (mainSchemeCounters, mainSchemeHeldCards, mainSchemeVillain, mainSchemeHasGlider, mainSchemeAccelerationTokens), Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
+import Marvel.MainScheme.Types qualified as MS
+import Marvel.MainScheme.Types (Attrs (mainSchemeOwner, mainSchemeCounters, mainSchemeHeldCards, mainSchemeVillain, mainSchemeHasGlider, mainSchemeAccelerationTokens), Field (MainSchemeCounters), MainScheme, getMainSchemeThreat)
 import Marvel.Matchers hiding (ExhaustedIdentity, MainScheme)
 import Marvel.Matchers qualified as Matchers
 import Marvel.Message.Ally qualified as AllyMsg
@@ -2113,6 +2114,43 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
+  CardSpecific GameRef "racketChooseBusinesses" (fromJSON -> Success (players :: [IdentityId])) -> do
+    case players of
+      [] -> pure ()
+      you:rest -> do
+        let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ gameScenario g),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
+            install card = cardSpecific GameRef "racketInstallBusiness" (you,card,Nothing :: Maybe MainSchemeId,0 :: Natural) >> cardSpecific GameRef "racketChooseBusinesses" rest
+        if scenarioDifficulty (toAttrs $ gameScenario g) == Expert
+          then shuffleM available >>= traverse_ install . headMay
+          else chooseOne you [cardLabeled (toCardCode card) (install card) | card <- available]
+    pure g
+  CardSpecific GameRef "racketSwapBusiness" (fromJSON -> Success (you :: IdentityId)) -> do
+    old <- getOwnedMainScheme you
+    let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ gameScenario g),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
+    shuffled <- shuffleM available
+    for_ old $ \sid -> for_ (headMay shuffled) $ \card ->
+      cardSpecific GameRef "racketInstallBusiness" (you,card,Just sid,maybe 0 getMainSchemeThreat $ lookup sid $ gameMainSchemes g)
+    pure g
+  CardSpecific GameRef "racketInstallBusiness" (fromJSON -> Success (you,card,old :: Maybe MainSchemeId,threat :: Natural)) -> do
+    let sid = MainSchemeId $ unCardId $ ecCardId card
+        gone = case old of Just mid -> [mid]; Nothing -> [mid | (mid,scheme) <- HashMap.toList (gameMainSchemes g),isNothing $ mainSchemeOwner $ toAttrs scheme]
+    case lookupMainScheme (toCardCode card) sid of
+      Nothing -> pure g
+      Just scheme -> do
+        removeEncounterCardFromPiles card
+        for_ gone $ \mid -> do
+          for_ (lookup mid $ gameMainSchemes g) $ \previous -> do
+            when (isJust $ mainSchemeOwner $ toAttrs previous) $ setAside [toCard previous]
+            traverse_ discardCard $ MS.mainSchemeHeldCards $ toAttrs previous
+            traverse_ discardCard $ MS.mainSchemeHeldEncounterCards $ toAttrs previous
+          frameworkDiscard $ do
+            for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g),upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
+            for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g),Attachment.attachmentMainScheme (toAttrs a) == Just mid] removeFromPlay
+        owned <- runMessage (CardSpecific (MainSchemeRef sid) "ownedMainState" $ toJSON (you,threat)) scheme
+        cardSpecific sid "racketDifficulty" (scenarioDifficulty (toAttrs $ gameScenario g) == Expert)
+        pure $ g & entitiesL . mainSchemesL %~ (insertMap sid owned . (\schemes -> foldr deleteMap schemes gone))
+          & areasL . each %~ (\area -> area {areaMainSchemes=filter (`notElem` gone) $ areaMainSchemes area})
+          & intoAreaOf you (\area -> area {areaMainSchemes=areaMainSchemes area <> [sid]})
   CardSpecific GameRef "replaceDealtEncounterCard" (fromJSON -> Success (you,card)) -> case lookup you (gamePlayers g) of
     Just player | card `elem` playerIdentityEncounterCards (toAttrs player) -> do
       discardCard card
@@ -3609,7 +3647,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- attached as its own "attach to" says, not revealed: no "When Revealed" and no surge
     AttachmentType -> do
       let attachment = createAttachment card
-      rest <- capture $ attachmentStep (toId attachment) (RevealAttachment ident)
+      rest <- capture $ do
+        attachmentStep (toId attachment) (RevealAttachment ident)
+        checkWindows [W.Window W.After $ W.EncounterAttachmentEntered $ toId attachment]
       push $ EntersPlayUnlessUnique ident False (toTarget attachment) rest
       pure $ g & (entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
     _ -> do
@@ -4412,8 +4452,13 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
   result <- case cdCardType (getCardDef card) of
     AllyType -> do
       let playerCard = MkPlayerCard (ecCardId card) (getCardDef card) (Just ident) (Just ident)
-      putIntoPlay ident playerCard
-      surges
+          aid = AllyId $ unCardId $ ecCardId card
+      if not resolveWhenRevealed && hasWhenRevealed (toCardCode card) then discardCard card else do
+        putIntoPlay ident playerCard
+        when (hasWhenRevealed $ toCardCode card) $ whenRevealed $ do
+          askToResolveWhenRevealed ident (AllyRef aid)
+          allyStep aid (AllyRevealed ident)
+        surges
       pure g
     AttachmentType -> do
       let attachment = createAttachment card
@@ -4423,6 +4468,7 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
         if not resolveWhenRevealed && hasWhenRevealed (toCardCode card)
           then removeFromPlay attachment
           else attachmentStep (toId attachment) (RevealAttachment ident)
+        checkWindows [W.Window W.After $ W.EncounterAttachmentEntered $ toId attachment]
         when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
       push $ EntersPlayUnlessUnique ident True (toTarget attachment) rest
       pure $
@@ -5117,6 +5163,8 @@ dispatchGameMessageCore msg g = do
     _ -> pure ()
   when (any ((== "60151b") . toCardCode . getCardDef) (HashMap.elems $ gameMainSchemes after)) $
     runQueueT $ when (any (\(sid,support) -> DailyBugle `HashSet.member` cdTraits (getCardDef support) && not (HashMap.member sid $ gameSupports after)) (HashMap.toList $ gameSupports g)) $ gameOver Lost
+  when (any (isJust . mainSchemeOwner . toAttrs) (HashMap.elems $ gameMainSchemes after) && any (\ident -> not $ HashMap.member ident $ gamePlayers after) (HashMap.keys $ gamePlayers g)) $
+    runQueueT $ gameOver Lost
   synchronizeDeceivedAllies after
 
 characterDamageMessage :: Message -> Maybe (CharacterId,Source,Damage)
@@ -5865,6 +5913,7 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
       <> [windowAbility (toAttrs minion) 97001 (W.MinionDefeated W.When $ MinionWithId $ toId minion) WhenRevealed NoCost (RunAbility (toRef minion) 97001)
          | any ((== "60142b") . toCardCode . getCardDef) (HashMap.elems $ gameMainSchemes g),minion <- HashMap.elems $ gameMinions g]
+      <> concatMap getAbilities (HashMap.elems $ gameEffects g)
       <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
       <> concatMap getAbilities (HashMap.elems $ gameObligations g)
       <> concatMap getAbilities (HashMap.elems $ gameSideSchemes g)
@@ -7276,6 +7325,7 @@ gameSelectAnyScheme = \case
     mainSchemeIds <-
       map (SchemeMainSchemeId . toId) . HashMap.elems <$> getsGame gameMainSchemes
     pure $ HashSet.fromList mainSchemeIds
+  MainSchemeOwnedBy you -> getsGame $ \g -> HashSet.fromList [SchemeMainSchemeId sid | (sid,scheme) <- HashMap.toList (gameMainSchemes g),mainSchemeOwner (toAttrs scheme) == Just you]
   EncounterMainScheme -> do
     gliders <- getGliderSchemes
     if null gliders then gameSelectAnyScheme Matchers.MainScheme
@@ -9858,3 +9908,39 @@ synchronizeDeceivedAllies g
  where
   zemos = [minion | minion <- HashMap.elems (gameMinions g),toCardCode (getCardDef minion) == "60145"]
   deceived = [mid | (mid,minion) <- HashMap.toList (gameMinions g),Deceived `HashSet.member` cdTraits (getCardDef minion),isJust $ Minion.minionFacedownCard $ toAttrs minion]
+
+-- "The main scheme" belongs to the source's play area in Protection Racket.
+-- An unqualified "a scheme" continues to offer every main scheme.
+mainSchemeMatcherForSource :: HasGame m => IdentityId -> Source -> SchemeMatcher -> m SchemeMatcher
+mainSchemeMatcherForSource you source matcher = do
+  owner <- playAreaOwner source
+  owned <- maybe (pure False) (selectAny . MainSchemeOwnedBy) owner
+  pure $ if owned then maybe matcher (\who -> replace who matcher) owner else matcher
+ where
+  replace who = \case EncounterMainScheme -> MainSchemeOwnedBy who; SchemeMatches xs -> SchemeMatches $ map (replace who) xs; other -> other
+  playAreaOwner from = case refocus from of
+    MinionRef mid -> getsGame $ fmap (minionEngagedIdentity . toAttrs) . (\g -> lookup mid (gameMinions g) <|> lookup mid (entitiesMinions $ gameRemovedEntities g))
+    TreacheryRef _ -> pure $ Just you
+    AttachmentRef aid -> do
+      host <- getAttachedCharacter aid
+      case host of
+        Just (MinionCharacter mid) -> playAreaOwner $ MinionRef mid
+        Just (IdentityCharacter who) -> pure $ Just who
+        Just (AllyCharacter ally) -> getSourceController $ AllyRef ally
+        _ -> pure Nothing
+    EnvironmentRef eid -> getsGame $ join . fmap (MGEnvironment.environmentOwner . toAttrs) . lookup eid . gameEnvironments
+    MainSchemeRef mid -> getsGame $ join . fmap (mainSchemeOwner . toAttrs) . lookup mid . gameMainSchemes
+    EffectRef eid -> getsGame (fmap (Effect.effectSource . toAttrs) . lookup eid . gameEffects) >>= maybe (pure Nothing) playAreaOwner
+    _ -> getSourceController from
+
+getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
+getOwnedMainScheme you = selectOne (MainSchemeOwnedBy you) <&> (>>= \case SchemeMainSchemeId mid -> Just mid; _ -> Nothing)
+
+-- A play area here is a player's cards and the minions engaged with that player;
+-- all players still share one game area and may affect one another's schemes.
+characterPlayAreaOwner :: HasGame m => CharacterId -> m (Maybe IdentityId)
+characterPlayAreaOwner character = case character of
+  IdentityCharacter you -> pure $ Just you
+  AllyCharacter aid -> getSourceController $ AllyRef aid
+  MinionCharacter mid -> getsGame $ fmap (minionEngagedIdentity . toAttrs) . (\g -> lookup mid (gameMinions g) <|> lookup mid (entitiesMinions $ gameRemovedEntities g))
+  _ -> pure Nothing

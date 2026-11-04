@@ -532,7 +532,7 @@ fertileGround = identitySupport "16007" "Fertile Ground" 1 [Location] [Energy]
 -- | The encounter sets' supports: in play under a player's control as their set says,
 -- never in a player's deck.
 allEncounterSupports :: HashMap CardCode CardDef
-allEncounterSupports = fromList $ map (toFst toCardCode) [milano]
+allEncounterSupports = fromList $ map (toFst toCardCode) [milano,FnePresses.street60153,FnePresses.street60154,FnePresses.street60155,FnePresses.street60156]
 
 -- | Permanent. Setup. The first player controls the Milano (Ship Command).
 milano :: CardDef

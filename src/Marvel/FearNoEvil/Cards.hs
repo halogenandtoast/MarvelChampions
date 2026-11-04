@@ -871,7 +871,7 @@ street60138b = (hoodCardDef "60138b" "A Slice of the Pizza Dough" Set.FneProtect
   }
 
 street60139 :: CardDef
-street60139 = (hoodCardDef "60139" "Shop Proprietor" Set.FneProtectionRacket AllyType 0)
+street60139 = (hoodCardDef "60139" "Shop Proprietor" Set.FneProtectionRacket AllyType 1)
   { cdTraits = fromList [T.Civilian]
   , cdUnique = False
   , cdKeywords = fromList []
@@ -885,7 +885,7 @@ street60140 = (hoodCardDef "60140" "Man-Bull" Set.FneProtectionRacket MinionType
   { cdTraits = fromList [T.Brute]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost, B.Star]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

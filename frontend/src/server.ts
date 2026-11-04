@@ -210,6 +210,7 @@ export interface MinionView extends CardView {
 }
 
 export interface SchemeView extends CardView {
+  owner?: string | null
   targetThreat?: number | null
   escalationThreat?: number | null
   exhausted?: boolean

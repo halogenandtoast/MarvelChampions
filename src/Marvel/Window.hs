@@ -43,6 +43,26 @@ windowMatches matcher w source = case matcher of
   EnemyAboutToResolveBoostCards enemy -> case windowType w of
     ResolvingEnemyBoostCards target | windowTiming w == When -> enemyMatches enemy target
     _ -> pure False
+  CharacterAttackedInPlayArea you -> if windowTiming w /= After then pure False else
+    anyM (fmap (== Just you) . characterPlayAreaOwner . snd) =<< attackedCharacters (windowType w)
+  CharacterEnteredInPlayArea you -> if windowTiming w /= After then pure False else
+    maybe (pure False) (fmap (== Just you) . characterPlayAreaOwner) (enteredCharacter $ windowType w)
+  ExcessDamageInPlayArea you includeMinions -> case windowType w of
+    CharacterTookExcessDamage character _ n | windowTiming w == When,n > 0 ->
+      if case character of AllyCharacter _ -> True; MinionCharacter _ -> includeMinions; _ -> False
+      then (== Just you) <$> characterPlayAreaOwner character else pure False
+    _ -> pure False
+  CardEnteredInPlayArea you cardMatcher -> if windowTiming w /= After then pure False else case windowType w of
+    PlayerCardEnteredPlay owner card -> pure $ owner == you && cardMatch cardMatcher card
+    EncounterAttachmentEntered aid -> do
+      def <- getTargetCardDef (AttachmentRef aid)
+      host <- getAttachedCharacter aid
+      owner <- maybe (pure Nothing) characterPlayAreaOwner host
+      pure $ owner == Just you && maybe False (cardMatch cardMatcher) def
+    _ -> pure False
+  CharacterDefeatsInPlayArea you -> if windowTiming w /= After then pure False else do
+    character <- defeatingCharacter $ windowType w
+    maybe (pure False) (fmap (== Just you) . characterPlayAreaOwner) character
   TrapOptionChosen identityMatcher options -> case windowType w of
     ChoseTrapOption you option | windowTiming w == When, option `elem` options -> identityMatches identityMatcher you
     _ -> pure False
@@ -931,3 +951,23 @@ sharingTraitDamage matcher character damage
       anyM (\you -> if character == IdentityCharacter you then pure False else do
         heroTraits <- getCharacterTraits (IdentityCharacter you)
         pure $ not $ HashSet.null $ HashSet.intersection traits heroTraits) heroes
+
+attackedCharacters :: HasGame m => WindowType -> m [(Source,CharacterId)]
+attackedCharacters = \case
+  EnemyAttack enemy you -> pure [(enemyRef enemy,IdentityCharacter you)]
+  EnemyAttackAlly enemy ally _ -> pure [(enemyRef enemy,AllyCharacter ally)]
+  EnemyAttackOnEnemy enemy target -> pure [(enemyRef enemy,toCharacter target)]
+  PlayerAttackResolved source _ enemies -> pure [(source,toCharacter enemy) | enemy <- enemies]
+  _ -> pure []
+
+enteredCharacter :: WindowType -> Maybe CharacterId
+enteredCharacter = \case AllyEnteredPlay ally -> Just $ AllyCharacter ally; MinionEnteredPlay minion -> Just $ MinionCharacter minion; _ -> Nothing
+
+defeatingCharacter :: HasGame m => WindowType -> m (Maybe CharacterId)
+defeatingCharacter = \case
+  DefeatedMinion _ _ source _ -> threatSourceCharacter source
+  DefeatedVillain _ _ source _ -> threatSourceCharacter source
+  DefeatedAlly _ (Just enemy) -> pure $ Just $ toCharacter enemy
+  EnemyAttackDefeatedCharacter enemy (IdentityCharacter _) -> pure $ Just $ toCharacter enemy
+  DefeatedSideSchemeBy _ _ source -> maybe (pure Nothing) threatSourceCharacter source
+  _ -> pure Nothing

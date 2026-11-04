@@ -112,6 +112,7 @@ instance RunMessage (Attrs Ally) where
       pure a {allyAttackConsequentialDamage = n, allyThwartConsequentialDamage = n}
     PutCardIntoPlay _ card _ _ _ -> pure $ a & heldCardsL %~ filter (/= card)
     AllyMessage ident msg' | ident == allyId a -> case msg' of
+      AllyRevealed _ -> pure a
       -- "attached character cannot ready" (Restrained)
       -- "allies cannot be readied by player card effects" (Unnatural Storm)
       ReadiedAlly -> do
@@ -336,6 +337,10 @@ instance RunMessage (Attrs Ally) where
             pure $ removeOneAllyStatus ToughStatus a
           else do
             hitPoints <- getModifiedHitPoints a
+            let excess = subtractNatural hitPoints (damageAmount damage + allyDamage a)
+            when (excess > 0) $ do
+              checkWindows [W.Window W.When $ W.CharacterTookExcessDamage (AllyCharacter ident) source excess]
+              for_ (sourceEnemy source) $ \enemy -> when (attackDamage damage) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
             attackDealtDamageTo source damage ident
             when (damageAmount damage + allyDamage a >= hitPoints) $
               if damageSource damage == FromConsequential

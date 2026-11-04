@@ -647,5 +647,25 @@
     "quantity": 2,
     "boost": 1,
     "boostStar": true
+  },
+  "60139": {
+    "scheme": null,
+    "thwart": 1,
+    "attack": 1,
+    "health": 3,
+    "boost": 0,
+    "boostStar": false
+  },
+  "60140": {
+    "scheme": 2,
+    "attack": 4,
+    "health": 6,
+    "boost": 3,
+    "boostStar": true
+  },
+  "60141": {
+    "quantity": 2,
+    "boost": 1,
+    "boostStar": true
   }
 }

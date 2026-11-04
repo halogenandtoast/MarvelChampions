@@ -299,6 +299,7 @@ data SchemeMatcher
   | AnyScheme
   | MainScheme
   | EncounterMainScheme
+  | MainSchemeOwnedBy IdentityId
   | ThwartableScheme
   | -- | no effect prohibits removing threat specifically by thwarting
     SchemeWithoutThwartPrevention

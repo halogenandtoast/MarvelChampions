@@ -427,6 +427,7 @@ data SchemeView = SchemeView
   , escalationThreat :: Maybe Natural
   , glider :: Bool
   , exhausted :: Bool
+  , owner :: Maybe IdentityId
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -884,11 +885,11 @@ gameView seesHand g = do
         hiddenHeld = a.mainSchemeHeldCardsFacedown
         hiddenCount = length a.mainSchemeHeldEncounterCards + if hiddenHeld then length a.mainSchemeHeldCards else 0
         tokensHere = a.mainSchemeAccelerationTokens + maybe 0 areaAccelerationTokens (areaOfTarget g $ MainSchemeRef a.mainSchemeId)
-    pure $ SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] hiddenCount [] [cardView (PlayerCard card) | not hiddenHeld,card <- a.mainSchemeHeldCards] tokensHere (Just threshold) (Just acceleration) a.mainSchemeHasGlider False
+    pure $ SchemeView (idText a.mainSchemeId) face (display $ cdName a.mainSchemeCardDef) a.mainSchemeThreat a.mainSchemeCrisis (upgradesOn \u -> u.upgradeAttachedMainScheme == Just a.mainSchemeId) a.mainSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentMainScheme == Just a.mainSchemeId] hiddenCount [] [cardView (PlayerCard card) | not hiddenHeld,card <- a.mainSchemeHeldCards] tokensHere (Just threshold) (Just acceleration) a.mainSchemeHasGlider False a.mainSchemeOwner
   sideSchemeView (s :: SideScheme) = do
     modifiers <- getModifiers s
     let a = toAttrs s
-    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) (map (cardView . EncounterCard) a.sideSchemeHeldEncounterCards <> [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens Nothing Nothing False a.sideSchemeExhausted
+    pure $ SchemeView (idText a.sideSchemeId) (toCardCode a.sideSchemeCardDef) (display $ cdName a.sideSchemeCardDef) a.sideSchemeThreat ((a.sideSchemeCrisis || CrisisIcon `elem` modifiers) && SuppressSchemeIcons `notElem` modifiers && not (blankIn g $ SideSchemeRef a.sideSchemeId)) (upgradesOn \u -> u.upgradeAttachedSideScheme == Just a.sideSchemeId) a.sideSchemeCounters [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentSideScheme == Just a.sideSchemeId] (length a.sideSchemeHeldCards) (map heldView a.sideSchemeHeldCards) (map (cardView . EncounterCard) a.sideSchemeHeldEncounterCards <> [cardView (toCard o) | o <- HashMap.elems (gameObligations g), (toAttrs o).obligationSideScheme == Just a.sideSchemeId] <> [cardView (toCard ally) | (sid,aid) <- gameAosHostages g, sid == a.sideSchemeId, Just ally <- [HashMap.lookup aid (gameAllies g)]]) a.sideSchemeAccelerationTokens Nothing Nothing False a.sideSchemeExhausted Nothing
 
 -- Civil War stores the active B face explicitly; older schemes use an unsuffixed code.
 setupFace :: CardCode -> CardCode

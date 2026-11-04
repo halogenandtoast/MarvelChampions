@@ -60,6 +60,7 @@ instance Entity MainScheme where
     , mainSchemeCounters :: Natural
     , mainSchemeHasGlider :: Bool
     , mainSchemeAccelerationTokens :: Natural
+    , mainSchemeOwner :: Maybe IdentityId
     , mainSchemeVillain :: Maybe Text
     -- ^ the title of the villain whose own scheme it is ("Proxima Midnight's Scheme"),
     -- who schemes onto it alone (Tower Defense)
@@ -98,7 +99,7 @@ instance Entity MainScheme where
 instance FromJSON (Attrs MainScheme) where
   parseJSON = withObject "MainSchemeAttrs" \o -> genericParseJSON defaultOptions
     (Object $ KeyMap.union o $ KeyMap.fromList
-      [("mainSchemeHasGlider", Bool False), ("mainSchemeAccelerationTokens", Number 0), ("mainSchemeHeldEncounterCards", toJSON ([] :: [EncounterCard])), ("mainSchemeHeldCardsFacedown", Bool False)])
+      [("mainSchemeOwner", Null), ("mainSchemeHasGlider", Bool False), ("mainSchemeAccelerationTokens", Number 0), ("mainSchemeHeldEncounterCards", toJSON ([] :: [EncounterCard])), ("mainSchemeHeldCardsFacedown", Bool False)])
 
 instance RunMessage MainScheme where
   runMessage msg (MainScheme a) = MainScheme <$> runMessage msg a
@@ -179,6 +180,7 @@ mainScheme f cardDef threshold initialThreat acceleration =
             , mainSchemeCounters = 0
             , mainSchemeHasGlider = False
             , mainSchemeAccelerationTokens = 0
+            , mainSchemeOwner = Nothing
             , mainSchemeVillain = Nothing
             }
     }
@@ -199,6 +201,7 @@ instance IsCard (Attrs MainScheme) where
 
 instance RunMessage (Attrs MainScheme) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific (isTarget attrs -> True) "ownedMainState" (fromJSON -> Success (you,threat)) -> pure attrs {mainSchemeOwner=Just you,mainSchemeThreat=threat}
     CardSpecific target "resolveThreatPlacement" (fromJSON -> Success n) | target == toRef attrs -> do
       threshold <- getThreshold attrs
       when (mainSchemeThreat attrs + n >= threshold) $ advanceMainScheme (mainSchemeId attrs)

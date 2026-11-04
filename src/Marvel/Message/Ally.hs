@@ -10,7 +10,8 @@ import Marvel.Payment.Types
 import Marvel.Ref
 
 data AllyMessage
-  = AllyDefeatedByDamage
+  = AllyRevealed IdentityId
+  | AllyDefeatedByDamage
   | AllyLeavePlayByDefeat
   | ExhaustedAlly
   | ReadiedAlly

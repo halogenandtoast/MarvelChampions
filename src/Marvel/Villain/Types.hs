@@ -523,9 +523,9 @@ runVillainMessage msg attrs = case msg of
   VillainSchemed -> do
     own <- selectOne (SignatureSchemeOf $ VillainWithId vid)
     paired <- getPairedMainScheme vid
-    scheme <- maybe (selectOne EncounterMainScheme) (pure . Just) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
+    schemes <- maybe (selectList EncounterMainScheme) (pure . pure) $ (SchemeSideSchemeId <$> own) <|> (SchemeMainSchemeId <$> paired)
     sch <- getModifiedScheme attrs
-    for_ scheme \s -> case villainSchemeRemoval attrs of
+    for_ schemes \s -> case villainSchemeRemoval attrs of
       Nothing -> placeVillainSchemeThreat vid s (sch + villainBoost attrs)
       Just (you, source) -> thwartSchemeAs you s source (sch + villainBoost attrs)
     cardSpecific attrs "villainSchemeResult" (0 :: Natural)

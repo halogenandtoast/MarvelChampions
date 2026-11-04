@@ -84,6 +84,10 @@ runMinionMessage msg attrs = case msg of
       | (cannotTakeDamage || forbidden) && not (damageUnpreventable originalDamage) -> pure attrs
       | minionTough attrs && preventedByTough originalDamage -> pure $ removeOneTough attrs
       | otherwise -> do
+        let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
+        when (excess > 0) $ do
+          checkWindows [W.Window W.When $ W.CharacterTookExcessDamage (MinionCharacter $ minionId attrs) source excess]
+          for_ (sourceEnemy source) $ \enemy -> when (attackDamage damage) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
         when (damageAmount damage > 0) $ do
           recordPlayerAttackDamage (toEnemyId attrs) source damage
           attackDealtDamageTo source damage (minionId attrs)
@@ -245,8 +249,9 @@ runMinionMessage msg attrs = case msg of
   -- Future Kang's stages): of two, the active villain's own, which Focused Defense is on
   -- (Tower Defense, RR v1.8 p.67 errata)
   MinionSchemed -> do
+    owned <- getOwnedMainScheme $ minionEngagedIdentity attrs
     paired <- maybe (pure Nothing) getPairedMainScheme =<< selectOne ActiveVillain
-    mainScheme <- maybe (selectOne EncounterMainScheme) (pure . Just . SchemeMainSchemeId) paired
+    mainScheme <- maybe (selectOne EncounterMainScheme) (pure . Just . SchemeMainSchemeId) (owned <|> paired)
     threat <- getModifiedScheme attrs
     modifiers <- getModifiers attrs
     destinations <- filterM (selectAny . SideSchemeWithId) [sid | MinionSchemesOn sid <- modifiers]

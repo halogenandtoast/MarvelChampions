@@ -3608,8 +3608,11 @@ recordPendingVillainSchemeThreat vid scheme = do
   amount <- fromMaybe 0 <$> pendingThreatPlacement scheme
   present <- selectAny (SchemeWithId scheme)
   let receipt = if present then amount else 0
-  replaceMatchingMessage (const [Msg.cardSpecific (VillainRef vid) "villainSchemeResultOn" (scheme,receipt)]) $ \case
-    CardSpecific (VillainRef who) "villainSchemeResult" _ -> who == vid
+  let update = \case
+        CardSpecific _ "villainSchemeResultOn" (fromJSON -> Success (previous,total :: Natural)) -> [Msg.cardSpecific (VillainRef vid) "villainSchemeResultOn" (previous :: SchemeId,total+receipt)]
+        _ -> [Msg.cardSpecific (VillainRef vid) "villainSchemeResultOn" (scheme,receipt)]
+  replaceMatchingMessage update $ \case
+    CardSpecific (VillainRef who) key _ -> who == vid && key `elem` ["villainSchemeResult","villainSchemeResultOn"]
     _ -> False
 
 -- | Resolve only the boost text of a minion that is already in play. No boost

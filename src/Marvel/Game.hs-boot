@@ -541,3 +541,8 @@ capEnemyAttackDamageTaken :: HasGame m => EnemyId -> Source -> Damage -> m Damag
 characterCanGainStatus :: HasGame m => CharacterId -> StatusCard -> m Bool
 
 getTargetCardDef :: HasGame m => Target -> m (Maybe CardDef)
+
+mainSchemeMatcherForSource :: HasGame m => IdentityId -> Source -> SchemeMatcher -> m SchemeMatcher
+getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
+
+characterPlayAreaOwner :: HasGame m => CharacterId -> m (Maybe IdentityId)

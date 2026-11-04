@@ -2,6 +2,8 @@
 
 module Marvel.Effect where
 
+import Marvel.FearNoEvil.Racket qualified as Racket
+
 import Marvel.FearNoEvil.BullseyeAttachments qualified as BullEquipment
 
 import Marvel.KreeFanatic (bringTheHammerDownEffect)
@@ -56,7 +58,7 @@ instance FromJSON Effect where
 
 allEffects :: HashMap CardCode SomeCardEffect
 allEffects =
-  fromList $ [(toCardCode card,SomeCardEffect card) | card <- BullEquipment.bullseyeAttackEffects] <>
+  fromList $ [(toCardCode Racket.manBullBoost,SomeCardEffect Racket.manBullBoost)] <>  [(toCardCode card,SomeCardEffect card) | card <- BullEquipment.bullseyeAttackEffects] <>
     [ ("90004", SomeCardEffect bringTheHammerDownEffect)
     , ("56005", SomeCardEffect campaignBasicKeywordEffect)
     , ("58020", SomeCardEffect wmUnifiedStrikeEffect)

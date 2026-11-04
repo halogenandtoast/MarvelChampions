@@ -329,7 +329,8 @@ resolveChoice ident = \case
     labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
     removeThreatFrom False labeled target source n'
   BasicThwartScheme target source n' -> removeThreatFrom True True target source n'
-  RemoveThreat source n schemeMatcher -> do
+  RemoveThreat source n originalMatcher -> do
+    schemeMatcher <- mainSchemeMatcherForSource ident source originalMatcher
     labeled <- elem Ability.Thwart <$> sourceAbilitySubTypes source
     candidates <- selectList (schemeMatcher <> if labeled then SchemeWithoutThwartPrevention else AnyScheme)
     eligible <- filterM (canRemoveThreatFrom source) candidates
@@ -338,7 +339,8 @@ resolveChoice ident = \case
     let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) eligible else eligible
         f target = ThwartScheme target source n
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x] | notNull schemes]
-  PlaceThreat source n schemeMatcher -> do
+  PlaceThreat source n originalMatcher -> do
+    schemeMatcher <- mainSchemeMatcherForSource ident source originalMatcher
     schemes <- selectList schemeMatcher
     pure [CardSpecific GameRef "placeThreatBy" $ toJSON (source,W.ThreatFromAbility,scheme,n) | scheme <- schemes]
   ChooseHeal n characterMatcher -> do

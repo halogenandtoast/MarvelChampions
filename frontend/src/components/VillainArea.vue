@@ -132,6 +132,7 @@ const escalation = (scheme: SchemeView) => {
     <!-- the schemes, to the right beside the encounter deck -->
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
+        <span v-if="scheme.owner" class="scheme-owner">{{ t('label.fneProtectingBusiness', { name: game.players.find((player) => player.id === scheme.owner)?.name ?? '' }) }}</span>
         <span v-if="scheme.glider" class="glider-marker">{{ t('game.glider') }}</span>
         <BoardCard :id="scheme.id" :code="scheme.code"  :name="scheme.name" :exhausted="scheme.exhausted" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />

@@ -1,6 +1,7 @@
 module Marvel.Effect.Types where
 
 import Marvel.Prelude
+import Marvel.Ability.Types (Ability,HasAbilities(..))
 
 import Data.Typeable
 import Marvel.Card.Builder
@@ -82,10 +83,16 @@ instance HasModifiersFor Effect where
    where
     attrs = toAttrs e
 
+instance HasAbilities Effect where
+  getAbilities (Effect a) = effectAbilities a
+
 class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect a where
   toEffectAttrs :: a -> Attrs Effect
   default toEffectAttrs :: (Coercible a (Attrs Effect)) => a -> Attrs Effect
   toEffectAttrs = coerce
+
+  effectAbilities :: a -> [Ability]
+  effectAbilities _ = []
 
   -- | Lasting effects can depend on the current board, such as an ally remaining in play.
   getEffectModifiers :: (HasGame m) => a -> m [Modifier]
