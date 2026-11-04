@@ -2,6 +2,8 @@
 
 module Marvel.Environment where
 
+import Marvel.FearNoEvil.Mary qualified as Mary
+
 import Marvel.Shadowland.Position qualified as Positions
 
 import Marvel.FearNoEvil.Disasters qualified as FNE
@@ -82,7 +84,7 @@ withEnvironmentCardCode cCode f = case lookup cCode allEnvironments of
 
 allEnvironments :: HashMap CardCode SomeEnvironmentCard
 allEnvironments =
-  fromList $ [(toCardCode card,SomeEnvironmentCard card) | card <- Positions.positions] <>  [(toCardCode card,SomeEnvironmentCard card) | card <- FNE.disasters] <>  map (toFst someEnvironmentCardCode)
+  fromList $ [(toCardCode Mary.disturbedPsyche,SomeEnvironmentCard Mary.disturbedPsyche)] <>  [(toCardCode card,SomeEnvironmentCard card) | card <- Positions.positions] <>  [(toCardCode card,SomeEnvironmentCard card) | card <- FNE.disasters] <>  map (toFst someEnvironmentCardCode)
     [ SomeEnvironmentCard TT.tt55052, SomeEnvironmentCard TT.tt55053, SomeEnvironmentCard TT.tt55054, SomeEnvironmentCard TT.tt55055
   , SomeEnvironmentCard AosEncounter.aos50090a, SomeEnvironmentCard AosEncounter.aos50090b, SomeEnvironmentCard AosEncounter.aos50105a, SomeEnvironmentCard AosEncounter.aos50106a, SomeEnvironmentCard AosEncounter.aos50107a, SomeEnvironmentCard AosEncounter.aos50108a, SomeEnvironmentCard AosEncounter.aos50109, SomeEnvironmentCard AosEncounter.aos50110, SomeEnvironmentCard AosEncounter.aos50111, SomeEnvironmentCard AosEncounter.aos50112, SomeEnvironmentCard AosEncounter.aos50131a, SomeEnvironmentCard AosEncounter.aos50131b, SomeEnvironmentCard AosEncounter.aos50181a, SomeEnvironmentCard AosEncounter.aos50182a, SomeEnvironmentCard AosEncounter.aos50183a
   , SomeEnvironmentCard aosP50032

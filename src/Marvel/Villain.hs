@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Villain where
 
+import Marvel.FearNoEvil.Mary qualified as Mary
+
 import Marvel.FearNoEvil.PurpleMan qualified as Purple
 
 import Marvel.FearNoEvil.Hammerhead qualified as Hammerhead
@@ -130,7 +132,7 @@ lookupVillain cardCode villainId = case lookup cardCode allVillains of
   Nothing -> Nothing
 
 allVillains :: HashMap CardCode SomeVillainCard
-allVillains = fromList $ [(toCardCode card,SomeVillainCard card) | card <- Purple.purpleManStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Hammerhead.hammerheadStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Electro.electroStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Bullseye.bullseyeStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Shadows.shadowVillains] <> [(toCardCode card,SomeVillainCard card) | card <- Shadows.krahllak] <> [(toCardCode Shadows.shiftingCorridors,SomeVillainCard Shadows.shiftingCorridors)] <>  [(toCardCode card,SomeVillainCard card) | card <- CW.leaderCards] <> map
+allVillains = fromList $ [(toCardCode card,SomeVillainCard card) | card <- Mary.maryFaces] <>  [(toCardCode card,SomeVillainCard card) | card <- Purple.purpleManStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Hammerhead.hammerheadStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Electro.electroStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Bullseye.bullseyeStages] <>  [(toCardCode card,SomeVillainCard card) | card <- Shadows.shadowVillains] <> [(toCardCode card,SomeVillainCard card) | card <- Shadows.krahllak] <> [(toCardCode Shadows.shiftingCorridors,SomeVillainCard Shadows.shiftingCorridors)] <>  [(toCardCode card,SomeVillainCard card) | card <- CW.leaderCards] <> map
   (toFst someVillainCardCode)
   [ SomeVillainCard TT.tt55001, SomeVillainCard TT.tt55002, SomeVillainCard TT.tt55003, SomeVillainCard TT.tt55027a, SomeVillainCard TT.tt55027b, SomeVillainCard TT.tt55029a, SomeVillainCard TT.tt55029b, SomeVillainCard TT.tt55030a, SomeVillainCard TT.tt55030b, SomeVillainCard TT.tt55031a, SomeVillainCard TT.tt55031b, SomeVillainCard TT.tt55032a, SomeVillainCard TT.tt55032b
   , SomeVillainCard AosEncounter.aos50064, SomeVillainCard AosEncounter.aos50065, SomeVillainCard AosEncounter.aos50066, SomeVillainCard AosEncounter.aos50086a, SomeVillainCard AosEncounter.aos50086b, SomeVillainCard AosEncounter.aos50103a, SomeVillainCard AosEncounter.aos50103b, SomeVillainCard AosEncounter.aos50129a, SomeVillainCard AosEncounter.aos50129b, SomeVillainCard AosEncounter.aos50165a, SomeVillainCard AosEncounter.aos50165b, SomeVillainCard AosEncounter.aos50166a, SomeVillainCard AosEncounter.aos50166b

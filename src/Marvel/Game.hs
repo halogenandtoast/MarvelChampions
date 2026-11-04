@@ -2113,6 +2113,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
+  CardSpecific GameRef "flipMaryWalker" (fromJSON -> Success (aid,you,reveal :: Bool)) -> case lookup aid (gameAttachments g) of
+    Nothing -> pure g
+    Just old | toCardCode old == "60113b" -> do
+      let sid = SideSchemeId $ unAttachmentId aid
+          def = fromMaybe (error "missing Establish Trust") $ HashMap.lookup "60113a" MGEncounter.allEncounterCards
+          card = MkEncounterCard (CardId $ unAttachmentId aid) def
+          scheme = createSideScheme card
+      -- Turning the physical card over enters its other type without revealing it.
+      sideSchemeStep sid SideSchemePlaceInitialThreat
+      checkWindows [W.Window W.After $ W.SideSchemeEnteredPlay sid]
+      when reveal $ sideSchemeStep sid RevealSideScheme
+      attachmentRemoved aid
+      pure $ g & entitiesL . attachmentsL %~ deleteMap aid
+        & entitiesL . sideSchemesL %~ insertMap sid scheme
+        & intoAreaOf you (\area -> area {areaSideSchemes=areaSideSchemes area <> [sid]})
+    _ -> pure g
   CardSpecific GameRef "aoaTransformSchemeToAttachment" (fromJSON -> Success (sid, code, you)) -> do
     let def = fromMaybe (error "missing transformed attachment") (HashMap.lookup code MGEncounter.allEncounterCards)
         card = MkEncounterCard (CardId $ unSideSchemeId sid) def
