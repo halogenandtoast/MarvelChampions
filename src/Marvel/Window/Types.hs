@@ -99,6 +99,7 @@ data WindowMatcher
   | EnemyWouldBeDealtDamage EnemyMatcher
   | EnemyWouldBeDealtDamageBy EnemyMatcher DamageMatcher
   | EnemyWouldTakeDamage EnemyMatcher
+  | EnemyWouldTakeDamageFromCharacter EnemyMatcher
   | CharacterWithConditionWouldTakeDamage [StatusCard]
   | CharacterWouldTakeAttackDamageFrom EnemyMatcher CharacterMatcher
   | CharacterWouldRemoveThreat CharacterMatcher SchemeMatcher

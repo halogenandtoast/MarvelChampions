@@ -152,7 +152,7 @@ instance HasAbilities DarkAttachment where
       ,ability a 2 AlterEgoAction (SelfMatches $ IdentityWithId you) (MultiResourceCost $ map Just [Energy,Mental,Physical]) (runAbility a 2)
       ] <> [windowAbility a 4 (W.CharacterDefeatedByEnemyAttack W.After $ EnemyWithId enemy) ForcedResponse NoCost (runAbility a 4) | Just enemy <- [tracked]]
       <> [windowAbility a 5 (W.EnemyAttackedAnyTarget W.After $ EnemyWithId enemy) ForcedResponse NoCost (runAbility a 5) | Just enemy <- [tracked]]
-    Nothing -> [windowAbility a 3 (W.EnemyWouldTakeDamage $ EnemyWithId enemy) ForcedInterrupt NoCost (runAbility a 3) | enemy <- maybe [] pure $ attachmentEnemy a]
+    Nothing -> [windowAbility a 3 (W.EnemyWouldTakeDamageFromCharacter $ EnemyWithId enemy) ForcedInterrupt NoCost (runAbility a 3) | enemy <- maybe [] pure $ attachmentEnemy a]
 instance RunMessage DarkAttachment where
   runMessage msg e@(DarkAttachment a tracked) = runQueueT $ case msg of
     AttachmentMessage aid (RevealAttachment you) | aid == attachmentId a -> do
@@ -164,12 +164,7 @@ instance RunMessage DarkAttachment where
     RanAbility _ (isTarget a -> True) 2 _ _ -> removeFromPlay a >> pure e
     RanAbility you (isTarget a -> True) 3 windows _ -> do
       for_ [(vid,source) | W.EnemyWouldBeDamaged (EnemyVillainId vid) source _ <- windows] $ \(vid,source) -> do
-        target <- case source of
-          AllyRef aid -> pure $ Just $ AllyCharacter aid
-          IdentityRef p -> pure $ Just $ IdentityCharacter p
-          MinionRef mid -> pure $ Just $ MinionCharacter mid
-          VillainRef v -> pure $ Just $ VillainCharacter v
-          _ -> fmap IdentityCharacter <$> getSourceController source
+        target <- threatSourceCharacter source
         for_ target $ \character -> do
           preventEnemyDamage (EnemyVillainId vid) 3
           villainAttacksCharacter vid you character

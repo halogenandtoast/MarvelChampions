@@ -101,6 +101,10 @@ windowMatches matcher w source = case matcher of
   HeroDefendedWithoutDamageAgainst timing identMatcher enemyMatcher -> case windowType w of
     DefendedWithoutDamage ident enemy | windowTiming w == timing -> (&&) <$> identityMatches identMatcher ident <*> enemyMatches enemyMatcher enemy
     _ -> pure False
+  EnemyWouldTakeDamageFromCharacter matching -> case windowType w of
+    EnemyWouldBeDamaged _ damageSource _ ->
+      (&&) <$> windowMatches (EnemyWouldTakeDamage matching) w source <*> (isJust <$> threatSourceCharacter damageSource)
+    _ -> pure False
   EnemyWouldTakeDamage matcher' -> case windowType w of
     EnemyWouldBeDamaged enemy _ damage | windowTiming w == When, damageAmount damage > 0 -> do
       let character = case enemy of EnemyVillainId v -> VillainCharacter v; EnemyMinionId m -> MinionCharacter m; EnemyAttachmentId a -> AttachmentCharacter a
