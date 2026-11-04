@@ -1023,7 +1023,7 @@ street60151b = (hoodCardDef "60151b" "Stop the Presses!" Set.FneStopThePresses M
 street60152 :: CardDef
 street60152 = (hoodCardDef "60152" "Daily Bugle" Set.FneStopThePresses EnvironmentType 1)
   { cdTraits = fromList []
-  , cdUnique = False
+  , cdUnique = True
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
@@ -1085,7 +1085,7 @@ street60158 = (hoodCardDef "60158" "Breaking News" Set.FneStopThePresses Treache
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Star]
+  , cdBoostIcons = [B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

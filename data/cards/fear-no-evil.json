@@ -3263,7 +3263,8 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "unique": true
     },
     {
       "name": "Ben Urich",
@@ -3405,7 +3406,9 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "baseThreat": 6,
+      "baseThreatPerHero": false
     },
     {
       "name": "Breaking News",
@@ -3430,8 +3433,8 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
-      "boost": 0,
-      "boostStar": false,
+      "boost": 1,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,

@@ -3695,3 +3695,16 @@ readyUpgradeAfterInterrupt = push . ResolveReadiedUpgrade
 -- This continuation survives the source of the instruction leaving play.
 discardUntilAndReveal :: ReverseQueue m => IdentityId -> CardMatcher -> m ()
 discardUntilAndReveal you matcher = push $ DiscardUntilAndReveal you matcher
+
+-- | Replace this particular facedown encounter card after looking at it.
+replaceDealtEncounterCard :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+replaceDealtEncounterCard you card = cardSpecific GameRef "replaceDealtEncounterCard" (you,card)
+
+-- | Discard a particular card seen in the encounter deck, preserving discard responses.
+discardKnownEncounterCardFromDeck :: ReverseQueue m => IdentityId -> EncounterCard -> m ()
+discardKnownEncounterCardFromDeck you card = do
+  cards <- getEncounterDeck
+  when (card `elem` cards) $ do
+    removeEncounterCardFromPiles card
+    discardCard card
+    checkWindows [W.Window W.After $ W.PlayerDiscardedFromEncounterDeck you card]

@@ -762,5 +762,7 @@
   "fneLoseArt": "Return an art piece to the villain and gain surge",
   "fneSpendResource": "Spend 1 resource",
   "fnePlaceThreat": "Place 1 threat on the main scheme",
-  "fneProximaAttackBonus": "Proxima Midnight gets +2 ATK for this attack"
+  "fneProximaAttackBonus": "Proxima Midnight gets +2 ATK for this attack",
+  "fneKeepEncounterCard": "Keep this encounter card",
+  "fneReplaceEncounterCard": "Discard this encounter card and deal a replacement"
 }

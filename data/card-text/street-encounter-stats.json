@@ -633,5 +633,19 @@
   "60150": {
     "boost": 0,
     "boostStar": true
+  },
+  "60152": {
+    "unique": true
+  },
+  "60157": {
+    "baseThreat": 6,
+    "baseThreatPerHero": false,
+    "boost": 1,
+    "boostStar": false
+  },
+  "60158": {
+    "quantity": 2,
+    "boost": 1,
+    "boostStar": true
   }
 }

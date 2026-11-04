@@ -2113,6 +2113,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
+  CardSpecific GameRef "replaceDealtEncounterCard" (fromJSON -> Success (you,card)) -> case lookup you (gamePlayers g) of
+    Just player | card `elem` playerIdentityEncounterCards (toAttrs player) -> do
+      discardCard card
+      dealEncounterCard you
+      pure $ g & entitiesL . playersL . ix you %~ (\(PlayerIdentity a) -> PlayerIdentity a {playerIdentityEncounterCards=filter ((/= ecCardId card) . ecCardId) $ playerIdentityEncounterCards a})
+    _ -> pure g
   CardSpecific GameRef "flipMaryWalker" (fromJSON -> Success (aid,you,reveal :: Bool)) -> case lookup aid (gameAttachments g) of
     Nothing -> pure g
     Just old | toCardCode old == "60113b" -> do
@@ -5109,6 +5115,8 @@ dispatchGameMessageCore msg g = do
           added = [getCardDef card | card <- map EncounterCard (gameVictoryDisplay after) <> map PlayerCard (gamePlayerVictoryDisplay after), toCardId card `notElem` beforeIds]
       runQueueT $ for_ added $ \def -> checkWindows [W.Window W.After $ W.VictoryCardAdded def]
     _ -> pure ()
+  when (any ((== "60151b") . toCardCode . getCardDef) (HashMap.elems $ gameMainSchemes after)) $
+    runQueueT $ when (any (\(sid,support) -> DailyBugle `HashSet.member` cdTraits (getCardDef support) && not (HashMap.member sid $ gameSupports after)) (HashMap.toList $ gameSupports g)) $ gameOver Lost
   synchronizeDeceivedAllies after
 
 characterDamageMessage :: Message -> Maybe (CharacterId,Source,Damage)

@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.Support where
 
+import Marvel.FearNoEvil.Presses qualified as Presses
+
 import Marvel.Support.Supports.JessicaLuke qualified as JL
 import Marvel.Support.Supports.AgeOfApocalypseBasicCampaign
 
@@ -29,7 +31,7 @@ withSupportCardCode cCode f = case lookup cCode allSupports of
   Just (SomeSupportCard a) -> f a
 
 allSupports :: HashMap CardCode SomeSupportCard
-allSupports = fromList $ map
+allSupports = fromList $ [(toCardCode card,SomeSupportCard card) | card <- Presses.bugleStaff] <>  map
   (toFst someSupportCardCode)
   $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
   [ SomeSupportCard cw56003, SomeSupportCard cw56012, SomeSupportCard cw56031, SomeSupportCard cw56043, SomeSupportCard fne60013, SomeSupportCard fne60014, SomeSupportCard fne60015, SomeSupportCard fne60016, SomeSupportCard fne60029, SomeSupportCard fne60042
