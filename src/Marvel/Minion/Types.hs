@@ -57,7 +57,9 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   default toMinionAttrs :: (Coercible a (Attrs Minion)) => a -> Attrs Minion
   toMinionAttrs = coerce
   minionDisplayCounters :: a -> Natural
-  minionDisplayCounters _ = 0
+  minionDisplayCounters = minionCounters . toMinionAttrs
+  minionBaseHitPoints :: HasGame m => a -> m Natural
+  minionBaseHitPoints = pure . unHp . minionHitPoints . toMinionAttrs
   minionAccelerationTokens :: a -> Natural
   minionAccelerationTokens _ = 0
   overMinionAttrs :: (Attrs Minion -> Attrs Minion) -> a -> a
@@ -81,6 +83,12 @@ getMinionEngagedIdentity = minionEngagedIdentity . toAttrs
 getMinionPrintedHitPoints :: Minion -> HP Natural
 getMinionPrintedHitPoints = minionHitPoints . toAttrs
 
+getMinionBaseHitPoints :: HasGame m => Minion -> m Natural
+getMinionBaseHitPoints (Minion a) = minionBaseHitPoints a
+
+perPlayerMinionBaseHitPoints :: HasGame m => Natural -> m Natural
+perPlayerMinionBaseHitPoints n = (n *) . fromIntegral <$> getStartingPlayerCount
+
 minionAttackDetails :: Minion -> Maybe Attack
 minionAttackDetails = minionAttacking . toAttrs
 
@@ -92,6 +100,7 @@ instance Entity Minion where
     , minionOriginalCardDef :: CardDef
     , minionExhausted :: Bool
     -- ^ physical state retained when an ally is temporarily treated as a minion
+    , minionCounters :: Natural
     , minionDamage :: Natural
     , minionIgnoreWhenDefeated :: Bool
     , minionDamageThisPhase :: Natural
@@ -274,6 +283,7 @@ minion f cardDef sch atk hp =
             , minionCardDef = cardDef
             , minionOriginalCardDef = cardDef
             , minionExhausted = False
+            , minionCounters = 0
             , minionDamage = 0
             , minionIgnoreWhenDefeated = False
             , minionDamageThisPhase = 0
@@ -339,7 +349,7 @@ instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "minionSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "minionSchemeRemoval" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
-      [("minionSchemeAvailable", Bool True), ("minionAttackAvailable", Bool True), ("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionCounters", Number 0), ("minionSchemeAvailable", Bool True), ("minionAttackAvailable", Bool True), ("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

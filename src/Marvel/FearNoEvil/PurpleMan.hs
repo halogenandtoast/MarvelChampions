@@ -6,6 +6,7 @@ import Marvel.Attachment.Attachments.AllyAsMinion
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Criteria
 import Marvel.Difficulty
 import Marvel.EncounterSet qualified as Set
@@ -18,7 +19,7 @@ import Marvel.Id
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
-import Marvel.Minion.Types
+import Marvel.Minion.Types hiding (Field(..))
 import Marvel.Minion.Runner ()
 import Marvel.Modifier
 import Marvel.Obligation.Types

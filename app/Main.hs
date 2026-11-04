@@ -51,6 +51,7 @@ import Marvel.Phase
 import Marvel.Scenario (lookupScenario, recommendedSetup, scenarioCodes)
 import Marvel.Scenario.CivilWar (civilWarLeaderCodes, validateCivilWarSetup)
 import Marvel.Scenario.Types (ScenarioSetup (..), setupCompetition,getScenarioDifficulty)
+import Marvel.Scenario.Types qualified as ScenarioTypes
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Villain.Cards (allVillainsMap)
 import Marvel.MainScheme.Cards qualified as MainSchemes
@@ -1550,8 +1551,10 @@ main = do
 campaignScenarioMetadata :: MarvelGame -> Game -> [Update MarvelGame]
 campaignScenarioMetadata row game = case gameCampaign game of
   Just campaign | campaign.kind == FearNoEvilCampaign -> case recommendedSetup (toId $ gameScenario game) of
-    Just base -> let setup=base {difficulty=getScenarioDifficulty $ gameScenario game}
-                    name=maybe row.marvelGameName (\campaignName -> campaignName <> " – " <> fst (villainOf setup)) campaign.campaignName
-                in [MarvelGameScenario =. toJSON setup,MarvelGameName =. name]
+    Just base ->
+      let setup :: ScenarioSetup
+          setup = base {ScenarioTypes.difficulty=getScenarioDifficulty $ gameScenario game}
+          name = maybe row.marvelGameName (\campaignName -> campaignName <> " – " <> fst (villainOf setup)) campaign.campaignName
+      in [MarvelGameScenario =. toJSON setup,MarvelGameName =. name]
     Nothing -> []
   _ -> []

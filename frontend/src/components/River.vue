@@ -33,7 +33,7 @@ export interface RiverAttacker {
   id: string
   code: string
   name: string
-  attack: number
+  attack: number | null
   boostCards?: number
 }
 
@@ -70,7 +70,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
         </template>
         <div v-if="attacker" class="attacker">
           <dl class="stats">
-            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ attacker.attack }}</dd></div>
+            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ attacker.attack ?? '–' }}</dd></div>
             <div v-if="attacker.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ attacker.boostCards }}</dd></div>
           </dl>
           <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />

@@ -508,6 +508,7 @@ getModifiedCostWithBase attrs c mTarget base = do
 resourceCostAdjustment :: (HasGame m) => PlayerIdentity -> PlayerCard -> Maybe Target -> m (Bool, Int)
 resourceCostAdjustment attrs c mTarget = do
   modifiers <- (<>) <$> getModifiers attrs <*> getModifiers c
+  playedInto <- maybe (pure $ Just $ toId attrs) cardPlayAreaOwner mTarget
   onTarget <- maybe (pure []) getModifiers mTarget
   missionReduction <- missionAllyReduction c
   echoReduction <- echoReplayDiscount (toId attrs) c
@@ -530,9 +531,10 @@ resourceCostAdjustment attrs c mTarget = do
         "60050" -> length allies
         _ -> 0
       intrinsic = (if soldier then -1 else 0) - fromIntegral topDiscount - printedDiscount + variableAdjustment
-  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic - fromIntegral echoReduction - fromIntegral missionReduction + sum (map (change asHand) modifiers <> map changeOn onTarget))
+  pure (IgnoresResourceCost `elem` modifiers || IgnoresResourceCostForCard (pcCardId c) `elem` modifiers, intrinsic - fromIntegral echoReduction - fromIntegral missionReduction + sum (map (change asHand playedInto) modifiers <> map changeOn onTarget))
  where
-  change asHand = \case
+  change asHand playedInto = \case
+    UpgradeInPlayAreaCostReduction you n | playedInto == Just you, cdCardType (getCardDef c) == UpgradeType -> negate (fromIntegral n)
     ResourceCostReduction n -> negate (fromIntegral n)
     ResourceCostReductionForCard cid n | cid == pcCardId c -> negate (fromIntegral n)
     ResourceCostReductionFor matcher n | cardMatch matcher c -> negate (fromIntegral n)
@@ -1341,7 +1343,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
           else do
             modifiedHp <- getModifiedHp pid
             let excess = subtractNatural modifiedHp (playerIdentityDamage + damageAmount damage)
-            when (excess > 0 && attackDamage damage) $ for_ (sourceEnemy source) $ \enemy -> cardSpecific (enemyRef enemy) "attackExcessDamage" excess
+            when (excess > 0 && (damageSource damage `elem` [FromAttack,FromOverkill])) $ for_ (sourceEnemy source) $ \enemy -> cardSpecific (enemyRef enemy) "attackExcessDamage" excess
             -- Caps count actual damage after prevention and tough, including each
             -- indirect/overkill share of the same attack, before its responses.
             let fromAttack = damageSource damage `elem` [FromAttack, FromOverkill]

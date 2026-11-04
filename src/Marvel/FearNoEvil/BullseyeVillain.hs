@@ -53,8 +53,7 @@ instance RunMessage Bullseye where
       pure e
     RanAbility _ (isTarget a -> True) 2 _ _ -> do
       untilEnemyActivationEnds a (V.villainId a) [AdditionalActivationBoostIcons 1]
-      modifiers <- getModifiers a
-      when (isJust $ V.villainAttacking a) $ unless (LoseKeyword Ranged `elem` modifiers) $ attackGains (V.villainId a) Ranged
+      when (isJust $ V.villainAttacking a) $ attackGains (V.villainId a) Ranged
       pure e
     _ -> Bullseye <$> runMessage msg a
 

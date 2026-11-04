@@ -84,7 +84,7 @@ instance HasAbilities StreetAttachment where
 instance RunMessage StreetAttachment where
   runMessage msg e@(StreetAttachment a) = runQueueT $ case msg of
     AttachmentMessage aid (RevealAttachment you) | aid == attachmentId a -> do
-      enemies <- if toCardCode a == "60191" then selectList (NotEnemy $ EnemyWithTrait T.Aerial) else map EnemyMinionId <$> selectList MinionWithHighestPrintedHitPoints
+      enemies <- if toCardCode a == "60191" then selectList (NotEnemy $ EnemyWithTrait T.Aerial) else map EnemyMinionId <$> selectList MinionWithHighestBaseHitPoints
       if null enemies then removeFromPlay a >> surge you else chooseOne you [targeting (enemyRef enemy) (attachTo aid enemy >> when (toCardCode a /= "60191") (giveStatus enemy ToughStatus)) | enemy <- enemies]
       pure e
     RanAbility _ (isTarget a -> True) 1 _ _ -> removeFromPlay a >> pure e

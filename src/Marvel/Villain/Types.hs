@@ -509,7 +509,8 @@ runVillainMessage msg attrs = case msg of
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
   VillainAttackGains k -> do
     lost <- elem (LoseKeyword k) <$> getModifiers attrs
-    pure $ if lost then attrs else attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
+    let granted = attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]}
+    pure $ if lost then granted else granted & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainSchemeRemovesThreat you source -> pure attrs {villainSchemeRemoval = Just (you, source)}
   VillainAttackDamageRedirected enemy -> pure $ attrs & attackingL . _Just %~ (\a -> a {attackDamageRedirect = Just enemy})
@@ -537,7 +538,8 @@ runVillainMessage msg attrs = case msg of
         actual <- undefendedIfDefenderGone attack0
         base <- getModifiedAttackSigned (attrs {villainAttacking = Just actual})
         keywords <- getModifiedKeywords attrs
-        let current = keywords <> villainAttackGrantedKeywords attrs
+        modifiers <- getModifiers attrs
+        let current = filter (\k -> LoseKeyword k `notElem` modifiers) (keywords <> villainAttackGrantedKeywords attrs)
             refreshed = (withAttackBase (base + toInteger (villainBoost attrs)) actual) {
               attackOverkill = Overkill `elem` current, attackPiercing = Piercing `elem` current,
               attackRanged = Ranged `elem` current}

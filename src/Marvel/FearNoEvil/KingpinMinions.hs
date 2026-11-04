@@ -18,7 +18,6 @@ import Marvel.Message.Lifted
 import Marvel.Minion.Types
 import Marvel.Minion.Runner ()
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Resource

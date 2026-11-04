@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CARDS = ROOT / "frontend" / "public" / "data" / "cards.json"
 OUT = ROOT / "src" / "Marvel" / "Card" / "WhenRevealed.hs"
-TYPES = {"minion", "side_scheme", "attachment", "environment", "obligation"}
+TYPES = {"ally", "minion", "side_scheme", "attachment", "environment", "obligation"}
 
 cards = json.loads(CARDS.read_text())["cards"]
 # MarvelCDB misspells it on a few cards

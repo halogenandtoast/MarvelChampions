@@ -5,6 +5,13 @@ import Marvel.Prelude
 data UpgradeMatcher
 data AllyMatcher
 data SupportMatcher
+data AttachmentMatcher
+
+instance Show AttachmentMatcher
+instance Eq AttachmentMatcher
+instance ToJSON AttachmentMatcher
+instance FromJSON AttachmentMatcher
+instance Hashable AttachmentMatcher
 
 instance Show SupportMatcher
 instance Eq SupportMatcher

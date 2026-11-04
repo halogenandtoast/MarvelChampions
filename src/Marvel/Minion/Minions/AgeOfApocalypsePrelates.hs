@@ -32,7 +32,6 @@ import Marvel.Hp
 import Marvel.Message.Lifted
 
 newtype AoaPrelatesMinion = AoaPrelatesMinion (Attrs Minion)
-  deriving anyclass (IsMinion)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 misterSinisterOverseer :: MinionCard AoaPrelatesMinion
@@ -98,3 +97,6 @@ instance RunMessage AoaPrelatesMinion where
         _ -> pure ()
       pure a
     _ -> AoaPrelatesMinion <$> runMessage msg attrs
+
+instance IsMinion AoaPrelatesMinion where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 5

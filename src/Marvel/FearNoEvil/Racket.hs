@@ -6,6 +6,7 @@ import Marvel.Ally.Types qualified as A
 import Marvel.Ally.Runner ()
 import Marvel.Card
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Effect.Types qualified as E
 import Marvel.Entity
 import Marvel.FearNoEvil.Cards qualified as Cards
@@ -31,8 +32,9 @@ newtype Business = Business (Attrs MainScheme `With` (Bool,Bool))
 instance IsMainScheme Business where
   toMainSchemeAttrs (Business (a `With` _)) = a
   mainSchemeAbilities = getAbilities
-  mainSchemeModifiersFor _ target (Business (a `With` (used,_))) = pure
-    [ResourceCostReductionFor (CardWithType UpgradeType) 1 | toCardCode a == "60137b",not used,Just target == (IdentityRef <$> mainSchemeOwner a)]
+  mainSchemeModifiersFor _ (IdentityRef _) (Business (a `With` (used,_))) = pure
+    [UpgradeInPlayAreaCostReduction you 1 | toCardCode a == "60137b",not used,Just you <- [mainSchemeOwner a]]
+  mainSchemeModifiersFor _ _ _ = pure []
 businesses :: [MainSchemeCard Business]
 businesses = [mainScheme (\a -> Business $ a `With` (False,False)) def (Static 10) (Static 0) (Static 1) | def <- [Cards.street60134b,Cards.street60135b,Cards.street60136b,Cards.street60137b,Cards.street60138b]]
 instance HasAbilities Business where
@@ -50,8 +52,7 @@ instance RunMessage Business where
     CardSpecific (isTarget a -> True) "racketDifficulty" (fromJSON -> Success hard) -> pure $ Business (a `With` (used,hard))
     BeginPhase _ | toCardCode a == "60134b" -> pure $ Business (a `With` (False,expert))
     EndRound | toCardCode a == "60137b" -> pure $ Business (a `With` (False,expert))
-    IdentityMessage _ (PlayedCard card _) | toCardCode a == "60137b",cdCardType (getCardDef card) == UpgradeType -> do
-      controller <- getSourceController $ UpgradeRef $ UpgradeId $ unCardId $ pcCardId card
+    CardSpecific GameRef "upgradePlayedInArea" (fromJSON -> Success (controller :: Maybe IdentityId)) | toCardCode a == "60137b" -> do
       pure $ Business (a `With` (used || controller == mainSchemeOwner a,expert))
     RanAbility _ (isTarget a -> True) 1 windows _ -> do
       records <- concatMapM W.attackedCharacters windows

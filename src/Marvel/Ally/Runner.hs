@@ -340,7 +340,7 @@ instance RunMessage (Attrs Ally) where
             let excess = subtractNatural hitPoints (damageAmount damage + allyDamage a)
             when (excess > 0) $ do
               checkWindows [W.Window W.When $ W.CharacterTookExcessDamage (AllyCharacter ident) source excess]
-              for_ (sourceEnemy source) $ \enemy -> when (attackDamage damage) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
+              for_ (sourceEnemy source) $ \enemy -> when ((damageSource damage `elem` [FromAttack,FromOverkill])) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
             attackDealtDamageTo source damage ident
             when (damageAmount damage + allyDamage a >= hitPoints) $
               if damageSource damage == FromConsequential

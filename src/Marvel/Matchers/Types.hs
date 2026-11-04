@@ -372,6 +372,7 @@ data MinionMatcher
   | MinionEngagedWith IdentityMatcher
   | MinionIs CardDef
   | MinionWithHighestPrintedHitPoints
+  | MinionWithHighestBaseHitPoints
   | MinionMatches [MinionMatcher]
   | NotMinion MinionMatcher
   | MinionWithAttachment AttachmentMatcher

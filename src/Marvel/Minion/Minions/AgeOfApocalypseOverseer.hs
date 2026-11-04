@@ -16,7 +16,7 @@ import Marvel.Modifier
 import Marvel.Stats
 
 newtype AoaOverseerMinion = AoaOverseerMinion (Attrs Minion)
-  deriving anyclass (IsMinion, HasAbilities)
+  deriving anyclass HasAbilities
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 misterSinisterMinion :: MinionCard AoaOverseerMinion
@@ -46,3 +46,6 @@ instance HasModifiersFor AoaOverseerMinion where
 
 instance RunMessage AoaOverseerMinion where
   runMessage msg (AoaOverseerMinion a) = AoaOverseerMinion <$> runMessage msg a
+
+instance IsMinion AoaOverseerMinion where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 5

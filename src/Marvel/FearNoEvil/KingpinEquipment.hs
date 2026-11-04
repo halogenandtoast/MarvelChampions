@@ -7,7 +7,7 @@ import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Damage (damageAmount)
+import Marvel.Damage (toDamage,DamageSource(FromAbility))
 import Marvel.Entity
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Game.Source
@@ -16,7 +16,6 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Trait qualified as T
@@ -45,7 +44,7 @@ instance HasAbilities KingpinEquipment where
 instance RunMessage KingpinEquipment where
   runMessage msg e@(KingpinEquipment a) = runQueueT $ case msg of
     AttachmentMessage aid (RevealAttachment you) | aid == attachmentId a -> do
-      kingpin <- selectOne $ VillainWithTitle "Kingpin"
+      kingpin <- villainNamed "Kingpin"
       martial <- maybe (pure False) (villainMatches $ VillainWithTrait T.MartialArtist) kingpin
       case toCardCode a of
         "60164" -> if martial then attachToIdentity aid you else removeFromPlay a >> surge you
@@ -89,7 +88,7 @@ instance RunMessage KingpinEquipment where
       you <- getBoostedPlayer enemy
       case toCardCode a of
         "60165" -> do
-          kingpin <- selectOne $ VillainWithTitle "Kingpin"
+          kingpin <- villainNamed "Kingpin"
           for_ kingpin $ \vid -> case toCard a of
             EncounterCard card -> consumeBoostCard card >> attachEncounterToCharacter card (VillainCharacter vid)
             _ -> pure ()

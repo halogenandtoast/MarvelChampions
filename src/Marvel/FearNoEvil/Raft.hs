@@ -1,6 +1,7 @@
 module Marvel.FearNoEvil.Raft where
 
 import Marvel.Prelude
+import Data.List (nub)
 import Marvel.Ability
 import Marvel.Attachment.Types
 import Marvel.Card

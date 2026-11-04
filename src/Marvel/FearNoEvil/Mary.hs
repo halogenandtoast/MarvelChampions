@@ -5,6 +5,7 @@ import Marvel.Ability
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Criteria
 import Marvel.Difficulty
 import Marvel.Entity
@@ -14,7 +15,6 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.Hp
 import Marvel.Id
-import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Minion.Types

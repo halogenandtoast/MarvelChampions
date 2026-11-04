@@ -20,6 +20,7 @@ import {-# SOURCE #-} Marvel.Card.Def (CardDef, CardMatcher)
 import Marvel.Campaign (ShieldLog)
 import Marvel.Campaign (Campaign)
 import {-# SOURCE #-} Marvel.Question (Choice)
+import {-# SOURCE #-} Marvel.Message (Message)
 import Marvel.Card.PlayerCard.Types
 import Marvel.Card.Types (Card, IsCard)
 import Marvel.Count
@@ -546,6 +547,8 @@ mainSchemeMatcherForSource :: HasGame m => IdentityId -> Source -> SchemeMatcher
 getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
 
 characterPlayAreaOwner :: HasGame m => CharacterId -> m (Maybe IdentityId)
+cardPlayAreaOwner :: HasGame m => Target -> m (Maybe IdentityId)
+threatSourceCharacter :: HasGame m => Source -> m (Maybe CharacterId)
 
 boostAssignmentEnemy :: Message -> Maybe EnemyId
 

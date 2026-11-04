@@ -1,6 +1,7 @@
 module Marvel.FearNoEvil.CampaignCards where
 
 import Marvel.Prelude
+import Control.Monad (replicateM_)
 import Marvel.Ability
 import Marvel.Ally.Types qualified as A
 import Marvel.Ally.Runner ()
@@ -33,7 +34,7 @@ newtype CampaignEnvironment = CampaignEnvironment (Attrs Environment)
 campaignEnvironments :: [EnvironmentCard CampaignEnvironment]
 campaignEnvironments = map (environment CampaignEnvironment) [Cards.street60205a,Cards.street60205b,Cards.street60206a,Cards.street60206b,Cards.street60207a,Cards.street60207b,Cards.street60208a,Cards.street60208b,Cards.street60209a,Cards.street60209b]
 instance HasModifiersFor CampaignEnvironment where
-  getModifiersFor _ (AttachmentRef _) (CampaignEnvironment a) | toCardCode a == "60206b" -> do
+  getModifiersFor _ (AttachmentRef _) (CampaignEnvironment a) | toCardCode a == "60206b" = do
     expert <- (== Expert) <$> getDifficulty
     roundNumber <- getRound
     pure [CannotBeDiscarded | expert,roundNumber == 1]

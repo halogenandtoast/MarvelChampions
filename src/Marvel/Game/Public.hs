@@ -378,8 +378,8 @@ data MinionView = MinionView
   , hitPoints :: Natural
   , exhausted :: Bool
   , damage :: Natural
-  , scheme :: Natural
-  , attack :: Natural
+  , scheme :: Maybe Natural
+  , attack :: Maybe Natural
   , stunned :: Bool
   , stunCards :: Natural
   , confuseCards :: Natural
@@ -861,8 +861,8 @@ gameView seesHand g = do
         , hitPoints = hp
         , exhausted = a.minionExhausted
         , damage = a.minionDamage
-        , scheme = sch
-        , attack = maybe atk Attack.attackValue (Minion.minionAttackDetails m)
+        , scheme = if a.minionSchemeAvailable then Just sch else Nothing
+        , attack = if a.minionAttackAvailable then Just $ maybe atk Attack.attackValue (Minion.minionAttackDetails m) else Nothing
         , stunCards = (if a.minionStunned then 1 else 0) + (if a.minionAdditionalStun then 1 else 0)
         , confuseCards = (if a.minionConfused then 1 else 0) + (if a.minionAdditionalConfuse then 1 else 0)
         , stunned = a.minionStunned

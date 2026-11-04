@@ -12,12 +12,10 @@ import Marvel.Environment.Types
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Id
 import Marvel.MainScheme.Types
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Payment (paymentExhaustedCards)
 import Marvel.Query
 import Marvel.Question
 import Marvel.Ref

@@ -33,7 +33,7 @@ withSupportCardCode cCode f = case lookup cCode allSupports of
 allSupports :: HashMap CardCode SomeSupportCard
 allSupports = fromList $ [(toCardCode card,SomeSupportCard card) | card <- Presses.bugleStaff] <>  map
   (toFst someSupportCardCode)
-  $ concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
+  (concatMap (\(SomeSupportCard a) -> SomeSupportCard <$> printings a)
   [ SomeSupportCard cw56003, SomeSupportCard cw56012, SomeSupportCard cw56031, SomeSupportCard cw56043, SomeSupportCard fne60013, SomeSupportCard fne60014, SomeSupportCard fne60015, SomeSupportCard fne60016, SomeSupportCard fne60029, SomeSupportCard fne60042
   , SomeSupportCard wm58007, SomeSupportCard wm58024, SomeSupportCard wm58031, SomeSupportCard wm58034, SomeSupportCard hc59012, SomeSupportCard hc59023
   , SomeSupportCard JL.jl61002, SomeSupportCard JL.jl61008, SomeSupportCard JL.jl62007, SomeSupportCard JL.jl62018, SomeSupportCard JL.jl62019
@@ -176,7 +176,7 @@ allSupports = fromList $ [(toCardCode card,SomeSupportCard card) | card <- Press
   , SomeSupportCard xmansion
   , SomeSupportCard whiteHotRoom
   , SomeSupportCard cerebro
-  ]
+  ])
 
 lookupSupport :: CardCode -> IdentityId -> SupportId -> Support
 lookupSupport cardCode identityId supportId =

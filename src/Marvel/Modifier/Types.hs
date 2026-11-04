@@ -83,6 +83,7 @@ data Modifier
   | PrintedResourcesAs Resource
   | DividesBasicAttackEvenly
   | ResourceCostReduction Natural
+  | UpgradeInPlayAreaCostReduction IdentityId Natural
   | -- | on a resource ability source: its effect can generate identity counters
     MayGenerateIdentityCountersFor CardMatcher Natural
   | -- | reduction scoped to one physical card during one nested play

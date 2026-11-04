@@ -34,7 +34,6 @@ ronanKreeFanatic :: MinionCard RonanKreeFanatic
 ronanKreeFanatic = minion RonanKreeFanatic M.ronanKreeFanatic (Sch 3) (Atk 3) (HP 9)
 
 newtype RonanKreeFanatic = RonanKreeFanatic (Attrs Minion)
-  deriving anyclass IsMinion
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasModifiersFor RonanKreeFanatic where
@@ -136,3 +135,6 @@ instance RunMessage HammerDownEffect where
       when (any (\case W.Window W.After (W.EnemyActivation enemy _) -> enemyRef enemy == refocus (effectSource a); _ -> False) windows) $ disableEffect (effectId a)
       pure e
     _ -> HammerDownEffect <$> runMessage msg a
+
+instance IsMinion RonanKreeFanatic where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 9

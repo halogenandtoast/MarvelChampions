@@ -87,7 +87,7 @@ runMinionMessage msg attrs = case msg of
         let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
         when (excess > 0) $ do
           checkWindows [W.Window W.When $ W.CharacterTookExcessDamage (MinionCharacter $ minionId attrs) source excess]
-          for_ (sourceEnemy source) $ \enemy -> when (attackDamage damage) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
+          for_ (sourceEnemy source) $ \enemy -> when ((damageSource damage `elem` [FromAttack,FromOverkill])) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
         when (damageAmount damage > 0) $ do
           recordPlayerAttackDamage (toEnemyId attrs) source damage
           attackDealtDamageTo source damage (minionId attrs)
@@ -317,6 +317,8 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
+      PlaceCounters (isTarget attrs -> True) n -> pure attrs {minionCounters=minionCounters attrs+n}
+      RemoveCounters (isTarget attrs -> True) n -> pure attrs {minionCounters=subtractNatural n $ minionCounters attrs}
       CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {minionSchemeReplacesAttack = flag}
       CardSpecific target "fwReplaceBoost" (fromJSON -> Success (old, replacement)) | isTarget attrs target ->
         pure attrs {minionBoostCards = map (\card -> if card == old then replacement else card) (minionBoostCards attrs)}

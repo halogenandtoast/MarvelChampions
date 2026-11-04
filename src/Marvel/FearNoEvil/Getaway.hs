@@ -5,7 +5,6 @@ import Marvel.Ability
 import Marvel.Attachment.Types
 import Marvel.Card
 import Marvel.Cost
-import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
@@ -18,7 +17,7 @@ import Marvel.Id
 import Marvel.Keyword
 import Marvel.MainScheme.Types
 import Marvel.Matchers
-import Marvel.Message.Lifted
+import Marvel.Message.Lifted hiding (Surge)
 import Marvel.Minion.Types
 import Marvel.Minion.Runner ()
 import Marvel.Modifier
@@ -150,5 +149,5 @@ instance RunMessage GetawayTreachery where
           chooseOne you $ [targeting (characterRef character) ((case character of IdentityCharacter ident -> exhaust ident; AllyCharacter ally -> exhaust ally; _ -> pure ()) >> next) | character <- ready]
             <> [labeled "$label.fneTakeIndirectDamage" $ dealIndirectDamage you a 1 >> next]
       pure e
-    CardSpecific (isTarget a -> True) "speedPaid" (fromJSON -> Success ((you,n :: Natural),_ :: Payment)) -> cardSpecific a "speedChoices" (you,n) >> pure e
+    CardSpecific (isTarget a -> True) "speedPaid" (fromJSON -> Success ((you :: IdentityId,n :: Natural),_ :: Payment)) -> cardSpecific a "speedChoices" (you,n) >> pure e
     _ -> GetawayTreachery <$> runMessage msg a

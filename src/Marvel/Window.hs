@@ -5,7 +5,7 @@ module Marvel.Window (
 
 import Data.HashSet qualified as HashSet
 import Marvel.Prelude
-import Marvel.Card.Def (cdEncounterSet, HasCardDef (getCardDef))
+import Marvel.Card.Def (CardType(UpgradeType),cdCardType,cdEncounterSet, HasCardDef (getCardDef))
 import Marvel.Identity.Types (Field(PlayerIdentityTuckedEncounterCards))
 import Marvel.Projection
 import Marvel.Query (selectList)
@@ -53,11 +53,14 @@ windowMatches matcher w source = case matcher of
       then (== Just you) <$> characterPlayAreaOwner character else pure False
     _ -> pure False
   CardEnteredInPlayArea you cardMatcher -> if windowTiming w /= After then pure False else case windowType w of
-    PlayerCardEnteredPlay owner card -> pure $ owner == you && cardMatch cardMatcher card
+    PlayerCardEnteredPlay owner card -> do
+      area <- if cdCardType (getCardDef card) == UpgradeType
+        then cardPlayAreaOwner $ UpgradeRef $ UpgradeId $ unCardId $ pcCardId card
+        else pure $ Just owner
+      pure $ area == Just you && cardMatch cardMatcher card
     EncounterAttachmentEntered aid -> do
       def <- getTargetCardDef (AttachmentRef aid)
-      host <- getAttachedCharacter aid
-      owner <- maybe (pure Nothing) characterPlayAreaOwner host
+      owner <- cardPlayAreaOwner $ AttachmentRef aid
       pure $ owner == Just you && maybe False (cardMatch cardMatcher) def
     _ -> pure False
   CharacterDefeatsInPlayArea you -> if windowTiming w /= After then pure False else do
@@ -955,11 +958,11 @@ sharingTraitDamage matcher character damage
         heroTraits <- getCharacterTraits (IdentityCharacter you)
         pure $ not $ HashSet.null $ HashSet.intersection traits heroTraits) heroes
 
-attackedCharacters :: HasGame m => WindowType -> m [(Source,CharacterId)]
+attackedCharacters :: Applicative m => WindowType -> m [(Source,CharacterId)]
 attackedCharacters = \case
-  EnemyAttack enemy you -> pure [(enemyRef enemy,IdentityCharacter you)]
-  EnemyAttackAlly enemy ally _ -> pure [(enemyRef enemy,AllyCharacter ally)]
-  EnemyAttackOnEnemy enemy target -> pure [(enemyRef enemy,toCharacter target)]
+  EnemyAttack enemy you -> pure [(toSource enemy,IdentityCharacter you)]
+  EnemyAttackAlly enemy ally _ -> pure [(toSource enemy,AllyCharacter ally)]
+  EnemyAttackOnEnemy enemy target -> pure [(toSource enemy,toCharacter target)]
   PlayerAttackResolved source _ enemies -> pure [(source,toCharacter enemy) | enemy <- enemies]
   _ -> pure []
 

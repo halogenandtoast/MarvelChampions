@@ -1757,7 +1757,10 @@ disableActiveCost = push . DisableActiveCost
 -- | The card is played, paid for: "when you play" is answered, then it enters play and
 -- the window after it opens.
 cardPlayed :: (ReverseQueue m) => IdentityId -> PlayerCard -> Payment -> Maybe Window -> m ()
-cardPlayed ident card payment mWindow =
+cardPlayed ident card payment mWindow = do
+  when (cdCardType (getCardDef card) == UpgradeType) $ do
+    area <- maybe (pure $ Just ident) cardPlayAreaOwner (paymentTarget payment)
+    cardSpecific GameRef "upgradePlayedInArea" area
   pushAll
     [ CheckWindows (windows When)
     , IdentityMessage ident (PlayedCard card mWindow)

@@ -15,7 +15,7 @@ theSleeper :: MinionCard TheSleeper
 theSleeper = minion TheSleeper Cards.theSleeper (Sch 1) (Atk 3) (HP 5)
 
 newtype TheSleeper = TheSleeper (Attrs Minion)
-  deriving anyclass (IsMinion, HasAbilities)
+  deriving anyclass HasAbilities
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | 5 hit points per player.
@@ -46,3 +46,6 @@ instance RunMessage TheSleeper where
       removeMinionFromGameWithoutLeaveWindow (minionId attrs)
       pure e
     _ -> TheSleeper <$> runMessage msg attrs
+
+instance IsMinion TheSleeper where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 5

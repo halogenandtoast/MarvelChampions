@@ -197,8 +197,8 @@ export interface MinionView extends CardView {
   engagedWith: string
   hitPoints: number
   damage: number
-  scheme: number
-  attack: number
+  scheme: number | null
+  attack: number | null
   stunCards?: number
   confuseCards?: number
   stunned: boolean

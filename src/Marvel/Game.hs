@@ -135,8 +135,8 @@ import Marvel.Boost (boostCount,BoostIcon(Star))
 import Marvel.Queue
 import Marvel.Ref
 import Marvel.Resource
-import Marvel.Scenario ()
-import Marvel.Scenario.Types (getCompetitionSetup, Attrs (..), Scenario (..), overScenarioAttrs, deckKeys, getScenarioDifficulty, pileL)
+import Marvel.Scenario (recommendedSetup,lookupScenario)
+import Marvel.Scenario.Types (ScenarioSetup (difficulty), getCompetitionSetup, Attrs (..), Scenario (..), overScenarioAttrs, deckKeys, getScenarioDifficulty, pileL)
 import Marvel.SideScheme
 import Marvel.SideScheme.Types qualified as SideScheme
 import Marvel.SideScheme.Types (Attrs (sideSchemeHeldCards, sideSchemeAccelerationTokens, sideSchemeCounters), SideScheme, getSideSchemeThreat, isCrisis)
@@ -722,7 +722,7 @@ getUniqueCardsIn aid = getsGame \g ->
 
 -- | Who "you" is: the player 'asYou' names, or else the active player.
 getYou :: (HasGame m) => m IdentityId
-getYou = getsGame \g -> fromMaybe (gameActivePlayer g) (gameYou g)
+getYou = getsGame \g -> fromMaybe (g.gameActivePlayer) (gameYou g)
 
 -- | Look at the game as the player given: "you" on a player card is its controller, or
 -- the player who would play or trigger it (RR "You").
@@ -917,9 +917,9 @@ getDeckKeyFor :: (HasGame m) => IdentityId -> m DeckKey
 getDeckKeyFor ident = do
   aid <- areaId <$> getAreaOf ident
   getsGame \g -> case activeVillainIn g aid of
-    Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ gameScenario g) -> VillainDeckKey v
+    Just v | HashMap.member (VillainDeckKey v) (scenarioDecks $ toAttrs $ g.gameScenario) -> VillainDeckKey v
     _ | Just competition <- gameCompetition g
-      , isJust (CW.leaderTeam $ toId $ gameScenario g)
+      , isJust (CW.leaderTeam $ toId $ g.gameScenario)
       , Just team <- CW.playerTeam competition ident -> CW.pendingEncounterDeck team
     _ -> EncounterDeckKey
 
@@ -942,7 +942,7 @@ getSetAsideEncounterCards = getsGame $ onlyEncounterCards . scenarioSetAsideCard
 
 getSetAsideEncounterCardsForDeck :: HasGame m => DeckKey -> m [EncounterCard]
 getSetAsideEncounterCardsForDeck key = getsGame $ \g ->
-  let scenario = toAttrs $ gameScenario g
+  let scenario = toAttrs $ g.gameScenario
    in [card | EncounterCard card <- scenarioSetAsideCards scenario
       ,fromMaybe EncounterDeckKey (lookup (ecCardId card) $ scenarioCardDecks scenario) == key]
 
@@ -1112,7 +1112,6 @@ getCountersOn a = getsGame \g -> case counterTarget a of
   AllyRef aid -> maybe 0 getAllyUses (lookup aid $ gameAllies g)
   UpgradeRef uid -> maybe 0 getUpgradeUses (lookup uid $ gameUpgrades g)
   SideSchemeRef sid -> maybe 0 (sideSchemeCounters . toAttrs) (lookup sid $ gameSideSchemes g)
-  ObligationRef oid -> maybe 0 Obligation.getObligationDisplayCounters (lookup oid $ gameObligations g)
   _ -> 0
 
 -- | How many cards in play have the trait: of every type, each identity one card.
@@ -2132,9 +2131,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
-  CardSpecific GameRef "chooseFearNoEvilScenario" (fromJSON -> Success code) -> case gameCampaign g of
+  CardSpecific GameRef "chooseFearNoEvilScenario" (fromJSON -> Success code) -> case g.gameCampaign of
     Just campaign | campaign.kind == Campaign.FearNoEvilCampaign,code `elem` (if null (Campaign.fearNoEvilUnresolved campaign) then ["60161a"] else Campaign.fearNoEvilUnresolved campaign) ->
-      case recommendedSetup code >>= \setup -> lookupScenario setup {difficulty=scenarioDifficulty $ toAttrs $ gameScenario g} of
+      case recommendedSetup code >>= \setup -> lookupScenario setup {difficulty=scenarioDifficulty $ toAttrs $ g.gameScenario} of
         Nothing -> pure g
         Just selected -> pure g {gameScenario=selected,gameCampaign=Just $ Campaign.recordInLog (Campaign.RecordFearNoEvilScenario code) campaign}
     _ -> pure g
@@ -2145,13 +2144,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "beginFriendlyBoost" (fromJSON -> Success (aid,attacking,original :: Message)) -> do
     let context = FriendlyBoostContext aid attacking [] [] 0 []
     let enemy = EnemyMinionId $ MinionId $ unAllyId aid
-        owner = maybe (gameActivePlayer g) getAllyController $ lookup aid $ gameAllies g
+        owner = maybe (g.gameActivePlayer) getAllyController $ lookup aid $ gameAllies g
     checkWindows [W.Window W.When $ W.EnemyActivation enemy owner]
     dealBoost $ MinionId $ unAllyId aid
     cardSpecific GameRef "flipFriendlyBoosts" (aid,original)
     cardSpecific GameRef "finishFriendlyBoost" aid
     checkWindows [W.Window W.After $ W.EnemyActivation enemy owner]
-    pure g {gameFriendlyBoosts=context:gameFriendlyBoosts g}
+    pure g {gameFriendlyBoosts=context:g.gameFriendlyBoosts}
   MinionMessage mid (MinionDealtBoost card) | Just aid <- friendlyProxyAlly g mid ->
     pure $ modifyFriendlyBoost aid (\context -> context {friendlyBoostPending=friendlyBoostPending context <> [card]}) g
   MinionMessage mid (MinionAddBoost n) | Just aid <- friendlyProxyAlly g mid ->
@@ -2162,7 +2161,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     minionStep mid (MinionAddBoost $ sum $ map snd counts)
     pure g
   CardSpecific GameRef "flipFriendlyBoosts" (fromJSON -> Success (aid,original :: Message)) -> do
-    let cards = maybe [] friendlyBoostPending $ find ((== aid) . friendlyBoostAlly) (gameFriendlyBoosts g)
+    let cards = maybe [] friendlyBoostPending $ find ((== aid) . friendlyBoostAlly) (g.gameFriendlyBoosts)
         mid = MinionId $ unAllyId aid
     for_ cards $ \card -> revealBoostCard card mid >> countActivationBoostIcons mid [card]
     if null cards then cardSpecific GameRef "friendlyPowerReady" (aid,original) else cardSpecific GameRef "flipFriendlyBoosts" (aid,original)
@@ -2171,22 +2170,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     next <- if HashMap.member aid (gameAllies g) then runReaderT (dispatchGameMessage original g) (refreshTraits g) else pure g
     pure next
   CardSpecific GameRef "finishFriendlyBoost" (fromJSON -> Success (aid :: AllyId)) -> do
-    for_ (find ((== aid) . friendlyBoostAlly) (gameFriendlyBoosts g)) $ \context ->
+    for_ (find ((== aid) . friendlyBoostAlly) (g.gameFriendlyBoosts)) $ \context ->
       for_ (friendlyBoostRevealed context <> friendlyBoostPending context) $ \card -> whenM (isCurrentBoostCard card) $ consumeBoostCard card >> discardCard card
-    pure g {gameFriendlyBoosts=filter ((/= aid) . friendlyBoostAlly) $ gameFriendlyBoosts g}
+    pure g {gameFriendlyBoosts=filter ((/= aid) . friendlyBoostAlly) $ g.gameFriendlyBoosts}
   CardSpecific GameRef "racketChooseBusinesses" (fromJSON -> Success (players :: [IdentityId])) -> do
     case players of
       [] -> pure ()
       you:rest -> do
-        let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ gameScenario g),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
+        let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ g.gameScenario),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
             install card = cardSpecific GameRef "racketInstallBusiness" (you,card,Nothing :: Maybe MainSchemeId,0 :: Natural) >> cardSpecific GameRef "racketChooseBusinesses" rest
-        if scenarioDifficulty (toAttrs $ gameScenario g) == Expert
+        if scenarioDifficulty (toAttrs $ g.gameScenario) == Expert
           then shuffleM available >>= traverse_ install . headMay
           else chooseOne you [cardLabeled (toCardCode card) (install card) | card <- available]
     pure g
   CardSpecific GameRef "racketSwapBusiness" (fromJSON -> Success (you :: IdentityId)) -> do
     old <- getOwnedMainScheme you
-    let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ gameScenario g),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
+    let available = [card | EncounterCard card <- scenarioSetAsideCards (toAttrs $ g.gameScenario),toCardCode card `elem` ["60134b","60135b","60136b","60137b","60138b"]]
     shuffled <- shuffleM available
     for_ old $ \sid -> for_ (headMay shuffled) $ \card ->
       cardSpecific GameRef "racketInstallBusiness" (you,card,Just sid,maybe 0 getMainSchemeThreat $ lookup sid $ gameMainSchemes g)
@@ -2207,7 +2206,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g),upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
             for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g),Attachment.attachmentMainScheme (toAttrs a) == Just mid] removeFromPlay
         owned <- runMessage (CardSpecific (MainSchemeRef sid) "ownedMainState" $ toJSON (you,threat)) scheme
-        cardSpecific sid "racketDifficulty" (scenarioDifficulty (toAttrs $ gameScenario g) == Expert)
+        cardSpecific sid "racketDifficulty" (scenarioDifficulty (toAttrs $ g.gameScenario) == Expert)
         pure $ g & entitiesL . mainSchemesL %~ (insertMap sid owned . (\schemes -> foldr deleteMap schemes gone))
           & areasL . each %~ (\area -> area {areaMainSchemes=filter (`notElem` gone) $ areaMainSchemes area})
           & intoAreaOf you (\area -> area {areaMainSchemes=areaMainSchemes area <> [sid]})
@@ -2219,7 +2218,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     _ -> pure g
   CardSpecific GameRef "flipMaryWalker" (fromJSON -> Success (aid,you,reveal :: Bool)) -> case lookup aid (gameAttachments g) of
     Nothing -> pure g
-    Just old | toCardCode old == "60113b" -> do
+    Just old | toCardCode (getCardDef old) == "60113b" -> do
       let sid = SideSchemeId $ unAttachmentId aid
           def = fromMaybe (error "missing Establish Trust") $ HashMap.lookup "60113a" MGEncounter.allEncounterCards
           card = MkEncounterCard (CardId $ unAttachmentId aid) def
@@ -2738,7 +2737,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) \ally -> do
         frameworkDiscard $ for_ (allyUpgrades $ toAttrs ally) removeFromPlay
-        frameworkDiscard $ for_ [attachmentId a | at <- HashMap.elems (gameAttachments g),let a = toAttrs at,attachmentAlly a == Just aid] removeFromPlay
+        frameworkDiscard $ for_ [Attachment.attachmentId a | at <- HashMap.elems (gameAttachments g),let a = toAttrs at,Attachment.attachmentAlly a == Just aid] removeFromPlay
         for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
         for_ (Ally.allyHeldTreacheries $ toAttrs ally) discardCard
         identityStep (getAllyController ally) (AllyRemoved aid)
@@ -3219,11 +3218,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   CardSpecific GameRef "enemyAttackLosesKeyword" (fromJSON -> Success (enemy,keyword)) -> do
     current <- getEnemyAttack enemy
-    let updated = restoreEnemyAttack enemy (loseKeyword keyword <$> current) g
-    pure $ case enemy of
-      EnemyVillainId vid -> updated & entitiesL . villainsL . ix vid %~ (\(Villain.Villain villain) -> Villain.Villain $ Villain.overVillainAttrs (\a -> a {Villain.villainAttackGrantedKeywords = filter (/= keyword) (Villain.villainAttackGrantedKeywords a)}) villain)
-      _ -> updated
-  CardSpecific GameRef "repeatEnemyAttackAfterPayment" (fromJSON -> Success ((enemy,character),_ :: Payment)) -> do
+    pure $ restoreEnemyAttack enemy (loseKeyword keyword <$> current) g
+  CardSpecific GameRef "repeatEnemyAttackAfterPayment" (fromJSON -> Success ((enemy :: EnemyId,character),_ :: Payment)) -> do
     present <- characterMatches AnyCharacter character
     owner <- getCharacterOwner character
     when present $ for_ owner $ \you -> enemyActivationAfterCurrent enemy $ case character of
@@ -3239,7 +3235,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       cardSpecific GameRef "removeEncounterCardFromPiles" card
       pure $ g {gameRemovedFromGameEncounterCards = nub $ card : gameRemovedFromGameEncounterCards}
     else if alreadyRemoved then pure g else do
-      when (HashMap.member aid gameAttachments) $ attachmentRemoved aid
+      when (HashMap.member aid (gameAttachments g)) $ attachmentRemoved aid
       cardSpecific GameRef "removeEncounterCardFromPiles" card
       shuffleIntoEncounterDeck [card]
       pure $ g & entitiesL . attachmentsL %~ deleteMap aid
@@ -3891,8 +3887,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               , Minion.minionAttachments = attachments
               , Minion.minionHeldCards = Ally.allyHeldCards a
               , Minion.minionCounters = Ally.allyCounters a
-      , Minion.minionHeldCards = Ally.allyHeldCards a
-      , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
+              , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
               , Minion.minionEngagedIdentity = controller
               }) minion
         for_ (allyUpgrades a) $ \uid -> upgradeStep uid (UpgradeHostBecameMinion mid)
@@ -4684,7 +4679,7 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
-  runMessage original@(AllyMessage aid power) g | power `elem` [AllyAttacked,AllyThwarted],not (any ((== aid) . friendlyBoostAlly) $ gameFriendlyBoosts g) = runQueueT do
+  runMessage original@(AllyMessage aid power) g | power `elem` [AllyAttacked,AllyThwarted],not (any ((== aid) . friendlyBoostAlly) $ g.gameFriendlyBoosts) = runQueueT do
     let attacking = power == AllyAttacked
     keyword <- case lookup aid (gameAllies g) of
       Nothing -> pure False
@@ -5238,7 +5233,7 @@ dispatchGameMessageCore msg g = do
       runQueueT $ for_ added $ \def -> checkWindows [W.Window W.After $ W.VictoryCardAdded def]
     _ -> pure ()
   when (any ((== "60151b") . toCardCode . getCardDef) (HashMap.elems $ gameMainSchemes after)) $
-    runQueueT $ when (any (\(sid,support) -> DailyBugle `HashSet.member` cdTraits (getCardDef support) && not (HashMap.member sid $ gameSupports after)) (HashMap.toList $ gameSupports g)) $ gameOver Lost
+    runQueueT $ when (any (\(sid,support) -> DailyBugle `HashSet.member` cdTraits (Support.supportCardDef $ toAttrs support) && not (HashMap.member sid $ gameSupports after)) (HashMap.toList $ gameSupports g)) $ gameOver Lost
   when (any (isJust . mainSchemeOwner . toAttrs) (HashMap.elems $ gameMainSchemes after) && any (\ident -> not $ HashMap.member ident $ gamePlayers after) (HashMap.keys $ gamePlayers g)) $
     runQueueT $ gameOver Lost
   blackCats <- foldM (\state aid -> runReaderT (runGameMessage (RestoreControlledMinion aid) state) (refreshTraits state)) after
@@ -7352,6 +7347,10 @@ gameSelectMinion m = do
       minions <- HashMap.elems <$> getsGame gameMinions
       let highest = maximum $ map (unHp . getMinionPrintedHitPoints) minions
       pure . (== highest) . unHp $ getMinionPrintedHitPoints minion
+    MinionWithHighestBaseHitPoints -> \minion -> do
+      minions <- HashMap.elems <$> getsGame gameMinions
+      highest <- maximum . (0 :) <$> traverse Minion.getMinionBaseHitPoints minions
+      (== highest) <$> Minion.getMinionBaseHitPoints minion
     -- a keyword it gains counts, as guard from Defensive Programming
     MinionWithKeyword k -> fmap (elem k) . Minion.getModifiedKeywords . toAttrs
     MinionCanBeStunned -> \minion -> enemyMatches EnemyCanBeStunned (EnemyMinionId $ toId minion)
@@ -7615,7 +7614,7 @@ canCaptureDefeatedAlly card = do
   g <- getGame
   let cid = pcCardId card
       discarded = [pcCardId c | p <- HashMap.elems (gamePlayers g), c <- unDiscard (playerIdentityDiscard $ toAttrs p)]
-      encounters = map ecCardId (scenarioDiscard (toAttrs $ g.gameScenario) <> concatMap pileDiscard (HashMap.elems $ scenarioDecks $ toAttrs $ gameScenario g))
+      encounters = map ecCardId (scenarioDiscard (toAttrs $ g.gameScenario) <> concatMap pileDiscard (HashMap.elems $ scenarioDecks $ toAttrs $ g.gameScenario))
       victory = map ecCardId (gameVictoryDisplay g)
       collection = map toCardId (g.gameCollection)
   pure $ cid `elem` (discarded <> encounters <> victory <> collection)
@@ -7810,7 +7809,7 @@ refreshTraits g = blank {gameGainedTraits = GainedTraits (Just $ go (0 :: Int) n
 inElementArea :: (HasGame m, IsRef a) => a -> ReaderT Game m b -> m b
 inElementArea target body = do
   g <- getGame
-  let current = fromMaybe (gameActivePlayer g) (gameYou g)
+  let current = fromMaybe (g.gameActivePlayer) (gameYou g)
       here = areaId <$> areaOfTarget g (if toTarget target == GameRef then IdentityRef current else toTarget target)
       same you = (areaId <$> areaOfTarget g (IdentityRef you)) == here
       context = if isNothing (gameCompetition g) || same current then current
@@ -7822,7 +7821,7 @@ getModifiers a = do
   g <- getGame
   let target = friendlyBoostTarget g $ canonicalAttachmentTarget g (toTarget a)
       bonuses = case target of
-        AllyRef aid -> [modifier | context <- gameFriendlyBoosts g,friendlyBoostAlly context == aid,modifier <- [AttackModifier $ friendlyBoostIcons context,ThwartModifier $ friendlyBoostIcons context] <> map KeywordModifier (friendlyBoostKeywords context)]
+        AllyRef aid -> [modifier | context <- g.gameFriendlyBoosts,friendlyBoostAlly context == aid,modifier <- [AttackModifier $ friendlyBoostIcons context,ThwartModifier $ friendlyBoostIcons context] <> map KeywordModifier (friendlyBoostKeywords context)]
         _ -> []
   (bonuses <>) <$> inElementArea target (getModifiersInContext target)
 
@@ -8146,6 +8145,8 @@ allyAsMinion ident card a = overMinion become $ lookupMinion "xallyminion" ident
       , Minion.minionHitPoints = Ally.allyHitPoints a
       , Minion.minionExhausted = Ally.allyExhausted a
       , Minion.minionDamage = Ally.allyDamage a
+      , Minion.minionCounters = Ally.allyCounters a
+      , Minion.minionHeldCards = Ally.allyHeldCards a
       , Minion.minionFacedownCard = Just card
       , Minion.minionUpgrades = allyUpgrades a
       , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
@@ -9150,7 +9151,7 @@ getMission = getsGame (scenarioMission . toAttrs . gameScenario)
 
 -- | Mission entities retain physical ownership, but are outside every player's area.
 isMissionTarget :: Game -> Target -> Bool
-isMissionTarget g target = maybe False (go target) (scenarioMission $ toAttrs $ gameScenario g)
+isMissionTarget g target = maybe False (go target) (scenarioMission $ toAttrs $ g.gameScenario)
  where
   go ref m = case ref of
     AllyRef aid -> aid `elem` missionAllies m
@@ -9171,7 +9172,7 @@ missionAlly g target = case target of
 missionSourceAllowed :: Game -> Source -> Bool
 missionSourceAllowed g source = maybe False (\m -> source == SideSchemeRef (missionScheme m)
   || maybe False ((`elem` ["45164", "45165", "45171a", "45179a", "45180a", "45181a", "45182a", "45183a"]) . toCardCode) (abilityCardDef g $ refocus source))
-  (scenarioMission $ toAttrs $ gameScenario g)
+  (scenarioMission $ toAttrs $ g.gameScenario)
 
 withMissionTargets :: HasGame m => ReaderT Game m a -> m a
 withMissionTargets body = getGame >>= runReaderT body . (\g -> g {gameMissionTargets = True})
@@ -9189,7 +9190,7 @@ missionAllyReduction card = getsGame \g -> case scenarioMission (toAttrs $ g.gam
   _ -> 0
 
 modifyMissionInGame :: (MissionState -> MissionState) -> Game -> Game
-modifyMissionInGame f g = g {gameScenario = case gameScenario g of
+modifyMissionInGame f g = g {gameScenario = case g.gameScenario of
   Scenario inner -> Scenario $ overScenarioAttrs (\a -> a {scenarioMission = f <$> scenarioMission a}) inner}
 
 getSchemeThreatAmount :: HasGame m => SchemeId -> m Natural
@@ -9213,7 +9214,7 @@ playerCardEntryAllowedIn :: Game -> PlayerCard -> Bool
 playerCardEntryAllowedIn g card = not professorBlocked && not shapeBlocked
  where
   professorBlocked = title (cdName $ getCardDef card) == "Professor X"
-    && maybe False ((== "45170a") . missionCard) (scenarioMission $ toAttrs $ gameScenario g)
+    && maybe False ((== "45170a") . missionCard) (scenarioMission $ toAttrs $ g.gameScenario)
   shapeBlocked = Shapeshift `member` cdTraits (getCardDef card) && case pcController card <|> pcOwner card of
     Nothing -> False
     Just you -> maybe False ((== "56029b") . toCardCode) (lookup you $ gamePlayers g)
@@ -9277,7 +9278,7 @@ modifierProviderAllowed :: Game -> Target -> Target -> Bool
 modifierProviderAllowed g target provider = missionProviderAllowed g target provider &&
   (isNothing (gameCompetition g) || location target == location provider)
  where
-  location GameRef = areaId <$> areaOfTarget g (IdentityRef $ fromMaybe (gameActivePlayer g) (gameYou g))
+  location GameRef = areaId <$> areaOfTarget g (IdentityRef $ fromMaybe (g.gameActivePlayer) (gameYou g))
   location ref = areaId <$> areaOfTarget g ref
 
 missionProviderAllowed :: Game -> Target -> Target -> Bool
@@ -9356,7 +9357,7 @@ getAllyPrintedStats aid = getsGame $ \g -> case lookup aid (gameAllies g) of
   Just ally -> let attrs = toAttrs ally in (unHp $ Ally.allyHitPoints attrs, unThw $ Ally.allyThwart attrs, unAtk $ Ally.allyAttack attrs)
 
 getShieldLog :: HasGame m => m Campaign.ShieldLog
-getShieldLog = getsGame $ \g -> maybe (gameShieldLog g) (.campaignLog.shield) (gameCampaign g)
+getShieldLog = getsGame $ \g -> maybe (gameShieldLog g) (.campaignLog.shield) (g.gameCampaign)
 
 allyDefeatedByConsequential :: HasGame m => AllyId -> m Bool
 allyDefeatedByConsequential aid = getsGame $ maybe False (Ally.allyDefeatedByConsequential . toAttrs) . lookup aid . gameAllies
@@ -10006,19 +10007,50 @@ mainSchemeMatcherForSource you source matcher = do
  where
   replace who = \case EncounterMainScheme -> MainSchemeOwnedBy who; SchemeMatches xs -> SchemeMatches $ map (replace who) xs; other -> other
   playAreaOwner from = case refocus from of
-    MinionRef mid -> getsGame $ fmap (minionEngagedIdentity . toAttrs) . (\g -> lookup mid (gameMinions g) <|> lookup mid (entitiesMinions $ gameRemovedEntities g))
     TreacheryRef _ -> pure $ Just you
-    AttachmentRef aid -> do
-      host <- getAttachedCharacter aid
-      case host of
-        Just (MinionCharacter mid) -> playAreaOwner $ MinionRef mid
-        Just (IdentityCharacter who) -> pure $ Just who
-        Just (AllyCharacter ally) -> getSourceController $ AllyRef ally
-        _ -> pure Nothing
-    EnvironmentRef eid -> getsGame $ join . fmap (MGEnvironment.environmentOwner . toAttrs) . lookup eid . gameEnvironments
-    MainSchemeRef mid -> getsGame $ join . fmap (mainSchemeOwner . toAttrs) . lookup mid . gameMainSchemes
     EffectRef eid -> getsGame (fmap (Effect.effectSource . toAttrs) . lookup eid . gameEffects) >>= maybe (pure Nothing) playAreaOwner
-    _ -> getSourceController from
+    _ -> cardPlayAreaOwner $ refocus from
+
+-- Attachments and upgrades occupy their host's play area even when another
+-- player owns or paid for the card. Villains and shared schemes are outside it.
+cardPlayAreaOwner :: HasGame m => Target -> m (Maybe IdentityId)
+cardPlayAreaOwner target = case target of
+  CharacterRef character -> characterPlayAreaOwner character
+  EnemyRef enemy -> characterPlayAreaOwner $ toCharacter enemy
+  IdentityRef you -> pure $ Just you
+  AllyRef aid -> characterPlayAreaOwner $ AllyCharacter aid
+  MinionRef mid -> characterPlayAreaOwner $ MinionCharacter mid
+  VillainRef _ -> pure Nothing
+  MainSchemeRef mid -> getsGame $ join . fmap (mainSchemeOwner . toAttrs) . lookup mid . gameMainSchemes
+  SchemeRef (SchemeMainSchemeId mid) -> cardPlayAreaOwner $ MainSchemeRef mid
+  SchemeRef (SchemeSideSchemeId sid) -> cardPlayAreaOwner $ SideSchemeRef sid
+  UpgradeRef uid -> do
+    upgrade <- getsGame $ \g -> lookup uid (gameUpgrades g) <|> lookup uid (entitiesUpgrades $ gameRemovedEntities g)
+    case upgrade of
+      Nothing -> pure Nothing
+      Just value -> do
+        let a = toAttrs value
+            host = Upgrade.upgradeAttachedCard a
+              <|> (AllyRef <$> Upgrade.upgradeAttachedAlly a)
+              <|> (enemyRef <$> Upgrade.upgradeAttachedEnemy a)
+              <|> (IdentityRef <$> Upgrade.upgradeAttachedIdentity a)
+              <|> (MainSchemeRef <$> Upgrade.upgradeAttachedMainScheme a)
+              <|> (SideSchemeRef <$> Upgrade.upgradeAttachedSideScheme a)
+        maybe (pure $ Just $ Upgrade.upgradeController a) cardPlayAreaOwner host
+  AttachmentRef aid -> do
+    attachment <- getsGame $ \g -> lookup aid (gameAttachments g) <|> lookup aid (entitiesAttachments $ gameRemovedEntities g)
+    case attachment of
+      Nothing -> pure Nothing
+      Just value -> do
+        let a = toAttrs value
+            host = (AllyRef <$> Attachment.attachmentAlly a)
+              <|> (enemyRef <$> Attachment.attachmentEnemy a)
+              <|> (IdentityRef <$> Attachment.attachmentIdentity a)
+              <|> (MainSchemeRef <$> Attachment.attachmentMainScheme a)
+              <|> (SideSchemeRef <$> Attachment.attachmentSideScheme a)
+        maybe (pure Nothing) cardPlayAreaOwner host
+  EnvironmentRef eid -> getsGame $ join . fmap (MGEnvironment.environmentOwner . toAttrs) . lookup eid . gameEnvironments
+  _ -> getSourceController $ refocus target
 
 getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
 getOwnedMainScheme you = selectOne (MainSchemeOwnedBy you) <&> (>>= \case SchemeMainSchemeId mid -> Just mid; _ -> Nothing)
@@ -10047,10 +10079,10 @@ boostAssignmentEnemy = \case
   _ -> Nothing
 
 friendlyProxyAlly :: Game -> MinionId -> Maybe AllyId
-friendlyProxyAlly g mid = friendlyBoostAlly <$> find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (gameFriendlyBoosts g)
+friendlyProxyAlly g mid = friendlyBoostAlly <$> find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (g.gameFriendlyBoosts)
 
 modifyFriendlyBoost :: AllyId -> (FriendlyBoostContext -> FriendlyBoostContext) -> Game -> Game
-modifyFriendlyBoost aid f g = g {gameFriendlyBoosts=[if friendlyBoostAlly context == aid then f context else context | context <- gameFriendlyBoosts g]}
+modifyFriendlyBoost aid f g = g {gameFriendlyBoosts=[if friendlyBoostAlly context == aid then f context else context | context <- g.gameFriendlyBoosts]}
 
 friendlyBoostTarget :: Game -> Target -> Target
 friendlyBoostTarget g target = case target of
@@ -10064,7 +10096,7 @@ friendlyBoostMessage g = \case
   GiveStatus target status | let actual = friendlyBoostTarget g target,actual /= target -> Just $ GiveStatus actual status
   MinionMessage mid message | Just aid <- friendlyProxyAlly g mid -> case message of
     MinionStunned _ -> Just $ AllyMessage aid AllyStunned
-    MinionConfused _ -> Just $ AllyMessage aid AllyConfused
+    MinionConfused _ -> Just $ GiveStatus (AllyRef aid) ConfusedStatus
     MinionBecomeTough -> Just $ GiveStatus (AllyRef aid) ToughStatus
     MinionDamaged source damage -> Just $ AllyMessage aid $ AllyDamaged source damage
     MinionHealed n -> Just $ AllyMessage aid $ AllyHealed n
@@ -10073,7 +10105,7 @@ friendlyBoostMessage g = \case
 
 friendlyBoostAttackView :: Game -> MinionId -> Maybe Attack
 friendlyBoostAttackView g mid = do
-  context <- find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (gameFriendlyBoosts g)
+  context <- find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (g.gameFriendlyBoosts)
   guard $ friendlyBoostAttack context
   villain <- headMay $ HashMap.keys $ gameVillains g
   pure $ attackWith (friendlyBoostKeywords context) (EnemyMinionId mid) (VillainCharacter villain) 0
@@ -10103,9 +10135,9 @@ knownGameCards g =
       <> concatMap (MS.mainSchemeHeldCards . toAttrs) (HashMap.elems $ gameMainSchemes g)
       <> concatMap (MGEnvironment.environmentHeldCards . toAttrs) (HashMap.elems $ gameEnvironments g)
       <> concatMap (Obligation.obligationHeldCards . toAttrs) (HashMap.elems $ gameObligations g))
-  <> scenarioSetAsideCards (toAttrs $ gameScenario g) <> gameCollection g
-  <> map EncounterCard (scenarioEncounterDeck (toAttrs $ gameScenario g) <> scenarioDiscard (toAttrs $ gameScenario g)
-      <> concat [pileDeck pile <> pileDiscard pile | pile <- HashMap.elems $ scenarioDecks $ toAttrs $ gameScenario g]
+  <> scenarioSetAsideCards (toAttrs $ g.gameScenario) <> gameCollection g
+  <> map EncounterCard (scenarioEncounterDeck (toAttrs $ g.gameScenario) <> scenarioDiscard (toAttrs $ g.gameScenario)
+      <> concat [pileDeck pile <> pileDiscard pile | pile <- HashMap.elems $ scenarioDecks $ toAttrs $ g.gameScenario]
       <> HashMap.elems (gameBoostCards g) <> gameVictoryDisplay g)
   <> map PlayerCard (gamePlayerVictoryDisplay g)
   <> [EncounterCard card | player <- HashMap.elems $ gamePlayers g,card <- playerIdentityEncounterCards $ toAttrs player]
@@ -10121,7 +10153,7 @@ rememberFearNoEvilRemoval message before after = case (message,gameCampaign afte
   _ -> after
 
 fearNoEvilRemovedTitles :: HasGame m => m [Text]
-fearNoEvilRemovedTitles = getsGame $ \g -> case gameCampaign g of
+fearNoEvilRemovedTitles = getsGame $ \g -> case g.gameCampaign of
   Nothing -> []
   Just campaign -> let live=map toCardId $ knownGameCards g
     in nub [name | (cid,name) <- campaign.campaignLog.fearNoEvil.pendingRemoved,cid `notElem` live]

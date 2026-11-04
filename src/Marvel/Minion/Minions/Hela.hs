@@ -22,7 +22,7 @@ garm :: MinionCard Garm
 garm = minion Garm Cards.garm (Sch 1) (Atk 2) (HP 4)
 
 newtype Garm = Garm (Attrs Minion)
-  deriving anyclass (IsMinion, HasAbilities)
+  deriving anyclass HasAbilities
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | 4[per hero] hit points.
@@ -40,7 +40,7 @@ skurge :: MinionCard Skurge
 skurge = minion Skurge Cards.skurge (Sch 1) (Atk 3) (HP 5)
 
 newtype Skurge = Skurge (Attrs Minion)
-  deriving anyclass (IsMinion, HasAbilities)
+  deriving anyclass HasAbilities
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | 5[per hero] hit points. [star] Skurge's attacks gain piercing.
@@ -58,7 +58,7 @@ nidhogg :: MinionCard Nidhogg
 nidhogg = minion Nidhogg Cards.nidhogg (Sch 1) (Atk 4) (HP 6)
 
 newtype Nidhogg = Nidhogg (Attrs Minion)
-  deriving anyclass (IsMinion, HasAbilities)
+  deriving anyclass HasAbilities
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | 6[per hero] hit points. [star] Nidhogg's attacks gain overkill.
@@ -71,3 +71,12 @@ instance RunMessage Nidhogg where
   runMessage msg (Nidhogg attrs) = runQueueT do
     engagesFirstPlayer msg attrs
     Nidhogg <$> runMessage msg attrs
+
+instance IsMinion Garm where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 4
+
+instance IsMinion Skurge where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 5
+
+instance IsMinion Nidhogg where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 6

@@ -85,8 +85,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
         <div v-for="minion in detachedMinions" :key="minion.id" class="minion">
           <div class="body">
             <dl class="stats">
-              <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme }}</dd></div>
-              <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ minion.attack }}</dd></div>
+              <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ minion.scheme ?? '–' }}</dd></div>
+              <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ minion.attack ?? '–' }}</dd></div>
             </dl>
             <BoardCard
               :id="minion.id"

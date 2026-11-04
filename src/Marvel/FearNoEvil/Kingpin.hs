@@ -18,6 +18,7 @@ import Marvel.Id
 import Marvel.Keyword
 import Marvel.MainScheme.Types
 import Marvel.Matchers
+import Marvel.Modifier
 import Marvel.Message.Lifted
 import Marvel.Minion.Cards qualified as MinionCards
 import Marvel.Name (title)
@@ -106,7 +107,7 @@ instance RunMessage PublicSupport where
       pure $ PublicSupport (a `With` count)
     RanAbility _ (isTarget a -> True) 1 _ _ -> placeCounters a 1 >> pure e
     RanAbility _ (isTarget a -> True) 2 _ _ -> do
-      villains <- selectList $ VillainWithTitle "Kingpin"
+      villains <- villainNamed "Kingpin"
       traverse_ flipVillain villains
       selectList EncounterMainScheme >>= traverse_ (\case SchemeMainSchemeId mid -> nextMainScheme mid; _ -> pure ())
       pure $ PublicSupport (a {environmentCardDef=Cards.street60163b} `With` players)

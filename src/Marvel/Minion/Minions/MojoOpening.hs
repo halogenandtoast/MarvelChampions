@@ -12,7 +12,6 @@ import Marvel.Prelude
 import Marvel.Window qualified as W
 
 newtype MojoOpeningMinion = MojoOpeningMinion (Attrs Minion)
-  deriving anyclass IsMinion
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 mojo39007 :: MinionCard MojoOpeningMinion
@@ -35,3 +34,6 @@ instance HasModifiersFor MojoOpeningMinion where
   getModifiersFor _ target (MojoOpeningMinion a)
     | target == toRef a = perPlayerHitPoints a 7
     | otherwise = pure []
+
+instance IsMinion MojoOpeningMinion where
+  minionBaseHitPoints _ = perPlayerMinionBaseHitPoints 7

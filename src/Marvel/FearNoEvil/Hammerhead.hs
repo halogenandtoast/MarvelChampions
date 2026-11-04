@@ -6,6 +6,7 @@ import Marvel.Attachment.Types
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Cost
+import Marvel.Damage
 import Marvel.Criteria
 import Marvel.Difficulty
 import Marvel.Entity

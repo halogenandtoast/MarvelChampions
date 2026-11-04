@@ -87,7 +87,7 @@ instance RunMessage MuseumHeist where
       pure e
     AccelerateMainScheme -> do
       arts <- selectList $ AttachmentWithTrait T.Art <> AttachmentOnVillain AnyVillain
-      MuseumHeist <$> runMessage msg a {mainSchemeAcceleration=PerPlayer $ 1 + fromIntegral (length arts)}
+      MuseumHeist <$> runMessage msg a {mainSchemeAcceleration=PerPlayer $ 1 + length arts}
     RanAbility you (isTarget a -> True) 1 windows _ -> do
       for_ [ident | W.EnemyAttack _ ident <- windows] $ \ident -> do
         cards <- selectList (AttachmentWithTrait T.Art) >>= filterM (fmap (== Just (IdentityCharacter ident)) . getAttachedCharacter)

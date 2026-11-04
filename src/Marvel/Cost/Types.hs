@@ -5,7 +5,7 @@ import Marvel.Status (StatusCard)
 
 import Data.List (nub)
 import {-# SOURCE #-} Marvel.Card.Def (CardMatcher)
-import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, CharacterMatcher, EnemyMatcher, IdentityMatcher, SupportMatcher, UpgradeMatcher)
+import {-# SOURCE #-} Marvel.Matchers.Types (AllyMatcher, AttachmentMatcher, CharacterMatcher, EnemyMatcher, IdentityMatcher, SupportMatcher, UpgradeMatcher)
 import Marvel.Id (EnemyId)
 import Marvel.Ref
 import Marvel.Resource.Types
@@ -252,6 +252,7 @@ costResources (HealCost _) = []
 costResources (DamageThisCost _) = []
 costResources (DealDamageThisCost _) = []
 costResources (CountersFromUpgradeCost _ _) = []
+costResources (CountersFromAttachmentCost _ _) = []
 costResources (CountersFromSupportCost _ _) = []
 costResources UseCost = []
 -- | X is at least 1

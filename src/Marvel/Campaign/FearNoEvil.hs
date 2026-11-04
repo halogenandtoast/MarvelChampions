@@ -2,6 +2,7 @@ module Marvel.Campaign.FearNoEvil (runFearNoEvilStep,campaignEnvironmentFor) whe
 
 import Marvel.Prelude
 import Data.List qualified as List
+import Data.HashMap.Strict qualified as HashMap
 import Marvel.AlterEgo.Runner qualified as AE
 import Marvel.Campaign
 import Marvel.Card
@@ -12,7 +13,6 @@ import Marvel.Entity
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Game.Source
 import Marvel.GameValue
-import Marvel.Id
 import Marvel.Identity.Types (Field(PlayerIdentitySides),PlayerIdentitySide(..))
 import Marvel.Matchers
 import Marvel.Name (title)
@@ -72,7 +72,7 @@ runFearNoEvilStep c = \case
       (hp,full,_) <- getRemainingHitPoints you
       when (hp < full) $ do
         sides <- project PlayerIdentitySides you
-        recovery <- maybe (pure 0) (AE.getModifiedRecovery . toAttrs) $ headMay [ae | AlterEgoSide ae <- toList sides]
+        recovery <- maybe (pure 0) (AE.getModifiedRecovery . toAttrs) $ headMay [ae | AlterEgoSide ae <- HashMap.elems sides]
         let restore = dealEncounterCard you >> healFrom GameRef you recovery
         if hp == 0 then restore else chooseOnePrompted you "$label.expertCampaignHeal"
           [labeled "$label.fneEncounterToHealRecovery" restore,labeled "$label.keepHitPoints" (pure ())]
@@ -92,7 +92,7 @@ runFearNoEvilStep c = \case
     case code of
       "60134a" -> placeThreatOnEach GameRef (marks * if expert then 2 else 1) EncounterMainScheme
       "60121a" -> do
-        amount <- fromIntegral <$> fromGameValue (PerPlayer $ marks * if expert then 2 else 1)
+        amount <- fromIntegral <$> fromGameValue (PerPlayer $ fromIntegral marks * if expert then 2 else 1)
         placeThreatOnEach GameRef amount EncounterMainScheme
       "60128a" -> when (marks > 0) $ do
         first <- selectJust FirstPlayer
@@ -117,7 +117,7 @@ runFearNoEvilStep c = \case
     victory <- getVictoryDisplay
     let log = c.campaignLog.fearNoEvil
     recordInCampaignLog $ RecordFearNoEvilLog log
-      {removedTitles=nub $ log.removedTitles <> removed,trustEstablished=log.trustEstablished || threat >= 2,maryDefeated=log.maryDefeated || any ((`elem` ["60210a","60210b"]) . toCardCode) victory}
+      {removedTitles=List.nub $ log.removedTitles <> removed,trustEstablished=log.trustEstablished || threat >= 2,maryDefeated=log.maryDefeated || any ((`elem` ["60210a","60210b"]) . toCardCode) victory}
     recordInCampaignLog $ RecordFearNoEvilOutcome True
   CampaignSetupThen "fearNoEvil:defeat" -> do
     recordHealth c

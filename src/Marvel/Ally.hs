@@ -51,7 +51,7 @@ lookupAlly cardCode identityId allyId = case lookup cardCode allAllies of
 allAllies :: HashMap CardCode SomeAllyCard
 allAllies = fromList $ [(toCardCode card,SomeAllyCard card) | card <- FneCampaign.campaignMaryFaces] <>  [(toCardCode KingpinMinions.blackCatAlly,SomeAllyCard KingpinMinions.blackCatAlly)] <>  [(toCardCode Racket.shopProprietor,SomeAllyCard Racket.shopProprietor)] <>  map
   (toFst someAllyCardCode)
-  $ concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
+  (concatMap (\(SomeAllyCard a) -> SomeAllyCard <$> printings a)
   [ SomeAllyCard cw56002, SomeAllyCard cw56010, SomeAllyCard cw56019, SomeAllyCard cw56030, SomeAllyCard cw56041, SomeAllyCard cw56052, SomeAllyCard fne60007, SomeAllyCard fne60019, SomeAllyCard fne60020, SomeAllyCard fne60021, SomeAllyCard fne60022, SomeAllyCard fne60039
   , SomeAllyCard wm58012, SomeAllyCard wm58013, SomeAllyCard wm58014, SomeAllyCard wm58015, SomeAllyCard wm58022, SomeAllyCard hc59008, SomeAllyCard hc59018, SomeAllyCard hc59019, SomeAllyCard hc59020, SomeAllyCard hc59025
   , SomeAllyCard JL.jl61003, SomeAllyCard JL.jl61015, SomeAllyCard JL.jl61016, SomeAllyCard JL.jl61017, SomeAllyCard JL.jl61025, SomeAllyCard JL.jl61038, SomeAllyCard JL.jl62002, SomeAllyCard JL.jl62012, SomeAllyCard JL.jl62013, SomeAllyCard JL.jl62014, SomeAllyCard JL.jl62020, SomeAllyCard JL.jl62021
@@ -291,4 +291,4 @@ allAllies = fromList $ [(toCardCode card,SomeAllyCard card) | card <- FneCampaig
   , SomeAllyCard marvelGirl
   , SomeAllyCard stormOroroMunroe
   , SomeAllyCard controlledMinion
-  ]
+  ])
