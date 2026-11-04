@@ -57,6 +57,11 @@ removeOneTough attrs
 runMinionMessage ::
   (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
+  MinionSchemes | not (minionSchemeAvailable attrs) -> pure attrs
+  MinionAttacks _ | not (minionAttackAvailable attrs) -> pure attrs
+  MinionAttacksWithChange _ _ _ | not (minionAttackAvailable attrs) -> pure attrs
+  MinionAttacksAlly _ _ | not (minionAttackAvailable attrs) -> pure attrs
+  MinionAttacksEnemy _ | not (minionAttackAvailable attrs) -> pure attrs
   MinionHealed n -> do
     pure $ attrs & damageL %~ subtractNatural n
   MinionCheckHitPoints -> do

@@ -539,3 +539,5 @@ getSetAsideEncounterCardsForDeck :: HasGame m => DeckKey -> m [EncounterCard]
 capEnemyAttackDamageTaken :: HasGame m => EnemyId -> Source -> Damage -> m Damage
 
 characterCanGainStatus :: HasGame m => CharacterId -> StatusCard -> m Bool
+
+getTargetCardDef :: HasGame m => Target -> m (Maybe CardDef)

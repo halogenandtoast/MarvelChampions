@@ -1093,6 +1093,7 @@ getCountersOn a = getsGame \g -> case counterTarget a of
   MainSchemeRef mid -> maybe 0 (field MainSchemeCounters) (lookup mid $ gameMainSchemes g)
   AttachmentRef aid -> maybe 0 (field AttachmentCounters) (lookup aid $ gameAttachments g)
   IdentityRef ident -> maybe 0 (playerIdentityCounters . toAttrs) (lookup ident $ gamePlayers g)
+  ObligationRef oid -> maybe 0 Obligation.getObligationDisplayCounters (lookup oid $ gameObligations g)
   SupportRef sid -> maybe 0 getSupportUses (lookup sid $ gameSupports g)
   AllyRef aid -> maybe 0 getAllyUses (lookup aid $ gameAllies g)
   UpgradeRef uid -> maybe 0 getUpgradeUses (lookup uid $ gameUpgrades g)
@@ -3695,7 +3696,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       identityStep ident (AllyRemoved aid)
       engageMinion mid ident
       let minion = overMinion (\m -> m
-            { Minion.minionStunned = Ally.allyStunned a
+            { Minion.minionSchemeAvailable = case ally of Ally.Ally inner -> Ally.allyHasThwart inner
+            , Minion.minionAttackAvailable = case ally of Ally.Ally inner -> Ally.allyHasAttack inner
+            , Minion.minionStunned = Ally.allyStunned a
             , Minion.minionConfused = Ally.allyConfused a
             , Minion.minionTough = Ally.allyTough a
             , Minion.minionAdditionalStun = Ally.allyAdditionalStun a
@@ -6558,6 +6561,7 @@ gameSelectIdentity m = do
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
+  EnemyCharacters matcher -> HashSet.fromList <$> selectMap toCharacter matcher
   CharacterWithAttachment matcher -> fromList . catMaybes <$> (traverse getAttachedCharacter =<< selectList matcher)
   CharacterWithId c -> HashSet.filter (== c) <$> gameSelectCharacter AnyCharacter
   CharacterCanBeHealed -> fromList <$> (filterM (fmap (notElem CannotBeHealedByPlayerCards) . getModifiers . characterRef) . toList =<< gameSelectCharacter AnyCharacter)
@@ -9794,3 +9798,6 @@ characterCanGainStatus character status = do
       limit = if status == ToughStatus then 1 + sum [n | AdditionalToughStatusCards n <- modifiers] else if Steady `elem` keywords then 2 else 1
       unlimited = status == ToughStatus && CanHaveAnyNumberOfToughStatusCards `elem` modifiers
   pure $ present && not blocked && (status == ToughStatus || Stalwart `notElem` keywords) && (unlimited || count < limit)
+
+getTargetCardDef :: HasGame m => Target -> m (Maybe CardDef)
+getTargetCardDef target = getsGame (`abilityCardDef` target)

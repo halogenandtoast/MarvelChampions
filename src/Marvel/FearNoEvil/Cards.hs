@@ -375,7 +375,7 @@ street60100 = (hoodCardDef "60100" "Converted" Set.FnePurpleMan AttachmentType 1
   { cdTraits = fromList [T.Condition]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -385,7 +385,7 @@ street60101 = (hoodCardDef "60101" "Firefighter" Set.FnePurpleMan MinionType 2)
   { cdTraits = fromList [T.Civilian, T.Influenced]
   , cdUnique = False
   , cdKeywords = fromList [K.Vulnerable]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -395,7 +395,7 @@ street60102 = (hoodCardDef "60102" "Judge" Set.FnePurpleMan MinionType 1)
   { cdTraits = fromList [T.Civilian, T.Influenced]
   , cdUnique = False
   , cdKeywords = fromList [K.Vulnerable]
-  , cdBoostIcons = [B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -405,7 +405,7 @@ street60103 = (hoodCardDef "60103" "Security Guard" Set.FnePurpleMan MinionType 
   { cdTraits = fromList [T.Civilian, T.Influenced]
   , cdUnique = False
   , cdKeywords = fromList [K.Patrol, K.Vulnerable]
-  , cdBoostIcons = [B.Boost]
+  , cdBoostIcons = [B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -415,7 +415,7 @@ street60104 = (hoodCardDef "60104" "Skater Punk" Set.FnePurpleMan MinionType 1)
   { cdTraits = fromList [T.Civilian, T.Influenced]
   , cdUnique = False
   , cdKeywords = fromList [K.Vulnerable]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -425,7 +425,7 @@ street60105 = (hoodCardDef "60105" "\"Fight.\"" Set.FnePurpleMan ObligationType 
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -435,7 +435,7 @@ street60106 = (hoodCardDef "60106" "\"Protect.\"" Set.FnePurpleMan ObligationTyp
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -445,7 +445,7 @@ street60107 = (hoodCardDef "60107" "\"Serve.\"" Set.FnePurpleMan ObligationType 
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -455,7 +455,7 @@ street60108 = (hoodCardDef "60108" "Power of Suggestion" Set.FnePurpleMan SideSc
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList [K.Hinder (GV.PerPlayer 3)]
-  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 1
   , cdAlternateCardCodes = []
   }
@@ -465,7 +465,7 @@ street60109 = (hoodCardDef "60109" "Sway the Masses" Set.FnePurpleMan TreacheryT
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

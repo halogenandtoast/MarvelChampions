@@ -1239,7 +1239,7 @@
       "orientation": "portrait",
       "textVerified": true,
       "boost": 3,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -1275,7 +1275,7 @@
       "attack": 1,
       "scheme": 1,
       "boost": 0,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -1311,7 +1311,7 @@
       "attack": 0,
       "scheme": 3,
       "boost": 2,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -1347,7 +1347,7 @@
       "attack": 2,
       "scheme": 0,
       "boost": 1,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -1383,7 +1383,7 @@
       "attack": 2,
       "scheme": 1,
       "boost": 0,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -1411,7 +1411,9 @@
       "sourceFile": "MarvelHD/cropped/895_Purple_Man_Encounter_Cards_FaceURL_7.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 1,
+      "boostStar": true
     },
     {
       "name": "\"Protect.\"",
@@ -1435,7 +1437,9 @@
       "sourceFile": "MarvelHD/cropped/895_Purple_Man_Encounter_Cards_FaceURL_8.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 1,
+      "boostStar": true
     },
     {
       "name": "\"Serve.\"",
@@ -1459,7 +1463,9 @@
       "sourceFile": "MarvelHD/cropped/895_Purple_Man_Encounter_Cards_FaceURL_9.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 1,
+      "boostStar": true
     },
     {
       "name": "Power of Suggestion",
@@ -1485,11 +1491,13 @@
       "orientation": "landscape",
       "textVerified": true,
       "boost": 3,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 1
+      "amplify": 1,
+      "baseThreat": 2,
+      "baseThreatFixed": true
     },
     {
       "name": "Sway the Masses",
@@ -1515,7 +1523,7 @@
       "orientation": "portrait",
       "textVerified": true,
       "boost": 2,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,

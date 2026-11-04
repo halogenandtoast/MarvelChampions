@@ -96,6 +96,8 @@ instance Entity Minion where
     , minionIgnoreWhenDefeated :: Bool
     , minionDamageThisPhase :: Natural
     , minionHitPoints :: HP Natural
+    , minionSchemeAvailable :: Bool
+    , minionAttackAvailable :: Bool
     , minionScheme :: Sch
     , minionDefeatedBaseScheme :: Maybe Natural
     -- ^ defined base SCH preserved for after-defeat responses
@@ -276,6 +278,8 @@ minion f cardDef sch atk hp =
             , minionIgnoreWhenDefeated = False
             , minionDamageThisPhase = 0
             , minionAttack = atk
+            , minionSchemeAvailable = True
+            , minionAttackAvailable = True
             , minionScheme = sch
             , minionDefeatedBaseScheme = Nothing
             , minionHitPoints = hp
@@ -335,7 +339,7 @@ instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "minionSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "minionSchemeRemoval" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
-      [("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionSchemeAvailable", Bool True), ("minionAttackAvailable", Bool True), ("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

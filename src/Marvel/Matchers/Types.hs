@@ -412,6 +412,7 @@ data CharacterMatcher
     CharacterControlledBy IdentityMatcher
   | -- | the identities of the players matching: "damages you"
     IdentityCharacters IdentityMatcher
+  | EnemyCharacters EnemyMatcher
   | AllyCharacters AllyMatcher
   | CharacterWithAttachment AttachmentMatcher
   | CharacterWithTrait Trait

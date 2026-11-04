@@ -448,5 +448,78 @@
   "60096": {
     "name": "\"Head First!\"",
     "boost": 2
+  },
+  "60097": {
+    "scheme": 1,
+    "attack": 0,
+    "health": 13,
+    "healthPerHero": true
+  },
+  "60098": {
+    "scheme": 2,
+    "attack": 1,
+    "health": 15,
+    "healthPerHero": true
+  },
+  "60099": {
+    "scheme": 3,
+    "attack": 1,
+    "health": 17,
+    "healthPerHero": true
+  },
+  "60100": {
+    "boost": 3,
+    "boostStar": true
+  },
+  "60101": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 3,
+    "boost": 0,
+    "boostStar": true
+  },
+  "60102": {
+    "scheme": 3,
+    "attack": 0,
+    "health": 2,
+    "boost": 2,
+    "boostStar": true
+  },
+  "60103": {
+    "scheme": 0,
+    "attack": 2,
+    "health": 4,
+    "boost": 1,
+    "boostStar": true
+  },
+  "60104": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 2,
+    "boost": 0,
+    "boostStar": true
+  },
+  "60105": {
+    "boost": 1,
+    "boostStar": true
+  },
+  "60106": {
+    "boost": 1,
+    "boostStar": true
+  },
+  "60107": {
+    "boost": 1,
+    "boostStar": true
+  },
+  "60108": {
+    "baseThreat": 2,
+    "baseThreatFixed": true,
+    "amplify": 1,
+    "boost": 3,
+    "boostStar": true
+  },
+  "60109": {
+    "boost": 2,
+    "boostStar": true
   }
 }
