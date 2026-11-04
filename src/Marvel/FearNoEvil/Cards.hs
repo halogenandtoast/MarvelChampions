@@ -156,7 +156,7 @@ street60078 = (hoodCardDef "60078" "Electro" Set.FneElectro VillainType 0)
   , cdUnique = True
   , cdKeywords = fromList []
   , cdBoostIcons = []
-  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 1
   , cdAlternateCardCodes = []
   }
 
@@ -183,9 +183,9 @@ street60080 = (hoodCardDef "60080" "Drained of Power" Set.FneElectro AttachmentT
 street60081 :: CardDef
 street60081 = (hoodCardDef "60081" "Whiplash" Set.FneElectro MinionType 1)
   { cdTraits = fromList [T.Criminal]
-  , cdUnique = True
+  , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -225,7 +225,7 @@ street60085 = (hoodCardDef "60085" "Shocking Revelation" Set.FneElectro Treacher
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

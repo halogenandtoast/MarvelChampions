@@ -503,7 +503,8 @@
       "sourceFile": "MarvelHD/cropped/896_Purple_Man_Villain_FaceURL_6.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "amplify": 1
     },
     {
       "name": "Electric Charge",
@@ -598,13 +599,12 @@
       "health": 5,
       "attack": 2,
       "scheme": 2,
-      "boost": 3,
+      "boost": 1,
       "boostStar": false,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0,
-      "unique": true
+      "amplify": 0
     },
     {
       "name": "Charging Up",
@@ -634,7 +634,9 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 1
+      "amplify": 1,
+      "baseThreat": 6,
+      "baseThreatFixed": true
     },
     {
       "name": "Chain Lightning",
@@ -719,7 +721,7 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
-      "boost": 2,
+      "boost": 3,
       "boostStar": false,
       "acceleration": 0,
       "crisis": 0,
