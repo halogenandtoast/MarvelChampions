@@ -530,7 +530,7 @@
       "textVerified": true,
       "boost": 2,
       "boostStar": false,
-      "acceleration": 1,
+      "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
       "amplify": 0,

@@ -1,6 +1,7 @@
 module Marvel.Encounter.ShadowlandSpec (spec) where
 
 import Marvel.Choice qualified as Choice
+import Marvel.Window qualified as W
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Keyword (Keyword(Guard,Villainous))
 import Marvel.Treachery.Cards qualified as CoreTreacheries
@@ -215,6 +216,84 @@ spec = describe "Shadowland encounter cards" do
       current <- villainIdNow
       getVillainHitPoints current `shouldReturn` 21
       mainSchemeThreatNow `shouldReturn` 0
+
+  it "the Chamber reveals a trap only after the first thwart by a player each round" do
+    tg <- shadowlandGame "65038a" Normal
+    inGame tg do
+      let you = player1 tg
+      mid <- mainSchemeIdNow
+      resolve =<< L.runQueueT (L.capture $ L.removeSchemeThreat you (SchemeMainSchemeId mid) 25)
+      changeForm you
+      clearHand you
+      chamber <- mainSchemeIdNow
+      resolve =<< L.runQueueT (L.capture $ L.placeThreatOn GameRef chamber 4)
+      traps <- traverse encounterCard [FNE.street60085,FNE.street60085,FNE.street60085]
+      resolve =<< L.runQueueT (L.capture $ L.createDeck (NamedDeckKey "shadowlandTraps") traps)
+      choose "thwart the Chamber" (isHeroThwart you)
+      choose "remove Chamber threat" (isTargetChoice chamber)
+      choose "resolve the Chamber trap response" (isAbilityOf chamber)
+      chooseIf (isLabel "$label.fneTakeIndirectDamage")
+      pass
+      length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 2
+      resolve [IdentityMessage you ReadiedIdentity]
+      choose "thwart the Chamber again" (isHeroThwart you)
+      choose "remove more Chamber threat" (isTargetChoice chamber)
+      resolve []
+      length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 2
+
+  for_ [False,True] $ \accept ->
+    it ("Heart of Shadow chooses corruption or threat after the villain threat step, accept=" <> show accept) do
+      tg <- shadowlandGame "65060a" Normal
+      inGame tg do
+        let you = player1 tg
+        vid <- villainIdNow
+        resolve [VillainMessage vid $ VillainDamaged (IdentityRef you) $ toDamage 30 FromAbility]
+        uid <- selectJust $ UpgradeNamed "Creeping Corruption"
+        runNow [CheckWindows [W.Window W.After W.VillainThreatStepFinished]]
+        current <- mainSchemeIdNow
+        choose "resolve the main scheme response" (isAbilityOf current)
+        choose "choose corruption or threat" (isLabel $ if accept then "$label.slCorrupt" else "$label.slResist")
+        pass
+        getCountersOn uid `shouldReturn` (if accept then 1 else 0)
+        mainSchemeThreatNow `shouldReturn` (if accept then 0 else 3)
+
+  it "Lord Deathstrike reveals a trap after the corridors have been replaced" do
+    tg <- shadowlandGame "65038a" Normal
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "01094" Advanced]
+      traps <- traverse encounterCard [FNE.street60085,FNE.street60085]
+      resolve =<< L.runQueueT (L.capture $ L.createDeck (NamedDeckKey "shadowlandTraps") traps)
+      void $ addMinion you Cards.street65041
+      length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 1
+
+  it "Sudden Shift mixes the trap discard and three encounter cards before revealing one" do
+    tg <- shadowlandGame "65038a" Normal
+    inGame tg do
+      let you = player1 tg
+      clearHand you
+      traps <- traverse encounterCard [FNE.street60085,FNE.street60085]
+      discarded <- encounterCard Cards.street65051
+      resolve =<< L.runQueueT (L.capture do
+        L.createDeck (NamedDeckKey "shadowlandTraps") traps
+        L.fromDeck (NamedDeckKey "shadowlandTraps") $ L.discardCard discarded)
+      void $ setEncounterDeck (replicate 4 FNE.street60085) []
+      shift <- encounterCard Cards.street65045
+      resolve [RevealEncounterCard you shift]
+      length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 5
+      length <$> getEncounterDeck `shouldReturn` 1
+
+  it "Fortress Lockdown changes position and reveals a searched minion" do
+    tg <- shadowlandGame "65001a" Normal
+    inGame tg do
+      mid <- mainSchemeIdNow
+      void $ setEncounterDeck [FNE.street60092,FNE.street60188,FNE.street60188,FNE.street60188] []
+      resolve [MainSchemeMessage mid $ MainSchemePlaceThreat 5]
+      current <- mainSchemeIdNow
+      getsGame (fmap toCardCode . (`cardInPlay` MainSchemeRef current)) `shouldReturn` Just "65002b"
+      Position.villainAtop `shouldReturn` True
+      selectAny (MinionIs FNE.street60092) `shouldReturn` True
 
   it "Darkness Within does not ask a hero to change to their current form" do
     tg <- testGame ["spider-man"]

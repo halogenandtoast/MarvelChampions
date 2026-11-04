@@ -138,5 +138,8 @@
       "Demon",
       "Hand"
     ]
+  },
+  "65008": {
+    "acceleration": 0
   }
 }

@@ -38,6 +38,8 @@ test('both releases have complete text, valid faces and no third-party image lin
   const cards = index.cards.filter((c: { packCode: string }) => ['fne', 'shadowland'].includes(c.packCode))
   expect(cards.filter((c: { packCode: string }) => c.packCode === 'shadowland')).toHaveLength(93)
   expect(cards.filter((c: { packCode: string }) => c.packCode === 'fne')).toHaveLength(239)
+  // Strategic Positioning gains its icons through its conditional text.
+  expect(cards.find((c: { code: string }) => c.code === '65008').acceleration).toBe(0)
   const codes = new Set(index.cards.map((c: { code: string }) => c.code))
   for (const card of cards) {
     expect(card.text?.trim(), card.code).toBeTruthy()

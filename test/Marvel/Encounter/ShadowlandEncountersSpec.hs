@@ -213,6 +213,85 @@ spec = describe "Shadowland general encounter behaviors" do
       damageOf you `shouldReturn` 3
       Position.positionCode Trait.HeroPosition `shouldReturn` Just "65004a"
 
+
+  for_ [(Cards.street65003a,False),(Cards.street65003b,True)] $ \(position,atop) -> do
+    it ("Strategic Positioning changes its icon with " <> show (toCardCode position)) do
+      tg <- testGame ["captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        positions you position
+        acceleration <- getAccelerationCount
+        hazards <- getHazardCount
+        card <- encounterCard Cards.street65008
+        resolve [RevealEncounterCard you card]
+        getAccelerationCount `shouldReturn` (acceleration + if atop then 0 else 1)
+        getHazardCount `shouldReturn` (hazards + if atop then 1 else 0)
+
+    it ("Moonlit Silhouette activates according to " <> show (toCardCode position)) do
+      tg <- testGame ["captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        clearHand you
+        positions you position
+        void $ setEncounterDeck (replicate 4 FNE.street60188) []
+        card <- encounterCard Cards.street65011
+        resolve [RevealEncounterCard you card]
+        damageOf you `shouldReturn` (if atop then 0 else 3)
+        mainSchemeThreatNow `shouldReturn` (if atop then 1 else 0)
+
+  it "Moonlit Silhouette changes position and confuses an alter-ego without an activation" do
+    tg <- testGame ["captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      positions you Cards.street65003a
+      card <- encounterCard Cards.street65011
+      resolve [RevealEncounterCard you card]
+      Position.villainAtop `shouldReturn` True
+      getCharacterStatusCount (IdentityCharacter you) ConfusedStatus `shouldReturn` 1
+      mainSchemeThreatNow `shouldReturn` 0
+      damageOf you `shouldReturn` 0
+
+  it "Sealed Entrances uses basic ATK for thwarting and moves the villain when defeated" do
+    tg <- testGame ["captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      positions you Cards.street65003a
+      card <- encounterCard Cards.street65007
+      resolve [RevealEncounterCard you card]
+      sid <- selectJust $ SideSchemeIs Cards.street65007
+      choose "thwart with ATK" (isHeroThwart you)
+      choose "thwart Sealed Entrances" (isTargetChoice sid)
+      pass
+      getSchemeThreatAmount (SchemeSideSchemeId sid) `shouldReturn` 1
+      resolve [IdentityMessage you ReadiedIdentity]
+      choose "finish the assault thwart" (isHeroThwart you)
+      choose "defeat Sealed Entrances" (isTargetChoice sid)
+      choose "resolve the defeat effect" (isAbilityOf sid)
+      pass
+      selectAny (SideSchemeIs Cards.street65007) `shouldReturn` False
+      Position.villainAtop `shouldReturn` True
+
+  for_ [False,True] $ \accept ->
+    it ("Submit or Suffer resolves the chosen corruption branch, accept=" <> show accept) do
+      tg <- testGame ["captain-marvel"]
+      inGame tg do
+        let you = player1 tg
+        uid <- corruptionFor you
+        resolve [PlaceCounters (UpgradeRef uid) 2]
+        changeForm you
+        clearHand you
+        vid <- villainIdNow
+        resolve [ReplaceVillain vid "65057" Advanced]
+        void $ setEncounterDeck (replicate 4 FNE.street60188) []
+        _ <- revealNow you Cards.street65071
+        choose "choose the penalty" (isLabel $ if accept then "$label.slCorrupt" else "$label.slResist")
+        pass
+        getCountersOn uid `shouldReturn` (if accept then 3 else 1)
+        damageOf you `shouldReturn` (if accept then 0 else 3)
+
 corruptionFor :: IdentityId -> GameAppT UpgradeId
 corruptionFor you = do
   card <- encounterCard Cards.street65072a

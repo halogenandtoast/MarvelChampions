@@ -125,7 +125,7 @@ street65008 = (hoodCardDef "65008" "Strategic Positioning" Set.SlShadowsInTheNig
   , cdUnique = False
   , cdKeywords = fromList []
   , cdBoostIcons = [B.Boost, B.Boost]
-  , cdHazards = 0, cdAcceleration = 1, cdAmplify = 0
+  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
 
