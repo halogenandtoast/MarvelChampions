@@ -6399,7 +6399,10 @@ isBlankedInContext a = do
                 _ -> provider
            in (cdEncounterSet =<< abilityCardDef g source) == Just ownSet
   let uncontrolled = case toTarget a of { AllyRef aid -> aid `elem` g.gameUncontrolledAllies; _ -> False }
-  if protected then pure False else (missionAlly g (toTarget a) ||) . (attackBlanksTarget g (toTarget a) ||) . (uncontrolled ||) . (facedown ||) . elem Blank . mconcat
+  let treatedAlly = case toTarget a of
+        MinionRef mid -> maybe False (isJust . Minion.minionOriginalAlly . toAttrs) (lookup mid $ gameMinions g)
+        _ -> False
+  if protected then pure False else (treatedAlly ||) . (missionAlly g (toTarget a) ||) . (attackBlanksTarget g (toTarget a) ||) . (uncontrolled ||) . (facedown ||) . elem Blank . mconcat
     <$> sequence
       [ concatMapM (getBlankingModifiersFor (toSource a) (toTarget a)) (filter (allowed . toTarget) $ HashMap.elems $ gameSideSchemes g)
       -- Effect modifiers are stored explicitly; match only effects that can blank.
@@ -8166,15 +8169,19 @@ getMainSchemeHeldCards ms = getsGame (maybe [] (mainSchemeHeldCards . toAttrs) .
 -- player's card, for its owner's discard pile as it leaves play; the board shows it as
 -- the ally's card.
 allyAsMinion :: IdentityId -> PlayerCard -> Attrs Ally -> Minion
-allyAsMinion ident card a = overMinion become $ lookupMinion "xallyminion" ident mid
+allyAsMinion ident card a = overMinion become base
  where
   mid = MinionId $ unCardId $ pcCardId card
+  original = Ally.allyOriginalMinion a >>= \value -> case fromJSON value of
+    Success minion -> Just minion
+    Error _ -> Nothing
+  base = fromMaybe (lookupMinion "xallyminion" ident mid) original
   become m =
     m
-      { Minion.minionCardDef = (pcCardDef card) {cdCardType = MinionType, cdKeywords = mempty}
-      , Minion.minionScheme = Sch (unThw $ Ally.allyThwart a)
-      , Minion.minionAttack = Ally.allyAttack a
-      , Minion.minionHitPoints = Ally.allyHitPoints a
+      { Minion.minionCardDef = maybe ((pcCardDef card) {cdCardType = MinionType, cdKeywords = mempty}) (Minion.minionCardDef . toAttrs) original
+      , Minion.minionScheme = maybe (Sch $ unThw $ Ally.allyThwart a) (Minion.minionScheme . toAttrs) original
+      , Minion.minionAttack = maybe (Ally.allyAttack a) (Minion.minionAttack . toAttrs) original
+      , Minion.minionHitPoints = maybe (Ally.allyHitPoints a) (Minion.minionHitPoints . toAttrs) original
       , Minion.minionExhausted = Ally.allyExhausted a
       , Minion.minionDamage = Ally.allyDamage a
       , Minion.minionCounters = Ally.allyCounters a
@@ -10164,6 +10171,11 @@ setBlackCatAllyAttrs controller aid attrs = case lookupAlly "60169" controller a
 knownGameCards :: Game -> [Card]
 knownGameCards g =
   [PlayerCard card | player <- HashMap.elems $ gamePlayers g,let a=toAttrs player,card <- unHand a.playerIdentityHand <> unDeck a.playerIdentityDeck <> unDiscard a.playerIdentityDiscard]
+  <> [PlayerCard card | player <- HashMap.elems $ gamePlayers g,Just card <- [playerIdentityPendingTopDeckPlay $ toAttrs player]]
+  <> concat [storedIdentityCards $ toJSON side | player <- HashMap.elems $ gamePlayers g,side <- HashMap.elems $ playerIdentitySides $ toAttrs player]
+  <> [PlayerCard card | cost <- gameActiveCost g,ForCard card <- [activeCostTarget cost]]
+  <> [PlayerCard card | cost <- gameActiveCost g,card <- activeCostSpentCards cost]
+  <> map (PlayerCard . snd) (gamePlayerBoostCards g)
   <> map toCard (HashMap.elems $ gameAllies g)
   <> map (toCard . toAttrs) (HashMap.elems $ gameSupports g)
   <> map toCard (HashMap.elems $ gameUpgrades g)
@@ -10181,15 +10193,30 @@ knownGameCards g =
   <> map EncounterCard (scenarioEncounterDeck (toAttrs $ g.gameScenario) <> scenarioDiscard (toAttrs $ g.gameScenario)
       <> concat [pileDeck pile <> pileDiscard pile | pile <- HashMap.elems $ scenarioDecks $ toAttrs $ g.gameScenario]
       <> HashMap.elems (gameBoostCards g) <> gameVictoryDisplay g)
+  <> map EncounterCard (concatMap (Villain.villainBoostCards . toAttrs) (HashMap.elems $ gameVillains g)
+      <> concatMap (Minion.minionBoostCards . toAttrs) (HashMap.elems $ gameMinions g)
+      <> concat [friendlyBoostPending context <> friendlyBoostRevealed context | context <- gameFriendlyBoosts g])
   <> map PlayerCard (gamePlayerVictoryDisplay g)
-  <> [EncounterCard card | player <- HashMap.elems $ gamePlayers g,card <- playerIdentityEncounterCards $ toAttrs player]
+  <> [EncounterCard card | player <- HashMap.elems $ gamePlayers g,let a=toAttrs player
+     ,card <- playerIdentityEncounterCards a <> playerIdentityTuckedEncounterCards a <> playerIdentityBoostCards a]
+ where
+  -- Read actual identity storage, rather than card snapshots or past receipts.
+  storedIdentityCards = \case
+    Object fields -> concatMap readField (KeyMap.toList fields)
+    Array values -> concatMap storedIdentityCards $ toList values
+    _ -> []
+  readField (key,value)
+    | key `elem` ["campaignSenseCards","campaignEchoCards","giftDeck","laborDeck"] = case fromJSON value of
+        Success cards -> map PlayerCard cards
+        Error _ -> case fromJSON value of Success cards -> map EncounterCard cards; Error _ -> []
+    | otherwise = storedIdentityCards value
 
 rememberFearNoEvilRemoval :: Message -> Game -> Game -> Game
 rememberFearNoEvilRemoval message before after = case (message,gameCampaign after) of
   (RemoveFromGame target,Just campaign) | campaign.kind == Campaign.FearNoEvilCampaign ->
     let card = cardInPlay before target <|> case target of CardIdRef cid -> find ((== cid) . toCardId) $ knownGameCards before; _ -> Nothing
     in case card of
-      Just physical | let def=fromMaybe (getCardDef physical) (abilityCardDef before target),cdUnique def,cdCardType def `elem` [AllyType,SupportType] ->
+      Just physical | let def=getCardDef physical,cdUnique def,cdCardType def `elem` [AllyType,SupportType] ->
         after {gameCampaign=Just $ Campaign.recordInLog (Campaign.RecordFearNoEvilRemoved (toCardId physical) $ title $ cdName def) campaign}
       _ -> after
   _ -> after

@@ -2,7 +2,10 @@ module Marvel.Campaign.FearNoEvilSpec (spec) where
 
 import Data.List qualified as List
 import Marvel.Campaign
+import Marvel.CampaignPlayers.Helpers qualified as Stored
+import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Matchers
+import Marvel.Message.Lifted qualified as L
 import Marvel.Query
 import Test.Hspec qualified as H
 import TestImport
@@ -13,8 +16,78 @@ freshCampaign mode = newCampaignOf FearNoEvilCampaign mode ["01001a"]
 withLog :: FearNoEvilLog -> Campaign -> Campaign
 withLog log c = c {campaignLog=c.campaignLog {fearNoEvil=log}}
 
+campaignSandbox :: Text -> IO TestGame
+campaignSandbox hero = do
+  tg <- testGameAgainst "60134a" [hero]
+  let c = recordInLog (RecordFearNoEvilScenario "60134a")
+        $ newCampaignOf FearNoEvilCampaign StandardCampaign [(.hero) $ starter hero]
+  tg <$ inGame tg (withGame_ $ campaignL ?~ c)
+
+removedTitlesNow :: GameAppT [Text]
+removedTitlesNow = getsGame $ maybe [] (.campaignLog.fearNoEvil.removedTitles) . gameCampaign
+
 spec :: Spec
 spec = describe "Fear No Evil campaign" do
+  it "removes every printing of a recorded title from the next deck" do
+    let c = withLog (noFearNoEvilLog {removedTitles=["Nick Fury"]}) $ freshCampaign StandardCampaign
+        deck = (starter "spider-man") {cards=[("01084",1),("08019",1),("50002",1),("01088",1)]}
+    (campaignDeck c deck).cards `H.shouldBe` [("01088",1)]
+
+  it "records a removed unique support at victory" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      support <- putIntoPlay (player1 tg) "01006"
+      resolve =<< L.runQueueT (L.capture $ L.removeFromGame $ supportIdOf support)
+      resolve [GameOver Won]
+      removedTitlesNow `shouldReturn` ["Aunt May"]
+
+  it "records a removed unique ally even when the ally was temporarily treated as a minion" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      ally <- putIntoPlay you "01002"
+      resolve =<< L.runQueueT (L.capture $ L.allyBecomesMinion $ allyIdOf ally)
+      let mid = MinionId $ unAllyId $ allyIdOf ally
+      physical <- getsGame $ \game -> cardInPlay game (MinionRef mid)
+      (cdCardType . getCardDef <$> physical) `shouldBe` Just AllyType
+      resolve =<< L.runQueueT (L.capture $ L.removeFromGame mid)
+      selectAny (MinionWithId mid) `shouldReturn` False
+      fearNoEvilRemovedTitles `shouldReturn` ["Black Cat"]
+      resolve [GameOver Won]
+      removedTitlesNow `shouldReturn` ["Black Cat"]
+
+  it "does not record a printed encounter minion as a campaign ally when it was removed under player control" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      mid <- addMinion you Cards.street60169
+      resolve =<< L.runQueueT (L.capture do
+        L.placeCharacterThreat mid 4
+        L.takeControlOfMinionWithConsequential you mid 2)
+      resolve =<< L.runQueueT (L.capture $ L.removeFromGame $ AllyId $ unMinionId mid)
+      resolve [GameOver Won]
+      removedTitlesNow `shouldReturn` []
+
+  it "does not ban a unique ally temporarily moved beneath a support" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      support <- putIntoPlay you "01091"
+      ally <- putInHand you "01084"
+      resolve =<< L.runQueueT (L.capture $ L.tuckPlayerCardUnder (supportIdOf support) ally)
+      resolve [GameOver Won]
+      removedTitlesNow `shouldReturn` []
+
+  it "does not ban a unique ally still stored beneath Echo's identity at victory" do
+    tg <- campaignSandbox "echo"
+    inGame tg do
+      let you = player1 tg
+      ally <- putInHand you "01084"
+      resolve =<< L.runQueueT (L.capture $ Stored.tuckPlayerCard you ally)
+      Stored.tuckedPlayerCards you >>= (liftIO . (`shouldContain` [ally]))
+      resolve [GameOver Won]
+      removedTitlesNow `shouldReturn` []
+
   it "starts with all five interchangeable scenarios unresolved and no predetermined history" do
     let c = freshCampaign StandardCampaign
     fearNoEvilUnresolved c `H.shouldBe` fearNoEvilScenarioPool
