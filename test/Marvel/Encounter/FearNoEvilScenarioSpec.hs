@@ -5,6 +5,9 @@ import Marvel.Matchers
 import Marvel.Message.Lifted qualified as L
 import Marvel.Query
 import Marvel.Trait qualified as T
+import Marvel.Keyword (Keyword(Guard))
+import Marvel.Phase (Phase(VillainPhase))
+import Marvel.Window qualified as W
 import Data.List (findIndex)
 import TestImport
 
@@ -30,6 +33,60 @@ scenarioGameChoosing code mode heroes preferred = do
 
 spec :: Spec
 spec = describe "Fear No Evil scenarios" do
+  it "Public Support advances Kingpin and the main scheme after four defeated minions' support counters" do
+    tg <- scenarioGame "60161a" Normal ["spider-man"]
+    inGame tg do
+      eid <- selectJust $ EnvironmentIs Cards.street60163a
+      resolve =<< L.runQueueT (L.capture $ L.placeCounters eid 3)
+      minion <- selectJust AnyMinion
+      resolve [MinionMessage minion $ MinionDamaged GameRef $ toDamage 20 FromAbility]
+      getCountersOn eid `shouldReturn` 4
+      resolve [CheckWindows [W.Window W.When $ W.PhaseBegan VillainPhase]]
+      selectAny (VillainWithCardCode "60159b") `shouldReturn` True
+      selectAny (EnvironmentIs Cards.street60163a) `shouldReturn` False
+      selectAny (EnvironmentIs Cards.street60163b) `shouldReturn` True
+      SchemeMainSchemeId main <- selectJust EncounterMainScheme
+      getMainSchemeCode main `shouldReturn` Just "60162b"
+      minions <- selectList AnyMinion
+      null minions `shouldBe` False
+      for_ minions $ \mid -> minionMatches (MinionWithKeyword Guard) mid `shouldReturn` True
+
+  it "high Public Support spends a support counter to cancel a boost before the deck card is assigned" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      card <- encounterCard Cards.street60163b
+      resolve =<< L.runQueueT (L.capture $ L.putEncounterCardIntoPlay you card)
+      let eid = EnvironmentId $ unCardId $ ecCardId card
+      resolve =<< L.runQueueT (L.capture $ L.placeCounters eid 1)
+      (deck,_) <- setEncounterDeck (replicate 3 Cards.street60188) []
+      vid <- villainIdNow
+      runNow [VillainMessage vid $ VillainSchemesAgainst you]
+      choose "spend Public Support" (isAbilityOf eid)
+      pass
+      getCountersOn eid `shouldReturn` 0
+      getEncounterDeck `shouldReturn` deck
+      mainSchemeThreatNow `shouldReturn` 1
+
+  it "The King's Gambit action works repeatedly with an empty discard and zero remaining threat" do
+    tg <- scenarioGame "60161a" Normal ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      SchemeMainSchemeId main <- selectJust EncounterMainScheme
+      _ <- setEncounterDeck [Cards.street60092,Cards.street60093,Cards.street60188,Cards.street60188] []
+      choose "use the first Gambit action" (isAbilityOf main)
+      pass
+      mainSchemeThreatNow `shouldReturn` 0
+      selectListCount AnyMinion `shouldReturn` 2
+      offers (isAbilityOf main) `shouldReturn` True
+      choose "use the action again at zero threat" (isAbilityOf main)
+      pass
+      selectAny (MinionIs Cards.street60092) `shouldReturn` True
+      selectAny (MinionIs Cards.street60093) `shouldReturn` True
+      mainSchemeThreatNow `shouldReturn` 0
+
   it "Hung Out to Dry damages allies and minions entering its area, without affecting the other player's area" do
     tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60136b")
     inGame tg do
