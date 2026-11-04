@@ -290,6 +290,9 @@ narrationFor = \case
   EnvironmentMessage eid (EnvironmentOwnedBy ident) -> Just $ whenRef (EnvironmentRef eid) \e -> do
     who <- playerRef' ident
     one $ toned Bad $ mechanic [ikeyPart "log.inPlayAreaOf" ["card" ~> e, "player" ~> who]]
+  DiscardUntilAndReveal ident _ -> Just do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.discardsUntilReveal" ["player" ~> who]]
   DiscardUntilIntoPlay ident _ -> Just do
     who <- playerRef' ident
     one $ mechanic [ikeyPart "log.discardsUntilIntoPlay" ["player" ~> who]]

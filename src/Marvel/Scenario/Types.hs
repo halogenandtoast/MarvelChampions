@@ -312,6 +312,7 @@ deckMessage = \case
   SearchForAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
   SearchEverywhereAndPutIntoPlayEncounterCard ident _ -> Just (Just ident)
   SearchEverywhereAndRevealEncounterCard ident _ -> Just (Just ident)
+  DiscardUntilAndReveal ident _ -> Just (Just ident)
   DiscardUntilIntoPlay ident _ -> Just (Just ident)
   SearchForAndDealEncounterCard ident _ -> Just (Just ident)
   SearchForAndRevealScheme _ -> Just Nothing
@@ -624,11 +625,17 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       let
         (discarded, remaining) =
           break (cardMatch cardMatcher) scenarioEncounterDeck
-      case remaining of
-        [] -> pure $ attrs & encounterDeckL .~ [] & discardL %~ (reverse discarded <>)
-        x : xs -> do
-          withDiscardedMatch target FromEncounterDeck (EncounterCard x)
-          pure $ attrs & encounterDeckL .~ xs & discardL %~ (reverse discarded <>)
+      actor <- getYou
+      let allDiscarded = discarded <> take 1 remaining
+      for_ allDiscarded $ \card -> checkWindows [W.Window W.After $ W.PlayerDiscardedFromEncounterDeck actor card]
+      for_ (headMay remaining) $ \card -> withDiscardedMatch target FromEncounterDeck (EncounterCard card)
+      pure $ attrs & encounterDeckL .~ drop 1 remaining & discardL %~ (reverse allDiscarded <>)
+    DiscardUntilAndReveal ident matcher -> do
+      let (before,remaining) = break (cardMatch matcher) scenarioEncounterDeck
+          discarded = before <> take 1 remaining
+      for_ discarded $ \card -> checkWindows [W.Window W.After $ W.PlayerDiscardedFromEncounterDeck ident card]
+      for_ (headMay remaining) $ revealEncounterCardFrom W.RevealedFromDiscardPile ident
+      pure $ attrs & encounterDeckL .~ drop 1 remaining & discardL %~ (reverse discarded <>)
     DiscardUntilIntoPlay ident cardMatcher -> do
       let (discarded, remaining) = break (cardMatch cardMatcher) scenarioEncounterDeck
       for_ (take 1 remaining) (putEncounterCardIntoPlay ident)

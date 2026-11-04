@@ -216,7 +216,10 @@
     "boost": 1
   },
   "60091": {
-    "unique": true
+    "scheme": 1,
+    "attack": 1,
+    "health": 5,
+    "boost": 3
   },
   "65007": {
     "baseThreat": 4,
@@ -391,5 +394,59 @@
   },
   "60085": {
     "boost": 3
+  },
+  "60086": {
+    "scheme": 2,
+    "attack": 1,
+    "health": 14,
+    "healthPerHero": true
+  },
+  "60087": {
+    "scheme": 2,
+    "attack": 2,
+    "health": 15,
+    "healthPerHero": true
+  },
+  "60088": {
+    "scheme": 3,
+    "attack": 3,
+    "health": 16,
+    "healthPerHero": true
+  },
+  "60089": {
+    "attack": 1,
+    "boost": 2
+  },
+  "60090": {
+    "scheme": 1,
+    "boost": 1,
+    "boostStar": true
+  },
+  "60092": {
+    "scheme": 0,
+    "attack": 2,
+    "health": 3,
+    "boost": 2
+  },
+  "60093": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 4,
+    "boost": 1
+  },
+  "60094": {
+    "baseThreat": 6,
+    "baseThreatFixed": true,
+    "boost": 0
+  },
+  "60095": {
+    "baseThreat": 5,
+    "baseThreatFixed": true,
+    "amplify": 1,
+    "boost": 1
+  },
+  "60096": {
+    "name": "\"Head First!\"",
+    "boost": 2
   }
 }

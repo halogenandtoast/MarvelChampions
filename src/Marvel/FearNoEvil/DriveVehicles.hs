@@ -91,7 +91,7 @@ instance RunMessage Carjacking where
           attachable = all (`notElem` modifiers) [CannotHaveAttachedCards,CannotHaveAttachedEncounterCards]
       payable <- canAffordCost you (toSource a) cost
       chooseOne you $ [labeled "$label.fneTakeVehicle" (payCostThenWithPayment you a cost a "carjacked" (you,card)) | not hasVehicle && attachable && payable]
-        <> [labeled "$label.fneRevealVehicle" (revealFoundEncounterCard you card)]
+        <> [labeled "$label.fneRevealVehicle" (revealEncounterCardFrom W.RevealedFromDiscardPile you card)]
       pure e
     CardSpecific (isTarget a -> True) "carjacked" (fromJSON -> Success ((you,card),_ :: Payment)) -> do
       attachEncounterToCharacter card (IdentityCharacter you)

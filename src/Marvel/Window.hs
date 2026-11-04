@@ -28,6 +28,15 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  EnemyAttackedSurvivingCharacter matching -> do
+    let attacker = case windowType w of EnemyAttack enemy _ -> Just enemy; EnemyAttackAlly enemy _ _ -> Just enemy; EnemyAttackOnEnemy enemy _ -> Just enemy; _ -> Nothing
+    case attacker of
+      Just enemy | windowTiming w == After -> do
+        matches <- enemyMatches matching enemy
+        current <- getEnemyAttack enemy
+        survives <- maybe (pure False) (fmap (> 0) . getCharacterRemainingHitPoints . attackCharacter) current
+        pure $ matches && survives
+      _ -> pure False
   UpgradeWouldReady upgrade -> case windowType w of
     UpgradeReadying uid | windowTiming w == Would -> upgradeMatches upgrade uid
     _ -> pure False

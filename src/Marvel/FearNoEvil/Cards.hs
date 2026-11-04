@@ -283,7 +283,7 @@ street60090 = (hoodCardDef "60090" "Hard-Headed" Set.FneHammerhead AttachmentTyp
 street60091 :: CardDef
 street60091 = (hoodCardDef "60091" "Chameleon" Set.FneHammerhead MinionType 1)
   { cdTraits = fromList [T.Criminal, T.Maggia]
-  , cdUnique = True
+  , cdUnique = False
   , cdKeywords = fromList []
   , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
@@ -295,7 +295,7 @@ street60092 = (hoodCardDef "60092" "Maggia Enforcers" Set.FneHammerhead MinionTy
   { cdTraits = fromList [T.Criminal, T.Maggia]
   , cdUnique = False
   , cdKeywords = fromList [K.Guard]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -315,7 +315,7 @@ street60094 = (hoodCardDef "60094" "Consolidate Power" Set.FneHammerhead SideSch
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost]
+  , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -331,7 +331,7 @@ street60095 = (hoodCardDef "60095" "Power Struggle" Set.FneHammerhead SideScheme
   }
 
 street60096 :: CardDef
-street60096 = (hoodCardDef "60096" "Head First" Set.FneHammerhead TreacheryType 2)
+street60096 = (hoodCardDef "60096" "\"Head First!\"" Set.FneHammerhead TreacheryType 2)
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []

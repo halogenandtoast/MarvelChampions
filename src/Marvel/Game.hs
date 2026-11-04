@@ -3102,6 +3102,14 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure $ case enemy of
       EnemyVillainId vid -> updated & entitiesL . villainsL . ix vid %~ (\(Villain.Villain villain) -> Villain.Villain $ Villain.overVillainAttrs (\a -> a {Villain.villainAttackGrantedKeywords = filter (/= keyword) (Villain.villainAttackGrantedKeywords a)}) villain)
       _ -> updated
+  CardSpecific GameRef "repeatEnemyAttackAfterPayment" (fromJSON -> Success ((enemy,character),_ :: Payment)) -> do
+    present <- characterMatches AnyCharacter character
+    owner <- getCharacterOwner character
+    when present $ for_ owner $ \you -> enemyActivationAfterCurrent enemy $ case character of
+      IdentityCharacter _ -> enemyAttacks enemy you
+      AllyCharacter aid -> enemyAttacksAlly enemy you aid
+      _ -> pure ()
+    pure g
   CardSpecific GameRef "finishRaiseTheStakes" (fromJSON -> Success (card,defeated :: Bool)) -> do
     let aid = AttachmentId $ unCardId $ ecCardId card
         alreadyRemoved = card `elem` gameRemovedFromGameEncounterCards

@@ -113,6 +113,7 @@ data WindowMatcher
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
+  | EnemyAttackedSurvivingCharacter EnemyMatcher
   | EnemyAttackedAnyTarget WindowTiming EnemyMatcher
   | MagneticPullSucceeded IdentityMatcher
   | EnemyWasAttacked WindowTiming EnemyMatcher

@@ -636,6 +636,7 @@ data Message
     -- is put into play for the player (Ebony Maw's Spells); a deck run out first is
     -- fulfilled, nothing put into play
     DiscardUntilIntoPlay IdentityId CardMatcher
+  | DiscardUntilAndReveal IdentityId CardMatcher
   | -- | a card matching is found in the encounter deck or discard pile and dealt to the
     -- player facedown
     SearchForAndDealEncounterCard IdentityId CardMatcher

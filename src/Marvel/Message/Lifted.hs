@@ -3690,3 +3690,8 @@ preventUpgradeReady uid = cancelMatchingMessage (== UpgradeMessage uid ReadiedUp
 -- | The ready has already passed its interrupt window and payment.
 readyUpgradeAfterInterrupt :: ReverseQueue m => UpgradeId -> m ()
 readyUpgradeAfterInterrupt = push . ResolveReadiedUpgrade
+
+-- | Discard through the matching card, then reveal that physical discarded card.
+-- This continuation survives the source of the instruction leaving play.
+discardUntilAndReveal :: ReverseQueue m => IdentityId -> CardMatcher -> m ()
+discardUntilAndReveal you matcher = push $ DiscardUntilAndReveal you matcher

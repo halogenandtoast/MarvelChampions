@@ -177,5 +177,6 @@
   "exhausted": "{target} exhausts.",
   "readied": "{target} readies.",
   "ttLokiDamage": "Shatter the illusion deals {count} damage to Loki, God of Lies.",
-  "ttWorldsThreat": "Place 1 threat on Worlds Collide."
+  "ttWorldsThreat": "Place 1 threat on Worlds Collide.",
+  "discardsUntilReveal": "{player} discards encounter cards until a matching card is discarded, then reveals it."
 }
