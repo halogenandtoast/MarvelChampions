@@ -163,3 +163,10 @@ keepingGains (Just old) a =
     , attackTarget = attackTarget old <|> attackTarget a
     , attackChange = attackChange a + attackChange old
     }
+
+loseKeyword :: Keyword -> Attack -> Attack
+loseKeyword keyword a = case keyword of
+  Ranged -> a {attackRanged=False}
+  Piercing -> a {attackPiercing=False}
+  Overkill -> a {attackOverkill=False}
+  _ -> a

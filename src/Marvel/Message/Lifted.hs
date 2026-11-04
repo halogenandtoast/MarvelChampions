@@ -3661,3 +3661,32 @@ redirectCharacterThreatRemoval old new n = replaceMatchingMessage rewrite matche
 -- or marking it removed from the game. Its resolution response still opens.
 resolveTreacheryAsBoost :: ReverseQueue m => TreacheryId -> IdentityId -> EncounterCard -> m ()
 resolveTreacheryAsBoost tid you card = cardSpecific GameRef "resolveTreacheryAsBoost" (tid,you,card)
+
+-- | Modifiers created by an activation interrupt persist through its resolution,
+-- independently of the source remaining in play or becoming blank.
+untilEnemyActivationEnds :: (ReverseQueue m, IsRef source, IsEnemy enemy) => source -> enemy -> [Modifier] -> m ()
+untilEnemyActivationEnds source enemy modifiers = cardSpecific GameRef "untilEnemyActivationEnds" (toSource source,toEnemy enemy,modifiers)
+
+-- | Defeat still occurs and keeps its response windows, but its departure is to
+-- the removed-from-game area instead of the discard pile or victory display.
+removeDefeatedAllyFromGame :: ReverseQueue m => AllyId -> m ()
+removeDefeatedAllyFromGame aid = replaceMatchingMessage replace matches
+ where
+  matches = \case PrepareAllyDepartureByDefeat who _ -> who == aid; _ -> False
+  replace = \case
+    PrepareAllyDepartureByDefeat who _ -> [PrepareAllyDepartureByDefeat who $ RemoveFromGame $ AllyRef who]
+    message -> [message]
+
+finishRaiseTheStakes :: ReverseQueue m => EncounterCard -> Bool -> m ()
+finishRaiseTheStakes card defeated = cardSpecific GameRef "finishRaiseTheStakes" (card,defeated)
+
+-- | A constant loss can also affect an attack already in progress.
+attackLoses :: (ReverseQueue m, IsEnemy enemy) => enemy -> Keyword -> m ()
+attackLoses enemy keyword = cardSpecific GameRef "enemyAttackLosesKeyword" (toEnemy enemy,keyword)
+
+preventUpgradeReady :: ReverseQueue m => UpgradeId -> m ()
+preventUpgradeReady uid = cancelMatchingMessage (== UpgradeMessage uid ReadiedUpgrade)
+
+-- | The ready has already passed its interrupt window and payment.
+readyUpgradeAfterInterrupt :: ReverseQueue m => UpgradeId -> m ()
+readyUpgradeAfterInterrupt = push . ResolveReadiedUpgrade

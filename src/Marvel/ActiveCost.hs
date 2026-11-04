@@ -247,6 +247,9 @@ payCostPartAs contributing activeCost cost = do
         AllyRef _ -> removeFromPlay target
         _ -> error "Unhandled"
       paid $ DiscardPayment target
+    CountersFromAttachmentCost matcher n -> do
+      attachments <- filterM (fmap (>= n) . getCountersOn) =<< selectList matcher
+      oneOf attachments (\attachment -> removeCounters attachment n >> paid (CountersPayment n))
     CountersFromSupportCost matcher n -> do
       supports <- selectList (matcher <> SupportControlledBy (IdentityWithId iid) <> SupportWithUses (AtLeast $ Static $ fromIntegral n))
       oneOf supports (\s -> removeCounters s n >> paid (CountersPayment n))

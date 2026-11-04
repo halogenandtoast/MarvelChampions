@@ -55,6 +55,7 @@ data IdentityMatcher
   | IdentityWithDamage GameValueMatcher
   | -- | with so many counters on the identity card (Groot's growth counters)
     IdentityWithCounters GameValueMatcher
+  | IdentityControllingAlly AllyMatcher
   | IdentityEngagedWith MinionMatcher
   | You
   | FirstPlayer

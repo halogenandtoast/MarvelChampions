@@ -507,7 +507,9 @@ runVillainMessage msg attrs = case msg of
   VillainBeginAttack ident -> beginAttack True ident
   VillainBeginAttackWithoutBoost ident -> beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
-  VillainAttackGains k -> pure $ attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
+  VillainAttackGains k -> do
+    lost <- elem (LoseKeyword k) <$> getModifiers attrs
+    pure $ if lost then attrs else attrs {villainAttackGrantedKeywords = villainAttackGrantedKeywords attrs <> [k]} & attackingL . _Just %~ gainKeyword k
   VillainAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   VillainSchemeRemovesThreat you source -> pure attrs {villainSchemeRemoval = Just (you, source)}
   VillainAttackDamageRedirected enemy -> pure $ attrs & attackingL . _Just %~ (\a -> a {attackDamageRedirect = Just enemy})

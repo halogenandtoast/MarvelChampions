@@ -28,6 +28,12 @@ import Marvel.Window.Types
 
 windowMatches :: (HasGame m) => WindowMatcher -> Window -> Source -> m Bool
 windowMatches matcher w source = case matcher of
+  UpgradeWouldReady upgrade -> case windowType w of
+    UpgradeReadying uid | windowTiming w == Would -> upgradeMatches upgrade uid
+    _ -> pure False
+  EnemyAboutToResolveBoostCards enemy -> case windowType w of
+    ResolvingEnemyBoostCards target | windowTiming w == When -> enemyMatches enemy target
+    _ -> pure False
   TrapOptionChosen identityMatcher options -> case windowType w of
     ChoseTrapOption you option | windowTiming w == When, option `elem` options -> identityMatches identityMatcher you
     _ -> pure False

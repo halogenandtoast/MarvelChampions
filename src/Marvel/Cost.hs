@@ -318,6 +318,7 @@ canAffordCost identityId source cost = do
       MainSchemeRef _ -> member identityId <$> select (UnexhaustedIdentity <> HeroIdentity)
       CardIdRef _ -> member identityId <$> select UnexhaustedIdentity
       _ -> error "Unhandled"
+    CountersFromAttachmentCost matcher n -> anyM (fmap (>= n) . getCountersOn) =<< selectList matcher
     CountersFromSupportCost matcher n -> selectAny (matcher <> SupportControlledBy (IdentityWithId identityId) <> SupportWithUses (AtLeast $ Static $ fromIntegral n))
     CountersFromUpgradeCost matcher n -> selectAny (matcher <> UpgradeControlledBy (IdentityWithId identityId) <> UpgradeWithUses (AtLeast $ Static $ fromIntegral n))
     UseCost -> case source of

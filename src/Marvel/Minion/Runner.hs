@@ -252,7 +252,9 @@ runMinionMessage msg attrs = case msg of
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
     pure $ attrs {minionSchemeRemoval = Nothing} & boostL .~ 0
   MinionEndAttack -> pure $ attrs {minionActivationPlayer = Nothing,minionAttackTarget = Nothing,minionBoost = 0} & attackingL .~ Nothing
-  MinionAttackGains k -> pure $ attrs & attackingL . _Just %~ gainKeyword k
+  MinionAttackGains k -> do
+    lost <- elem (LoseKeyword k) <$> getModifiers attrs
+    pure $ if lost then attrs else attrs & attackingL . _Just %~ gainKeyword k
   MinionHoldsCard card -> pure attrs {minionHeldCards = minionHeldCards attrs <> [card]}
   MinionAttackBecomesDividedEvenly -> pure $ attrs & attackingL . _Just %~ \a -> a {attackDividedEvenly = True}
   MinionAttackDamageRedirected enemy -> pure $ attrs & attackingL . _Just %~ (\a -> a {attackDamageRedirect = Just enemy})

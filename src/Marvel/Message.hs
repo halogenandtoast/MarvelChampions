@@ -512,6 +512,7 @@ data Message
   | GainSurge Target
   | -- | Report a positive placement to the source after prevention and replacement.
     WithThreatPlacementResult Source Message
+  | ResolveReadiedUpgrade UpgradeId
   | ResolveCharacterThreatRemoval Message
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId
@@ -768,6 +769,7 @@ data ReplaceKind = Swapped | Advanced
 -- the original message, while the continuation retains which windows have run.
 queuedMessage :: Message -> Message
 queuedMessage = \case
+  ResolveReadiedUpgrade uid -> UpgradeMessage uid ReadiedUpgrade
   ResolveCharacterThreatRemoval original -> queuedMessage original
   WithThreatPlacementResult _ original -> queuedMessage original
   PrepareEnemyDamage original -> queuedMessage original
@@ -779,6 +781,7 @@ queuedMessage = \case
 -- kinds normally. Canceling the raw damage therefore cancels its continuation.
 rewrapQueuedMessages :: Message -> [Message] -> [Message]
 rewrapQueuedMessages (WithSimultaneousAttackContext cursor original) = map (WithSimultaneousAttackContext cursor) . rewrapQueuedMessages original
+rewrapQueuedMessages (ResolveReadiedUpgrade _) = map (\case UpgradeMessage uid ReadiedUpgrade -> ResolveReadiedUpgrade uid; message -> message)
 rewrapQueuedMessages (ResolveCharacterThreatRemoval original) = map wrap . rewrapQueuedMessages original
  where
   wrap message = if isJust (threatRemovalMessage message) then ResolveCharacterThreatRemoval message else message

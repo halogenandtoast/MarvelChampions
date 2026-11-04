@@ -2533,7 +2533,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   -- 'CountBoostIcons' counts them
   CountActivationBoostIcons target cards -> do
     amplify <- getAmplifyCount
-    extra <- sum . mapMaybe (\case AdditionalActivationBoostIcons n -> Just n; _ -> Nothing) <$> getModifiers GameRef
+    global <- getModifiers GameRef
+    own <- if target == GameRef then pure [] else getModifiers target
+    let extra = sum [n | AdditionalActivationBoostIcons n <- global <> own]
     counts <- for cards \card -> (card,) . (+ (amplify + extra)) <$> getBoostIcons card
     for_ cards \card -> checkWindows [W.Window When $ W.CountingBoostIcons card]
     push $ WithBoostIcons target (toJSON ()) counts
@@ -2615,6 +2617,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     AllyRef aid -> do
       for_ (lookup aid $ gameAllies g) \ally -> do
         frameworkDiscard $ for_ (allyUpgrades $ toAttrs ally) removeFromPlay
+        frameworkDiscard $ for_ [attachmentId a | at <- HashMap.elems (gameAttachments g),let a = toAttrs at,attachmentAlly a == Just aid] removeFromPlay
         for_ (Ally.allyHeldCards $ toAttrs ally) discardCard
         for_ (Ally.allyHeldTreacheries $ toAttrs ally) discardCard
         identityStep (getAllyController ally) (AllyRemoved aid)
@@ -3014,6 +3017,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" GameRef (SourceEntity GameRef) [SkipNextVillainPhase] Nothing
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "untilEnemyActivationEnds" (fromJSON -> Success (source,enemy,modifiers)) -> do
+    eid <- getRandom
+    let attrs = Effect.EffectAttrs eid "engine-lasting" source (EnemyEntity $ EnemyWithId enemy) modifiers (Just $ Effect.DisableAfterEnemyActivation enemy)
+    pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
   CardSpecific GameRef "lastingModifiers" (fromJSON -> Success (source, matcher, modifiers, roundEnd :: Bool)) -> do
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source matcher modifiers (Just $ if roundEnd then Effect.DisableAtEndOfRound else Effect.DisableAtEndOfPhase)
@@ -3089,6 +3096,24 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       EnemyMinionId mid -> minionStep mid $ MinionDealtBoost card
       EnemyAttachmentId _ -> pure ()
     pure g
+  CardSpecific GameRef "enemyAttackLosesKeyword" (fromJSON -> Success (enemy,keyword)) -> do
+    current <- getEnemyAttack enemy
+    let updated = restoreEnemyAttack enemy (loseKeyword keyword <$> current) g
+    pure $ case enemy of
+      EnemyVillainId vid -> updated & entitiesL . villainsL . ix vid %~ (\(Villain.Villain villain) -> Villain.Villain $ Villain.overVillainAttrs (\a -> a {Villain.villainAttackGrantedKeywords = filter (/= keyword) (Villain.villainAttackGrantedKeywords a)}) villain)
+      _ -> updated
+  CardSpecific GameRef "finishRaiseTheStakes" (fromJSON -> Success (card,defeated :: Bool)) -> do
+    let aid = AttachmentId $ unCardId $ ecCardId card
+        alreadyRemoved = card `elem` gameRemovedFromGameEncounterCards
+    if defeated then do
+      removeFromGame aid
+      cardSpecific GameRef "removeEncounterCardFromPiles" card
+      pure $ g {gameRemovedFromGameEncounterCards = nub $ card : gameRemovedFromGameEncounterCards}
+    else if alreadyRemoved then pure g else do
+      when (HashMap.member aid gameAttachments) $ attachmentRemoved aid
+      cardSpecific GameRef "removeEncounterCardFromPiles" card
+      shuffleIntoEncounterDeck [card]
+      pure $ g & entitiesL . attachmentsL %~ deleteMap aid
   CardSpecific GameRef "resolveTreacheryAsBoost" (fromJSON -> Success (tid,you,card)) -> do
     checkWindows [W.Window W.After $ W.ResolvedTreacheryCard you card]
     pure $ g {gameRemovedFromGameEncounterCards = filter ((/= ecCardId card) . ecCardId) gameRemovedFromGameEncounterCards}
@@ -3982,6 +4007,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             _ -> False
           W.Window W.Would (W.IdentityDefeat iid) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window W.Would (W.IdentityDefeatFromDamage iid _ _) -> isQueued (== IdentityMessage iid IdentityDefeated)
+          W.Window W.Would (W.UpgradeReadying uid) -> isQueued (== UpgradeMessage uid ReadiedUpgrade)
           W.Window W.Would (W.CharacterRemovingThreat _ scheme _) -> isQueued \message ->
             maybe False (\(_,target,n,_,_) -> target == scheme && n > 0) (threatRemovalMessage message)
           W.Window W.Would (W.CharacterPlacingThreat _ scheme _) -> isQueued \case
@@ -4519,6 +4545,15 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage (ResolveReadiedUpgrade uid) g = dispatchGameMessage (UpgradeMessage uid ReadiedUpgrade) g
+  runMessage (UpgradeMessage uid ReadiedUpgrade) g = runQueueT do
+    modifiers <- getModifiers (UpgradeRef uid)
+    case lookup uid (gameUpgrades g) of
+      Just upgrade | upgradeExhausted (toAttrs upgrade), CannotReady `notElem` modifiers -> do
+        checkWindows [W.Window W.Would $ W.UpgradeReadying uid]
+        push $ ResolveReadiedUpgrade uid
+      _ -> pure ()
+    pure g
   runMessage (ResolveCharacterThreatRemoval original) g = dispatchGameMessage original g
   runMessage original g | Just (source,scheme,n,basic,thwarting) <- threatRemovalMessage original = do
     actor <- threatSourceCharacter source
@@ -6505,6 +6540,7 @@ gameSelectIdentity m = do
         fp : _ -> toId a == fp
         _ -> False
     You -> \a -> (== toId a) <$> getYou
+    IdentityControllingAlly matcher -> \a -> selectAny (AllyControlledBy (IdentityWithId $ toId a) <> matcher)
     IdentityWithFewestRemainingHitPoints m' -> \a -> do
       candidates <- filterM (matchFilter m') . HashMap.elems =<< getsGame gamePlayers
       remaining <- for candidates \p -> (toId p,) . subtractNatural (identityDamage p) <$> getModifiedHp p
@@ -9735,3 +9771,18 @@ characterThreatRemovalAllowed basic thwarting source scheme = do
               UpgradeRef _ -> True
               _ -> False
         pure $ not (crisis && restricted && playerCard && IgnoresCrisis `notElem` own && not controllerIgnores)
+
+-- | Check that placing one more status would change this character's state.
+characterCanGainStatus :: HasGame m => CharacterId -> StatusCard -> m Bool
+characterCanGainStatus character status = do
+  present <- characterMatches AnyCharacter character
+  modifiers <- getModifiers (characterRef character)
+  def <- getsGame (`abilityCardDef` characterRef character)
+  blanked <- isBlanked (characterRef character)
+  count <- getCharacterStatusCount character status
+  let printed = if blanked then [] else maybe [] (toList . cdKeywords) def
+      keywords = filter (\keyword -> LoseKeyword keyword `notElem` modifiers) (printed <> [keyword | KeywordModifier keyword <- modifiers])
+      blocked = case status of StunnedStatus -> CannotBeStunned `elem` modifiers; ConfusedStatus -> CannotBeConfused `elem` modifiers; ToughStatus -> False
+      limit = if status == ToughStatus then 1 + sum [n | AdditionalToughStatusCards n <- modifiers] else if Steady `elem` keywords then 2 else 1
+      unlimited = status == ToughStatus && CanHaveAnyNumberOfToughStatusCards `elem` modifiers
+  pure $ present && not blocked && (status == ToughStatus || Stalwart `notElem` keywords) && (unlimited || count < limit)

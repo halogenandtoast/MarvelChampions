@@ -94,7 +94,8 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, RunMessage a) => IsEffect
 type CardEffect a = CardBuilder (Source, EntityMatcher, EffectId) a
 
 data EffectTiming
-  = DisableAtEndOfAttack
+  = DisableAfterEnemyActivation EnemyId
+  | DisableAtEndOfAttack
   | DisableAtStartOfVillainPhase
   | DisableAtEndOfPhase
   | DisableAtEndOfRound
@@ -168,6 +169,9 @@ instance RunMessage (Attrs Effect) where
     EventMessage eid ResolvedEvent
       | effectMatcher a == EventEntity eid ->
           a <$ disableEffect (effectId a)
+    CheckWindows windows | Just (DisableAfterEnemyActivation enemy) <- effectEnds a -> do
+      let finished = any (\case W.Window W.After (W.EnemyActivation who _) -> who == enemy; _ -> False) windows
+      a <$ when finished (disableEffect $ effectId a)
     CheckWindows windows | effectEnds a == Just DisableAtEndOfAttack -> do
       let finished = any (\case
             W.Window W.After (W.PlayerAttackResolved source _ _) -> source == effectSource a

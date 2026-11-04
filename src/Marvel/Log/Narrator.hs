@@ -57,6 +57,8 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  ResolveReadiedUpgrade uid -> Just $ simply "log.readied" (UpgradeRef uid)
+  UpgradeMessage _ ReadiedUpgrade -> Nothing
   ResolveCharacterThreatRemoval (MainSchemeMessage sid inner) -> schemeNarration (MainSchemeRef sid) inner
   ResolveCharacterThreatRemoval (SideSchemeMessage sid inner) -> sideSchemeNarration sid inner
   ResolveCharacterThreatRemoval _ -> Nothing

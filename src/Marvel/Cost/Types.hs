@@ -58,6 +58,7 @@ data Cost
     DiscardRandomHandCardsCost Natural
   | -- | discard matching cards at random from the payer's hand
     DiscardRandomHandCardsMatchingCost Natural CardMatcher
+  | CountersFromAttachmentCost AttachmentMatcher Natural
   | CountersFromUpgradeCost UpgradeMatcher Natural
   | CountersFromSupportCost SupportMatcher Natural
   | UseCost

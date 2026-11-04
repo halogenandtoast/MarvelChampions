@@ -70,6 +70,8 @@ data WindowMatcher
   | EnemyDefeatedByBasicAttack IdentityMatcher
   | ThreatRemovedFromScheme SchemeMatcher
   | ThreatRemovedByThwart WindowTiming SourceMatcher SchemeMatcher
+  | UpgradeWouldReady UpgradeMatcher
+  | EnemyAboutToResolveBoostCards EnemyMatcher
   | BoostCardFlippedDuringUndefendedAttack WindowTiming EnemyMatcher
   | CharacterSharingHeroTraitWouldTakeDamage IdentityMatcher
   | CharacterThwartsScheme WindowTiming SourceMatcher SchemeMatcher
@@ -419,6 +421,8 @@ data WindowType
   | UpgradeAttachedToEnemy IdentityId UpgradeId CardDef EnemyId
   | -- | the ally, and the enemy whose attack defeated it
     DefeatedAlly AllyId (Maybe EnemyId)
+  | UpgradeReadying UpgradeId
+  | ResolvingEnemyBoostCards EnemyId
   | FlippedBoostCard EncounterCard EnemyId
   | CountingBoostIcons EncounterCard
   | CardPlayed IdentityId PlayerCard
