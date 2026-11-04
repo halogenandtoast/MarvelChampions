@@ -710,3 +710,137 @@ spec = describe "Fear No Evil encounter cards" do
       getEncounterDiscard >>= (liftIO . (`shouldNotContain` take 1 cards))
       resolve [VillainMessage vid $ VillainSchemesAgainst you]
       mainSchemeThreatNow `shouldReturn` 3
+
+  it "Lady Bullseye gets exactly one extra boost for each undefended attack" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      mid <- addMinion you Cards.street60072
+      for_ [3,6 :: Natural] $ \damage -> do
+        (cards,_) <- setEncounterDeck [Cards.street60188,Cards.street60195,Cards.street60188,Cards.street60188] []
+        runNow [MinionMessage mid $ MinionAttacks you]
+        pass
+        whenM (offers $ isLabel "$label.noDefender") $ choose "take the attack undefended" (isLabel "$label.noDefender")
+        choose "Lady Bullseye's extra boost" (isAbilityOf mid)
+        pass
+        damageOf you `shouldReturn` damage
+        getEncounterDeck `shouldReturn` drop 2 cards
+
+  it "Lady Bullseye gets no extra boost when her attack is defended" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      mid <- addMinion you Cards.street60072
+      (cards,_) <- setEncounterDeck [Cards.street60188,Cards.street60195,Cards.street60188] []
+      runNow [MinionMessage mid $ MinionAttacks you]
+      pass
+      choose "defend the attack" isDefend
+      pass
+      offers (isAbilityOf mid) `shouldReturn` False
+      damageOf you `shouldReturn` 0
+      getEncounterDeck `shouldReturn` drop 1 cards
+
+  it "Lady Bullseye's schemes have the normal single villainous boost" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60072
+      (cards,_) <- setEncounterDeck [Cards.street60188,Cards.street60195,Cards.street60188] []
+      resolve [MinionMessage mid MinionSchemes]
+      mainSchemeThreatNow `shouldReturn` 2
+      getEncounterDeck `shouldReturn` drop 1 cards
+
+  it "Bullseye I sets the physical Spine aside and advances to II with it attached" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      (cards,_) <- setEncounterDeck [Cards.street60068a,Cards.street60188,Cards.street60188] []
+      resolve [ReplaceVillain vid "60065" Advanced]
+      let spine = fromMaybe (error "missing spine fixture") $ headMay cards
+      getSetAsideEncounterCards >>= (liftIO . (`shouldContain` [spine]))
+      getVillainHitPoints vid `shouldReturn` 14
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ withUnpreventable $ toDamage 100 FromAbility]
+      getVillainStage vid `shouldReturn` 2
+      getVillainHitPoints vid `shouldReturn` 16
+      getAttachedCharacter (attachmentOf spine) `shouldReturn` Just (VillainCharacter vid)
+      getSetAsideEncounterCards >>= (liftIO . (`shouldNotContain` [spine]))
+
+  it "Bullseye adds a boost icon to each card in his scheme, then removes the activation effect" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60065" Advanced]
+      held <- encounterCard Cards.street60188
+      resolve =<< L.runQueueT (L.capture $ L.giveCardAsBoost held vid)
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      resolve [VillainMessage vid $ VillainSchemesAgainst you]
+      mainSchemeThreatNow `shouldReturn` 2
+      getModifiers vid >>= (liftIO . (`shouldNotContain` [AdditionalActivationBoostIcons 1]))
+      getBoostIcons held `shouldReturn` 0
+
+  it "Bullseye's attack gains ranged and its zero-icon boost gains one icon" do
+    tg <- testGame ["black-panther"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60065" Advanced]
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      runNow [VillainMessage vid $ VillainAttacks you]
+      pass
+      choose "Bullseye's activation interrupt" (isAbilityOf vid)
+      pass
+      choose "take it undefended" (isLabel "$label.noDefender")
+      pass
+      damageOf you `shouldReturn` 2
+      getVillainHitPoints vid `shouldReturn` 14
+
+  it "Bullseye III finds and reveals Deranged Bloodlust with his stage in additional threat" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      _ <- setEncounterDeck [Cards.street60073,Cards.street60188] []
+      resolve [ReplaceVillain vid "60067" Advanced]
+      sid <- selectJust (SideSchemeIs Cards.street60073)
+      trafficThreat sid `shouldReturn` 7
+      getVillainHitPoints vid `shouldReturn` 18
+
+  it "the Spine prevents all but three damage, flips at six stored damage, and repairs after schemes" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      (cards,_) <- setEncounterDeck [Cards.street60068a,Cards.street60188,Cards.street60188] []
+      resolve [ReplaceVillain vid "60066" Advanced]
+      let spine = attachmentOf $ fromMaybe (error "missing spine fixture") $ headMay cards
+      resolve [VillainMessage vid $ VillainDamaged (IdentityRef you) $ toDamage 6 FromAbility]
+      getVillainHitPoints vid `shouldReturn` 13
+      attachmentDamageNow spine `shouldReturn` 3
+      selectAny (AttachmentIs Cards.street60068a) `shouldReturn` True
+      resolve [VillainMessage vid $ VillainDamaged (IdentityRef you) $ toDamage 6 FromAbility]
+      getVillainHitPoints vid `shouldReturn` 10
+      attachmentDamageNow spine `shouldReturn` 6
+      selectAny (AttachmentIs Cards.street60068b) `shouldReturn` True
+      for_ [3,0 :: Natural] $ \remaining -> do
+        _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+        resolve [VillainMessage vid $ VillainSchemesAgainst you]
+        attachmentDamageNow spine `shouldReturn` remaining
+      selectAny (AttachmentIs Cards.street60068a) `shouldReturn` True
+
+  it "the Spine cannot prevent unpreventable damage or store damage stopped by tough" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      (cards,_) <- setEncounterDeck [Cards.street60068a,Cards.street60188,Cards.street60188] []
+      resolve [ReplaceVillain vid "60066" Advanced]
+      let spine = attachmentOf $ fromMaybe (error "missing spine fixture") $ headMay cards
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ withUnpreventable $ toDamage 5 FromAbility]
+      getVillainHitPoints vid `shouldReturn` 11
+      attachmentDamageNow spine `shouldReturn` 0
+      resolve [GiveStatus (VillainRef vid) ToughStatus]
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ toDamage 7 FromAbility]
+      getVillainHitPoints vid `shouldReturn` 11
+      attachmentDamageNow spine `shouldReturn` 0

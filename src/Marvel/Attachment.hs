@@ -2,6 +2,11 @@
 
 module Marvel.Attachment where
 
+
+import Marvel.FearNoEvil.BullseyeAttachments qualified as BullEquipment
+
+import Marvel.FearNoEvil.BullseyeVillain qualified as Bullseye
+
 import Marvel.FearNoEvil.DriveVehicles qualified as Drive
 
 import Marvel.FearNoEvil.OwlTombstone qualified as Owl
@@ -105,7 +110,7 @@ withAttachmentCardCode cCode f = case lookup cCode allAttachments of
 
 allAttachments :: HashMap CardCode SomeAttachmentCard
 allAttachments =
-  fromList $ [(toCardCode card,SomeAttachmentCard card) | card <- Drive.vehicles] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Owl.streetAttachments] <>  [(toCardCode Whisper.whisper,SomeAttachmentCard Whisper.whisper)] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Spells.shadowSpells] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Dark.darkAttachments] <>  [(toCardCode StreetTraps.nervousJitters,SomeAttachmentCard StreetTraps.nervousJitters)] <>  [("57066",SomeAttachmentCard SynthMoon.crescentDart)] <> [("57029",SomeAttachmentCard SynthDuo.madJacksPlatform)] <> [(toCardCode card,SomeAttachmentCard card) | card <- SynthTask.taskmasterEquipment] <> [(toCardCode CwSM.tangledUp,SomeAttachmentCard CwSM.tangledUp)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CwN.namorEquipment] <> [(toCardCode CwCD.darkforce,SomeAttachmentCard CwCD.darkforce)] <> [(toCardCode CwHK.resistanceFighter,SomeAttachmentCard CwHK.resistanceFighter)] <> [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
+  fromList $  [(toCardCode card,SomeAttachmentCard card) | card <- BullEquipment.bullseyeEquipment] <> [(toCardCode card,SomeAttachmentCard card) | card <- Bullseye.bullseyeSpines] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Drive.vehicles] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Owl.streetAttachments] <>  [(toCardCode Whisper.whisper,SomeAttachmentCard Whisper.whisper)] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Spells.shadowSpells] <>  [(toCardCode card,SomeAttachmentCard card) | card <- Dark.darkAttachments] <>  [(toCardCode StreetTraps.nervousJitters,SomeAttachmentCard StreetTraps.nervousJitters)] <>  [("57066",SomeAttachmentCard SynthMoon.crescentDart)] <> [("57029",SomeAttachmentCard SynthDuo.madJacksPlatform)] <> [(toCardCode card,SomeAttachmentCard card) | card <- SynthTask.taskmasterEquipment] <> [(toCardCode CwSM.tangledUp,SomeAttachmentCard CwSM.tangledUp)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CwN.namorEquipment] <> [(toCardCode CwCD.darkforce,SomeAttachmentCard CwCD.darkforce)] <> [(toCardCode CwHK.resistanceFighter,SomeAttachmentCard CwHK.resistanceFighter)] <> [(toCardCode CwP.paladinsPistol,SomeAttachmentCard CwP.paladinsPistol)] <> [(toCardCode CwMH.lifeModelDecoy,SomeAttachmentCard CwMH.lifeModelDecoy)] <> [(toCardCode CwI.drafted,SomeAttachmentCard CwI.drafted)] <> [(toCardCode card,SomeAttachmentCard card) | card <- CW.signatureAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWTech.ironManAttachments] <> [(toCardCode card,SomeAttachmentCard card) | card <- CWGear.leaderAttachments] <>
     map
       (toFst someAttachmentCardCode)
       [ SomeAttachmentCard CN.cn56026, SomeAttachmentCard CN.cn56057, SomeAttachmentCard CN.cn60035

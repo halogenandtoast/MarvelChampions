@@ -1,5 +1,7 @@
 module Marvel.Villain.Cards where
 
+import Marvel.FearNoEvil.Cards qualified as FneDefs
+
 import Marvel.Shadowland.Cards qualified as ShadowsDefs
 
 
@@ -57,7 +59,7 @@ import Marvel.Keyword
 
 allVillainCards :: [CardDef]
 allVillainCards = filter ((== VillainType) . cdCardType) CWDefs.civilWarDefinitions <>
-  [ ShadowsDefs.street65012a, ShadowsDefs.street65012b, ShadowsDefs.street65013a, ShadowsDefs.street65013b, ShadowsDefs.street65014a, ShadowsDefs.street65014b, ShadowsDefs.street65015a, ShadowsDefs.street65015b, ShadowsDefs.street65016a, ShadowsDefs.street65016b, ShadowsDefs.street65017a, ShadowsDefs.street65017b, ShadowsDefs.street65037, ShadowsDefs.street65057, ShadowsDefs.street65058, ShadowsDefs.street65059, TT.tt55001, TT.tt55002, TT.tt55003, TT.tt55027a, TT.tt55027b, TT.tt55029a, TT.tt55029b, TT.tt55030a, TT.tt55030b, TT.tt55031a, TT.tt55031b, TT.tt55032a, TT.tt55032b
+  [ FneDefs.street60065, FneDefs.street60066, FneDefs.street60067, ShadowsDefs.street65012a, ShadowsDefs.street65012b, ShadowsDefs.street65013a, ShadowsDefs.street65013b, ShadowsDefs.street65014a, ShadowsDefs.street65014b, ShadowsDefs.street65015a, ShadowsDefs.street65015b, ShadowsDefs.street65016a, ShadowsDefs.street65016b, ShadowsDefs.street65017a, ShadowsDefs.street65017b, ShadowsDefs.street65037, ShadowsDefs.street65057, ShadowsDefs.street65058, ShadowsDefs.street65059, TT.tt55001, TT.tt55002, TT.tt55003, TT.tt55027a, TT.tt55027b, TT.tt55029a, TT.tt55029b, TT.tt55030a, TT.tt55030b, TT.tt55031a, TT.tt55031b, TT.tt55032a, TT.tt55032b
   , aos50064, aos50065, aos50066, aos50086a, aos50086b, aos50103a, aos50103b, aos50129a, aos50129b, aos50165a, aos50165b, aos50166a, aos50166b
   , unus1, unus2, unus3, warA, warB, famineA, famineB, pestilenceA, pestilenceB, deathA, deathB, apocalypse1, apocalypse2, apocalypse3, apocalypse4, darkBeast1, darkBeast2, darkBeast3, enSabahNurBiomorph1, enSabahNurCyberpath1, enSabahNurGiant1, enSabahNurBiomorph2, enSabahNurCyberpath2, enSabahNurGiant2, enSabahNurBiomorph3, enSabahNurCyberpath3, enSabahNurGiant3
   , ne40070a, ne40070b, ne40071a, ne40071b, ne40072a, ne40072b, ne40073a, ne40073b, ne40074a, ne40074b, ne40075a, ne40075b, ne40076a, ne40076b, ne40118, ne40119, ne40120, ne40136, ne40137, ne40138, ne40163, ne40164, ne40165

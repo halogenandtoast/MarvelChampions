@@ -2,6 +2,14 @@ module Marvel.FearNoEvil.Bullseye where
 
 import Marvel.Prelude
 import Marvel.Card
+import Marvel.Ability
+import Marvel.Cost
+import Marvel.Hp
+import Marvel.Minion.Types
+import Marvel.Minion.Runner ()
+import Marvel.Stats
+import Marvel.Question
+import Marvel.Window qualified as W
 import Marvel.Entity
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Id
@@ -75,3 +83,26 @@ instance RunMessage DerangedBloodlust where
         _ -> pure ()
       pure e
     _ -> DerangedBloodlust <$> runMessage msg a
+
+newtype LadyBullseye = LadyBullseye (Attrs Minion `With` Bool)
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+  deriving anyclass HasModifiersFor
+instance IsMinion LadyBullseye where
+  toMinionAttrs (LadyBullseye (a `With` _)) = a
+  overMinionAttrs f (LadyBullseye (a `With` opened)) = LadyBullseye (f a `With` opened)
+ladyBullseye :: MinionCard LadyBullseye
+ladyBullseye = minion (\a -> LadyBullseye (a `With` False)) Cards.street60072 (Sch 2) (Atk 1) (HP 6)
+instance HasAbilities LadyBullseye where
+  getAbilities (LadyBullseye (a `With` _)) =
+    [windowAbility a 1 (W.EnemyAboutToResolveBoostCards $ EnemyWithId (toEnemyId a) <> UndefendedEnemy) ForcedInterrupt NoCost (runAbility a 1)]
+instance RunMessage LadyBullseye where
+  runMessage msg e@(LadyBullseye (a `With` opened)) = runQueueT $ case msg of
+    MinionMessage mid MinionFlipBoostCards | mid == minionId a, not opened -> do
+      checkWindows [W.Window W.When $ W.ResolvingEnemyBoostCards $ toEnemyId a]
+      minionStep mid MinionFlipBoostCards
+      pure $ LadyBullseye (a `With` True)
+    RanAbility _ (isTarget a -> True) 1 _ _ -> dealBoost (minionId a) >> pure e
+    MinionMessage mid step | mid == minionId a, step `elem` [MinionEndAttack,MinionSchemed] -> do
+      updated <- runMessage msg a
+      pure $ LadyBullseye (updated `With` False)
+    _ -> (\attrs -> LadyBullseye (attrs `With` opened)) <$> runMessage msg a

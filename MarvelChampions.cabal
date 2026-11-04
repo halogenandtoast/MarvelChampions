@@ -1144,6 +1144,8 @@ library
       Marvel.FalconWinter.Cards
       Marvel.FalconWinter.Helpers
       Marvel.FearNoEvil.Bullseye
+      Marvel.FearNoEvil.BullseyeAttachments
+      Marvel.FearNoEvil.BullseyeVillain
       Marvel.FearNoEvil.Cards
       Marvel.FearNoEvil.Cops
       Marvel.FearNoEvil.Disasters

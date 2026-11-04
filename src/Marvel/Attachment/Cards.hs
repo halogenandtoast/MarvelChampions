@@ -174,7 +174,7 @@ allAttachments =
   , theAccused
   , HC.hc59002, HC.hc59003, HC.hc59039
   , JL.jl62031
-  , StreetTrapsCards.street65046, DarkDefs.street65018, DarkDefs.street65019, SpellsDefs.street65062, SpellsDefs.street65063, SpellsDefs.street65064, SpellsDefs.street65065, WhisperDefs.street65040, OwlDefs.street60186, OwlDefs.street60187, OwlDefs.street60188, OwlDefs.street60191, OwlDefs.street60195, OwlDefs.street60196, TT.tt55007a, TT.tt55007b, TT.tt55008a, TT.tt55008b, TT.tt55009a, TT.tt55009b, TT.tt55010a, TT.tt55010b, TT.tt55011a, TT.tt55011b, TT.tt55012, TT.tt55013, TT.tt55014, TT.tt55015, TT.tt55016, TT.tt55034a, TT.tt55034b, TT.tt55035, TT.tt55036, TT.tt55062
+  , StreetTrapsCards.street65046, DarkDefs.street65018, DarkDefs.street65019, SpellsDefs.street65062, SpellsDefs.street65063, SpellsDefs.street65064, SpellsDefs.street65065, WhisperDefs.street65040, OwlDefs.street60069, OwlDefs.street60070, OwlDefs.street60071, OwlDefs.street60068a, OwlDefs.street60068b, OwlDefs.street60186, OwlDefs.street60187, OwlDefs.street60188, OwlDefs.street60191, OwlDefs.street60195, OwlDefs.street60196, TT.tt55007a, TT.tt55007b, TT.tt55008a, TT.tt55008b, TT.tt55009a, TT.tt55009b, TT.tt55010a, TT.tt55010b, TT.tt55011a, TT.tt55011b, TT.tt55012, TT.tt55013, TT.tt55014, TT.tt55015, TT.tt55016, TT.tt55034a, TT.tt55034b, TT.tt55035, TT.tt55036, TT.tt55062
   , aos50068, aos50069, aos50070, aos50071, aos50092, aos50114, aos50115, aos50116, aos50117, aos50118, aos50119, aos50132, aos50144, aos50145, aos50149, aos50153, aos50157, aos50158, aos50170, aos50171, aos50181b, aos50182b, aos50183b
   , FalconWinter.fw53039, FalconWinter.fw53040, FalconWinter.fw54030, FalconWinter.fw54035
   , BlackPantherShuriPack.energyTruncheonShuri
