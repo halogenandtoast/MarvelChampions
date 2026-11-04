@@ -224,3 +224,4 @@ Leader reward dependencies are tracked in [player-synthezoid.md](player-synthezo
 
 - [Shadowland encounters and campaign](encounter-shadowland.md): positions, traps, Dark Protégés, corruption, and campaign records.
 - [Fear No Evil encounters](encounter-fear-no-evil.md): implementation status and rules decisions for the street encounter sets.
+- [Fear No Evil and Shadowland acceptance audit](street-expansions-completion-audit.md): scope, behavior coverage and final integration evidence.

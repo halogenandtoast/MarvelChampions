@@ -1,0 +1,36 @@
+# Fear No Evil and Shadowland acceptance audit
+
+Scope: Fear No Evil's 171 encounter/campaign faces and Shadowland's 93 faces, including required scenario-controlled allies, supports, upgrades and campaign components. Ordinary player cards were already implemented and are excluded from this task. The reference documents are the supplied MC60 and MC65 rulebooks, their local transcriptions, and Rules Reference v1.8; see [Fear No Evil decisions](encounter-fear-no-evil.md) and [Shadowland decisions](encounter-shadowland.md) for rules interpretations and ruling sources.
+
+| Requirement | Implementation and evidence |
+|---|---|
+| Complete runtime registration | `FearNoEvilCoverageSpec` and `ShadowlandCoverageSpec` check all 264 face definitions against their appropriate entity factories. Setup fronts are checked through their paired in-play main scheme. These are registration checks; the behavior suites below separately exercise effects. |
+| Six Fear No Evil scenarios | Art Museum Heist, The Getaway, Protection Racket, The Raft Breakout, Stop the Presses!, and Kingpin support Normal and Expert setup. `FearNoEvilScenarioSpec`, `FearNoEvilChaseArtSpec`, `FearNoEvilRaftSpec`, and `FearNoEvilPressesSpec` cover native scenario effects and transitions, including separate businesses, vehicles, prisoners, Bugle staff, Public Support and repeated King's Gambit actions. |
+| Fear No Evil underlings and encounter effects | Dedicated Hammerhead, Purple Man, Mary, underling, attack-effect and Kingpin-equipment suites exercise the five underlings, physical card conversions and flips, payment effects, delayed attack consequences, and equipment. `FearNoEvilSpec` covers the general and modular cards. |
+| Six Fear No Evil modular sets | Cops, Disasters, Drive, The Owl, Tombstone and Tracksuit Mafia have concrete effects and behavior coverage; all six are included in the standalone modular smoke selection. |
+| Fear No Evil campaign | `Campaign/FearNoEvilSpec` checks variable scenario order, persistent underling assignments, progress/failure marks, finale unlocking, expert health/healing and removal of unique ally/support titles across printings. `FearNoEvilCardsSpec` checks campaign environments and supports. |
+| Three Shadowland scenarios | Shadows in the Night, Shadow Labyrinth and Heart of Shadow support Normal and Expert setup. `ShadowlandSpec` covers setup, main-scheme transitions, A/B protégé flips, Krahllak advancement, positions, passage counters, trap-deck mixing, reveal sources, chamber timing and corruption/threat decisions. |
+| Position actions and general encounters | `ShadowlandEncountersSpec` exercises both position-dependent outcomes, actual movement payments, Assault thwarting, conditional icons, corruption recipients, minion actions, defeat/discard differences and treachery choices. Strategic Positioning has no permanent printed acceleration icon; its icon is supplied conditionally by its effect. |
+| Six Dark Protégés and linked cards | `ShadowlandProtegesSpec` exercises both villain faces of all six protégés; `ShadowlandDarkProtegeSpec` exercises linked cards. Whisper uses the selected physical villain card as a minion and returns it set aside; source matching distinguishes damage from a character from damage dealt by a support. |
+| Traps and three Shadowland modular sets | `ShadowlandTrapsSpec` covers Avoid, Disarm and Trip effects and payments. `ShadowlandModularSpec` covers Ninja Swarm and Black Flower effects; Deadly Contraptions also has trap-choice timing, side-scheme and restriction checks. All three sets are in the standalone modular smoke selection. |
+| Corruption, spells and Shadowland campaign | `ShadowlandSpellsSpec` covers accepting/rejecting spells, prevention and basic-action responses. Scenario and campaign suites cover corruption flips and defeat, removed protégés, overpowered history, prepared cards, expert healing and finale retry. |
+| Persistence and public game state | Behavior tests cover physical card identity, conversions, cleanup and JSON restoration. Randomized games construct the public client view on every answer and use stored seeded generators. Live API checks start and reload every scenario in both difficulties. |
+| Client integration | Scenario and campaign creation use the registered catalogs. The production frontend build/typecheck passes. Four Chromium browser checks pass for both expansions' card data, images, linked faces and reviewed text. The live API catalog exposes all nine scenarios with recommended modulars; all 18 Normal/Expert starts reach a player turn and reload with the same villain/main-scheme state. The isolated server and disposable database were removed after verification. |
+
+## Final verification
+
+The ninety-case scenario/campaign smoke run completed: 89 passed, with one five-second watchdog timeout in the four-player Normal Getaway game (seed 1, question version 312). The exact focused reproduction then passed both seeds with the unchanged watchdog in 135.6 seconds. No gameplay exception was reported. The nine standalone modular cases also pass. The four-case smoke selection after the final per-player correction passes with zero failures in 144.0 seconds. The final-source full regression passes 9,598 examples with zero failures in 503.6 seconds. All requirements in the table above are verified; no implementation work remains.
+
+- Backend library, API executable and test executable build successfully with `stack test --fast --ghc-options -DDEVELOPMENT`.
+- Frontend build/typecheck: `/tmp/mc-street-final-frontend.log`.
+- Four browser checks: `/tmp/mc-street-final-browser.log`.
+- Eighteen live API starts/reloads: `/tmp/mc-street-final-api-results.json` and `/tmp/mc-street-final-api-results.log`.
+- Final-source full non-smoke regression: 9,598 examples, zero failures, 503.6 seconds, `/tmp/mc-street-final-post-elimination-unit.log`.
+- Ninety expansion scenario, modular-combination and campaign smoke cases, two seeds each: `/tmp/mc-street-final-smoke.log`. The exact selected cases are in `/tmp/mc-street-final-smoke-cases.log`.
+- Nine standalone expansion modular smoke cases, two seeds each: all nine pass with zero failures in 163.3 seconds, `/tmp/mc-street-final-modular-smoke.log`.
+
+The final rules audit corrects five printed per-player calculations to retain the starting player count after elimination (RR v1.8, Per Player Icon). Both threat placement and Hit List's threat removal have two-player elimination behavior checks. The combined expansion suite passes 673 examples with zero failures after this correction. All eighteen live API starts/reloads were refreshed against the corrected API executable; the frontend source is unchanged.
+
+The focused smoke selection after that correction covers both difficulties of two-player Shadows in the Night, the Tombstone modular set, and the four-player Normal Getaway case. All four cases pass with two seeds each; the log is `/tmp/mc-street-final-post-elimination-smoke.log`.
+
+The campaign UI retains the project's registered-party workflow: a defeated hero continuing with that party automatically rejoins and pays the printed encounter-card/healing cost. The expansion decision documents record this integration choice and the interpretation of distinct prepared-card rewards.
