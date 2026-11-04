@@ -3094,6 +3094,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.ShadowlandCoverageSpec
       Marvel.Encounter.ShadowlandModularSpec
       Marvel.Encounter.ShadowlandSpec
+      Marvel.Encounter.ShadowlandSpellsSpec
       Marvel.Encounter.ShieldHeroesNemesisSpec
       Marvel.Encounter.SilkNemesisSpec
       Marvel.Encounter.SinisterAttackRestrictionsSpec

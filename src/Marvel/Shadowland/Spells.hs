@@ -34,7 +34,7 @@ instance HasAbilities ShadowSpell where
     "65062" -> [windowAbility a 1 (W.VillainWouldTakeDamageAtLeastFrom AnyVillain AnyAttack 4) Interrupt NoCost (runAbility a 1)]
     "65063" -> [ability a 2 HeroAction corruptionExists NoCost (runAbility a 2),ability a 3 AlterEgoAction NoCriteria (MultiResourceCost $ replicate 3 $ Just Mental) (runAbility a 3)]
     "65064" -> [windowAbility a 4 (W.MakesBasicAttack W.After $ IdentityWithId you) ForcedResponse NoCost (runAbility a 4) | Just you <- [attachmentIdentity a]]
-    "65065" -> [windowAbility a 4 (W.MakesBasicThwartAgainst W.After (IdentityWithId you) AnyScheme) ForcedResponse NoCost (runAbility a 4) | Just you <- [attachmentIdentity a]]
+    "65065" -> [windowAbility a 4 (W.MakesBasicThwart W.After (IdentityWithId you)) ForcedResponse NoCost (runAbility a 4) | Just you <- [attachmentIdentity a]]
     _ -> []
    where corruptionExists = UpgradeExists (UpgradeControlledBy You <> UpgradeNamed "Creeping Corruption")
 instance RunMessage ShadowSpell where
@@ -50,10 +50,10 @@ instance RunMessage ShadowSpell where
       removeFromPlay a
       pure e
     RanAbility you (isTarget a -> True) 1 windows _ -> do
-      for_ [(vid,source) | W.VillainDamageFrom vid source _ <- windows] $ \(vid,source) -> do
+      for_ [(vid,source,damage) | W.VillainDamageFrom vid source damage <- windows] $ \(vid,source,damage) -> do
         who <- fromMaybe you <$> getSourceController source
         corrupt who 1
-        cancelEnemyDamage (EnemyVillainId vid)
+        unless (damageUnpreventable damage) $ cancelEnemyDamage (EnemyVillainId vid)
         removeFromPlay a
       pure e
     RanAbility you (isTarget a -> True) 2 _ _ -> corrupt you 2 >> removeFromPlay a >> pure e
