@@ -36,7 +36,7 @@ instance IsUpgrade LeaderRewardUpgrade where
   upgradeTargets (LeaderRewardUpgrade (a `With` _)) = case toCardCode a of
     "56135" -> do
       allies <- selectList AnyAlly
-      eligible <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards]) <$> getModifiers ally) allies
+      eligible <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards,CannotHaveAttachedUpgrades]) <$> getModifiers ally) allies
       pure $ Just $ map toTarget eligible
     code | code `elem` ["56131","56213"] -> do
       eligible <- friendlyLeaderExists (upgradeController a) (Just $ if code == "56131" then "56059" else "56168")
@@ -78,7 +78,7 @@ instance RunMessage LeaderRewardUpgrade where
       updated <- runMessage msg a
       case toCardCode a of
         "56135" | isNothing target -> do
-          allies <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards]) <$> getModifiers ally) =<< selectList AnyAlly
+          allies <- filterM (\ally -> (\mods -> all (`notElem` mods) [CannotHaveAttachedCards,CannotHaveAttachedPlayerCards,CannotHaveAttachedUpgrades]) <$> getModifiers ally) =<< selectList AnyAlly
           if null allies then removeFromPlay a else chooseOne (upgradeController a)
             [targeting ally $ upgradeStep uid (UpgradeAttachedToAlly ally) | ally <- allies]
         "56131" -> when (isNothing target) $ do

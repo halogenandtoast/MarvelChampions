@@ -147,6 +147,9 @@ windowMatches matcher w source = case matcher of
   CardWouldBeTuckedUnderIdentity identityMatcher -> case windowType w of
     WouldTuckEncounterCard ident _ | windowTiming w == Would -> identityMatches identityMatcher ident
     _ -> pure False
+  EnemyWouldReceiveBoost matcher' -> case windowType w of
+    EnemyReceivingBoost enemy | windowTiming w == Would -> enemyMatches matcher' enemy
+    _ -> pure False
   FacedownBoostCardGiven enemyMatcher -> case windowType w of
     FacedownBoostGiven enemy _ | windowTiming w == After -> enemyMatches enemyMatcher enemy
     _ -> pure False

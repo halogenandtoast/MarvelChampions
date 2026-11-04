@@ -49,6 +49,7 @@ data WindowMatcher
   | EncounterCardDealtTo IdentityMatcher
   | EncounterCardWouldBeDealt IdentityMatcher
   | CardWouldBeTuckedUnderIdentity IdentityMatcher
+  | EnemyWouldReceiveBoost EnemyMatcher
   | FacedownBoostCardGiven EnemyMatcher
   | BamfDefense WindowTiming IdentityMatcher
   | IdentityMakesBasicAttackOrThwart WindowTiming IdentityMatcher
@@ -307,6 +308,7 @@ data WindowType
   | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
   | WouldTuckEncounterCard IdentityId EncounterCard
+  | EnemyReceivingBoost EnemyId
   | FacedownBoostGiven EnemyId EncounterCard
   | ResolvedTreacheryCard IdentityId EncounterCard
   | HeroThwartComplete IdentityId

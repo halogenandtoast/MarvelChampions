@@ -152,7 +152,7 @@ recommendedSetup code = do
 recommendedModulars :: HashMap CardCode [EncounterSet.EncounterSet]
 recommendedModulars =
   fromList
-    ([("60121a",[EncounterSet.FneCops,EncounterSet.FneTheOwl]),("60128a",[EncounterSet.FneCops,EncounterSet.FneDrive]),("60142a",[EncounterSet.FneTheOwl,EncounterSet.FneTombstone]),("60151a",[EncounterSet.FneTombstone,EncounterSet.FneTracksuitMafia]),("60134a",[EncounterSet.FneDisasters,EncounterSet.FneTracksuitMafia])] <> civilWarRecommendedModules <> [("65001a",[EncounterSet.SlNinjaSwarm]),("65038a",[EncounterSet.SlNinjaSwarm]),("65060a",[EncounterSet.SlNinjaSwarm])] <> [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
+    ([("60121a",[EncounterSet.FneCops,EncounterSet.FneTheOwl]),("60128a",[EncounterSet.FneCops,EncounterSet.FneDrive]),("60142a",[EncounterSet.FneTheOwl,EncounterSet.FneTombstone]),("60151a",[EncounterSet.FneTombstone,EncounterSet.FneTracksuitMafia]),("60134a",[EncounterSet.FneDisasters,EncounterSet.FneTracksuitMafia]),("60161a",[EncounterSet.FneTombstone,EncounterSet.FneTracksuitMafia])] <> civilWarRecommendedModules <> [("65001a",[EncounterSet.SlNinjaSwarm]),("65038a",[EncounterSet.SlNinjaSwarm]),("65060a",[EncounterSet.SlNinjaSwarm])] <> [ ("55001", [EncounterSet.TricksterMagic]), ("55027a", [EncounterSet.TricksterMagic])
     , ("50064", [EncounterSet.AosAimAbduction, EncounterSet.AosAimScience])
     , ("50086a", [EncounterSet.AosAimScience, EncounterSet.AosBatrocsBrigade])
     , ("50103a", [EncounterSet.AosScientistSupreme])

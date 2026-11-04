@@ -41,6 +41,7 @@ data CardMatcher
   | CardWithAspect Aspect
   | CardWithResource Resource
   | CardWithTeamUp
+  | CardWithAbilitySubtype AbilitySubType
   | CardWithAbilityType AbilityType
   | CardWithType CardType
   | CardWithTrait Trait
@@ -74,6 +75,7 @@ cardMatch matcher a = case matcher of
   AnyCard -> True
   CardWithAspect aspect -> cdAspect def == Just aspect
   CardWithTeamUp -> isJust (cdTeamUp def)
+  CardWithAbilitySubtype subtype -> subtype `elem` cdAbilitySubTypes (getCardDef a)
   CardWithAbilityType ability -> cdAbilityType def == Just ability
   CardWithType cType -> cdCardType def == cType
   CardWithTrait trait -> trait `member` cdTraits def

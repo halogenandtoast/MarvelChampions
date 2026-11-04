@@ -27,7 +27,7 @@ newtype Ambush = Ambush (Attrs Upgrade)
 instance IsUpgrade Ambush where
   upgradeTargets _ = do
     schemes <- selectList (NotSideScheme $ SideSchemeWithUpgrade $ UpgradeIs Cards.ambush)
-    legal <- filterM (fmap (\modifiers -> CannotHaveAttachedCards `notElem` modifiers && CannotHaveAttachedPlayerCards `notElem` modifiers) . getModifiers . SideSchemeRef) schemes
+    legal <- filterM (fmap (\modifiers -> CannotHaveAttachedCards `notElem` modifiers && CannotHaveAttachedPlayerCards `notElem` modifiers && CannotHaveAttachedUpgrades `notElem` modifiers) . getModifiers . SideSchemeRef) schemes
     pure $ Just $ map SideSchemeRef legal
 
 instance HasModifiersFor Ambush where

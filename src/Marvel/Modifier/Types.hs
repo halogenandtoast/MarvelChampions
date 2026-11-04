@@ -66,6 +66,7 @@ data Modifier
   | LoseKeyword Keyword
   | CannotRecover
   | CannotBeHealedByPlayerCards
+  | CannotHaveAttachedUpgrades
   | CannotHaveAttachedPlayerCards
   | ContinuouslyStunned
   | ContinuouslyConfused
@@ -96,6 +97,7 @@ data Modifier
   | DefenseModifierAgainst EnemyId Natural
   | AttacksCannotBeDefended
   | ReplacePowerWithDiscard Target
+  | ReplaceAttackOrThwartWithCounterRemoval AttachmentId
   | ReplaceHeroAttackWithDiscardAndStun Target
   | OnlyAttackAttachment AttachmentId
   | CannotAttackEnemy EnemyId

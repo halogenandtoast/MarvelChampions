@@ -546,3 +546,5 @@ mainSchemeMatcherForSource :: HasGame m => IdentityId -> Source -> SchemeMatcher
 getOwnedMainScheme :: HasGame m => IdentityId -> m (Maybe MainSchemeId)
 
 characterPlayAreaOwner :: HasGame m => CharacterId -> m (Maybe IdentityId)
+
+boostAssignmentEnemy :: Message -> Maybe EnemyId

@@ -8,7 +8,7 @@ module Marvel.ActiveCost (
 import Marvel.Prelude
 import Control.Monad (replicateM_)
 import System.Random.Shuffle (shuffleM)
-import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeDiscarded, CannotLeavePlayByCardAbilities, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost, AdditionalReadyCost))
+import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeDiscarded, CannotLeavePlayByCardAbilities, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedUpgrades, CannotHaveAttachedPlayerCards, ContinuouslyRecalculateResourceCost, AdditionalReadyCost))
 
 import Control.Monad.State
 import Data.List (partition, nub, nubBy)
@@ -133,7 +133,7 @@ payCostPartAs contributing activeCost cost = do
     TouchedDamageCost n -> do
       candidates <- selectList (CharacterOtherThan $ IdentityCharacter iid)
       host <- touchedHost iid
-      valid <- filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
+      valid <- filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms && CannotHaveAttachedUpgrades `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
       available <- canFindTouched iid
       if null valid || not available then abortPayment acid else chooseOne iid [targeting (characterRef c) do
         findAndAttachTouched iid c

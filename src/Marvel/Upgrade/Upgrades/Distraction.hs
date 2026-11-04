@@ -28,7 +28,7 @@ instance IsUpgrade Distraction where
   upgradeTargets _ = do
     candidates <- selectList (NotMinion $ MinionWithTrait Trait.Elite)
     minions <- filterM (\mid -> not <$> selectAny (EnemyWithId (toEnemy mid) <> EnemyWithUpgrade (UpgradeIs Cards.distraction))) candidates
-    legal <- filterM (fmap (\modifiers -> CannotHaveAttachedCards `notElem` modifiers && CannotHaveAttachedPlayerCards `notElem` modifiers) . getModifiers . MinionRef) minions
+    legal <- filterM (fmap (\modifiers -> CannotHaveAttachedCards `notElem` modifiers && CannotHaveAttachedPlayerCards `notElem` modifiers && CannotHaveAttachedUpgrades `notElem` modifiers) . getModifiers . MinionRef) minions
     pure $ Just $ map MinionRef legal
 
 instance HasModifiersFor Distraction where

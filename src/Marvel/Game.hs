@@ -230,6 +230,16 @@ data SimultaneousMinionAttackGroup = SimultaneousMinionAttackGroup
   deriving stock (Show, Eq, Generic)
   deriving anyclass (ToJSON, FromJSON)
 
+data FriendlyBoostContext = FriendlyBoostContext
+  { friendlyBoostAlly :: AllyId
+  , friendlyBoostAttack :: Bool
+  , friendlyBoostPending :: [EncounterCard]
+  , friendlyBoostRevealed :: [EncounterCard]
+  , friendlyBoostIcons :: Natural
+  , friendlyBoostKeywords :: [Keyword]
+  } deriving stock (Show,Eq,Generic)
+    deriving anyclass (ToJSON,FromJSON)
+
 data Game = Game
   { gamePrintedPlayerCounts :: [(Target, Int)]
   , gamePlayerCountContext :: Maybe Int
@@ -312,6 +322,7 @@ data Game = Game
   -- ^ Scoped boost text resolutions on minions that remain in play, innermost first.
   , gameBoostPlayerOverride :: Maybe IdentityId
   -- ^ Query-only override while dispatching one in-play minion's boost text.
+  , gameFriendlyBoosts :: [FriendlyBoostContext]
   , gamePlayerBoostCards :: [(CardId, PlayerCard)]
   -- ^ Original player cards temporarily represented by facedown boost cards.
   , gameCollection :: [Card]
@@ -444,6 +455,7 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "defeatedMinionBoosts" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "inPlayBoosts" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "boostPlayerOverride" Null
+            . KeyMap.insertWith (\_ existing -> existing) "friendlyBoosts" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playerBoostCards" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))
@@ -1033,15 +1045,16 @@ getBoostedPlayer enemy = getsGame gameBoostPlayerOverride >>= maybe (getActualBo
 
 getActualBoostedPlayer :: HasGame m => EnemyId -> m IdentityId
 getActualBoostedPlayer enemy = do
+  friendly <- getsGame $ \g -> case enemy of EnemyMinionId mid -> friendlyProxyAlly g mid >>= (fmap getAllyController . (`lookup` gameAllies g)); _ -> Nothing
   attacking <- case enemy of
     EnemyAttachmentId _ -> pure Nothing
     EnemyVillainId vid -> getVillainAttack vid
-    EnemyMinionId mid -> getsGame (\g -> Minion.minionAttacking . toAttrs =<< lookup mid (gameMinions g))
+    EnemyMinionId mid -> getsGame (\g -> (Minion.minionAttacking . toAttrs =<< lookup mid (gameMinions g)) <|> friendlyBoostAttackView g mid)
   defender <- case attackCharacter <$> attacking of
     Just (IdentityCharacter who) -> pure $ Just who
     Just (AllyCharacter aid) -> getSourceController (AllyRef aid)
     _ -> pure Nothing
-  case defender of
+  case friendly <|> defender of
     Just who -> pure who
     Nothing -> case enemy of
       EnemyAttachmentId _ -> getActivePlayerId
@@ -1333,7 +1346,7 @@ canonicalAttachmentTarget g target = case target of
 
 -- | The card a game element in play was made from, by its ref.
 cardInPlay :: Game -> Target -> Maybe Card
-cardInPlay g = \case
+cardInPlay g raw = case friendlyBoostTarget g raw of
   VillainRef k@(VillainId uuid) -> (\villain -> EncounterCard $ MkEncounterCard (CardId uuid) (getCardDef villain)) <$> lookup k (gameVillains g)
   MainSchemeRef k -> toCard <$> lookup k (gameMainSchemes g)
   AllyRef k -> toCard <$> lookup k (gameAllies g)
@@ -2114,6 +2127,42 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gameWindows = map (map (\case
       W.Window timing (W.EngagedMinion _ other) | other == mid -> W.Window timing (W.EngagedMinion you mid)
       window -> window)) (g.gameWindows)}
+  CardSpecific GameRef "blackCatCheckAlly" (fromJSON -> Success (aid :: AllyId)) -> do
+    threat <- getCharacterThreat $ AllyCharacter aid
+    when (threat /= 4) $ restoreControlledMinion aid
+    pure g
+  CardSpecific GameRef "beginFriendlyBoost" (fromJSON -> Success (aid,attacking,original :: Message)) -> do
+    let context = FriendlyBoostContext aid attacking [] [] 0 []
+    let enemy = EnemyMinionId $ MinionId $ unAllyId aid
+        owner = maybe (gameActivePlayer g) getAllyController $ lookup aid $ gameAllies g
+    checkWindows [W.Window W.When $ W.EnemyActivation enemy owner]
+    dealBoost $ MinionId $ unAllyId aid
+    cardSpecific GameRef "flipFriendlyBoosts" (aid,original)
+    cardSpecific GameRef "finishFriendlyBoost" aid
+    checkWindows [W.Window W.After $ W.EnemyActivation enemy owner]
+    pure g {gameFriendlyBoosts=context:gameFriendlyBoosts g}
+  MinionMessage mid (MinionDealtBoost card) | Just aid <- friendlyProxyAlly g mid ->
+    pure $ modifyFriendlyBoost aid (\context -> context {friendlyBoostPending=friendlyBoostPending context <> [card]}) g
+  MinionMessage mid (MinionAddBoost n) | Just aid <- friendlyProxyAlly g mid ->
+    pure $ modifyFriendlyBoost aid (\context -> context {friendlyBoostIcons=friendlyBoostIcons context+n}) g
+  MinionMessage mid (MinionAttackGains keyword) | Just aid <- friendlyProxyAlly g mid ->
+    pure $ modifyFriendlyBoost aid (\context -> context {friendlyBoostKeywords=nub $ keyword:friendlyBoostKeywords context}) g
+  WithBoostIcons (MinionRef mid) _ counts | isJust (friendlyProxyAlly g mid) -> do
+    minionStep mid (MinionAddBoost $ sum $ map snd counts)
+    pure g
+  CardSpecific GameRef "flipFriendlyBoosts" (fromJSON -> Success (aid,original :: Message)) -> do
+    let cards = maybe [] friendlyBoostPending $ find ((== aid) . friendlyBoostAlly) (gameFriendlyBoosts g)
+        mid = MinionId $ unAllyId aid
+    for_ cards $ \card -> revealBoostCard card mid >> countActivationBoostIcons mid [card]
+    if null cards then cardSpecific GameRef "friendlyPowerReady" (aid,original) else cardSpecific GameRef "flipFriendlyBoosts" (aid,original)
+    pure $ modifyFriendlyBoost aid (\context -> context {friendlyBoostPending=[],friendlyBoostRevealed=friendlyBoostRevealed context <> cards}) g
+  CardSpecific GameRef "friendlyPowerReady" (fromJSON -> Success (aid,original :: Message)) -> do
+    next <- if HashMap.member aid (gameAllies g) then runReaderT (dispatchGameMessage original g) (refreshTraits g) else pure g
+    pure next
+  CardSpecific GameRef "finishFriendlyBoost" (fromJSON -> Success (aid :: AllyId)) -> do
+    for_ (find ((== aid) . friendlyBoostAlly) (gameFriendlyBoosts g)) $ \context ->
+      for_ (friendlyBoostRevealed context <> friendlyBoostPending context) $ \card -> whenM (isCurrentBoostCard card) $ consumeBoostCard card >> discardCard card
+    pure g {gameFriendlyBoosts=filter ((/= aid) . friendlyBoostAlly) $ gameFriendlyBoosts g}
   CardSpecific GameRef "racketChooseBusinesses" (fromJSON -> Success (players :: [IdentityId])) -> do
     case players of
       [] -> pure ()
@@ -3776,9 +3825,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       let m = toAttrs minion
           aid = AllyId $ unMinionId mid
           printed = Minion.minionCardDef m
-          def = printed {cdCardType = AllyType, cdKeywords = mempty,
+          def = printed {cdCardType = AllyType, cdKeywords = if toCardCode printed == "60169" then cdKeywords printed else mempty,
             cdTraits = HashSet.insert Controlled (cdTraits printed)}
-          base = toAttrs $ lookupAlly "xcontrolledminion" controller aid
+          base = toAttrs $ lookupAlly (if toCardCode printed == "60169" then "60169" else "xcontrolledminion") controller aid
           a = base
             { Ally.allyCardDef = def
             , Ally.allyExhausted = Minion.minionExhausted m
@@ -3807,7 +3856,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       minionDisengages (minionEngagedIdentity m) mid
       identityStep controller (AllyCreated aid)
       pure $ g & (entitiesL . minionsL %~ deleteMap mid)
-        & (entitiesL . alliesL %~ insertMap aid (Ally.Ally $ ControlledMinion a))
+        & (entitiesL . alliesL %~ insertMap aid (if toCardCode printed == "60169" then setBlackCatAllyAttrs controller aid a else Ally.Ally $ ControlledMinion a))
         & \game -> game {gameCharacterThreat = [(if character == MinionCharacter mid then AllyCharacter aid else character, n) | (character,n) <- game.gameCharacterThreat]}
   RestoreControlledMinion aid -> case lookup aid (gameAllies g) of
     Just ally | Just original <- Ally.allyOriginalMinion (toAttrs ally) -> case fromJSON original of
@@ -4624,6 +4673,22 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage original@(AllyMessage aid power) g | power `elem` [AllyAttacked,AllyThwarted],not (any ((== aid) . friendlyBoostAlly) $ gameFriendlyBoosts g) = runQueueT do
+    let attacking = power == AllyAttacked
+    keyword <- case lookup aid (gameAllies g) of
+      Nothing -> pure False
+      Just ally -> do
+        blanked <- isBlanked (AllyRef aid)
+        mods <- getModifiers ally
+        pure $ Villainous `elem` ([k | not blanked,k <- toList $ cdKeywords $ getCardDef ally] <> [k | KeywordModifier k <- mods])
+    replaced <- characterHasCondition (if attacking then StunnedStatus else ConfusedStatus) (AllyCharacter aid)
+    if keyword && not replaced then cardSpecific GameRef "beginFriendlyBoost" (aid,attacking,original) >> pure g else dispatchGameMessage original g
+  runMessage original g | Just translated <- friendlyBoostMessage g original = dispatchGameMessage translated g
+  runMessage (ResolveBoostAssignment original) g = dispatchGameMessage original g
+  runMessage original g | Just enemy <- boostAssignmentEnemy original = runQueueT do
+    checkWindows [W.Window W.Would $ W.EnemyReceivingBoost enemy]
+    push $ ResolveBoostAssignment original
+    pure g
   runMessage (ResolveReadiedUpgrade uid) g = dispatchGameMessage (UpgradeMessage uid ReadiedUpgrade) g
   runMessage (UpgradeMessage uid ReadiedUpgrade) g = runQueueT do
     modifiers <- getModifiers (UpgradeRef uid)
@@ -5165,7 +5230,9 @@ dispatchGameMessageCore msg g = do
     runQueueT $ when (any (\(sid,support) -> DailyBugle `HashSet.member` cdTraits (getCardDef support) && not (HashMap.member sid $ gameSupports after)) (HashMap.toList $ gameSupports g)) $ gameOver Lost
   when (any (isJust . mainSchemeOwner . toAttrs) (HashMap.elems $ gameMainSchemes after) && any (\ident -> not $ HashMap.member ident $ gamePlayers after) (HashMap.keys $ gamePlayers g)) $
     runQueueT $ gameOver Lost
-  synchronizeDeceivedAllies after
+  blackCats <- foldM (\state aid -> runReaderT (runGameMessage (RestoreControlledMinion aid) state) (refreshTraits state)) after
+    [aid | (aid,ally) <- HashMap.toList (gameAllies after),toCardCode (getCardDef ally) == "60169",isJust $ Ally.allyOriginalMinion $ toAttrs ally,fromMaybe 0 (Data.List.lookup (AllyCharacter aid) $ gameCharacterThreat after) /= 4]
+  synchronizeDeceivedAllies blackCats
 
 characterDamageMessage :: Message -> Maybe (CharacterId,Source,Damage)
 characterDamageMessage message = case message of
@@ -5336,7 +5403,7 @@ getPlayTargets ident card = case cdCardType (getCardDef card) of
   _ -> pure Nothing
 
 attachable :: (HasGame m) => Target -> m Bool
-attachable t = (\mods -> CannotHaveAttachedCards `notElem` mods && CannotHaveAttachedPlayerCards `notElem` mods) <$> getModifiers t
+attachable t = (\mods -> CannotHaveAttachedCards `notElem` mods && CannotHaveAttachedPlayerCards `notElem` mods && CannotHaveAttachedUpgrades `notElem` mods) <$> getModifiers t
 
 createAlly :: IdentityId -> PlayerCard -> Ally
 createAlly ident card =
@@ -5461,6 +5528,7 @@ newGame player scenario =
     , gameDefeatedMinionBoosts = []
     , gameInPlayBoosts = []
     , gameBoostPlayerOverride = Nothing
+    , gameFriendlyBoosts = []
     , gamePlayerBoostCards = []
     , gameCollection = []
     , gameCollecting = []
@@ -5952,7 +6020,7 @@ encounterCardCanBeCanceled card = do
     pure $ CannotBeCanceled `notElem` (printed <> modifiers)
 
 abilityCardDef :: Game -> Target -> Maybe CardDef
-abilityCardDef g = \case
+abilityCardDef g raw = case friendlyBoostTarget g raw of
   UpgradeRef uid ->
     getCardDef <$> (lookup uid (gameUpgrades g) <|> lookup uid (g ^. removedEntitiesL . upgradesL))
   SupportRef sid -> supportCardDef . toAttrs <$> (lookup sid (gameSupports g) <|> lookup sid (g ^. removedEntitiesL . supportsL))
@@ -6115,7 +6183,7 @@ threatSourceCharacter = \case
   EnemyRef enemy -> pure $ Just $ toCharacter enemy
   IdentityRef you -> pure $ Just $ IdentityCharacter you
   AllyRef ally -> pure $ Just $ AllyCharacter ally
-  MinionRef minion -> pure $ Just $ MinionCharacter minion
+  MinionRef minion -> getsGame $ \g -> Just $ maybe (MinionCharacter minion) AllyCharacter (friendlyProxyAlly g minion)
   VillainRef villain -> pure $ Just $ VillainCharacter villain
   source@(EventRef _) -> fmap IdentityCharacter <$> getSourceController source
   source@(UpgradeRef uid) -> do
@@ -7741,8 +7809,11 @@ inElementArea target body = do
 getModifiers :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiers a = do
   g <- getGame
-  let target = canonicalAttachmentTarget g (toTarget a)
-  inElementArea target $ getModifiersInContext target
+  let target = friendlyBoostTarget g $ canonicalAttachmentTarget g (toTarget a)
+      bonuses = case target of
+        AllyRef aid -> [modifier | context <- gameFriendlyBoosts g,friendlyBoostAlly context == aid,modifier <- [AttackModifier $ friendlyBoostIcons context,ThwartModifier $ friendlyBoostIcons context] <> map KeywordModifier (friendlyBoostKeywords context)]
+        _ -> []
+  (bonuses <>) <$> inElementArea target (getModifiersInContext target)
 
 getModifiersInContext :: (HasGame m, IsRef a) => a -> m [Modifier]
 getModifiersInContext a = withDepthGuard 2 $ do
@@ -8335,9 +8406,10 @@ replaceHeroAttackWithDiscardAndStun :: (HasGame m, HasQueue m, MonadThrow m, Mon
 replaceHeroAttackWithDiscardAndStun who = runQueueT do
   hero <- identityMatches HeroIdentity who
   modifiers <- getModifiers (IdentityRef who)
+  gripped <- replaceAttackOrThwartWithCounterRemoval who
   let targets = [(t,True) | ReplaceHeroAttackWithDiscardAndStun t <- modifiers, hero]
         <> [(t,False) | ReplacePowerWithDiscard t <- modifiers]
-  if null targets then pure False else do
+  if gripped then pure True else if null targets then pure False else do
     chooseOrRunOne who [targeting target (removeFromPlay target >> when stunAfter (stunIdentity who)) | (target,stunAfter) <- targets]
     pure True
 
@@ -8457,6 +8529,10 @@ cancelLabeledAbility you labels = do
   when stops $ removeStun you
   when baffles $ removeConfused you
   if stops || baffles then pure True
+  else if any (`elem` labels) [Ability.Attack,Ability.Thwart] then do
+    replaced <- replaceAttackOrThwartWithCounterRemoval you
+    if replaced then pure True
+    else if Ability.Attack `elem` labels then replaceHeroAttackWithDiscardAndStun you else replacePowerWithDiscard you
   else if Ability.Attack `elem` labels then replaceHeroAttackWithDiscardAndStun you
   else if Ability.Thwart `elem` labels then replacePowerWithDiscard you
   else pure False
@@ -8741,7 +8817,7 @@ getEnemyAttack :: HasGame m => EnemyId -> m (Maybe Attack)
 getEnemyAttack = \case
   EnemyAttachmentId _ -> pure Nothing
   EnemyVillainId vid -> getVillainAttack vid
-  EnemyMinionId mid -> getsGame (\g -> Minion.minionAttacking . toAttrs =<< lookup mid (gameMinions g))
+  EnemyMinionId mid -> getsGame (\g -> (Minion.minionAttacking . toAttrs =<< lookup mid (gameMinions g)) <|> friendlyBoostAttackView g mid)
 
 
 -- | Remaining hit points used for highest/lowest target comparisons.
@@ -9944,3 +10020,55 @@ characterPlayAreaOwner character = case character of
   AllyCharacter aid -> getSourceController $ AllyRef aid
   MinionCharacter mid -> getsGame $ fmap (minionEngagedIdentity . toAttrs) . (\g -> lookup mid (gameMinions g) <|> lookup mid (entitiesMinions $ gameRemovedEntities g))
   _ -> pure Nothing
+
+replaceAttackOrThwartWithCounterRemoval :: ReverseQueue m => IdentityId -> m Bool
+replaceAttackOrThwartWithCounterRemoval you = do
+  modifiers <- getModifiers (IdentityRef you)
+  let attachments = [aid | ReplaceAttackOrThwartWithCounterRemoval aid <- modifiers]
+  unless (null attachments) $ chooseOrRunOne you [targeting aid (removeCounters aid 1) | aid <- attachments]
+  pure $ notNull attachments
+
+boostAssignmentEnemy :: Message -> Maybe EnemyId
+boostAssignmentEnemy = \case
+  DealBoost target -> case target of VillainRef vid -> Just $ EnemyVillainId vid; MinionRef mid -> Just $ EnemyMinionId mid; EnemyRef enemy -> Just enemy; _ -> Nothing
+  CardSpecific GameRef "giveCardAsBoost" (fromJSON -> Success (_ :: Card,enemy :: EnemyId)) -> Just enemy
+  CardSpecific GameRef "giveDefeatedMinionAsBoost" (fromJSON -> Success (_ :: MinionId,enemy :: EnemyId)) -> Just enemy
+  _ -> Nothing
+
+friendlyProxyAlly :: Game -> MinionId -> Maybe AllyId
+friendlyProxyAlly g mid = friendlyBoostAlly <$> find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (gameFriendlyBoosts g)
+
+modifyFriendlyBoost :: AllyId -> (FriendlyBoostContext -> FriendlyBoostContext) -> Game -> Game
+modifyFriendlyBoost aid f g = g {gameFriendlyBoosts=[if friendlyBoostAlly context == aid then f context else context | context <- gameFriendlyBoosts g]}
+
+friendlyBoostTarget :: Game -> Target -> Target
+friendlyBoostTarget g target = case target of
+  MinionRef mid | Just aid <- friendlyProxyAlly g mid -> AllyRef aid
+  EnemyRef (EnemyMinionId mid) | Just aid <- friendlyProxyAlly g mid -> AllyRef aid
+  CharacterRef (MinionCharacter mid) | Just aid <- friendlyProxyAlly g mid -> AllyRef aid
+  _ -> target
+
+friendlyBoostMessage :: Game -> Message -> Maybe Message
+friendlyBoostMessage g = \case
+  GiveStatus target status | let actual = friendlyBoostTarget g target,actual /= target -> Just $ GiveStatus actual status
+  MinionMessage mid message | Just aid <- friendlyProxyAlly g mid -> case message of
+    MinionStunned _ -> Just $ AllyMessage aid AllyStunned
+    MinionConfused _ -> Just $ AllyMessage aid AllyConfused
+    MinionBecomeTough -> Just $ GiveStatus (AllyRef aid) ToughStatus
+    MinionDamaged source damage -> Just $ AllyMessage aid $ AllyDamaged source damage
+    MinionHealed n -> Just $ AllyMessage aid $ AllyHealed n
+    _ -> Nothing
+  _ -> Nothing
+
+friendlyBoostAttackView :: Game -> MinionId -> Maybe Attack
+friendlyBoostAttackView g mid = do
+  context <- find ((== unMinionId mid) . unAllyId . friendlyBoostAlly) (gameFriendlyBoosts g)
+  guard $ friendlyBoostAttack context
+  villain <- headMay $ HashMap.keys $ gameVillains g
+  pure $ attackWith (friendlyBoostKeywords context) (EnemyMinionId mid) (VillainCharacter villain) 0
+
+setBlackCatAllyAttrs :: IdentityId -> AllyId -> Attrs Ally -> Ally
+setBlackCatAllyAttrs controller aid attrs = case lookupAlly "60169" controller aid of
+  Ally.Ally (_ :: a) -> case fromJSON (toJSON attrs) of
+    Success (value :: a) -> Ally.Ally value
+    Error err -> error $ "invalid Black Cat ally state: " <> err

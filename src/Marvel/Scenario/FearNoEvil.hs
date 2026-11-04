@@ -7,6 +7,7 @@ import Marvel.Difficulty
 import Marvel.EncounterCard (genEncounterCard)
 import Marvel.EncounterSet qualified as Set
 import Marvel.FearNoEvil.Cards qualified as Cards
+import Marvel.FearNoEvil.Kingpin qualified as Kingpin
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -21,12 +22,21 @@ newtype FearNoEvilScenario = FearNoEvilScenario (Attrs Scenario)
 -- Each standalone scenario chooses its underling before generating its encounter deck.
 -- The campaign will supply its recorded assignment through the same continuation.
 fearNoEvilScenarios :: [ScenarioCard FearNoEvilScenario]
-fearNoEvilScenarios = [scenario FearNoEvilScenario code ("60086","60087") [main] [set] | (code,main,set) <-
+fearNoEvilScenarios = kingpinScenario : [scenario FearNoEvilScenario code ("60086","60087") [main] [set] | (code,main,set) <-
   [("60121a","60121b",Set.FneArtMuseumHeist),("60128a","60128b",Set.FneTheGetaway),("60142a","60142b",Set.FneTheRaftBreakout),("60151a","60151b",Set.FneStopThePresses),("60134a","60134b",Set.FneProtectionRacket)]]
+kingpinScenario :: ScenarioCard FearNoEvilScenario
+kingpinScenario = scenario FearNoEvilScenario "60161a" ("60159a","60160a") ["60161b","60162b"] [Set.FneKingpin]
+
 underlings :: [(CardCode,CardCode,Set.EncounterSet)]
 underlings = [("60065","60066",Set.FneBullseye),("60076","60077",Set.FneElectro),("60086","60087",Set.FneHammerhead),("60097","60098",Set.FnePurpleMan),("60110a","60111a",Set.FneTyphoidMary)]
 instance RunMessage FearNoEvilScenario where
   runMessage msg e@(FearNoEvilScenario a) = runQueueT $ case msg of
+    StartScenario | scenarioId a == "60161a" -> FearNoEvilScenario <$> runMessage StartScenario a {scenarioEncounterSets=foldr HashSet.delete (scenarioEncounterSets a) [Set.Standard,Set.StandardII,Set.StandardIII]}
+    CardSpecific GameRef "kingpinNemesis" (fromJSON -> Success (you,initial)) -> Kingpin.revealKingpinNemesis you initial >> pure e
+    CardSpecific GameRef "kingpinNemesisEntered" (fromJSON -> Success (you,cid :: CardId)) -> do
+      entered <- selectAny $ MinionWithId $ MinionId $ unCardId cid
+      unless entered $ Kingpin.findUnderling you
+      pure e
     StartScenario -> do
       first <- selectJust FirstPlayer
       chooseOne first [cardLabeled normal $ cardSpecific GameRef "fneChooseUnderling" normal | (normal,_,_) <- underlings]

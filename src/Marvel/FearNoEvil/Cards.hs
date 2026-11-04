@@ -1094,7 +1094,7 @@ street60159a :: CardDef
 street60159a = (hoodCardDef "60159a" "Kingpin" Set.FneKingpin VillainType 0)
   { cdTraits = fromList [T.Criminal]
   , cdUnique = True
-  , cdKeywords = fromList []
+  , cdKeywords = fromList [K.Stalwart]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = ["60159b"]
@@ -1124,7 +1124,7 @@ street60160b :: CardDef
 street60160b = (hoodCardDef "60160b" "Kingpin" Set.FneKingpin VillainType 0)
   { cdTraits = fromList [T.Criminal, T.MartialArtist]
   , cdUnique = True
-  , cdKeywords = fromList []
+  , cdKeywords = fromList [K.Steady]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = ["60160a"]
@@ -1286,7 +1286,7 @@ street60173 = (hoodCardDef "60173" "Kingpin's Influence" Set.FneKingpin SideSche
   , cdUnique = False
   , cdKeywords = fromList []
   , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
-  , cdHazards = 1, cdAcceleration = 0, cdAmplify = 0
+  , cdHazards = 1, cdAcceleration = 1, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
 

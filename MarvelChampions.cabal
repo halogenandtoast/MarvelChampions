@@ -1159,6 +1159,10 @@ library
     Marvel.FearNoEvil.Raft
     Marvel.FearNoEvil.Presses
     Marvel.FearNoEvil.Racket
+    Marvel.FearNoEvil.Kingpin
+    Marvel.FearNoEvil.KingpinEquipment
+    Marvel.FearNoEvil.KingpinMinions
+    Marvel.FearNoEvil.KingpinTreacheries
     Marvel.Scenario.FearNoEvil
       Marvel.FearNoEvil.OwlTombstone
       Marvel.FearNoEvil.TracksuitMafia

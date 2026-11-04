@@ -667,5 +667,57 @@
     "quantity": 2,
     "boost": 1,
     "boostStar": true
+  },
+  "60164": {
+    "boost": 2,
+    "boostStar": false
+  },
+  "60165": {
+    "boost": 0,
+    "boostStar": true
+  },
+  "60166": {
+    "boost": 1,
+    "boostStar": true
+  },
+  "60167": {
+    "boost": 2,
+    "boostStar": false
+  },
+  "60168": {
+    "boost": 0,
+    "boostStar": true
+  },
+  "60169": {
+    "boost": 2,
+    "boostStar": false
+  },
+  "60170": {
+    "boost": 2,
+    "boostStar": true
+  },
+  "60171": {
+    "boost": 3,
+    "boostStar": false
+  },
+  "60172": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 4,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60173": {
+    "baseThreat": 2,
+    "baseThreatPerHero": true,
+    "acceleration": 1,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60174": {
+    "baseThreat": 3,
+    "baseThreatPerHero": true,
+    "boost": 2,
+    "boostStar": false
   }
 }

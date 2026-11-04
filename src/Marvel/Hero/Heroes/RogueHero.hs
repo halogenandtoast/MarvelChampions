@@ -40,7 +40,7 @@ instance HasAbilities RogueHero where
 rogueContactTargets :: HasGame m => IdentityId -> m [CharacterId]
 rogueContactTargets you = do
   characters <- selectList (CharacterOtherThan $ IdentityCharacter you)
-  filterM (fmap (notElem CannotHaveAttachedPlayerCards) . getModifiers . characterRef) characters
+  filterM (fmap (\mods -> CannotHaveAttachedPlayerCards `notElem` mods && CannotHaveAttachedUpgrades `notElem` mods) . getModifiers . characterRef) characters
 
 -- A type change does not make a character leave play.
 rogueCharacterInPlay :: HasGame m => CharacterId -> m Bool

@@ -13,7 +13,7 @@ import Marvel.Card.Def
       CardType(MinionType, SideSchemeType),
       HasCardDef(getCardDef) )
 
-import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeConfused, KeywordModifier, CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, AllyBasicPowerAdditionalCost, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, AdditionalChangeFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
+import Marvel.Modifier.Types (Modifier (CannotBeHealedByPlayerCards, CannotBeConfused, KeywordModifier, CannotBeDiscarded, CannotLeavePlay, CannotLeavePlayByCardAbilities, CannotActivate, AllyBasicPowerAdditionalCost, BasicAttackAdditionalCost, AdditionalChangeToHeroFormCost, AdditionalChangeFormCost, DamageReduction, CannotTakeDamage, CannotTakeDamageFromPlayerCards, CannotHaveAttachedUpgrades, CannotHaveAttachedPlayerCards, AdditionalReadyCost))
 import Marvel.Keyword (Keyword (Permanent, Stalwart, Steady))
 
 import Data.List qualified as L
@@ -140,7 +140,7 @@ canAffordCost identityId source cost = do
       candidates <- selectList (CharacterOtherThan $ IdentityCharacter identityId)
       host <- touchedHost identityId
       available <- canFindTouched identityId
-      (available &&) . notNull <$> filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
+      (available &&) . notNull <$> filterM (fmap (\ms -> CannotHaveAttachedPlayerCards `notElem` ms && CannotHaveAttachedUpgrades `notElem` ms) . getModifiers . characterRef) (filter (\c -> Just c /= host) candidates)
     DamageCharacterCost matcher _ -> do
       candidates <- selectList matcher
       notNull <$> filterM (fmap (\ms -> CannotTakeDamage `notElem` ms && CannotTakeDamageFromPlayerCards `notElem` ms) . getModifiers . characterRef) candidates

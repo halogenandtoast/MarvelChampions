@@ -512,6 +512,7 @@ data Message
   | GainSurge Target
   | -- | Report a positive placement to the source after prevention and replacement.
     WithThreatPlacementResult Source Message
+  | ResolveBoostAssignment Message
   | ResolveReadiedUpgrade UpgradeId
   | ResolveCharacterThreatRemoval Message
   | Surge IdentityId
@@ -770,6 +771,7 @@ data ReplaceKind = Swapped | Advanced
 -- the original message, while the continuation retains which windows have run.
 queuedMessage :: Message -> Message
 queuedMessage = \case
+  ResolveBoostAssignment original -> queuedMessage original
   ResolveReadiedUpgrade uid -> UpgradeMessage uid ReadiedUpgrade
   ResolveCharacterThreatRemoval original -> queuedMessage original
   WithThreatPlacementResult _ original -> queuedMessage original
@@ -782,6 +784,7 @@ queuedMessage = \case
 -- kinds normally. Canceling the raw damage therefore cancels its continuation.
 rewrapQueuedMessages :: Message -> [Message] -> [Message]
 rewrapQueuedMessages (WithSimultaneousAttackContext cursor original) = map (WithSimultaneousAttackContext cursor) . rewrapQueuedMessages original
+rewrapQueuedMessages (ResolveBoostAssignment _) = map ResolveBoostAssignment
 rewrapQueuedMessages (ResolveReadiedUpgrade _) = map (\case UpgradeMessage uid ReadiedUpgrade -> ResolveReadiedUpgrade uid; message -> message)
 rewrapQueuedMessages (ResolveCharacterThreatRemoval original) = map wrap . rewrapQueuedMessages original
  where
@@ -817,6 +820,7 @@ enemyDamageMessage = \case
 -- A replacement may remove a child or insert several messages in its position.
 queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]
 queuedChildEdits message = case message of
+  ResolveBoostAssignment original -> [(original,rewrapQueuedMessages message)]
   ResolveCharacterThreatRemoval original -> [(original,rewrapQueuedMessages message)]
   WithThreatPlacementResult source original -> [(original,map $ reportingThreatPlacement source)]
   WithSimultaneousAttackContext cursor original -> [(original, map (WithSimultaneousAttackContext cursor))]

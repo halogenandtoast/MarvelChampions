@@ -3711,3 +3711,6 @@ discardKnownEncounterCardFromDeck you card = do
     removeEncounterCardFromPiles card
     discardCard card
     checkWindows [W.Window W.After $ W.PlayerDiscardedFromEncounterDeck you card]
+
+preventBoostAssignment :: (HasQueue m,IsEnemy enemy) => enemy -> m ()
+preventBoostAssignment enemy = cancelMatchingMessage $ (== Just (toEnemy enemy)) . boostAssignmentEnemy
