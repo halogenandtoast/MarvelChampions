@@ -3022,9 +3022,15 @@ test-suite MarvelChampions-test
       Marvel.Encounter.EnchantressSpec
       Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.FalconNemesisSpec
+      Marvel.Encounter.FearNoEvilChaseArtSpec
       Marvel.Encounter.FearNoEvilCoverageSpec
+      Marvel.Encounter.FearNoEvilHammerheadSpec
+      Marvel.Encounter.FearNoEvilMarySpec
+      Marvel.Encounter.FearNoEvilPressesSpec
+      Marvel.Encounter.FearNoEvilPurpleManSpec
       Marvel.Encounter.FearNoEvilScenarioSpec
       Marvel.Encounter.FearNoEvilSpec
+      Marvel.Encounter.FearNoEvilUnderlingsSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GambitNemesisSpec
       Marvel.Encounter.GamoraNemesisSpec
