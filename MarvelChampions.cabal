@@ -3026,6 +3026,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.FearNoEvilChaseArtSpec
       Marvel.Encounter.FearNoEvilCoverageSpec
       Marvel.Encounter.FearNoEvilHammerheadSpec
+      Marvel.Encounter.FearNoEvilKingpinEquipmentSpec
       Marvel.Encounter.FearNoEvilMarySpec
       Marvel.Encounter.FearNoEvilPressesSpec
       Marvel.Encounter.FearNoEvilPurpleManSpec
