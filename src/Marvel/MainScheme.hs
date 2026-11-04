@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Marvel.MainScheme where
 
+import Marvel.FearNoEvil.Getaway qualified as Getaway
+
 import Marvel.FearNoEvil.ArtMuseum qualified as Art
 
 import Marvel.Shadowland.MainSchemes qualified as ShadowSchemes
@@ -53,7 +55,7 @@ withMainSchemeCardCode cCode f = case lookup cCode allMainSchemes of
   Just (SomeMainSchemeCard a) -> f a
 
 allMainSchemes :: HashMap CardCode SomeMainSchemeCard
-allMainSchemes = fromList $ [(toCardCode Art.museumHeist,SomeMainSchemeCard Art.museumHeist)] <>  [(toCardCode card,SomeMainSchemeCard card) | card <- ShadowSchemes.shadowMainSchemes] <>  map (toFst someMainSchemeCardCode) (map SomeMainSchemeCard CW.civilWarMainSchemes) <> map (toFst someMainSchemeCardCode) [ SomeMainSchemeCard AosEncounter.aos50067b, SomeMainSchemeCard AosEncounter.aos50087b, SomeMainSchemeCard AosEncounter.aos50088b, SomeMainSchemeCard AosEncounter.aos50089b, SomeMainSchemeCard AosEncounter.aos50104b, SomeMainSchemeCard AosEncounter.aos50130b, SomeMainSchemeCard AosEncounter.aos50167b, SomeMainSchemeCard AosEncounter.aos50168b, SomeMainSchemeCard AosEncounter.aos50169b] <> [
+allMainSchemes = fromList $ [(toCardCode Getaway.getaway,SomeMainSchemeCard Getaway.getaway)] <>  [(toCardCode Art.museumHeist,SomeMainSchemeCard Art.museumHeist)] <>  [(toCardCode card,SomeMainSchemeCard card) | card <- ShadowSchemes.shadowMainSchemes] <>  map (toFst someMainSchemeCardCode) (map SomeMainSchemeCard CW.civilWarMainSchemes) <> map (toFst someMainSchemeCardCode) [ SomeMainSchemeCard AosEncounter.aos50067b, SomeMainSchemeCard AosEncounter.aos50087b, SomeMainSchemeCard AosEncounter.aos50088b, SomeMainSchemeCard AosEncounter.aos50089b, SomeMainSchemeCard AosEncounter.aos50104b, SomeMainSchemeCard AosEncounter.aos50130b, SomeMainSchemeCard AosEncounter.aos50167b, SomeMainSchemeCard AosEncounter.aos50168b, SomeMainSchemeCard AosEncounter.aos50169b] <> [
   ("55004", SomeMainSchemeCard TT.tt55004b), ("55005", SomeMainSchemeCard TT.tt55005b), ("55028", SomeMainSchemeCard TT.tt55028b), ("55033", SomeMainSchemeCard TT.tt55033b),   ("39002", SomeMainSchemeCard mojo39002b), ("39015", SomeMainSchemeCard mojo39015b), ("39025", SomeMainSchemeCard mojo39025b)] <> map
   (toFst someMainSchemeCardCode)
   [ SomeMainSchemeCard TT.tt55004a, SomeMainSchemeCard TT.tt55004b, SomeMainSchemeCard TT.tt55005a, SomeMainSchemeCard TT.tt55005b, SomeMainSchemeCard TT.tt55028a, SomeMainSchemeCard TT.tt55028b, SomeMainSchemeCard TT.tt55033a, SomeMainSchemeCard TT.tt55033b

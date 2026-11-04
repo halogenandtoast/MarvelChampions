@@ -2217,7 +2217,7 @@
       "attack": 2,
       "scheme": 2,
       "boost": 0,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -2389,7 +2389,11 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_9.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 2,
+      "attack": 2,
+      "health": 5,
+      "boost": 3
     },
     {
       "name": "Jackknifed Tanker Truck",
@@ -2407,13 +2411,18 @@
       "position": 131,
       "faction": "encounter",
       "factionName": "Encounter",
-      "text": "[star] Hinder 1[per_hero].",
+      "text": "[star] Hinder 1[per_hero].\nThe villain cannot be dealt damage.",
       "image": "60131.avif",
       "bundledImage": true,
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_7.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 2,
+      "baseThreatPerHero": false,
+      "hazard": 1,
+      "boost": 1,
+      "boostStar": false
     },
     {
       "name": "Burning Rubber",
@@ -2423,7 +2432,7 @@
       "setCode": "the_getaway",
       "setType": "scenario",
       "traits": [],
-      "quantity": 1,
+      "quantity": 2,
       "code": "60132",
       "packCode": "fne",
       "packName": "Fear No Evil",
@@ -2437,7 +2446,9 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_10.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 2,
+      "boostStar": false
     },
     {
       "name": "Pedestrians",
@@ -2447,7 +2458,7 @@
       "setCode": "the_getaway",
       "setType": "scenario",
       "traits": [],
-      "quantity": 1,
+      "quantity": 2,
       "code": "60133",
       "packCode": "fne",
       "packName": "Fear No Evil",
@@ -2461,7 +2472,9 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_12.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 1,
+      "boostStar": false
     },
     {
       "name": "Protection Racket",

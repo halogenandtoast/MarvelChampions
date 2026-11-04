@@ -72,7 +72,7 @@
   "60129a": "Permanent. Attach to the villain.\nIf there is no threat on the main scheme, flip this card.\n[star] Attached villain’s attacks gain ranged.\n<b>Forced Interrupt</b>: When the villain would be dealt any amount of damage, remove that amount of threat from the main scheme instead (ignoring crisis ([crisis]) icons).",
   "60129b": "Permanent.\n<b>When Revealed</b>: Each player takes 1 indirect damage. The villain takes 2[per_hero] damage.",
   "60130": "Guard. Patrol.\nIf the number of speed counters on the main scheme is at least:\n• 3 — This minion gains toughness.\n• 6 — This minion also gains quickstrike.\n• 9 — This minion also gains surge.",
-  "60131": "[star] Hinder 1[per_hero].",
+  "60131": "[star] Hinder 1[per_hero].\nThe villain cannot be dealt damage.",
   "60132": "<b>When Revealed</b>: For each speed counter on the main scheme, choose:\n• Spend 1 resource of any type.\n• Place 1 threat on the main scheme.",
   "60133": "<b>When Revealed</b>: For each speed counter on the main scheme, choose:\n• Exhaust a character you control.\n• Take 1 indirect damage.",
   "60134a": "Contents: Chosen [[Underling]] villain (see rulebook p. 5). Chosen villain’s set, Protection Racket set, and Standard set. Two modular encounter sets (Disasters and Tracksuit Mafia).\n<b>Setup</b>: Each player chooses a single Protection Racket main scheme (at random in expert mode), places it in their play area, and flips it to its 1B side. Set each unused main scheme aside, out of play.",

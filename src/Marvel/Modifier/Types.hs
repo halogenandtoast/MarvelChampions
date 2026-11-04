@@ -157,6 +157,7 @@ data Modifier
     ThreatRemovalBonusInTotal
   | RecoveryPenalty Natural
   | RecoveryModifier Natural
+  | CannotBeDealtDamage
   | CannotTakeDamage
   | -- | on a character: it takes no damage from a player card, or from an effect one
     -- created (Sanctuary, errata)

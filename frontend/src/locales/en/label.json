@@ -759,5 +759,7 @@
   "fneExhaustForArt": "Exhaust your hero to take the art",
   "fnePayForArt": "Spend the required resource to take the art",
   "fneTakeArt": "Spend three physical resources to take an art piece",
-  "fneLoseArt": "Return an art piece to the villain and gain surge"
+  "fneLoseArt": "Return an art piece to the villain and gain surge",
+  "fneSpendResource": "Spend 1 resource",
+  "fnePlaceThreat": "Place 1 threat on the main scheme"
 }

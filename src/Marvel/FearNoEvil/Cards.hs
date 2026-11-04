@@ -735,7 +735,7 @@ street60130 = (hoodCardDef "60130" "Escort Vehicle" Set.FneTheGetaway MinionType
   { cdTraits = fromList [T.Vehicle]
   , cdUnique = False
   , cdKeywords = fromList [K.Guard, K.Patrol]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -745,27 +745,27 @@ street60131 = (hoodCardDef "60131" "Jackknifed Tanker Truck" Set.FneTheGetaway S
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList [K.Hinder (GV.PerPlayer 1)]
-  , cdBoostIcons = []
-  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdBoostIcons = [B.Boost]
+  , cdHazards = 1, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
 
 street60132 :: CardDef
-street60132 = (hoodCardDef "60132" "Burning Rubber" Set.FneTheGetaway TreacheryType 1)
+street60132 = (hoodCardDef "60132" "Burning Rubber" Set.FneTheGetaway TreacheryType 2)
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
 
 street60133 :: CardDef
-street60133 = (hoodCardDef "60133" "Pedestrians" Set.FneTheGetaway TreacheryType 1)
+street60133 = (hoodCardDef "60133" "Pedestrians" Set.FneTheGetaway TreacheryType 2)
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

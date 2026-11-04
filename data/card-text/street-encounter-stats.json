@@ -556,5 +556,36 @@
     "health": 4,
     "boost": 1,
     "boostStar": true
+  },
+  "60130": {
+    "scheme": 2,
+    "attack": 2,
+    "health": 5,
+    "boost": 3
+  },
+  "60131": {
+    "baseThreat": 2,
+    "baseThreatPerHero": false,
+    "hazard": 1,
+    "boost": 1,
+    "boostStar": false
+  },
+  "60126": {
+    "boost": 0,
+    "boostStar": true
+  },
+  "60127": {
+    "boost": 1,
+    "boostStar": false
+  },
+  "60132": {
+    "quantity": 2,
+    "boost": 2,
+    "boostStar": false
+  },
+  "60133": {
+    "quantity": 2,
+    "boost": 1,
+    "boostStar": false
   }
 }

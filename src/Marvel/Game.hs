@@ -4695,8 +4695,9 @@ instance RunMessage Game where
   runMessage (PrepareEnemyDamageGroup messages cursor) g = runQueueT do
     if cursor >= length messages then push $ TakeEnemyDamageGroup messages 0 [] else do
       let original = messages !! cursor
-      for_ (enemyDamageMessage original) $ \(enemy, source, damage) ->
-        push $ inSimultaneousAttackContext original $ CheckWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
+      for_ (enemyDamageMessage original) $ \(enemy, source, damage) -> do
+        barred <- elem CannotBeDealtDamage <$> getModifiers (enemyRef enemy)
+        unless barred $ push $ inSimultaneousAttackContext original $ CheckWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
       push $ PrepareEnemyDamageGroup messages (cursor + 1)
     pure g
   runMessage (TakeEnemyDamageGroup messages cursor deferred) g = runQueueT do
@@ -4706,9 +4707,11 @@ instance RunMessage Game where
     else do
       let original = messages !! cursor
           selected = messageAttackContext original g
-      windows <- runReaderT (enemyDamageTakenWindows original) (refreshTraits selected)
-      unless (null windows) $ push $ inSimultaneousAttackContext original $ CheckWindows windows
-      push $ ResolveEnemyDamageGroup messages cursor deferred
+      barred <- runReaderT (damageDealingForbidden original) (refreshTraits selected)
+      if barred then push $ TakeEnemyDamageGroup messages (cursor + 1) deferred else do
+        windows <- runReaderT (enemyDamageTakenWindows original) (refreshTraits selected)
+        unless (null windows) $ push $ inSimultaneousAttackContext original $ CheckWindows windows
+        push $ ResolveEnemyDamageGroup messages cursor deferred
     pure g
   runMessage (ResolveEnemyDamageGroup messages cursor deferred) g = do
     let original = messages !! cursor
@@ -4783,8 +4786,10 @@ instance RunMessage Game where
         pure g
   runMessage msg g
     | Just (enemy, source, damage) <- enemyDamageMessage msg = runQueueT do
-        checkWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
-        push $ PrepareEnemyDamage msg
+        barred <- damageDealingForbidden msg
+        unless barred $ do
+          checkWindows [W.Window W.When $ W.EnemyDamageWouldBeDealt enemy source damage]
+          push $ PrepareEnemyDamage msg
         pure g
     | Just mid <- departingMinion msg, HashMap.member mid (gameMinions g) = runQueueT do
         checkWindows [W.Window W.Would $ W.MinionLeavingPlay mid]
@@ -9817,3 +9822,10 @@ characterCanGainStatus character status = do
 
 getTargetCardDef :: HasGame m => Target -> m (Maybe CardDef)
 getTargetCardDef target = getsGame (`abilityCardDef` target)
+
+-- Dealing damage precedes taking it and all damage replacements. An absolute
+-- prohibition therefore answers before tough or Out Front can replace the packet.
+damageDealingForbidden :: HasGame m => Message -> m Bool
+damageDealingForbidden message = case enemyDamageMessage message of
+  Nothing -> pure False
+  Just (enemy,_,_) -> elem CannotBeDealtDamage <$> getModifiers (enemyRef enemy)
