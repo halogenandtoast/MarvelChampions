@@ -52,6 +52,59 @@ recruitBlackCat you = do
 
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  it "Establish Trust discards its attachments and tucked cards when flipped, and Mary Walker flips back with fresh threat and no old counters" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60110a" Advanced]
+      _ <- revealNow you Cards.street60112
+      pass
+      _ <- revealNow you Cards.street60113a
+      pass
+      sid <- selectJust $ SideSchemeIs Cards.street60113a
+      upgrade <- putInHand you "30019"
+      playOn upgrade sid []
+      pass
+      tucked <- putInHand you "01084"
+      encounter <- encounterCard Cards.street60188
+      resolve =<< L.runQueueT (L.capture do
+        L.tuckPlayerCardUnder sid tucked
+        L.placeEncounterCardUnderSideScheme sid encounter)
+      resolve =<< L.runQueueT (L.capture $ L.removeSchemeThreat GameRef (SchemeSideSchemeId sid) 8)
+      selectAny (SideSchemeWithId sid) `shouldReturn` False
+      let aid = AttachmentId $ unSideSchemeId sid
+      getAttachedCharacter aid `shouldReturn` Just (VillainCharacter vid)
+      selectAny (UpgradeWithId $ upgradeIdOf upgrade) `shouldReturn` False
+      discarded <- discardOf you
+      liftIO $ map pcCardId discarded `shouldContain` [pcCardId upgrade,pcCardId tucked]
+      getEncounterDiscard >>= (liftIO . (`shouldContain` [encounter]))
+      psyche <- selectJust $ EnvironmentIs Cards.street60112
+      getCountersOn psyche `shouldReturn` 1
+      resolve =<< L.runQueueT (L.capture $ L.placeCounters aid 2)
+      resolve [CheckWindows [W.Window W.After W.RoundEnded]]
+      selectAny (AttachmentWithId aid) `shouldReturn` False
+      selectAny (SideSchemeWithId sid) `shouldReturn` True
+      trafficThreat sid `shouldReturn` 8
+      getCountersOn sid `shouldReturn` 0
+      getCountersOn psyche `shouldReturn` 1
+
+  it "Mary's defeat replenishes her hit points and wins after three damage tokens on Disturbed Psyche" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60110a" Advanced]
+      _ <- revealNow you Cards.street60112
+      pass
+      for_ [1..2 :: Natural] $ \_ -> do
+        resolve [VillainMessage vid $ VillainDamaged GameRef $ withUnpreventable $ toDamage 10 FromAbility]
+        getVillainHitPoints vid `shouldReturn` 10
+        getsGame gameState `shouldReturn` InProgress
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ withUnpreventable $ toDamage 10 FromAbility]
+      getsGame gameState `shouldReturn` Finished Won
+
   for_ [Cards.street60122,Cards.street60123,Cards.street60124,Cards.street60125] $ \def ->
     it ("takes " <> show (toCardCode def) <> " by exhausting the hero, resolves its attachment effect, and cannot take it again") do
       tg <- testGame ["spider-man"]

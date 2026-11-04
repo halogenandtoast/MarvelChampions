@@ -2223,6 +2223,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           def = fromMaybe (error "missing Establish Trust") $ HashMap.lookup "60113a" MGEncounter.allEncounterCards
           card = MkEncounterCard (CardId $ unAttachmentId aid) def
           scheme = createSideScheme card
+      frameworkDiscard $ do
+        for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g)
+          , Upgrade.upgradeAttachedCard (toAttrs u) == Just (AttachmentRef aid)
+            || upgradeAttachedEnemy (toAttrs u) == Just (EnemyAttachmentId aid)] removeFromPlay
+        for_ [child | (child,a) <- HashMap.toList (gameAttachments g)
+          , Attachment.attachmentEnemy (toAttrs a) == Just (EnemyAttachmentId aid)] removeFromPlay
       -- Turning the physical card over enters its other type without revealing it.
       sideSchemeStep sid SideSchemePlaceInitialThreat
       checkWindows [W.Window W.After $ W.SideSchemeEnteredPlay sid]
@@ -2235,6 +2241,15 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "aoaTransformSchemeToAttachment" (fromJSON -> Success (sid, code, you)) -> do
     let def = fromMaybe (error "missing transformed attachment") (HashMap.lookup code MGEncounter.allEncounterCards)
         card = MkEncounterCard (CardId $ unSideSchemeId sid) def
+    frameworkDiscard $ do
+      for_ (lookup sid $ gameSideSchemes g) $ \old -> do
+        traverse_ discardCard $ SideScheme.sideSchemeHeldCards $ toAttrs old
+        traverse_ discardCard $ SideScheme.sideSchemeHeldEncounterCards $ toAttrs old
+      for_ [uid | (uid,u) <- HashMap.toList (gameUpgrades g)
+        , upgradeAttachedSideScheme (toAttrs u) == Just sid
+          || Upgrade.upgradeAttachedCard (toAttrs u) == Just (SideSchemeRef sid)] removeFromPlay
+      for_ [aid | (aid,a) <- HashMap.toList (gameAttachments g)
+        , Attachment.attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
     putEncounterCardIntoPlay you card
     pure $ g & entitiesL . sideSchemesL %~ deleteMap sid
       & areasL . each %~ (\area -> area {areaSideSchemes = filter (/= sid) (areaSideSchemes area)})

@@ -207,6 +207,8 @@ instance RunMessage (Attrs SideScheme) where
   runMessage msg attrs = runQueueT $ case msg of
     CardSpecific (isTarget attrs -> True) "removeAccelerationToken" _ -> pure attrs {sideSchemeAccelerationTokens = subtractNatural 1 $ sideSchemeAccelerationTokens attrs}
     CardSpecific target "playerSideSchemeCard" (fromJSON -> Success card) | target == toRef attrs -> pure attrs {sideSchemePlayerCard = Just card}
+    CardSpecific (isTarget attrs -> True) "holdTuckedCard" (fromJSON -> Success card) ->
+      pure attrs {sideSchemeHeldCards = sideSchemeHeldCards attrs <> [card]}
     CardSpecific target "moveThreatOut" (fromJSON -> Success n) | target == toRef attrs -> do
       let remaining = subtractNatural n (sideSchemeThreat attrs)
       when (sideSchemeThreat attrs > 0 && remaining == 0) $ defeatSideScheme (sideSchemeId attrs)
