@@ -98,3 +98,43 @@ for (const width of [1280, 390]) {
     await expect(page.locator('#scenario-choice-host')).toHaveAttribute('data-chosen', '0')
   })
 }
+
+test('campaign cards and the scenario picker share titles, artwork strips and crops', async ({ page }) => {
+  const user = { id: 123, username: 'fixture', email: 'fixture@example.test', admin: false, beta: true, guest: false, allowSpectatorsByDefault: false }
+  const codes = ['45059', '45081a', '45101b', '45118', '45184a']
+  await page.addInitScript(user => localStorage.setItem('marvel-session', JSON.stringify({ token: 'fixture', user })), user)
+  await page.route('**/api/whoami', route => route.fulfill({ json: user }))
+  await page.route('**/api/decks', route => route.fulfill({ json: [] }))
+  await page.route('**/api/starter-decks', route => route.fulfill({ json: [] }))
+  await page.route('**/api/scenarios', route => route.fulfill({ json: {
+    scenarios: codes.map(code => ({ code, name: code, modulars: [] })), modulars: [],
+  } }))
+  await page.route('**/api/campaigns/shared-cards', route => route.fulfill({ json: {
+    id: 'shared-cards', name: 'Age of Apocalypse', difficulty: 'Normal', heroes: [],
+    campaign: { kind: 'AgeOfApocalypseCampaign', mode: 'StandardCampaign', scenarios: codes, completed: 0, lost: false,
+      campaignLog: { players: [], apocalypse: { missions: [], successfulMissions: [], defeatedOverseers: [], apocalypseRewards: [] } } },
+    table: { owner: 456, seats: 1, seated: [], withFriends: false },
+    waitingForPlayers: false, deckShort: [], market: [], next: null, nextName: null, currentGame: null, won: false,
+  } }))
+  await page.goto('/#/campaigns/shared-cards')
+  const campaignCards = page.locator('.track .scenario-card')
+  await expect(campaignCards).toHaveCount(5)
+  await expect(campaignCards.first().locator('.villain-name')).toHaveText('Unus')
+  await expect(campaignCards.nth(1).locator('.art')).toHaveCount(4)
+  const appearance = (elements: Element[]) => elements.map(el => ({
+    title: el.querySelector('.villain-name')?.textContent,
+    artwork: [...el.querySelectorAll('.art')].map(art => ({
+      code: art.getAttribute('data-code'),
+      image: getComputedStyle(art).backgroundImage,
+      size: getComputedStyle(art).backgroundSize,
+      position: getComputedStyle(art).backgroundPosition,
+      filter: getComputedStyle(art).filter,
+    })),
+  }))
+  const expected = await campaignCards.evaluateAll(appearance)
+  await page.goto('/#/new-game')
+  const pickerCards = page.locator('.villains .scenario-card')
+  await expect(pickerCards).toHaveCount(5)
+  await expect(pickerCards.first().locator('.villain-name')).toHaveText('Unus')
+  expect(await pickerCards.evaluateAll(appearance)).toEqual(expected)
+})

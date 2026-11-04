@@ -2,17 +2,18 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { BookOpen, Check, Play, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Play, Trash2 } from 'lucide-vue-next'
 import { buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
 import { currentUser } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { useCards } from '../cards'
 import { campaignGuides, campaignGuideSections } from '../campaigns'
-import { scenarioPortraits } from '../scenarios'
+import { useScenarios } from '../scenarios'
 import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
 import StoryReading from '../components/StoryReading.vue'
+import ScenarioCard from '../components/ScenarioCard.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
 import type { CampaignView, StarterDeck, TitanMark } from '../server'
@@ -133,7 +134,8 @@ const details = computed(() => {
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
 const names = (codes: string[]) => (codes.length ? codes.map((c) => name(c)).join(', ') : t('campaign.none'))
 const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
-const scenarioPortrait = (code: string) => scenarioPortraits(code)[0]!
+const campaignScenarios = computed(() => (view.value?.campaign.scenarios ?? []).map(code => ({ code, name: '', modulars: [] })))
+const { tileName: scenarioTitle } = useScenarios(campaignScenarios)
 const stage = (i: number) => {
   const c = view.value?.campaign
   if (!c) return 'later'
@@ -181,12 +183,9 @@ const remove = async () => {
         <button v-if="view.table.owner === currentUser?.id" type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
       </header>
 
-      <ol v-if="!fearNoEvil" class="track" :class="{ shadowland }">
+      <ol v-if="!fearNoEvil" class="track">
         <li v-for="(code, i) in view.campaign.scenarios" :key="`${code}-${i}`" class="stop" :class="stage(i)">
-          <span class="art portrait" :class="{ 'scheme-art': cards.landscape(scenarioPortrait(code)) }" :style="{ backgroundImage: art(scenarioPortrait(code)) }" />
-          <span class="label">{{ $t('campaign.scenario', { n: i + 1 }) }}</span>
-          <span class="villain">{{ name(code) }}</span>
-          <Check v-if="stage(i) === 'won'" class="tick" aria-hidden="true" />
+          <ScenarioCard :code="code" :title="scenarioTitle(code)" :subtitle="$t('campaign.scenario', { n: i + 1 })" :selected="stage(i) === 'current'" :completed="stage(i) === 'won'" :lost="stage(i) === 'lost'" />
         </li>
       </ol>
 
@@ -427,18 +426,8 @@ const remove = async () => {
 .eyebrow { margin: 0 0 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); }
 h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(--title); }
 
-.track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
-.track.shadowland { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.track.shadowland .art { aspect-ratio: 16 / 10; }
-.stop { position: relative; display: grid; border-radius: 12px; overflow: hidden; border: 2px solid var(--line); background: var(--ink-3); }
-.stop .art { aspect-ratio: 4 / 5; filter: grayscale(0.7) brightness(0.6); }
-.stop.won .art { filter: none; }
-.stop.current { border-color: var(--crimson); box-shadow: 0 0 0 4px rgb(184 50 58 / 0.2); }
-.stop.current .art { filter: none; }
-.stop.lost { border-color: var(--danger); }
-.stop .label { padding: 8px 10px 0; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-.stop .villain { padding: 0 10px 10px; font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; text-transform: uppercase; }
-.tick { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; padding: 4px; border-radius: 50%; background: var(--crimson); color: #fff; }
+.track { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.stop { min-width: 0; }
 
 .next { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .progress { margin: 0 auto 0 0; color: var(--text-muted); }

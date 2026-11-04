@@ -7,6 +7,7 @@ import { createCampaign, createGame, fetchScenarios } from '../api'
 import { currentUser, updateSettings } from '../auth'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
 import SetupBar from '../components/SetupBar.vue'
+import ScenarioCard from '../components/ScenarioCard.vue'
 import { campaignArt } from '../campaigns'
 import { useServerText } from '../i18n'
 import { baseCode, useScenarios, type Release } from '../scenarios'
@@ -69,7 +70,7 @@ const toggleModular = (set: string) => {
   }
   modulars.value = modulars.value.includes(set) ? modulars.value.filter((s) => s !== set) : [...modulars.value, set]
 }
-const { releaseOf, modularRules, modularName, modularRelease, portraits, art: villainArt, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
+const { releaseOf, modularRules, modularName, modularRelease, portraits, variant, tileName, scenarioName, villainName, details } = useScenarios(scenarios)
 
 const byRelease = <T,>(items: T[], release: (item: T) => Release, name: (item: T) => string) =>
   [...items].sort((a, b) => release(a).order - release(b).order || name(a).localeCompare(name(b)))
@@ -268,24 +269,19 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
             </select>
           </div>
           <div class="villains" role="radiogroup">
-            <button
+            <ScenarioCard
               v-for="option in shownScenarios"
               :key="option.code"
-              type="button"
+              :code="option.code"
+              :title="tileName(option.code)"
+              :subtitle="[isCivilWarLeader(option.code) ? $t('civilWar.cooperative') : '', releaseOf(option.code).name !== tileName(option.code) ? releaseOf(option.code).name : ''].filter(Boolean).join(' · ')"
+              selectable
               role="radio"
               class="villain"
-              :class="{ selected: scenario && baseCode(scenario.code) === baseCode(option.code) }"
+              :selected="!!scenario && baseCode(scenario.code) === baseCode(option.code)"
               :aria-checked="!!scenario && baseCode(scenario.code) === baseCode(option.code)"
               @click="pickVillain(option)"
-            >
-              <span class="art-strip">
-                <span v-for="code in portraits(option.code)" :key="code" class="art portrait" :data-code="code" :style="{ backgroundImage: villainArt(code) }" />
-              </span>
-              <span class="villain-name">{{ tileName(option.code) }}</span>
-              <span v-if="isCivilWarLeader(option.code)" class="villain-sets">{{ $t('civilWar.cooperative') }}</span>
-              <span v-if="releaseOf(option.code).name !== tileName(option.code)" class="villain-sets">{{ releaseOf(option.code).name }}</span>
-              <Check v-if="scenario && baseCode(scenario.code) === baseCode(option.code)" class="tick" aria-hidden="true" />
-            </button>
+            />
           </div>
         </section>
       </template>
@@ -449,36 +445,6 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .kind { width: 20rem; max-width: 100%; }
 .box-art { display: block; width: 100%; aspect-ratio: 775 / 830; background: center / cover no-repeat; }
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
-.art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
-.art-strip .art { aspect-ratio: auto; height: 100%; }
-/* Landscape schemes keep their illustration on the right of the rules panel. */
-.art-strip .art[data-code='60121b'],
-.art-strip .art[data-code='60128b'],
-.art-strip .art[data-code='60134b'],
-.art-strip .art[data-code='60142b'],
-.art-strip .art[data-code='60151b'],
-.art-strip .art[data-code='65001b'] { background-size: 230% auto; background-position: 100% 45%; }
-.art-strip .art[data-code='40136'],
-.art-strip .art[data-code='40137'],
-.art-strip .art[data-code='40138'] { background-position: 95% calc(19% + 16px); }
-.art-strip .art[data-code='16103'] { background-position: 95% 12%; }
-.art-strip .art[data-code='45101b'] { background-position: 95% calc(19% + 16px); }
-.art-strip .art:not(:only-child) { background-size: auto 210%; background-position: 72% 12%; }
-.art-strip .art[data-code='45081a'] { background-position: calc(72% - 24px) calc(12% - 8px); }
-.art-strip .art[data-code='45082a'] { background-position: calc(72% + 24px) calc(12% - 8px); }
-.art-strip .art[data-code='45083a'],
-.art-strip .art[data-code='45084a'] { background-position: 72% calc(12% - 8px); }
-.art-strip .art[data-code='27096'],
-.art-strip .art[data-code='27098'] { background-position: 72% calc(12% - 16px); }
-.art-strip .art[data-code='27099'],
-.art-strip .art[data-code='27097'],
-.art-strip .art[data-code='27095'] { background-position: calc(72% + 12px) calc(12% - 16px); }
-.art-strip .art[data-code='27094'] { background-position: calc(72% + 80px) calc(12% - 16px); }
-.art-strip .art[data-code='27096'] { background-position: calc(72% + 64px) calc(12% - 16px); }
-.art-strip .art[data-code='07002'] { background-position: calc(72% + 16px) calc(12% - 8px); }
-.art-strip .art[data-code='07017'] { background-position: calc(72% + 32px) calc(12% - 8px); }
-.art-strip .art[data-code='07032'] { background-position: calc(72% + 48px) calc(12% - 8px); }
-.art-strip .art[data-code='07046'] { background-position: 72% calc(12% - 8px); }
 .head { display: flex; align-items: center; gap: 12px; }
 .head .page-title { margin: 0 auto 0 0; }
 .step { display: grid; gap: 14px; padding: 20px; border-radius: 16px; background: var(--ink-2); border: 1px solid var(--line); }
@@ -512,10 +478,7 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 }
 .villain:hover { transform: translateY(-2px); border-color: var(--line-strong); }
 .villain.selected { border-color: var(--crimson); box-shadow: 0 0 0 4px rgb(184 50 58 / 0.2), 0 12px 30px rgb(184 50 58 / 0.15); }
-.art { position: relative; width: 100%; aspect-ratio: 16 / 10; }
-.art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, var(--ink-3)); }
 .villain-name { margin: -18px 14px 0; position: relative; font-family: var(--font-display); font-size: 1.9rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
-.villain-sets { margin: 4px 14px 0; font-size: 0.75rem; color: var(--text-faint); }
 .tick { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; padding: 4px; border-radius: 50%; background: var(--crimson); color: #fff; }
 
 .modular-group { display: grid; gap: 8px; }
