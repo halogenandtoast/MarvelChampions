@@ -2939,6 +2939,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.X23PackSpec
       Marvel.Campaign.AgentsOfShieldSpec
       Marvel.Campaign.AgeOfApocalypseSpec
+      Marvel.Campaign.FearNoEvilCardsSpec
       Marvel.Campaign.FearNoEvilSpec
       Marvel.Campaign.GalaxysMostWantedSpec
       Marvel.Campaign.MadTitansShadowSpec

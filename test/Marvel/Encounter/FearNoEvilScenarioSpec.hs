@@ -30,6 +30,90 @@ scenarioGameChoosing code mode heroes preferred = do
 
 spec :: Spec
 spec = describe "Fear No Evil scenarios" do
+  it "Hung Out to Dry damages allies and minions entering its area, without affecting the other player's area" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60136b")
+    inGame tg do
+      let you = player1 tg
+      Just sid <- getOwnedMainScheme you
+      _ <- putIntoPlay you "01050"
+      allyDamage <$> allyIn "01050" `shouldReturn` 1
+      mid <- addMinion you Cards.street60130
+      minionDamageOf mid `shouldReturn` Just 1
+      _ <- putIntoPlay (player2 tg) "01002"
+      allyDamage <$> allyIn "01002" `shouldReturn` 0
+      getSchemeThreatAmount (SchemeMainSchemeId sid) `shouldReturn` 2
+
+  it "Bull in a China Shop counts excess damage to an ally but not a minion in normal mode" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man"] (Just "60135b")
+    inGame tg do
+      let you = player1 tg
+      Just sid <- getOwnedMainScheme you
+      ally <- putIntoPlay you "01002"
+      resolve [AllyMessage (allyIdOf ally) $ AllyDamaged GameRef $ toDamage 5 FromAbility]
+      getSchemeThreatAmount (SchemeMainSchemeId sid) `shouldReturn` 3
+      mid <- addMinion you Cards.street60092
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 5 FromAbility]
+      getSchemeThreatAmount (SchemeMainSchemeId sid) `shouldReturn` 3
+
+  it "A Slice of the Pizza Dough heals its attacking hero after defeating a minion in another player's area" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60138b")
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      Just sid <- getOwnedMainScheme you
+      resolve =<< L.runQueueT (L.capture $ L.damageIdentity you GameRef $ toDamage 3 FromAbility)
+      mid <- addMinion (player2 tg) Cards.street60092
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 1 FromAbility]
+      choose "attack the wounded Enforcer" (isHeroAttack you)
+      choose "target the other player's minion" (isTargetChoice mid)
+      choose "heal through the pizzeria" (isAbilityOf sid)
+      pass
+      damageOf you `shouldReturn` 2
+      getSchemeThreatAmount (SchemeMainSchemeId sid) `shouldReturn` 1
+
+  it "Shop Proprietor's leave-play penalty affects only the main scheme in its controller's area" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60135b")
+    inGame tg do
+      let you = player1 tg
+      Just own <- getOwnedMainScheme you
+      Just other <- getOwnedMainScheme (player2 tg)
+      _ <- setEncounterDeck (replicate 4 Cards.street60188) []
+      card <- encounterCard Cards.street60139
+      resolve [RevealEncounterCard you card]
+      let aid = AllyId $ unCardId $ ecCardId card
+      selectAny (AllyWithId aid) `shouldReturn` True
+      resolve [RemoveFromPlay $ AllyRef aid]
+      getSchemeThreatAmount (SchemeMainSchemeId own) `shouldReturn` 4
+      getSchemeThreatAmount (SchemeMainSchemeId other) `shouldReturn` 0
+
+  it "Man-Bull places threat equal to excess attack damage on its area's main scheme" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60137b")
+    inGame tg do
+      let you = player1 tg
+      Just own <- getOwnedMainScheme you
+      Just other <- getOwnedMainScheme (player2 tg)
+      ally <- putIntoPlay you "01002"
+      mid <- addMinion you Cards.street60140
+      resolve [MinionMessage mid $ MinionAttacksAlly you $ allyIdOf ally]
+      getSchemeThreatAmount (SchemeMainSchemeId own) `shouldReturn` 2
+      getSchemeThreatAmount (SchemeMainSchemeId other) `shouldReturn` 0
+
+  it "Change of Venue's boost preserves the business's threat and swaps without resolving surge" do
+    tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60135b")
+    inGame tg do
+      let you = player1 tg
+      Just previous <- getOwnedMainScheme you
+      resolve =<< L.runQueueT (L.capture $ L.placeThreatOn GameRef previous 4)
+      _ <- setEncounterDeck (Cards.street60141 : replicate 7 Cards.street60188) []
+      vid <- villainIdNow
+      resolve [VillainMessage vid $ VillainSchemesAgainst you]
+      Just current <- getOwnedMainScheme you
+      (current /= previous) `shouldBe` True
+      getSchemeThreatAmount (SchemeMainSchemeId current) `shouldReturn` 6
+      length <$> getEncounterDeck `shouldReturn` 7
+      selectListCount EncounterMainScheme `shouldReturn` 2
+
   it "Pawn Shop discounts another player's upgrade played on an ally in its area and consumes that area's first upgrade" do
     tg <- scenarioGameChoosing "60134a" Normal ["spider-man","she-hulk"] (Just "60137b")
     inGame tg do

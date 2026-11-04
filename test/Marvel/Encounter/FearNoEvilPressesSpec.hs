@@ -17,13 +17,13 @@ staffExhausted sid = getsGame $ Support.supportExhausted . toAttrs . (HashMap.! 
 
 spec :: Spec
 spec = describe "Fear No Evil Daily Bugle behaviors" do
-  it "Robbie Robertson looks at two encounter cards and discards the chosen one for one use" do
+  it "Ben Urich looks at two encounter cards and discards the chosen one for one use" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let you = player1 tg
       sid <- staff you Cards.street60153
       ([first,second,_],_) <- setEncounterDeck [Cards.street60188,Cards.street60174,Cards.street60188] []
-      choose "use Robbie" (isAbilityOf sid)
+      choose "use Ben" (isAbilityOf sid)
       choose "discard the second encounter card" (isTargetChoice second)
       pass
       getCountersOn sid `shouldReturn` 2
@@ -31,35 +31,35 @@ spec = describe "Fear No Evil Daily Bugle behaviors" do
       getEncounterDeck >>= \cards -> liftIO $ map ecCardId cards `shouldContain` [ecCardId first]
       getEncounterDiscard >>= \cards -> liftIO $ map ecCardId cards `shouldContain` [ecCardId second]
 
-  it "Betty Brant draws two cards and deals an encounter card as her additional cost" do
+  it "J. Jonah Jameson draws two cards and deals an encounter card as her additional cost" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let you = player1 tg
       sid <- staff you Cards.street60155
       clearHand you
       _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
-      choose "use Betty" (isAbilityOf sid)
+      choose "use Jonah" (isAbilityOf sid)
       pass
       length <$> handOf you `shouldReturn` 2
       length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 1
       getCountersOn sid `shouldReturn` 2
       staffExhausted sid `shouldReturn` True
 
-  it "Norah Winters can replace a freshly dealt physical encounter card" do
+  it "Robbie Robertson can replace a freshly dealt physical encounter card" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let you = player1 tg
       sid <- staff you Cards.street60156
       ([first,second,_],_) <- setEncounterDeck [Cards.street60174,Cards.street60188,Cards.street60188] []
       runNow [DealEncounterCard you]
-      choose "use Norah's response" (isAbilityOf sid)
+      choose "use Robbie's response" (isAbilityOf sid)
       choose "replace the dealt card" (isLabel "$label.fneReplaceEncounterCard")
       pass
       map ecCardId . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` [ecCardId second]
       getEncounterDiscard >>= \cards -> liftIO $ map ecCardId cards `shouldContain` [ecCardId first]
       getCountersOn sid `shouldReturn` 2
 
-  it "Ben Urich cancels a flipped boost's icons and effect, then supplies a replacement boost" do
+  it "Betty Brant cancels a flipped boost's icons and effect, then supplies a replacement boost" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let you = player1 tg
@@ -67,7 +67,7 @@ spec = describe "Fear No Evil Daily Bugle behaviors" do
       vid <- villainIdNow
       ([first,second,_],_) <- setEncounterDeck [Cards.street60174,Cards.street60188,Cards.street60188] []
       runNow [VillainMessage vid $ VillainSchemesAgainst you]
-      choose "use Ben's interrupt" (isAbilityOf sid)
+      choose "use Betty's interrupt" (isAbilityOf sid)
       pass
       mainSchemeThreatNow `shouldReturn` 1
       getCountersOn sid `shouldReturn` 2
@@ -107,7 +107,7 @@ spec = describe "Fear No Evil Daily Bugle behaviors" do
       sid <- staff you Cards.street60156
       before <- mainSchemeThreatNow
       _ <- revealNow you Cards.street60158
-      choose "exhaust Norah" (isTargetChoice sid)
+      choose "exhaust Robbie" (isTargetChoice sid)
       pass
       mainSchemeThreatNow `shouldReturn` before
       getCountersOn sid `shouldReturn` 2
