@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Everything known about one card: the scan, its statistics, its rules text, and its
 // other face, for an identity's alter-ego or a scheme's B side.
+import { localRulebookUrl } from '../../rulebooks'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CardImage from './CardImage.vue'
@@ -49,7 +50,7 @@ const facts = computed(() => {
   rows.push({ label: t('browser.card.facts.code'), value: c.code })
   return rows
 })
-const source = computed(() => shown.value.sourceUrl ?? `https://marvelcdb.com/card/${shown.value.code}`)
+const source = computed(() => localRulebookUrl(shown.value.sourceUrl ?? `https://marvelcdb.com/card/${shown.value.code}`))
 </script>
 
 <template>

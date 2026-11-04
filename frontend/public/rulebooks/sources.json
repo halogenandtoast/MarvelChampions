@@ -1,0 +1,374 @@
+{
+  "MC65-Rulebook.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/10/MC65-Rulebook.pdf",
+    "aliases": [],
+    "sha256": "1ae5004916a065d0bf8c3141b4d4f9ef143781301c08b5e06363001001389b2c",
+    "bytes": 5360674
+  },
+  "mc02_green_goblin_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc02_green_goblin_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "1fdf68fb6163a77c571765d7948a1999b8ec5b2118c9a1b171ed79a59bcb2cd3",
+    "bytes": 9674646
+  },
+  "mc03_wrecking_crew_rules_insert-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc03_wrecking_crew_rules_insert-compressed.pdf",
+    "aliases": [],
+    "sha256": "443f135a8c5d90a8bfd3719323e6c00501ed166d88f517bec37b59ee9d10124c",
+    "bytes": 861302
+  },
+  "mc10_the_rise_of_red_skull_campaign-log.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_campaign-log.pdf",
+    "aliases": [],
+    "sha256": "e6faa8fce756760639561a6ff6f61db81cb3159cc89a0fa6d190e4d8b50665ee",
+    "bytes": 5436250
+  },
+  "mc10_the_rise_of_red_skull_rules_web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc10_the_rise_of_red_skull_rules_web.pdf",
+    "aliases": [],
+    "sha256": "9e783e8cc325009f44d1cf0a9f5b845c7b41b50d0e88d4e5a7c05ae5816a88c6",
+    "bytes": 2864641
+  },
+  "mc11_once_and_future_kang_rules_insert-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc11_once_and_future_kang_rules_insert-compressed.pdf",
+    "aliases": [],
+    "sha256": "a5949b6e63bfcf4999cfa71d2e523831d168fb1610adab02accb98bbb674db08",
+    "bytes": 598221
+  },
+  "mc12_ant-man_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc12_ant-man_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "4d06ada5ab22bd496a6f46391682fcefa61b8691840b945e749091924b49aefb",
+    "bytes": 3765656
+  },
+  "mc13_wasp_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc13_wasp_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "707832802903d9e03766e6bce24eb5f7dc0a61acbda5b17b6605f4af9d005eb9",
+    "bytes": 6267326
+  },
+  "mc14_quicksilver_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc14_quicksilver_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "52d164d692fd30a587ec270bcaff3f81a48976b7b7cd10ee22672119b081f018",
+    "bytes": 4880062
+  },
+  "mc15_scarlet_witch_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc15_scarlet_witch_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "46d080ce4a8c4364ab134d27402de05811b0c123085f66be5337cde5af03380a",
+    "bytes": 3841750
+  },
+  "mc16_galaxys_most_wanted_rules_website-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc16_galaxys_most_wanted_rules_website-compressed.pdf",
+    "aliases": [],
+    "sha256": "0b2b05f72e2283e0dc6175a3a43f687cb425ce28447977ab7b80d4d291da066a",
+    "bytes": 3247234
+  },
+  "mc17_star-lord_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc17_star-lord_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "89906810fe466b0c92e9e3a2887911263148b56672dadf213f4761eb0cdcfe99",
+    "bytes": 3424308
+  },
+  "mc18_gamora_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc18_gamora_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "1bbff36e4aacf46e0da52338858bc49aeacb13f348622c17419e990a460de6d2",
+    "bytes": 3893485
+  },
+  "mc19_drax_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc19_drax_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "2fc13a51f8343e8e3633b6745c209b3700ea537c2ba7c4926da337103fdbab62",
+    "bytes": 3402917
+  },
+  "mc20_venom_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc20_venom_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "a85a2952ad1f4d7e236b0b8f19850119632a9f978cb2774da8444abff9a14235",
+    "bytes": 4390552
+  },
+  "mc21_the_mad_titans_shadow_rulebook-compressed-campaign_log.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed-campaign_log.pdf",
+    "aliases": [],
+    "sha256": "220fe388afced2ff0544cc6637a1e9e7dfa05b36d867f144590162112f27c9ea",
+    "bytes": 1833381
+  },
+  "mc21_the_mad_titans_shadow_rulebook-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc21_the_mad_titans_shadow_rulebook-compressed.pdf",
+    "aliases": [],
+    "sha256": "72a584920ee8c7f242e7b1fd20599c43027717fefb06ede31b0f8c4e72c6ebc4",
+    "bytes": 15508893
+  },
+  "mc22_nebula_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc22_nebula_rulesheet.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/0b/0f/0b0f1475-6a14-4077-85e5-0353b097f94a/mc22_nebula_rulesheet.pdf"
+    ],
+    "sha256": "c3cf5e41492b79a404ddefe70106bb0dc2d9fcc7457638216158b1c8042f2b16",
+    "bytes": 6067511
+  },
+  "mc23_war_machine_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc23_war_machine_rulesheet.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/53/e7/53e7fe04-5a82-4239-8ee9-9f65e6a6248d/mc23_war_machine_rulesheet.pdf"
+    ],
+    "sha256": "fa6a07ce326fa74cdbe3d0e77dd3a19126fc0953cb675e0c23f8ce06bbac5705",
+    "bytes": 5668138
+  },
+  "mc24_the_hood_rules_insert.pdf": {
+    "source": "https://images-cdn.fantasyflightgames.com/filer_public/89/66/89666652-cfcb-47c1-822f-a7a377a69401/mc24_the_hood_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "d29b62b6587ccd1302fdd3e5f7e5296a4212537da6fe17e2dfd2075644abce12",
+    "bytes": 5472160
+  },
+  "mc25_valkyrie_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc25_valkyrie_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "9334b3e06e844e6ee47a1141bdafa758bead8aacc9d35592d3595bbe504f1d87",
+    "bytes": 6097078
+  },
+  "mc26_vision_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc26_vision_rulesheet.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/53/60/53601f73-fa92-4cb9-816c-4f8d904de281/mc26_vision_rulesheet.pdf"
+    ],
+    "sha256": "61cc4fc319e2e8004b8ec60310615c995a866f998b430dc8defa253f0564f7ef",
+    "bytes": 6697859
+  },
+  "mc27_sinister_motives_rules_v5-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc27_sinister_motives_rules_v5-compressed.pdf",
+    "aliases": [],
+    "sha256": "5dde0115f60819781fb90f8c0ce6743c7e96ce8502b5b783cdac83e8718b53c1",
+    "bytes": 15720680
+  },
+  "mc28_nova_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc28_nova_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "ae57d0882af276ec85bfd42f984abdd59847189ae67489a41a6f56184c172073",
+    "bytes": 3753617
+  },
+  "mc29_ironheart_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc29_ironheart_rulesheet.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/df/95/df950da6-c3b3-4edd-9f58-8d3bd192b755/mc29_ironheart_rulesheet.pdf"
+    ],
+    "sha256": "1953e65a09c2d485aaac8c79f127e86a7a6656d9f090c6589f397421731a426b",
+    "bytes": 4075236
+  },
+  "mc30_spider-ham_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc30_spider-ham_rulesheet.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/c0/cc/c0cc6521-0690-4a3e-8e74-384b9be95e2d/mc30_spider-ham_rulesheet.pdf"
+    ],
+    "sha256": "886958ab5b32eb163f471f6e826e330933b41d10c924d59fdda4769816ee23e6",
+    "bytes": 3461945
+  },
+  "mc31_spdr_rulesheet.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc31_spdr_rulesheet.pdf",
+    "aliases": [],
+    "sha256": "bfab136bfd87f81243bee6913a543a949bd097b16efdd851f9762d2386446afe",
+    "bytes": 2662693
+  },
+  "mc32_mutant_genesis_campaign_log.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc32_mutant_genesis_campaign_log.pdf",
+    "aliases": [],
+    "sha256": "2308f66638fe5f4d36969a9ee0e25e1330a6fab7270f7136e17e9e789599ece9",
+    "bytes": 971563
+  },
+  "mc32_mutant_genesis_rulebook_v5-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc32_mutant_genesis_rulebook_v5-compressed.pdf",
+    "aliases": [],
+    "sha256": "cf63c61301cdcb44953cbeaa368e4a58e63799d602a7d8bdda96cee5350c375b",
+    "bytes": 12881849
+  },
+  "mc33_cyclops_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc33_cyclops_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "44a54b473d539c29d187591c2a7ab27147e29cd3cc5f796e26312381b8e8c621",
+    "bytes": 3469488
+  },
+  "mc34_phoenix_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc34_phoenix_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "4c5413e311e30a5bb7adcb0be2f4394eba847f6c22661c35d69d10f60768c79c",
+    "bytes": 4040480
+  },
+  "mc35_wolverine_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc35_wolverine_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "be46d6fad62846311020ca9945e7844b3064b8c27adea56662af45869f43f259",
+    "bytes": 4144126
+  },
+  "mc36_storm_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc36_storm_rules_insert.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/93/59/9359dac0-92c6-4b91-b73e-1d53253601a0/mc36_storm_rules_insert.pdf"
+    ],
+    "sha256": "f91d1842455c308a713c6de67a6e776849d0a8a85adb2b11d70cb4b6cf7c0a3b",
+    "bytes": 3974996
+  },
+  "mc37_gambit_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc37_gambit_rules_insert.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/1b/04/1b0478ce-e9a8-42f5-a7cd-3d0cc82139e7/mc37_gambit_rules_insert.pdf"
+    ],
+    "sha256": "9a6ab3d66101b35b0afa51c43cc8b8b57d471f0f4fea3906947383386a20e786",
+    "bytes": 3554960
+  },
+  "mc38_rogue_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc38_rogue_rules_insert.pdf",
+    "aliases": [],
+    "sha256": "398be154eeb8a649b5590df8792dca53b93d52130be9d134bfb849a1df69d97e",
+    "bytes": 4489703
+  },
+  "mc39_mojomania_rules_insert-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc39_mojomania_rules_insert-compressed.pdf",
+    "aliases": [],
+    "sha256": "72da694802c7592b262a58620d990778066f020f15ab6c6c2209b3f498193b06",
+    "bytes": 2142269
+  },
+  "mc40_next_evolution_rulebook-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc40_next_evolution_rulebook-web.pdf",
+    "aliases": [],
+    "sha256": "8793021092c8fb786c00a0f7f752c6f387fa22f16492ccbba380fa87b66715d9",
+    "bytes": 11177039
+  },
+  "mc41_psylocke_rules_insert-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc41_psylocke_rules_insert-web.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/b3/41/b341e3d0-01ef-471d-b0d3-657ae05757c6/mc41_psylocke_rules_insert-web.pdf"
+    ],
+    "sha256": "41133f9c4751d50a412d765296b497b88bbf396a0afabf7f030b37d735385bc7",
+    "bytes": 1363688
+  },
+  "mc43_x-23_rules_insert-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc43_x-23_rules_insert-web.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/32/e8/32e82755-7b86-4ba0-9201-aa32b52faaa8/mc43_x-23_rules_insert-web.pdf"
+    ],
+    "sha256": "a36f2d9907745360da1d80ebb0d3905b3c2fa8c1283776251bcb25fe212feb6b",
+    "bytes": 1134103
+  },
+  "mc44_deadpool_rules_insert-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc44_deadpool_rules_insert-web.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/8a/98/8a987c42-a835-4fa7-b0b7-11f466e0faa4/mc44_deadpool_rules_insert-web.pdf"
+    ],
+    "sha256": "ab7cc037ebd176140392563960107fd13ffba594a3fb4c86f627ebfd3821fe1e",
+    "bytes": 1757746
+  },
+  "mc45_age_of_apocalypse_rulebook.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc45_age_of_apocalypse_rulebook.pdf",
+    "aliases": [],
+    "sha256": "b1d6127f02f2841a9f247757b0afaf4649c0ba6fce0000b2c06db571d54b7049",
+    "bytes": 10861983
+  },
+  "mc46_iceman_rules_insert-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc46_iceman_rules_insert-web.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/93/f8/93f8dca2-fed8-4e66-88c7-11d89539d1f0/mc46_iceman_rules_insert-web.pdf"
+    ],
+    "sha256": "e347075ba6fe10c3b86182291a41abfeeba0ac5b49519cf5e09056b296b01d6c",
+    "bytes": 459914
+  },
+  "mc47_jubilee_rules_insert-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc47_jubilee_rules_insert-web.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/68/7e/687e6308-1160-42c6-bade-3469b6b53d11/mc47_jubilee_rules_insert-web.pdf"
+    ],
+    "sha256": "fefde7e89e3c87970b8801dfb9e6ec01fe425fc2d4d2338fe3208d949ab9061a",
+    "bytes": 399331
+  },
+  "mc48_nightcrawler_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc48_nightcrawler_rules_insert.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/e3/7b/e37bce25-fb98-4d80-91cd-64f13284972c/mc48_nightcrawler_rules_insert.pdf"
+    ],
+    "sha256": "de6d360e619cd5e108482679f9aabf517f8ca3838fcd99f09599b7b45206cdcb",
+    "bytes": 4813548
+  },
+  "mc49_magneto_rules_insert.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc49_magneto_rules_insert.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/84/33/8433f555-b1bc-4b23-a022-86120417b018/mc49_magneto_rules_insert.pdf"
+    ],
+    "sha256": "3c39e1fe1002b2139157431fc4927e3ca8fb5a724608e80d9597d997897bcbb4",
+    "bytes": 5362251
+  },
+  "mc50_rulebook-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc50_rulebook-web.pdf",
+    "aliases": [],
+    "sha256": "3da98ef8258e2c065aa4f1f7d6e357cb2ea6e5ef31a7808886808ecc288820d7",
+    "bytes": 4953950
+  },
+  "mc51_rulesheet-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc51_rulesheet-web.pdf",
+    "aliases": [],
+    "sha256": "6e40f32ba496df51fa37d9b884fd5bd017d5ec36096448791f48245c2930dd65",
+    "bytes": 532912
+  },
+  "mc52_rulesheet-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc52_rulesheet-web.pdf",
+    "aliases": [],
+    "sha256": "72723afc903d896f61d61d9c07d2cd2a62d813b9bd1cecc96269c4279bcccc80",
+    "bytes": 532963
+  },
+  "mc53_rulesheet-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc53_rulesheet-web.pdf",
+    "aliases": [],
+    "sha256": "c7af241e196c08ac28f8a6b551cc6acfebcdd5b4f89da922800aae2c374b4381",
+    "bytes": 544224
+  },
+  "mc54_rulesheet-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc54_rulesheet-web.pdf",
+    "aliases": [],
+    "sha256": "1850979a62e20b40f19121692dc01ac7e044cd217f3a116b9736a395035cea1a",
+    "bytes": 536405
+  },
+  "mc55_rulebook-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc55_rulebook-web.pdf",
+    "aliases": [],
+    "sha256": "df33e41438879bb22284fe1c51e4a4eff22929309b733281844beac6ac42fde3",
+    "bytes": 660186
+  },
+  "mc56_rulebook-web_1.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc56_rulebook-web_1.pdf",
+    "aliases": [],
+    "sha256": "e6b60cb39eadf5ce6de78711d5dcd9897707139bc08e5b33019d15023e857726",
+    "bytes": 4558336
+  },
+  "mc57_rulebook-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc57_rulebook-web.pdf",
+    "aliases": [],
+    "sha256": "ce830ff6b0d911bdb2e8e27cfcb0bc1f01d7556c6f97fea169231bc2b664016c",
+    "bytes": 2144644
+  },
+  "mc60_rulebook-web.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
+    "aliases": [],
+    "sha256": "18b29a608418f41b5b690109bf43de29f31c2b6567c8e4dd5c2fee71c3b78b2c",
+    "bytes": 40688066
+  },
+  "mc_rulesreference_v18_compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc_rulesreference_v18_compressed.pdf",
+    "aliases": [],
+    "sha256": "7254a7e9e891ce358e87a1faad5cc3a603c5826684287a1feefb8bb309c76595",
+    "bytes": 31422242
+  },
+  "mvc01_learn_to_play_eng-compressed.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mvc01_learn_to_play_eng-compressed.pdf",
+    "aliases": [],
+    "sha256": "357c9be2010723dd3e8831e81eb140567d0d93f83b803a9040dcad2b8f2730b9",
+    "bytes": 30797772
+  },
+  "ronan_modular_set.pdf": {
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/ronan_modular_set.pdf",
+    "aliases": [
+      "https://images-cdn.fantasyflightgames.com/filer_public/12/42/1242eccb-60ab-4a30-a099-a76f702cdbb5/ronan_modular_set.pdf"
+    ],
+    "sha256": "56c1e0f54c8a39e9265ef05187156ddf711d8ac8ca9899aa32f94545d0308062",
+    "bytes": 9856010
+  }
+}

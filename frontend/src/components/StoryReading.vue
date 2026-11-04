@@ -6,6 +6,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import PrimaryButton from './PrimaryButton.vue'
+import { localRulebookUrl } from '../rulebooks'
 
 const { sections, canContinue, waitingOn = null, reference = false, sourceUrl = null } = defineProps<{
   sections: string[]
@@ -45,7 +46,7 @@ const shown = computed(() =>
         </section>
       </div>
       <footer>
-        <a v-if="sourceUrl" :href="sourceUrl" target="_blank" rel="noopener noreferrer">{{ t('campaign.rulebook') }}</a>
+        <a v-if="sourceUrl" :href="localRulebookUrl(sourceUrl)" target="_blank" rel="noopener noreferrer">{{ t('campaign.rulebook') }}</a>
         <PrimaryButton v-if="reference" :label="t('common.close')" @click="emit('close')" />
         <PrimaryButton v-else-if="canContinue" :label="t('label.continue')" @click="emit('continue')" />
         <p v-else class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>

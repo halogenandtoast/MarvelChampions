@@ -2,6 +2,16 @@
 
 Markdown transcription of the official *Marvel Champions: The Card Game* rules, for implementing the rules engine.
 
+## Local copies
+
+Official PDFs are also served from `/rulebooks/`, backed by
+`frontend/public/rulebooks/`. The source URLs, byte counts and SHA-256 hashes are
+recorded in `frontend/public/rulebooks/sources.json`. Run
+`python3 tools/cache-rulebooks.py` to fetch missing files,
+`python3 tools/cache-rulebooks.py --refresh` to refresh them, or
+`python3 tools/cache-rulebooks.py --check` to verify the cached copies.
+The original publisher links below remain the source attribution.
+
 ## Sources
 
 | Document | Version | URL |

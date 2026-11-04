@@ -13,18 +13,18 @@ export const campaignArt: Record<CampaignKind, string> = {
   NextEvolution: '/images/products/next-evolution.webp',
 }
 
-const RULEBOOK_ROOT = 'https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/'
+const RULEBOOK_ROOT = '/rulebooks/'
 export const campaignGuides: Record<CampaignKind, { namespace: string; overview: string[]; source: string }> = {
-  RiseOfRedSkull: { namespace: '', overview: ["campaignMode", "newKeywords"], source: `${RULEBOOK_ROOT}2026/09/mc10_the_rise_of_red_skull_rules_web.pdf` },
-  GalaxysMostWanted: { namespace: 'galaxy', overview: ["campaignMode", "keywords", "market", "shipCommand"], source: `${RULEBOOK_ROOT}2026/09/mc16_galaxys_most_wanted_rules_website-compressed.pdf` },
-  MadTitansShadow: { namespace: 'mts', overview: ["campaignMode", "keywords"], source: `${RULEBOOK_ROOT}2026/09/mc21_the_mad_titans_shadow_rulebook-compressed.pdf` },
-  SinisterMotives: { namespace: 'sm', overview: ["campaignMode", "keywords", "reputationTrack"], source: `${RULEBOOK_ROOT}2026/09/mc27_sinister_motives_rules_v5-compressed.pdf` },
-  MutantGenesis: { namespace: 'mutantGenesis', overview: ["campaignMode", "roles", "futurePast", "keywords"], source: `${RULEBOOK_ROOT}2026/09/mc32_mutant_genesis_rulebook_v5-compressed.pdf` },
-  NextEvolution: { namespace: 'nextEvolution', overview: ["campaignMode", "campaignSchemes", "playerSideSchemes", "keywords"], source: `${RULEBOOK_ROOT}2026/09/mc40_next_evolution_rulebook-web.pdf` },
-  AgeOfApocalypseCampaign: { namespace: 'ageOfApocalypse', overview: ["campaignMode", "missionRules", "missionAttempts", "keywords"], source: `${RULEBOOK_ROOT}2026/09/mc45_age_of_apocalypse_rulebook.pdf` },
-  AgentsOfShieldCampaign: { namespace: 'aos', overview: ["campaignMode", "evidence", "board"], source: `${RULEBOOK_ROOT}2026/09/mc50_rulebook-web.pdf` },
-  FearNoEvilCampaign: { namespace: 'fearNoEvil', overview: ["intro", "campaignMode", "planning", "campaignSetup"], source: `${RULEBOOK_ROOT}2026/09/mc60_rulebook-web.pdf` },
-  ShadowlandCampaign: { namespace: 'shadowland', overview: ["campaignMode"], source: `${RULEBOOK_ROOT}2026/10/MC65-Rulebook.pdf` },
+  RiseOfRedSkull: { namespace: '', overview: ["campaignMode", "newKeywords"], source: `${RULEBOOK_ROOT}mc10_the_rise_of_red_skull_rules_web.pdf` },
+  GalaxysMostWanted: { namespace: 'galaxy', overview: ["campaignMode", "keywords", "market", "shipCommand"], source: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf` },
+  MadTitansShadow: { namespace: 'mts', overview: ["campaignMode", "keywords"], source: `${RULEBOOK_ROOT}mc21_the_mad_titans_shadow_rulebook-compressed.pdf` },
+  SinisterMotives: { namespace: 'sm', overview: ["campaignMode", "keywords", "reputationTrack"], source: `${RULEBOOK_ROOT}mc27_sinister_motives_rules_v5-compressed.pdf` },
+  MutantGenesis: { namespace: 'mutantGenesis', overview: ["campaignMode", "roles", "futurePast", "keywords"], source: `${RULEBOOK_ROOT}mc32_mutant_genesis_rulebook_v5-compressed.pdf` },
+  NextEvolution: { namespace: 'nextEvolution', overview: ["campaignMode", "campaignSchemes", "playerSideSchemes", "keywords"], source: `${RULEBOOK_ROOT}mc40_next_evolution_rulebook-web.pdf` },
+  AgeOfApocalypseCampaign: { namespace: 'ageOfApocalypse', overview: ["campaignMode", "missionRules", "missionAttempts", "keywords"], source: `${RULEBOOK_ROOT}mc45_age_of_apocalypse_rulebook.pdf` },
+  AgentsOfShieldCampaign: { namespace: 'aos', overview: ["campaignMode", "evidence", "board"], source: `${RULEBOOK_ROOT}mc50_rulebook-web.pdf` },
+  FearNoEvilCampaign: { namespace: 'fearNoEvil', overview: ["intro", "campaignMode", "planning", "campaignSetup"], source: `${RULEBOOK_ROOT}mc60_rulebook-web.pdf` },
+  ShadowlandCampaign: { namespace: 'shadowland', overview: ["campaignMode"], source: `${RULEBOOK_ROOT}MC65-Rulebook.pdf` },
 }
 
 // General rules remain available between games without revealing later scenario stories.
