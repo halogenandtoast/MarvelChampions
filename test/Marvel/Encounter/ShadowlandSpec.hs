@@ -3,6 +3,9 @@ module Marvel.Encounter.ShadowlandSpec (spec) where
 import Marvel.Choice qualified as Choice
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Keyword (Keyword(Guard,Villainous))
+import Marvel.Treachery.Cards qualified as CoreTreacheries
+import Marvel.FearNoEvil.Cards qualified as FNE
+import Marvel.SideScheme.Types qualified as Side
 import Marvel.Trait qualified as Trait
 import Marvel.Shadowland.Position qualified as Position
 import Marvel.Area (Pile(..),DeckKey(..))
@@ -224,3 +227,35 @@ spec = describe "Shadowland encounter cards" do
       resolve [VillainMessage vid $ VillainAttacks (player1 tg)]
       getCountersOn vid `shouldReturn` 10
       length . pileDeck <$> getPile (NamedDeckKey "shadowlandTraps") `shouldReturn` 8
+
+  it "a mixed-in Tracksuit revealed from the trap deck does not release tucked minions" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+          traps = NamedDeckKey "shadowlandTraps"
+      _ <- setEncounterDeck [FNE.street60200,FNE.street60191] []
+      mafia <- encounterCard FNE.street60204
+      resolve [RevealEncounterCard p mafia]
+      sid <- selectJust (SideSchemeIs FNE.street60204)
+      bro <- encounterCard FNE.street60203
+      resolve [CreateDeck traps [bro],UsingDeck traps $ DrawAndRevealEncounterCard p]
+      held <- getsGame $ Side.sideSchemeHeldEncounterCards . toAttrs . (HashMap.! sid) . gameSideSchemes
+      map toCardCode held `shouldBe` ["60200"]
+      selectAny (MinionWithId $ minionOf bro) `shouldReturn` True
+      normalBro <- encounterCard FNE.street60203
+      resolve [RevealEncounterCard p normalBro]
+      after <- getsGame $ Side.sideSchemeHeldEncounterCards . toAttrs . (HashMap.! sid) . gameSideSchemes
+      length after `shouldBe` 0
+
+  it "surge from a trap-deck card deals from the ordinary encounter deck" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+          traps = NamedDeckKey "shadowlandTraps"
+      _ <- setEncounterDeck [FNE.street60180] []
+      assault <- encounterCard CoreTreacheries.assault
+      remaining <- encounterCard Cards.street65030
+      resolve [CreateDeck traps [assault,remaining],UsingDeck traps $ DrawAndRevealEncounterCard p]
+      dealt <- dealtTo p
+      map toCardCode dealt `shouldBe` ["60180"]
+      map toCardCode . pileDeck <$> getPile traps `shouldReturn` ["65030"]

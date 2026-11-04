@@ -570,7 +570,11 @@ runDeckMessage key msg attrs@ScenarioAttrs {..} = case msg of
       pure attrs
     DrawAndRevealEncounterCard ident -> do
       (ecs, attrs') <- drawEncounterCard attrs
-      for_ ecs (revealEncounterCard ident)
+      for_ ecs $ case key of
+        NamedDeckKey name -> revealEncounterCardFrom (W.RevealedFromSeparateDeck name) ident
+        SideSchemeDeckKey -> revealEncounterCardFrom (W.RevealedFromSeparateDeck "sideSchemes") ident
+        InfinityStoneDeckKey -> revealEncounterCardFrom (W.RevealedFromSeparateDeck "infinityStones") ident
+        _ -> revealEncounterCard ident
       pure attrs'
     PutTopOfEncounterDeckIntoPlay ident -> do
       (ecs, attrs') <- drawEncounterCard attrs

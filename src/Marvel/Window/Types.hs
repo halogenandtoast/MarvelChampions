@@ -23,6 +23,7 @@ data WindowTiming = After | When | Would
 data RevealSource
   = RevealedFromEncounterDeck
   | RevealedFromVillain
+  | RevealedFromSeparateDeck Text
   | RevealedFromDiscardPile
   | RevealedFromSetAside
   | RevealedFromRemovedFromGame
