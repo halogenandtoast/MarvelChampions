@@ -7,9 +7,7 @@ import Marvel.Card.EncounterCard
 import Marvel.Card.PlayerCard
 import Marvel.Game.Source
 import Marvel.Id
-import Marvel.Identity.Types
 import Marvel.Matchers.Types
-import Marvel.Projection
 import Marvel.Queue
 import Marvel.Ref
 
@@ -89,7 +87,7 @@ instance (HasGame m) => Query m CharacterMatcher where
   type QueryElement CharacterMatcher = CharacterId
   select = gameSelectCharacter
 
-instance (MonadThrow m, HasGame m, HasQueue m, Projection m PlayerIdentity) => Query m ExtendedCardMatcher where
+instance (MonadThrow m, HasGame m, HasQueue m) => Query m ExtendedCardMatcher where
   type QueryElement ExtendedCardMatcher = PlayerCard
   select = gameSelectExtendedCard
 

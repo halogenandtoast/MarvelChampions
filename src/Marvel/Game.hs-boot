@@ -141,7 +141,6 @@ gameSelectExtendedCard ::
   ( MonadThrow m
   , HasGame m
   , HasQueue m
-  , Projection m PlayerIdentity
   ) =>
   ExtendedCardMatcher ->
   m (HashSet PlayerCard)
@@ -154,7 +153,7 @@ instance HasAbilities Game
 
 resourceCostPayers :: (HasGame m) => IdentityId -> Maybe PlayerCard -> m [IdentityId]
 getPaymentSourcesFor ::
-  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) =>
+  (HasQueue m, MonadThrow m, HasGame m) =>
   IdentityId -> IdentityId -> Maybe PlayerCard -> m [PlayerCard]
 getPaymentResourceAbilities ::
   (MonadThrow m, MonadRandom m, HasQueue m, HasGame m) =>
@@ -164,7 +163,6 @@ getAvailableResourcesFor ::
   , MonadRandom m
   , MonadThrow m
   , HasGame m
-  , Projection m PlayerIdentity
   ) =>
   IdentityId ->
   Maybe PlayerCard ->
@@ -252,7 +250,7 @@ getSetAsideEncounterCards :: (HasGame m) => m [EncounterCard]
 
 getSetAsidePlayerCards :: (HasGame m) => m [PlayerCard]
 getAvailablePaymentSources ::
-  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
+  (HasQueue m, MonadThrow m, HasGame m) => IdentityId -> m [PlayerCard]
 -- Adam Warlock
 pendingDamageAmount :: (HasQueue m) => IdentityId -> m Natural
 getResourceAbilities ::

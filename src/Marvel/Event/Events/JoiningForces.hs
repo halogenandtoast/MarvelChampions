@@ -12,8 +12,6 @@ import Marvel.Entity
 import Marvel.Game.Source
 import Marvel.Query
 import Marvel.Queue (HasQueue)
-import Marvel.Projection (Projection)
-import Marvel.Identity.Types (PlayerIdentity)
 import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -34,7 +32,7 @@ newtype JoiningForces = JoiningForces (Attrs Event)
   deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
-alliesInHand :: (HasGame m, MonadThrow m, HasQueue m, Projection m PlayerIdentity) => Trait.Trait -> m [PlayerCard]
+alliesInHand :: (HasGame m, MonadThrow m, HasQueue m) => Trait.Trait -> m [PlayerCard]
 alliesInHand trait = do
   cards <- selectList (InHandOf AnyIdentity $ BasicCardMatches $ CardWithType AllyType <> CardWithTrait trait)
   inPlay <- getUniqueTitlesInPlay

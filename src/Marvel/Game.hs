@@ -6547,7 +6547,7 @@ pendingDamageAmount = fmap (maybe 0 damageAmount) . pendingDamage
 -- | The cards a player may discard to pay: those in their own hand. A resource card's
 -- criteria say when it may be spent: "spend this card only in hero form".
 getAvailablePaymentSources ::
-  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) => IdentityId -> m [PlayerCard]
+  (HasQueue m, MonadThrow m, HasGame m) => IdentityId -> m [PlayerCard]
 getAvailablePaymentSources ident = asYou ident do
   hand <- getsGame $ maybe [] (unHand . playerIdentityHand . toAttrs) . lookup ident . gamePlayers
   flip filterM hand \c ->
@@ -6562,7 +6562,7 @@ resourceCostPayers ident _card = do
   if isJust peril then pure [ident] else asYou ident $ selectList AnyIdentity
 
 getPaymentSourcesFor ::
-  (HasQueue m, MonadThrow m, HasGame m, Projection m PlayerIdentity) =>
+  (HasQueue m, MonadThrow m, HasGame m) =>
   IdentityId -> IdentityId -> Maybe PlayerCard -> m [PlayerCard]
 getPaymentSourcesFor payer contributor card = do
   ordinary <- allianceCostPayers payer card
@@ -6587,7 +6587,6 @@ getAvailableResourcesFor ::
   , MonadRandom m
   , MonadThrow m
   , HasGame m
-  , Projection m PlayerIdentity
   ) =>
   IdentityId ->
   Maybe PlayerCard ->
@@ -6868,7 +6867,7 @@ gameSelectCharacter = \case
     pure . HashSet.fromList $ [c | not (null characters), (c, atk) <- characters, atk == highest]
 
 gameSelectExtendedCard ::
-  (MonadThrow m, HasGame m, HasQueue m, Projection m PlayerIdentity) =>
+  (MonadThrow m, HasGame m, HasQueue m) =>
   ExtendedCardMatcher ->
   m (HashSet PlayerCard)
 gameSelectExtendedCard m = do
