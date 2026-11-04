@@ -123,6 +123,8 @@ instance Entity Minion where
     , minionAttachments :: HashSet AttachmentId
     , minionDefensePriority :: DefensePriority
     , minionFacedownCard :: Maybe PlayerCard
+    , minionOriginalAlly :: Maybe Value
+    , minionOriginalCard :: Maybe Card
     -- ^ the player card this minion is, put into play facedown (as Ultron's drones are)
     , minionAttachedTo :: Maybe MinionId
     , minionSchemeReplacesAttack :: Bool
@@ -305,6 +307,8 @@ minion f cardDef sch atk hp =
             , minionAttachments = mempty
             , minionDefensePriority = AnyDefense
             , minionFacedownCard = Nothing
+            , minionOriginalAlly = Nothing
+            , minionOriginalCard = Nothing
             , minionAttachedTo = Nothing
             , minionSchemeReplacesAttack = False
             , minionSchemeRemoval = Nothing
@@ -323,6 +327,7 @@ instance IsRef (Attrs Minion) where
 -- | A facedown minion is its owner's player card, so it goes to their discard pile when
 -- it leaves play.
 instance IsCard (Attrs Minion) where
+  toCard a | Just card <- minionOriginalCard a = card
   toCard a | Just card <- minionFacedownCard a = PlayerCard card
   toCard a =
     EncounterCard $
@@ -349,7 +354,7 @@ instance FromJSON (Attrs Minion) where
   parseJSON = withObject "MinionAttrs" \o ->
     genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "minionSchemeReplacesAttack" (Bool False) $ KeyMap.insertWith (\_ old -> old) "minionSchemeRemoval" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.insertWith (\_ old -> old) "minionActivationPlayer" (toJSON (Nothing :: Maybe IdentityId)) $ KeyMap.union o $ KeyMap.fromList
-      [("minionCounters", Number 0), ("minionSchemeAvailable", Bool True), ("minionAttackAvailable", Bool True), ("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
+      [("minionOriginalAlly", Null), ("minionOriginalCard", Null), ("minionCounters", Number 0), ("minionSchemeAvailable", Bool True), ("minionAttackAvailable", Bool True), ("minionDefeatedBaseScheme", toJSON (Nothing :: Maybe Natural)), ("minionIgnoreWhenDefeated", Bool False), ("minionAttachedTo", toJSON (Nothing :: Maybe MinionId)), ("minionExhausted", Bool False), ("minionDamageThisPhase", Number 0), ("minionHeldTreacheries", toJSON ([] :: [EncounterCard])), ("minionHeldCards", toJSON ([] :: [PlayerCard])), ("minionAdditionalTough", Number 0), ("minionAdditionalStun", Bool False), ("minionAdditionalConfuse", Bool False)]
 
 -- | Having a status card is distinct from being stunned or confused (RR Steady).
 isStunned, isConfused :: (HasGame m) => Attrs Minion -> m Bool

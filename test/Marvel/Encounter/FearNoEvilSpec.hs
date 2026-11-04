@@ -52,6 +52,50 @@ recruitBlackCat you = do
 
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  it "Baron Zemo blanks a recruited Black Cat and restores her original ally state after leaving, including through a reload" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      cat <- recruitBlackCat you
+      let aid = allyId cat
+          mid = MinionId $ unAllyId aid
+      resolve [AllyMessage aid $ AllySetDamage 1]
+      zemoCard <- encounterCard Cards.street60145
+      resolve [RevealEncounterCard you zemoCard]
+      selectAny (AllyWithId aid) `shouldReturn` False
+      minionMatches (MinionWithTrait Trait.Deceived) mid `shouldReturn` True
+      minionMatches (MinionWithKeyword Villainous) mid `shouldReturn` False
+      getCharacterThreat (MinionCharacter mid) `shouldReturn` 4
+      game <- getGame
+      case fromJSON @Game (toJSON game) of
+        Error err -> liftIO $ expectationFailure err
+        Success saved -> withGame_ $ const saved
+      resolve =<< L.runQueueT (L.capture $ L.removeFromPlay $ minionOf zemoCard)
+      restored <- allyIn "60169"
+      allyDamage restored `shouldBe` 1
+      getCharacterThreat (AllyCharacter aid) `shouldReturn` 4
+      resource <- putInHand you "01089"
+      choose "use the restored Black Cat's printed action" (isAbilityOf aid)
+      payWith [resource]
+      pass
+      selectAny (AllyWithId aid) `shouldReturn` False
+      minionMatches (MinionWithKeyword Villainous) mid `shouldReturn` True
+      minionDamageOf mid `shouldReturn` Just 1
+
+  it "a Deceived encounter ally still goes to the encounter discard when defeated" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      cat <- recruitBlackCat you
+      zemoCard <- encounterCard Cards.street60145
+      resolve [RevealEncounterCard you zemoCard]
+      let mid = MinionId $ unAllyId $ allyId cat
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ withUnpreventable $ toDamage 20 FromAbility]
+      discarded <- getEncounterDiscard
+      length (filter ((== CardId (unMinionId mid)) . ecCardId) discarded) `shouldBe` 1
+      playerDiscard <- discardOf you
+      liftIO $ map pcCardId playerDiscard `shouldNotContain` [CardId $ unMinionId mid]
+
   it "Deadly Sai is discarded after the defended attack and its retaliation have resolved" do
     tg <- testGame ["black-panther"]
     inGame tg do

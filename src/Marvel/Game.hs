@@ -3796,8 +3796,6 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "neMarkPossessedHost" (fromJSON -> Success (_mid :: MinionId, host :: MinionId)) ->
     pure $ g & entitiesL . minionsL . ix host %~ overMinion (\a -> a
       {Minion.minionCardDef = (Minion.minionCardDef a) {cdTraits = HashSet.insert Possessed (cdTraits $ Minion.minionCardDef a)}})
-  AllyBecomesMinion aid | Just ally <- lookup aid (gameAllies g), isJust (Ally.allyOriginalMinion $ toAttrs ally) ->
-    g <$ restoreControlledMinion aid
   AllyBecomesMinion aid -> case lookup aid (gameAllies g) of
     Nothing -> pure g
     Just ally -> do
@@ -3814,7 +3812,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       identityStep ident (AllyRemoved aid)
       engageMinion mid ident
       let minion = overMinion (\m -> m
-            { Minion.minionSchemeAvailable = case ally of Ally.Ally inner -> Ally.allyHasThwart inner
+            { Minion.minionOriginalAlly = Just $ toJSON ally
+            , Minion.minionOriginalCard = Just $ toCard ally
+            , Minion.minionSchemeAvailable = case ally of Ally.Ally inner -> Ally.allyHasThwart inner
             , Minion.minionAttackAvailable = case ally of Ally.Ally inner -> Ally.allyHasAttack inner
             , Minion.minionStunned = Ally.allyStunned a
             , Minion.minionConfused = Ally.allyConfused a
@@ -3842,6 +3842,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
                 PlayerCard card -> fromMaybe controller (pcOwner card)
                 EncounterCard _ -> controller
             , Ally.allyDamage = Minion.minionDamage m
+            , Ally.allyCounters = Minion.minionCounters m
             , Ally.allyHitPoints = Minion.minionHitPoints m
             , Ally.allyThwart = Thw $ unSch $ Minion.minionScheme m
             , Ally.allyAttack = Minion.minionAttack m
@@ -3917,16 +3918,32 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           let a = toAttrs minion
               owner = fromMaybe (minionEngagedIdentity a) (pcOwner card)
               controller = fromMaybe owner (pcController card)
-              ally = createAlly controller card
+              original = case Minion.minionOriginalAlly a of
+                Nothing -> createAlly controller card
+                Just value -> case fromJSON value of
+                  Success saved -> saved
+                  Error err -> error $ "invalid converted ally snapshot: " <> err
+              originalAttrs = toAttrs original
+              ally = setAllyAttrs original originalAttrs
+                { Ally.allyExhausted=Minion.minionExhausted a
+                , Ally.allyDamage=Minion.minionDamage a
+                , Ally.allyStunned=Minion.minionStunned a
+                , Ally.allyConfused=Minion.minionConfused a
+                , Ally.allyTough=Minion.minionTough a
+                , Ally.allyAdditionalStun=Minion.minionAdditionalStun a
+                , Ally.allyAdditionalConfuse=Minion.minionAdditionalConfuse a
+                , Ally.allyAdditionalTough=Minion.minionAdditionalTough a
+                , Ally.allyCounters=Minion.minionCounters a
+                , Ally.allyHeldCards=Minion.minionHeldCards a
+                , Ally.allyHeldTreacheries=Minion.minionHeldTreacheries a
+                , Ally.allyUpgrades=minionUpgrades a
+                }
               aid = toId ally
           for_ (minionUpgrades a) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
           for_ (minionAttachments a) $ \at -> attachmentStep at (AttachmentHostBecameAlly aid)
           minionDisengages (minionEngagedIdentity a) mid
           -- This is still the same physical card in play. Its facedown treacheries
           -- remain attached, rather than being discarded by the change of allegiance.
-          for_ (Minion.minionHeldTreacheries a) (allyStep aid . AllyHoldsTreachery)
-          allyStep aid (AllyOwnedBy owner)
-          cardSpecific aid "convertedState" (Minion.minionExhausted a,Minion.minionDamage a,Minion.minionStunned a,Minion.minionConfused a,Minion.minionTough a,Minion.minionAdditionalStun a,Minion.minionAdditionalConfuse a,Minion.minionAdditionalTough a,Minion.minionCounters a,Minion.minionHeldCards a)
           identityStep controller (AllyCreated aid)
           pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
             & \game -> game {gameCharacterThreat=[(if character == MinionCharacter mid then AllyCharacter aid else character,n) | (character,n) <- game.gameCharacterThreat]}
@@ -10109,6 +10126,16 @@ friendlyBoostAttackView g mid = do
   guard $ friendlyBoostAttack context
   villain <- headMay $ HashMap.keys $ gameVillains g
   pure $ attackWith (friendlyBoostKeywords context) (EnemyMinionId mid) (VillainCharacter villain) 0
+
+-- Runtime metadata stays with the same physical ally while its current counters,
+-- damage and attachments are restored. This also preserves controlled encounter
+-- allies, whose runtime builder differs from the card's original minion builder.
+setAllyAttrs :: Ally -> Attrs Ally -> Ally
+setAllyAttrs (Ally.Ally (original :: a)) attrs = case (toJSON original,toJSON attrs) of
+  (Object metadata,Object fields) -> case fromJSON (Object $ KeyMap.union fields metadata) of
+    Success (value :: a) -> Ally.Ally value
+    Error err -> error $ "invalid restored ally state: " <> err
+  _ -> error "ally state is not an object"
 
 setBlackCatAllyAttrs :: IdentityId -> AllyId -> Attrs Ally -> Ally
 setBlackCatAllyAttrs controller aid attrs = case lookupAlly "60169" controller aid of
