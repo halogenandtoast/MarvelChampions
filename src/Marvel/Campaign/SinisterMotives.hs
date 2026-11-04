@@ -89,7 +89,7 @@ storyKeys c ending = ["$story.sm." <> scenario <> "." <> ending]
 
 briefing :: Campaign -> [Text]
 briefing c = storyKeys c "intro"
-  <> ["$story.sm.campaignMode" | scenarioNumber c == 1]
+  <> [key | scenarioNumber c == 1, key <- ["$story.sm.campaignMode", "$story.sm.keywords", "$story.sm.reputationTrack"]]
   <> ["$story.sm.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
   <> storyKeys c "rules" <> storyKeys c "setup"
   <> [key | isExpertCampaign c, key <- storyKeys c "expertSetup"]

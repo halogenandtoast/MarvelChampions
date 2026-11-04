@@ -23,7 +23,7 @@ import System.Random.Shuffle (shuffleM)
 
 runShadowlandStep :: ReverseQueue m => Campaign -> CampaignStepKind -> m ()
 runShadowlandStep c = \case
-  CampaignChoices -> selectJust FirstPlayer >>= \you -> readThenContinue you ["$story.shadowland.setup"]
+  CampaignChoices -> selectJust FirstPlayer >>= \you -> readThenContinue you (briefing c)
   CampaignSetup -> do
     players <- getPlayers
     let number = scenarioNumber c
@@ -58,6 +58,8 @@ runShadowlandStep c = \case
         shuffleIntoEncounterDeck $ drop (length players) cards
     expertSetup c
   CampaignVictory -> do
+    first <- selectJust FirstPlayer
+    readThenContinue first [story c "victory"]
     survivors <- getPlayers
     when (scenarioNumber c == 1) $ selectOne AnyVillain >>= traverse_ (\vid -> do
       card <- getsGame (`cardInPlay` VillainRef vid)
@@ -74,6 +76,21 @@ runShadowlandStep c = \case
       when (scenarioNumber c < 3) $ choosePrepared you code
     recordInCampaignLog RecordScenarioWon
   _ -> pure ()
+
+-- MC65 pp.4–17: each scenario has its own introduction, special rules and
+-- campaign instructions. The first also explains campaign play; expert health
+-- carry-over instructions are relevant from the second scenario onward.
+briefing :: Campaign -> [Text]
+briefing c = [story c "intro"]
+  <> (if scenarioNumber c == 1 then ["$story.shadowland.campaignMode", "$story.shadowland.featuredRules"] else [])
+  <> ["$story.shadowland.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
+  <> [story c "rules", story c "setup"]
+  <> ["$story.shadowland.expertSetup" | scenarioNumber c > 1 && isExpertCampaign c]
+
+story :: Campaign -> Text -> Text
+story c section = "$story.shadowland."
+  <> fromMaybe "heartOfShadow" (atMay ["shadowsInTheNight", "shadowLabyrinth"] $ scenarioNumber c - 1)
+  <> "." <> section
 
 expertSetup :: ReverseQueue m => Campaign -> m ()
 expertSetup c = when (isExpertCampaign c && scenarioNumber c > 1) $ getPlayers >>= traverse_ (\you -> do

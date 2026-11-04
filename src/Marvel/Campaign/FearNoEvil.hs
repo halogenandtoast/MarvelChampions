@@ -36,6 +36,11 @@ runFearNoEvilStep c = \case
     recordInCampaignLog $ RecordFearNoEvilLog c.campaignLog.fearNoEvil {pendingRemoved=[]}
   CampaignChoices -> do
     first <- selectJust FirstPlayer
+    readThenContinue first $
+      (if c.campaignLog.fearNoEvil.gamesPlayed == 0 then
+        ["$story.fearNoEvil.intro","$story.fearNoEvil.campaignMode"]
+        <> ["$story.fearNoEvil.expertCampaign" | isExpertCampaign c]
+       else []) <> ["$story.fearNoEvil.planning"]
     if c.campaignLog.fearNoEvil.gamesPlayed == 0 then chooseOnePrompted first "$label.fneVillainOrder"
       [labeled "$label.fneRecommendedVillains" (recordInCampaignLog (RecordFearNoEvilLog c.campaignLog.fearNoEvil {recommendedOrder=True}) >> campaignStep (CampaignSetupThen "fearNoEvil:planning"))
       ,labeled "$label.fneRandomVillains" (recordInCampaignLog (RecordFearNoEvilLog c.campaignLog.fearNoEvil {recommendedOrder=False}) >> campaignStep (CampaignSetupThen "fearNoEvil:planning"))]
@@ -52,6 +57,7 @@ runFearNoEvilStep c = \case
       [cardLabeled code (cardSpecific GameRef "chooseFearNoEvilScenario" code) | code <- next]
   CampaignSetup -> do
     first <- selectJust FirstPlayer
+    readThenContinue first (scenarioBriefing c)
     for_ c.campaignLog.fearNoEvil.resolved $ \(code,completed) -> genEncounterCard (campaignEnvironmentFor code completed) >>= putEncounterCardIntoPlay first
     when (List.lookup "60151a" c.campaignLog.fearNoEvil.resolved == Just True) $ do
       cards <- traverse genEncounterCard [Cards.street60153,Cards.street60154,Cards.street60155,Cards.street60156]
@@ -110,6 +116,9 @@ runFearNoEvilStep c = \case
         when (completed >= 3) $ selectList AnyMinion >>= traverse_ (`giveStatus` ToughStatus)
         when (completed >= 4) $ selectJust FirstPlayer >>= \you -> searchEverywhereAndRevealEncounterCard you (CardIs Cards.street60165)
   CampaignVictory -> do
+    first <- selectJust FirstPlayer
+    readThenContinue first $
+      [scenarioStory c "victory"] <> ["$story.fearNoEvil.expertVictory" | isExpertCampaign c]
     recordHealth c
     removed <- fearNoEvilRemovedTitles
     psyche <- selectOne $ EnvironmentWithTitle "Disturbed Psyche"
@@ -120,12 +129,15 @@ runFearNoEvilStep c = \case
       {removedTitles=List.nub $ log.removedTitles <> removed,trustEstablished=log.trustEstablished || threat >= 2,maryDefeated=log.maryDefeated || any ((`elem` ["60210a","60210b"]) . toCardCode) victory}
     recordInCampaignLog $ RecordFearNoEvilOutcome True
   CampaignSetupThen "fearNoEvil:defeat" -> do
+    -- The final identity can already have left play; its seat still reads the result.
+    first <- selectOne FirstPlayer >>= maybe getYou pure
+    readThenContinue first $
+      [scenarioStory c "defeat"] <> ["$story.fearNoEvil.expertDefeat" | isExpertCampaign c]
     recordHealth c
     let log = c.campaignLog.fearNoEvil
     if log.selectedScenario == Just "60161a" && isExpertCampaign c then do
       let completed = [code | (code,True) <- log.resolved]
       if null completed then recordInCampaignLog RecordCampaignLost >> recordInCampaignLog (RecordFearNoEvilOutcome False) else do
-        first <- selectJust FirstPlayer
         chooseOnePrompted first "$label.fneFailCompletedScenario"
           [cardLabeled (toCardCode $ campaignEnvironmentFor code True) do
             selectList (EnvironmentWithTitle $ title $ cdName $ campaignEnvironmentFor code True) >>= traverse_ flipEnvironment
@@ -143,3 +155,27 @@ recordHealth c = when (isExpertCampaign c) $ do
     code <- getIdentityCode you
     (remaining,_,base) <- getRemainingHitPoints you
     recordInCampaignLog $ RecordHitPoints code $ min remaining base
+
+-- The scenario is chosen before this briefing, and its underling is recorded by
+-- StartScenario, so the reader sees the actual pairing rather than its placeholder.
+scenarioStory :: Campaign -> Text -> Text
+scenarioStory c section = "$story.fearNoEvil." <> scenario <> "." <> section
+ where
+  scenario = case c.campaignLog.fearNoEvil.selectedScenario of
+    Just "60121a" -> "artMuseumHeist"
+    Just "60128a" -> "theGetaway"
+    Just "60134a" -> "protectionRacket"
+    Just "60142a" -> "theRaftBreakout"
+    Just "60151a" -> "stopThePresses"
+    _ -> "kingpin"
+
+scenarioBriefing :: Campaign -> [Text]
+scenarioBriefing c = [scenarioStory c "intro",scenarioStory c "rules"]
+  <> underling <> ["$story.fearNoEvil.campaignSetup",scenarioStory c "setup"]
+ where
+  underling =
+    [ "$story.fearNoEvil.underlings." <> name
+    | Just code <- [c.campaignLog.fearNoEvil.selectedScenario]
+    , Just villain <- [List.lookup code c.campaignLog.fearNoEvil.underlings]
+    , Just name <- [List.lookup villain [("60065","bullseye"),("60076","electro"),("60086","hammerhead"),("60097","purpleMan"),("60110a","typhoidMary")]]
+    ]

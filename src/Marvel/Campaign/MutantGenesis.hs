@@ -27,7 +27,7 @@ runMutantGenesisStep :: ReverseQueue m => Campaign -> CampaignStepKind -> m ()
 runMutantGenesisStep c = \case
   CampaignChoices -> do
     players <- getPlayers
-    for_ (take 1 players) (`readThenContinue` story c "setup")
+    for_ (take 1 players) (`readThenContinue` briefing c)
     when (scenarioNumber c == 1) $ for_ (zip [0 :: Int ..] players) \(i, _) -> later ("role:" <> tshow i)
     -- Role-building choices happen before starting hands are drawn.
     for_ (zip [0 :: Int ..] players) \(i, _) -> later ("roleBuild:" <> tshow i)
@@ -54,7 +54,7 @@ runMutantGenesisStep c = \case
     later "expert"
   CampaignVictory -> do
     first <- selectJust FirstPlayer
-    readThenContinue first (story c "victory")
+    readThenContinue first (victoryInstructions c)
     when (scenarioNumber c < 5) do
       removed <- filter (`elem` futurePastCards) . map toCardCode <$> getVictoryDisplay
       deck <- getEncounterDeck
@@ -101,6 +101,18 @@ futurePastCards = ["32166", "32167", "32168", "32169", "32170"]
 
 story :: Campaign -> Text -> [Text]
 story c section = ["$story.mutantGenesis." <> fromMaybe "magneto" (atMay ["sabretooth", "projectWideawake", "masterMold", "mansionAttack"] (scenarioNumber c - 1)) <> "." <> section]
+
+briefing :: Campaign -> [Text]
+briefing c = story c "intro"
+  <> ["$story.mutantGenesis." <> section | scenarioNumber c == 1, section <- ["campaignMode","roles","futurePast","keywords"]]
+  <> ["$story.mutantGenesis.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
+  <> story c "rules" <> story c "setup"
+  <> ["$story.mutantGenesis.expertSetup" | scenarioNumber c > 1 && isExpertCampaign c]
+
+victoryInstructions :: Campaign -> [Text]
+victoryInstructions c = story c "victory"
+  <> ["$story.mutantGenesis.expertVictory" | scenarioNumber c < 5 && isExpertCampaign c]
+  <> ["$story.mutantGenesis.conclusion" | scenarioNumber c == 5]
 
 later :: ReverseQueue m => Text -> m ()
 later = campaignStep . CampaignSetupThen . ("mutant:" <>)

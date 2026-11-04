@@ -276,6 +276,8 @@ select.input {
   background-repeat: no-repeat;
 }
 .portrait.square { background-size: 165% auto; background-position: 72% 22%; }
+/* Scheme illustrations sit to the right of their rules panel. */
+.portrait.scheme-art { background-size: 230% auto; background-position: 100% 45%; }
 
 /* an on/off setting: a checkbox drawn as a sliding switch, its label beside it */
 .switch { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 0.9rem; cursor: pointer; }

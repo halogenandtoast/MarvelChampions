@@ -24,6 +24,39 @@ campaignGameFor heroes mode completed = do
 
 spec :: Spec
 spec = describe "Shadowland campaign" do
+  for_ [(0,"shadowsInTheNight"),(1,"shadowLabyrinth"),(2,"heartOfShadow")] $ \(completed,chapter) ->
+    for_ [StandardCampaign,ExpertCampaign] $ \mode ->
+      it ("shows the guide for " <> show chapter <> " in " <> show mode) do
+        tg <- testGame ["spider-man"]
+        inGame tg do
+          let c = (newCampaignOf ShadowlandCampaign mode ["01001a"]) {completed}
+              chapterKey section = "$story.shadowland." <> chapter <> "." <> section
+              expected = [chapterKey "intro"]
+                <> (if completed == 0 then ["$story.shadowland.campaignMode","$story.shadowland.featuredRules"] else [])
+                <> ["$story.shadowland.expertCampaign" | completed == 0 && mode == ExpertCampaign]
+                <> [chapterKey "rules",chapterKey "setup"]
+                <> ["$story.shadowland.expertSetup" | completed > 0 && mode == ExpertCampaign]
+          withGame_ $ campaignL ?~ c
+          runNow [CampaignStep CampaignChoices]
+          openQuestion >>= \case
+            Just (_,Read sections _) -> sections `shouldBe` expected
+            _ -> error "Shadowland guide was not displayed"
+          selectListCount (UpgradeNamed "Creeping Corruption") `shouldReturn` 0
+
+  it "shows victory instructions before recording progress and offers the finale conclusion" do
+    for_ [(0,"shadowsInTheNight"),(2,"heartOfShadow")] $ \(completed,chapter) -> do
+      tg <- campaignGame StandardCampaign completed
+      inGame tg do
+        runNow [GameOver Won]
+        openQuestion >>= \case
+          Just (_,Read sections _) -> sections `shouldBe` ["$story.shadowland." <> chapter <> ".victory"]
+          _ -> error "Shadowland victory instructions were not displayed"
+        campaign <- getsGame (fromMaybe (error "missing campaign") . gameCampaign)
+        campaign.completed `shouldBe` completed
+        choose "continue after the victory instructions" (isLabel "$label.continue")
+        campaign' <- getsGame (fromMaybe (error "missing campaign") . gameCampaign)
+        campaign'.completed `shouldBe` completed + 1
+
   it "lets a defeated expert player rejoin at full health for one encounter card" do
     tg <- testGame ["spider-man"]
     inGame tg do

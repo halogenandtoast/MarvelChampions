@@ -35,6 +35,15 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {
+  '60121': ['60121b'],
+  '60128': ['60128b'],
+  '60134': ['60134b'],
+  '60142': ['60142b'],
+  '60151': ['60151b'],
+  '60161': ['60159a'],
+  '65001': ['65001b'],
+  '65038': ['65037'],
+  '65060': ['65057'],
   '45081': ['45081a', '45082a', '45083a', '45084a'],
   '40077': ['40080'],
   '40103': ['40102'],
@@ -46,6 +55,7 @@ const SCENARIO_VILLAINS: Record<string, string[]> = {
 }
 // a scenario's variants, as Breakout's, are one scenario
 export const baseCode = (code: string) => code.replace(/[ab]$/, '')
+export const scenarioPortraits = (code: string) => SCENARIO_VILLAINS[baseCode(code)] ?? [code]
 
 export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
   const { t } = useI18n()
@@ -70,7 +80,7 @@ export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
   const modularName = (set: string) => setCards.value.get(setCode(set))?.setName ?? set
   const modularRelease = (set: string) => releaseOf(null, setCards.value.get(setCode(set)))
 
-  const portraits = (code: string) => SCENARIO_VILLAINS[baseCode(code)] ?? [code]
+  const portraits = scenarioPortraits
   const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
 
   // a scenario set up by its main scheme's A side is that scenario's extreme variant (The

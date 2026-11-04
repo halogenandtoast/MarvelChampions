@@ -7,10 +7,13 @@ import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import PrimaryButton from './PrimaryButton.vue'
 
-const { sections, canContinue, waitingOn = null } = defineProps<{
+const { sections, canContinue, waitingOn = null, reference = false, sourceUrl = null } = defineProps<{
   sections: string[]
   canContinue: boolean
   waitingOn?: string | null
+  /** Rereading a guide between games never advances the game queue. */
+  reference?: boolean
+  sourceUrl?: string | null
 }>()
 const emit = defineEmits<{ continue: []; close: [] }>()
 const { t, tm, rt, te } = useI18n()
@@ -42,7 +45,9 @@ const shown = computed(() =>
         </section>
       </div>
       <footer>
-        <PrimaryButton v-if="canContinue" :label="t('label.continue')" @click="emit('continue')" />
+        <a v-if="sourceUrl" :href="sourceUrl" target="_blank" rel="noopener noreferrer">{{ t('campaign.rulebook') }}</a>
+        <PrimaryButton v-if="reference" :label="t('common.close')" @click="emit('close')" />
+        <PrimaryButton v-else-if="canContinue" :label="t('label.continue')" @click="emit('continue')" />
         <p v-else class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
       </footer>
     </article>
@@ -83,6 +88,7 @@ h2 { margin: 0; font-size: 1.05rem; text-transform: uppercase; color: var(--titl
 p, li { margin: 0; font-size: 0.92rem; line-height: 1.45; }
 ul { display: grid; gap: 6px; margin: 0; padding-left: 1.2rem; }
 li::marker { content: '» '; color: var(--crimson-bright); }
-footer { display: flex; justify-content: flex-end; padding: 12px 20px; border-top: 1px solid var(--line); }
+footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--line); }
+footer a { margin-right: auto; font-size: 0.85rem; }
 .waiting { color: var(--text-muted); font-style: italic; }
 </style>

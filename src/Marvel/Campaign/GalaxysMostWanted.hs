@@ -53,8 +53,10 @@ storyKeys c sections = map ("$story.galaxy." <>) (sections scenario)
 briefing :: Campaign -> [Text]
 briefing c = storyKeys c \v ->
   [v <> ".intro"]
-    <> (if n == 1 then ["campaignMode", "keywords", "market"] <> expertOnly c ["expertCampaign"] else [])
-    <> [v <> ".rules" | n `elem` [2, 3]]
+    <> (if n == 1 then ["campaignMode", "keywords", "market", "shipCommand"] <> expertOnly c ["expertCampaign"] else [])
+    <> ["shipCommand" | n `elem` [4, 5]]
+    <> ["powerStone" | n `elem` [4, 5]]
+    <> [v <> ".rules"]
     <> [v <> ".setup"]
     <> expertOnly c [v <> ".expertSetup"]
  where

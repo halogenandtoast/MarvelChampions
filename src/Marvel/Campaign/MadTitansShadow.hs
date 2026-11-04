@@ -51,7 +51,7 @@ storyKeys c sections = map ("$story.mts." <>) (sections scenario)
 briefing :: Campaign -> [Text]
 briefing c = storyKeys c \v ->
   if scenarioNumber c == 1
-    then [v <> ".intro", "campaignMode"] <> expertOnly c ["expertCampaign"] <> [v <> ".rules", v <> ".setup"]
+    then [v <> ".intro", "campaignMode", "keywords"] <> expertOnly c ["expertCampaign"] <> [v <> ".rules", v <> ".setup"]
     else [v <> ".intro", v <> ".rules", v <> ".setup"] <> expertOnly c [v <> ".expertSetup"]
 
 victoryInstructions :: Campaign -> [Text]

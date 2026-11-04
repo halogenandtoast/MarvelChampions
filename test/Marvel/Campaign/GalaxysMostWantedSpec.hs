@@ -91,6 +91,23 @@ check = it
 
 spec :: Spec
 spec = describe "The Galaxy's Most Wanted campaign" do
+  describe "scenario guide coverage" do
+    for_ (zip [0..] ["badoon", "infiltrate", "escape", "nebula", "ronan"]) $ \(n, scenario) ->
+      for_ [StandardCampaign, ExpertCampaign] $ \mode ->
+        it ("shows " <> show scenario <> " rules before setup in " <> show mode) do
+          tg <- dealCampaignUnread (campaignAt mode n) [starter "groot"]
+          inGame tg do
+            openQuestion >>= \case
+              Just (_, Read sections _) -> do
+                let key suffix = "$story.galaxy." <> scenario <> "." <> suffix
+                sections `shouldSatisfy` elem (key "intro")
+                sections `shouldSatisfy` elem (key "rules")
+                sections `shouldSatisfy` elem (key "setup")
+                (key "expertSetup" `elem` sections) `shouldBe` (mode == ExpertCampaign)
+                ("$story.galaxy.powerStone" `elem` sections) `shouldBe` (n >= 3)
+                ("$story.galaxy.shipCommand" `elem` sections) `shouldBe` (n == 0 || n >= 3)
+              q -> error $ "expected the scenario guide: " <> show q
+
   describe "the campaign" do
     check "loads a campaign saved before there were two as The Rise of Red Skull's, its log's new section empty" do
       let saved = case toJSON (newCampaign StandardCampaign ["01001a"]) of
@@ -154,7 +171,7 @@ spec = describe "The Galaxy's Most Wanted campaign" do
       tg <- dealCampaignUnread (campaignAt ExpertCampaign 0) [starter "groot"]
       inGame tg do
         readStory
-          `shouldReturn` map ("$story.galaxy." <>) ["badoon.intro", "campaignMode", "keywords", "market", "expertCampaign", "badoon.setup", "badoon.expertSetup"]
+          `shouldReturn` map ("$story.galaxy." <>) ["badoon.intro", "campaignMode", "keywords", "market", "shipCommand", "expertCampaign", "badoon.rules", "badoon.setup", "badoon.expertSetup"]
 
     it "reveals Badoon Blitz with its hinder threat and shuffles Badoon Headhunter into the encounter deck" do
       tg <- dealCampaign (campaignAt StandardCampaign 0) [starter "groot"]

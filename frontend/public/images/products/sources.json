@@ -165,5 +165,65 @@
       "width": 771,
       "height": 827
     }
+  },
+  "fear-no-evil.webp": {
+    "campaign": "Fear No Evil",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc60-image0500.webp",
+    "perspective": {
+      "from": [
+        [
+          121,
+          96
+        ],
+        [
+          453,
+          49
+        ],
+        [
+          425,
+          370
+        ],
+        [
+          140,
+          486
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    }
+  },
+  "shadowland.webp": {
+    "campaign": "Shadowland",
+    "source": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/image-converter/2026/09/mc65-image0500.webp",
+    "perspective": {
+      "from": [
+        [
+          127,
+          64
+        ],
+        [
+          393,
+          31
+        ],
+        [
+          376,
+          398
+        ],
+        [
+          140,
+          464
+        ]
+      ],
+      "width": 771,
+      "height": 827
+    },
+    "cropAfterPerspective": {
+      "x": 0,
+      "y": 105,
+      "width": 771,
+      "height": 722,
+      "resizeWidth": 771,
+      "resizeHeight": 827
+    }
   }
 }

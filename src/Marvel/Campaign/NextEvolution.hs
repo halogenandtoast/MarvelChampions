@@ -27,14 +27,14 @@ runNextEvolutionStep :: ReverseQueue m => Campaign -> CampaignStepKind -> m ()
 runNextEvolutionStep c = \case
   CampaignChoices -> do
     first <- selectJust FirstPlayer
-    readThenContinue first (story c "setup")
+    readThenContinue first (briefing c)
   CampaignSetup ->
     -- The saved-Morlock searches precede the environment reward in scenario two.
     if scenarioNumber c == 2 then later ("morlockSearch:" <> tshow c.campaignLog.nextEvolution.morlocksSaved)
       else beginEnvironments c
   CampaignVictory -> do
     first <- selectJust FirstPlayer
-    readThenContinue first (story c "victory")
+    readThenContinue first (victoryInstructions c)
     when (scenarioNumber c < 5) do
       for_ nextEvolutionSchemes \(_, back, _) -> do
         present <- selectAny (EnvironmentIs $ encounterDef back)
@@ -85,6 +85,22 @@ runNextEvolutionStep c = \case
 
 story :: Campaign -> Text -> [Text]
 story c section = ["$story.nextEvolution." <> fromMaybe "stryfe" (atMay ["morlockSiege", "onTheRun", "juggernaut", "misterSinister"] (scenarioNumber c - 1)) <> "." <> section]
+
+-- The story and rules are read before ordinary scenario setup; campaign setup
+-- effects remain in CampaignSetup and are never performed by these readings.
+briefing :: Campaign -> [Text]
+briefing c = story c "intro"
+  <> ["$story.nextEvolution." <> section | scenarioNumber c == 1, section <- ["campaignMode", "campaignSchemes", "playerSideSchemes", "keywords"]]
+  <> ["$story.nextEvolution.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
+  <> ["$story.nextEvolution.hopeSummers" | scenarioNumber c == 3]
+  <> story c "rules"
+  <> story c "setup"
+  <> [key | isExpertCampaign c && scenarioNumber c > 1, key <- story c "expertSetup"]
+
+victoryInstructions :: Campaign -> [Text]
+victoryInstructions c = story c "victory"
+  <> ["$story.nextEvolution.expertVictory" | isExpertCampaign c && scenarioNumber c < 5]
+  <> ["$story.nextEvolution.conclusion" | scenarioNumber c == 5]
 
 later :: ReverseQueue m => Text -> m ()
 later = campaignStep . CampaignSetupThen . ("nextEvolution:" <>)

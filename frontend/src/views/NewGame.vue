@@ -174,7 +174,7 @@ const kindOptions = computed(() => [
 const campaignMode = ref<CampaignMode>('StandardCampaign')
 // which box's campaign
 const campaignKind = ref<CampaignKind>()
-const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow', 'SinisterMotives', 'MutantGenesis', 'NextEvolution', 'AgeOfApocalypseCampaign', 'AgentsOfShieldCampaign', 'ShadowlandCampaign', 'FearNoEvilCampaign']
+const campaignKinds: CampaignKind[] = ['RiseOfRedSkull', 'GalaxysMostWanted', 'MadTitansShadow', 'SinisterMotives', 'MutantGenesis', 'NextEvolution', 'AgeOfApocalypseCampaign', 'AgentsOfShieldCampaign', 'FearNoEvilCampaign', 'ShadowlandCampaign']
 const campaignTitle = computed(() => campaignKind.value ? t(`campaign.${campaignKind.value}`) : '')
 const campaignModeOptions = computed(() => [
   { value: 'StandardCampaign' as CampaignMode, label: t('campaign.StandardCampaign') },
@@ -451,6 +451,13 @@ const playerOptions = computed(() => [1, 2, 3, 4].map((n) => ({ value: String(n)
 .campaign-tile .villain-name { margin-top: 12px; font-size: 1.6rem; }
 .art-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; width: 100%; aspect-ratio: 16 / 10; }
 .art-strip .art { aspect-ratio: auto; height: 100%; }
+/* Landscape schemes keep their illustration on the right of the rules panel. */
+.art-strip .art[data-code='60121b'],
+.art-strip .art[data-code='60128b'],
+.art-strip .art[data-code='60134b'],
+.art-strip .art[data-code='60142b'],
+.art-strip .art[data-code='60151b'],
+.art-strip .art[data-code='65001b'] { background-size: 230% auto; background-position: 100% 45%; }
 .art-strip .art[data-code='40136'],
 .art-strip .art[data-code='40137'],
 .art-strip .art[data-code='40138'] { background-position: 95% calc(19% + 16px); }

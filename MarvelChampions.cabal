@@ -2946,7 +2946,9 @@ test-suite MarvelChampions-test
       Marvel.Campaign.MarketCheapEventsSpec
       Marvel.Campaign.MarketDearEventsSpec
       Marvel.Campaign.MarketUpgradesSpec
+      Marvel.Campaign.MutantGenesisSpec
       Marvel.Campaign.NextEvolutionSpec
+      Marvel.Campaign.RiseOfRedSkullGuideSpec
       Marvel.Campaign.ShadowlandSpec
       Marvel.Campaign.SinisterMotivesSpec
       Marvel.CampaignPlayerTest

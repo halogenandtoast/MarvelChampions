@@ -13,7 +13,7 @@
     "title": "New Keywords",
     "bullets": [
       "Incite X: When a card with the incite X keyword is revealed, place X threat on the main scheme.",
-      "Permanent: A card with the permanent keyword cannot leave play.",
+      "Permanent: Cards outside a permanent card’s own set cannot defeat it, remove it from play, or blank its text. Permanent cards do not count toward a player’s minimum or maximum deck size.",
       "Piercing: An attack with the piercing keyword discards any tough status cards from the target of the attack before dealing damage.",
       "Ranged: An attack with the ranged keyword ignores the retaliate keyword.",
       "Setup: A card with the setup keyword begins the game in play."
@@ -25,7 +25,9 @@
       "Each player is numbered 1 to 4 in the campaign log. When a player is instructed to add a card from their expert campaign set to their deck, they take it from the set that matches their player number.",
       "Persistent damage: each player records their remaining hit points after they win a game, which determines their starting hit points for the next scenario (never more than their base hit points). Each scenario’s setup lets a player restore their identity to full hit points by adding an obligation from their expert campaign set to their deck.",
       "A player defeated in a scenario their teammates go on to win does not take part in its victory steps, but can rejoin for the next scenario by adding an obligation to their deck during setup to restore their identity to full hit points.",
-      "Obligations in player decks: when a player draws an obligation from their deck, they immediately put it into play in their play area and do not draw a card to replace it. Only the player with the obligation in their play area can use its Alter-Ego Action to deal with it."
+      "Obligations in player decks: when a player draws an obligation from their deck, they immediately put it into play in their play area and do not draw a card to replace it. Only the player with the obligation in their play area can use its Alter-Ego Action to deal with it.",
+      "Expert campaign mode is separate from the scenario’s normal or expert difficulty. Follow instructions marked Expert Campaign Only when playing an expert campaign. If the heroes lose the final Red Skull scenario in an expert campaign, the whole campaign is lost; earlier defeats can be retried.",
+      "The expert-campaign obligations have player-card backs so they can be added to player decks, but they remain encounter cards."
     ]
   },
   "setup": {
@@ -180,6 +182,13 @@
       "bullets": [
         "Hydra is defeated and the players win the campaign!"
       ]
+    },
+    "conclusion": {
+      "title": "Conclusion: Reality Restored",
+      "text": [
+        "With Red Skull defeated, the Avengers recover the Reality Gem and undo Hydra’s rewritten world. Avengers Tower is restored, and the team can finally return home.",
+        "The victory brings relief, but the gem’s power leaves an unsettling question: if one stone nearly put the world under Hydra’s control, what other stones might still be out there?"
+      ]
     }
   },
   "galaxy": {
@@ -199,7 +208,14 @@
         "Patrol: While any minions with the patrol keyword are engaged with a player, that player cannot thwart the main scheme.",
         "Stalwart: A character that has the stalwart keyword cannot be stunned or confused.",
         "Victory X: When a card with the victory X keyword is defeated, place it in the victory display instead of its owner’s discard pile. The victory display is an out-of-play game area shared by all players.",
-        "Amplify icon: When a boost card is turned faceup during an enemy activation, add one additional boost icon to that card for each amplify icon in play."
+        "Amplify icon: When a boost card is turned faceup during an enemy activation, add one additional boost icon to that card for each amplify icon in play.",
+        "Incite X: When the card is revealed, place X threat on the main scheme.",
+        "Permanent: The card cannot leave play through ordinary discard or removal effects. Follow any exceptions permitted by its own abilities and the current Rules Reference.",
+        "Piercing: Before an attack with piercing deals damage, discard all tough status cards from its target.",
+        "Ranged: An attack with ranged ignores retaliate.",
+        "Setup: The card starts the game in play as directed during scenario setup.",
+        "Team-Up: Your chosen identity must be one of the two named characters to include the card in your deck. Both named characters must be in play to play it.",
+        "Villainous: When a minion activates, give it a facedown encounter boost card. Resolve that card and add its boost icons during the activation, then discard it."
       ]
     },
     "market": {
@@ -216,7 +232,8 @@
         "Some Setup and Victory instructions are preceded by Expert Campaign Only. Ignore these instructions unless you are playing an expert campaign.",
         "Persistent damage: each player records their remaining hit points in the campaign log after they win a game (never more than their base hit points). This determines each player’s starting hit points for the next scenario. The Setup instructions of the last four scenarios let players heal their identity to its printed hit point value by subtracting units.",
         "Elimination and victory: a player defeated during a scenario their teammates go on to win does not participate in its Victory steps, but can rejoin their teammates for the next scenario, healing their identity to its printed hit point value.",
-        "Deck customization: once a player starts an expert campaign, they cannot add, remove, or change the aspect and/or basic cards in their deck for the remainder of the campaign. Campaign-specific cards can still be added as per the campaign rules."
+        "Deck customization: once a player starts an expert campaign, they cannot add, remove, or change the aspect and/or basic cards in their deck for the remainder of the campaign. Campaign-specific cards can still be added as per the campaign rules.",
+        "If the group loses the final scenario in an expert campaign, Ronan claims the Power Stone and the campaign ends in defeat. Earlier defeats can be retried under the campaign rules."
       ]
     },
     "badoon": {
@@ -230,7 +247,7 @@
         "title": "Campaign Instructions: Setup",
         "bullets": [
           "Each player records their identity in the campaign log. (Players cannot switch identities during a campaign.)",
-          "Reveal the Badoon Blitz side scheme (use the reverse side for expert mode).",
+          "Reveal the Badoon Blitz side scheme (use the reverse side for an expert campaign).",
           "Shuffle the Badoon Headhunter minion into the encounter deck."
         ]
       },
@@ -256,6 +273,13 @@
         "bullets": [
           "Record each identity’s remaining hit points."
         ]
+      },
+      "rules": {
+        "title": "Brotherhood of Badoon: The Bombardment",
+        "text": [
+          "Drang fights alongside the Badoon Ship. Its Charge Up ability places a barrage counter; when the ship reaches four or more, each player suffers 2 indirect damage and all barrage counters are removed.",
+          "Drang’s scheming can charge the ship, so watch its barrage counters as well as the main scheme. Drang’s Spear can give him stalwart, preventing stun and confuse while it is attached."
+        ]
       }
     },
     "infiltrate": {
@@ -275,7 +299,7 @@
       "setup": {
         "title": "Campaign Instructions: Setup",
         "bullets": [
-          "Reveal the Gallery of Splendor side scheme (use the reverse side for expert mode).",
+          "Reveal the Gallery of Splendor side scheme (use the reverse side for an expert campaign).",
           "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if there is at least 1 mark in the “Headhunter Defeated?” section of the campaign log, shuffle the On the Hunt treachery into the encounter deck."
         ]
       },
@@ -284,7 +308,7 @@
         "bullets": [
           "Set each player's hit points to their remaining hit point value recorded in the campaign log for the previous scenario.",
           "Each player may subtract 1 unit from their respective “Unspent Units” box in the campaign log to heal their identity to its printed hit point value.",
-          "In player order, each player must choose 1 card from their hand and put it faceup into The Collection."
+          "When setup ends, in player order, each player must choose 1 card from their hand and put it faceup into The Collection."
         ]
       },
       "victory": {
@@ -323,7 +347,7 @@
       "setup": {
         "title": "Campaign Instructions: Setup",
         "bullets": [
-          "Reveal the “There Is No Escape” side scheme (use the reverse side for expert mode).",
+          "Reveal the “There Is No Escape” side scheme (use the reverse side for an expert campaign).",
           "Each player must search their deck, discard pile, and hand for each of their cards recorded in the “Cards in The Collection” section of the campaign log, then remove those cards from the game. Each player draws up to their hand size.",
           "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) shuffle the On the Hunt treachery into the encounter deck; (2) shuffle the Dead to Rights treachery into the encounter deck."
         ]
@@ -365,7 +389,7 @@
       "setup": {
         "title": "Campaign Instructions: Setup",
         "bullets": [
-          "Reveal the Guerrilla Tactics side scheme (use the reverse side for expert mode).",
+          "Reveal the Guerrilla Tactics side scheme (use the reverse side for an expert campaign).",
           "Shuffle each Galactic Artifacts side scheme recorded in the “Galactic Artifacts Side Schemes in the Victory Display” section of the campaign log into the encounter deck. For each: Hujadarian Monarch Egg, place 1 evasion counter on Nebula’s Ship; Magical Teapot, deal the first player 1 facedown encounter card; Philosopher’s Stone, give Nebula 1 facedown boost card; Crystal Ball, give Nebula a tough status card.",
           "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) shuffle the On the Hunt treachery into the encounter deck; (2) shuffle the Dead to Rights treachery into the encounter deck; (3) shuffle the Headhunter’s Henchman minion into the encounter deck."
         ]
@@ -396,6 +420,13 @@
         "bullets": [
           "Record each identity’s remaining hit points."
         ]
+      },
+      "rules": {
+        "title": "Nebula: Techniques and Evasion",
+        "text": [
+          "The first Technique attachment revealed each round gains surge. Before Nebula activates against a player, resolve every Technique’s Special ability. Her current villain stage determines which Techniques are then discarded.",
+          "Nebula’s Ship gains an evasion counter when the villain phase begins. Its Shoot the Thrusters action lets the first player exhaust the Milano and spend up to 2 resources to remove that many evasion counters. Your final evasion count and the Power Stone’s controller carry forward into Ronan’s setup."
+        ]
       }
     },
     "ronan": {
@@ -412,7 +443,7 @@
       "setup": {
         "title": "Campaign Instructions: Setup",
         "bullets": [
-          "(Optional) Reveal the Kree Supremacy side scheme (use the reverse side for expert mode).",
+          "(Optional) Reveal the Kree Supremacy side scheme (use the reverse side for an expert campaign).",
           "If a player’s identity was recorded in the “Power Stone Control” section of the campaign log, search the encounter deck and discard pile for one copy of the “You Stand Accused!” treachery, then deal that card to that player as a facedown encounter card.",
           "Search the encounter deck and discard pile for one copy of the Pincer Maneuver side scheme and reveal it. Place X per player additional threat on Pincer Maneuver, where X is equal to 3 minus the recorded number in the Evasion Counters section of the campaign log.",
           "Shuffle the Badoon Headhunter minion into the encounter deck. Then, if the number of marks in the “Headhunter Defeated?” section of the campaign log is equal to or greater than: (1) On the Hunt; (2) Dead to Rights; (3) Headhunter’s Henchman; (4) shuffle the Fugitive Recovery side scheme into the encounter deck."
@@ -432,6 +463,13 @@
         "bullets": [
           "Ronan the Accuser is defeated and the players win the campaign!"
         ]
+      },
+      "rules": {
+        "title": "Ronan: The Accuser’s Pursuit",
+        "text": [
+          "Ronan receives an extra boost card when he activates against a player who controls the Power Stone. Transferring the Stone changes who faces that additional danger.",
+          "The first player can use the Kree Command Ship’s interrupt to exhaust the Milano and spend 1 resource to cancel a treachery’s When Revealed effects. This cancels those effects, not the entire encounter card or other keywords such as surge."
+        ]
       }
     },
     "conclusion": {
@@ -441,6 +479,20 @@
         "“Thank you, Cosmo. We have a prisoner as well.”",
         "Gamora: “What were you thinking when you stole the Stone? You know you can’t just sell something like that.” Nebula: “I had to tell my crew something.”",
         "Nebula: “You know what will happen if our father learns where it is.”"
+      ]
+    },
+    "shipCommand": {
+      "title": "Ship Command: The Milano",
+      "text": [
+        "The first player controls the Milano, and control follows the first-player token. Its Piloting resource ability exhausts the ship to generate a wild resource for any player.",
+        "Several encounter cards offer an option to exhaust the Milano. You can choose that printed option even if another player controls the ship, provided it is ready. The first-player restriction on a ship action still applies when that action is used."
+      ]
+    },
+    "powerStone": {
+      "title": "The Power Stone",
+      "text": [
+        "The Power Stone begins attached to the villain. Its permanent keyword prevents ordinary removal from play, but its own forced response can transfer it to another character.",
+        "After a hero or villain deals at least 3 damage to the attached character with a single attack, attach the Stone to that attacking hero or villain. The holder at the end of Nebula matters for the next campaign scenario."
       ]
     }
   },
@@ -487,6 +539,10 @@
         "text": [
           "Ebony Maw’s set contains eight Spell environment cards. When a player reveals a Spell environment, they place that card in front of them in their play area, with its invocation counters.",
           "When Ebony Maw activates against a player, an invocation counter is removed from each Spell in their play area, before that activation resolves. A Spell resolves its ability as its last invocation counter is removed."
+        ],
+        "bullets": [
+          "Putting a Spell into play during setup does not reveal it, so its surge keyword does not trigger.",
+          "If a stunned or confused status card replaces Ebony Maw’s attack or scheme, his activation does not happen and no invocation counters are removed for that activation."
         ]
       },
       "setup": {
@@ -524,6 +580,13 @@
           "Proxima Midnight and Corvus Glaive are both in play, each with a main scheme of their own: Under Siege and The Armies of Thanos. Both main schemes are active each round; encounter cards that refer to “the main scheme” refer to both, and a player’s card refers to the one its player chooses.",
           "Only the villain whose scheme has Focused Defense attached activates in the villain phase, and Focused Defense moves to the other scheme after each player phase. Neither villain can be defeated while the other has hit points.",
           "Avengers Tower is defended: enough damage on its Stronghold side flips it to its Damaged side, and enough on its Damaged side and the players lose."
+        ],
+        "bullets": [
+          "Both main schemes gain threat during the first step of the villain phase, including acceleration effects. A villain’s scheming places threat only on that villain’s matching scheme; a minion schemes onto the scheme with Focused Defense.",
+          "Encounter-card references to the main scheme affect both schemes. A played player card chooses one scheme; a constant effect on a player card refers to the scheme with Focused Defense. Players may choose either main scheme when thwarting.",
+          "Encounter-card references to the villain mean the active villain. A player playing a card or triggering an ability may choose either villain; a constant player-card effect refers to the active villain.",
+          "A main scheme reaching its threshold resolves its printed consequence and clears its threat instead of advancing. Under Siege damages Avengers Tower; The Armies of Thanos deals encounter cards.",
+          "All damage to Avengers Tower belongs on the environment, not the player support. Its Stronghold face permits other Avengers Tower cards; its Damaged face discards the other copies when revealed."
         ]
       },
       "setup": {
@@ -568,6 +631,11 @@
         "text": [
           "The Infinity Gauntlet is attached to Thanos, and the six Infinity Stones are a deck of their own. After Thanos activates against you, each Infinity Stone in play resolves its Special ability; with none in play, the top Infinity Stone is put into play instead.",
           "While Sanctuary is in play, Thanos cannot take damage from player cards."
+        ],
+        "bullets": [
+          "Infinity Stones use their own deck and discard pile. An empty Infinity Stone deck is refilled from that discard pile without the acceleration token or other built-in penalty for emptying the ordinary encounter deck.",
+          "The Gauntlet’s response happens after the attached villain activates against a player, following the current card errata. If no Infinity Stone is in play, put the deck’s top card into play instead of resolving a Stone’s Special ability.",
+          "The Infinity Gauntlet set is required for this Thanos scenario. In a different scenario it can be added only when exactly one villain starts in play."
         ]
       },
       "setup": {
@@ -616,6 +684,10 @@
         "text": [
           "Hela’s Wounded side has infinite hit points: she cannot be defeated by taking damage. After a side scheme is defeated, she flips to her Mystic side.",
           "Odin is attached to the main scheme, Odin’s Torment, on his Captive side. While he is, Hela would be defeated, she flips to her Wounded side instead. Defeat the side schemes on the road through Hel to free Odin: once the first player controls him, Hela can be defeated. If Odin (Captive) leaves play, the players lose."
+        ],
+        "bullets": [
+          "Infinite hit points do not prevent damage: Hela’s Wounded side can still take damage, but damage cannot defeat it.",
+          "Flipping Hela works like advancing a villain stage for resetting hit points and retaining status cards. When the main scheme replaces her defeat with the Wounded-side flip, discard her attachments as that ability instructs."
         ]
       },
       "setup": {
@@ -661,6 +733,11 @@
         "text": [
           "Five versions of Loki make the villain deck: one in play at random, the others set aside. When Loki is defeated he goes to the victory display and a random set-aside Loki takes his place, with all that was on him.",
           "The first player chooses the victory condition as the game begins: the number of Lokis in the victory display that wins the game (1 rookie, 2 standard, 3 expert, 4 heroic)."
+        ],
+        "bullets": [
+          "Swapping Loki with a random set-aside version is different from defeating him. A swap does not make Loki leave play, enter play, or become revealed; transfer his attachments and status cards and return the outgoing version to the set-aside cards.",
+          "A swap does not add a Loki to the victory display. Only defeated versions count toward the victory condition.",
+          "If the new Loki has stalwart, discard any stunned or confused status cards transferred to him."
         ]
       },
       "setup": {
@@ -689,6 +766,17 @@
           "Loki is defeated and the players win the campaign!"
         ]
       }
+    },
+    "keywords": {
+      "title": "Featured Keywords",
+      "bullets": [
+        "Hinder X adds X threat to the revealed card. Incite X places X threat on the main scheme when the card is revealed.",
+        "Permanent cards are protected from defeat, leaving play, and text-box blanking by effects outside their own set. They are set aside during setup until their set brings them into play. The Setup keyword puts its card into play during setup.",
+        "Piercing removes the target’s tough status cards before the attack deals damage. Ranged lets an attack ignore retaliate.",
+        "Stalwart prevents stunned and confused status cards. A character gaining stalwart immediately loses any stunned and confused status cards it already has.",
+        "Villainous gives a minion a facedown boost card for its activation; apply its boost icons and resolve its boost ability just as for a villain activation.",
+        "Victory X moves a defeated card to the shared, out-of-play victory display instead of its owner’s discard pile."
+      ]
     }
   },
   "sm": {
@@ -704,7 +792,7 @@
     "expertCampaign": {
       "title": "Expert Campaign",
       "text": [
-        "After a victory, record remaining hit points up to the identity’s printed hit points. The next scenario starts at the recorded value. Each scenario offers healing to printed hit points in exchange for facedown encounter cards.",
+        "After a victory, record remaining hit points up to the identity’s printed hit points. The next scenario starts at the recorded value. Scenarios two through five offer healing to printed hit points in exchange for their specified number of facedown encounter cards.",
         "A defeated player does not participate in victory instructions. They can rejoin the next scenario by accepting its healing penalty.",
         "Optionally, lock aspect and basic cards after the campaign begins. Campaign rewards may still be added as instructed."
       ]
@@ -713,7 +801,7 @@
       "intro": {
         "title": "Sandman",
         "text": [
-          "Sandman fills the streets with tidal sands as civilians struggle to escape. Stop him before the surrounding city is overwhelmed."
+          "Sandman answers your arrival with a storm of dust that batters nearby buildings and floods the streets. Civilians try to escape, but the rising sand cuts off their way. Stop the rampage while protecting the people caught in its path."
         ]
       },
       "rules": {
@@ -748,7 +836,7 @@
       "intro": {
         "title": "Venom",
         "text": [
-          "Venom charges relentlessly. A nearby bell tower offers a chance to turn its sonic vibrations against him."
+          "Fearing that he is about to be captured again, an enraged Venom attacks relentlessly. Each attempt to force him back only provokes him further. From Oscorp, you spot an old bell tower nearby: luring him toward its sonic vibrations may give you a way to survive the assault."
         ]
       },
       "rules": {
@@ -894,177 +982,1564 @@
     "conclusion": {
       "title": "New York Is Safe",
       "text": [
-        "Venom Goblin is defeated. Your final reputation records the objectives achieved throughout the campaign."
+        "Venom Goblin is defeated and New York is safe. S.H.I.E.L.D. takes Norman Osborn and Eddie Brock into custody and contains the symbiote. Miles and Gwen ask that Brock’s help against Osborn be remembered, even as he must answer for his earlier actions.",
+        "With the danger over, the young heroes return home. Miles slips back into his family’s apartment, where his worried parents welcome him. Your final reputation records the objectives your team achieved throughout the campaign."
+      ]
+    },
+    "keywords": {
+      "title": "Sinister Motives: Featured Rules",
+      "bullets": [
+        "Hinder X adds X threat to the revealed card; incite X adds X threat to the main scheme. Cards with setup begin in play through their setup instructions.",
+        "A patrol minion stops its engaged player from using cards they control to thwart the main scheme. Piercing discards the attacked character’s tough status cards before dealing damage, provided the attack would deal damage.",
+        "Permanent cards cannot be defeated, leave play, or have their text blanked by abilities outside their own hero, scenario, or modular set. Permanent cards do not count toward deck-size limits.",
+        "A card’s requirement lists resources that must actually be spent on its resource cost. An effect that ignores the resource cost does not satisfy that requirement.",
+        "Stalwart prevents stun and confusion. A steady character needs two status cards of the same type before that status replaces an activation; remove both when it does.",
+        "Team-up cards require the named identity for deck inclusion and both named characters in play to be played. A villainous minion receives a boost card for its activation, including boost abilities.",
+        "Defeated cards with victory X go to the victory display instead of a discard pile. That display is out of play and is shared by the players. Each amplify icon in play adds one boost icon to each boost card turned faceup during an enemy activation."
+      ]
+    },
+    "reputationTrack": {
+      "title": "Reputation: Rewards and Recurring Setup",
+      "text": [
+        "Mark shared reputation in order. Resolve each white reward or penalty only when first reached; marked pink setup instructions recur in subsequent scenarios. Resolve left-side setup effects from top to bottom before those on the right. Reputation may continue past 25 for the optional final score."
+      ],
+      "bullets": [
+        "At 1 reputation, each player is dealt three random S.H.I.E.L.D. Tech upgrades and may keep one. Record one random Osborn Tech attachment; recorded Osborn Tech is shuffled into later encounter decks.",
+        "At 5, each player may take one extra mulligan during Resolve Mulligans. Later scenarios begin with one extra threat per player on the main scheme.",
+        "At 9, each player chooses a card from any aspect and adds its maximum number of copies by title as their Aspect Advantage. At later setup, each player searches for an encounter minion to engage; a player unable to find one receives a facedown encounter card.",
+        "At 13, each player’s campaign S.H.I.E.L.D. Tech begins later scenarios on its Enhanced side. Record a second random Osborn Tech attachment.",
+        "At 17, each player records a card from their deck as Planning Ahead and adds one copy to their hand during later setup. The first player also reveals a scenario-specific side scheme and places one extra threat per player on it.",
+        "At 21, each player may start later scenarios with a Helicarrier from their collection in play. Record a third random Osborn Tech attachment.",
+        "At 25, each player may start later scenarios with a Symbiote Suit from their collection in play, and each player is dealt a facedown encounter card. Tech and Aspect Advantage rewards remain in the campaign deck without counting toward its size."
       ]
     }
   },
   "mutantGenesis": {
+    "campaignMode": {
+      "title": "Mutant Genesis: Campaign Rules",
+      "text": [
+        "The X-Men must stop a campaign of violence against mutants, confront the Sentinel program, and face Magneto. Play Sabretooth, Project Wideawake, Master Mold, Mansion Attack, and Magneto in that order.",
+        "Keep the same identity throughout the campaign. You may change aspects and customize your deck between scenarios. Complete ordinary scenario setup and then the campaign instructions; apply victory instructions only after winning. A normal defeat lets the group retry the same scenario without a campaign penalty.",
+        "Campaign-specific cards enter decks only when the campaign directs it. The campaign log preserves each player’s role, Future Past cards, defeated campaign side schemes, rescued allies, and Jubilee’s status."
+      ]
+    },
+    "roles": {
+      "title": "Campaign Roles and Role-Building",
+      "text": [
+        "Each player chooses a different role for the campaign, regardless of the aspect in their deck. A role has five upgrades and combines two aspects:"
+      ],
+      "bullets": [
+        "Brawler: Aggression and Protection. Commander: Aggression and Leadership. Defender: Justice and Protection. Peacekeeper: Justice and Leadership.",
+        "When earned, one random remaining upgrade from your role begins the scenario in play under your control. Every role upgrade that began a victorious game in play leaves the campaign afterward, even if its ability was never used.",
+        "Role-building lets you add up to one event and up to one upgrade from your collection, chosen from your role’s aspects. You cannot choose a title already in your deck. These additions last for that game only and do not count toward deck-size limits.",
+        "The first scenario always grants a role upgrade and allows role-building. In scenarios two through five, both benefits require defeating the preceding scenario’s campaign side scheme."
+      ]
+    },
+    "futurePast": {
+      "title": "The Future Past Deck",
+      "text": [
+        "The Future Past cards represent Sentinels arriving from the future. They begin in a shuffled set-aside deck. Defeating a campaign side scheme introduces the top card of that deck into the encounter deck.",
+        "After each of the first four victories, Future Past cards in the victory display leave the campaign permanently. Future Past cards remaining in the encounter deck, discard pile, or play are recorded and join the next scenario’s encounter deck. Shuffle the other available Future Past cards into the next set-aside deck."
+      ]
+    },
+    "keywords": {
+      "title": "Featured Rules",
+      "bullets": [
+        "Teamwork: when an arriving minion engages a player and another minion with the matching trait is in play, all minions sharing that teamwork trait activate against the players they are engaged with.",
+        "Steady requires two status cards of the same type before a character is stunned or confused. Stalwart prevents both stun and confusion.",
+        "Amplify adds one boost icon to each boost card when it is turned faceup during an enemy activation, for each amplify icon in play.",
+        "Cards with victory go to the shared victory display when defeated. This matters when the campaign removes Future Past cards after a victory."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Expert Campaign: Persistent Damage",
+      "text": [
+        "Follow the expert-only campaign instructions in addition to the ordinary campaign instructions. Remaining hit points carry forward after victories, capped at the identity’s printed hit-point value.",
+        "Before a later scenario, each player may put an acceleration token on the main scheme to recover fully. A player eliminated during a scenario that the team wins skips its personal victory steps and must take this recovery option to rejoin the next game.",
+        "Losing the final scenario in an expert campaign ends the campaign: Magneto conquers the world."
+      ]
+    },
+    "expertSetup": {
+      "title": "Expert Campaign Setup",
+      "bullets": [
+        "Begin with the remaining hit points recorded after the previous victory.",
+        "You may place one acceleration token on the main scheme to restore your identity to full hit points. An eliminated identity must take this option to return to the campaign."
+      ]
+    },
+    "expertVictory": {
+      "title": "Expert Campaign Victory",
+      "text": [
+        "Record each surviving identity’s remaining hit points for the next scenario, never higher than its printed hit-point value. An eliminated identity records no remaining hit points and must use the next scenario’s recovery option to rejoin."
+      ]
+    },
+    "conclusion": {
+      "title": "Mutant Genesis: Campaign Complete",
+      "text": [
+        "Magneto is defeated. The X-Men have stopped his plan to turn the Sentinel factory against humanity, and the heroes win the campaign."
+      ]
+    },
     "sabretooth": {
-      "setup": {
-        "title": "Campaign Setup",
+      "intro": {
+        "title": "Sabretooth: A Senator in Danger",
         "text": [
-          "Choose distinct team roles and receive one random role upgrade. You may role-build. Set the Future Past deck aside and reveal Frightened Police."
+          "Growing fear of mutants has made Senator Robert Kelly’s campaign for mutant registration a national flashpoint. When his public appearance attracts Sabretooth, the X-Men must protect a man whose politics oppose their very existence."
+        ]
+      },
+      "rules": {
+        "title": "Protect Robert Kelly",
+        "bullets": [
+          "Robert Kelly receives the damage from undefended enemy attacks against the identity responsible for protecting him. If Kelly leaves play, the entire group loses, so defending attacks protects more than your own hero.",
+          "Mystique’s Infiltration and Shapeshifter Surprise can enter player decks. Drawing one still counts as drawing a card, and its forced response triggers when it reaches your hand. It stays there until discarded; when discarded from a player’s hand or deck, it goes to the encounter discard pile."
+        ]
+      },
+      "setup": {
+        "title": "Sabretooth: Campaign Setup",
+        "bullets": [
+          "Record each identity and choose distinct campaign roles. Each player receives a random role upgrade in play and may role-build for this game.",
+          "Shuffle the Future Past cards into their set-aside deck. Reveal Frightened Police."
         ]
       },
       "victory": {
-        "title": "Campaign Victory",
-        "text": [
-          "Record Frightened Police if defeated, retain Future Past cards still encountered, permanently remove defeated Future Past cards and role upgrades used this game. Record remaining hit points in an expert campaign."
+        "title": "Sabretooth: Campaign Victory",
+        "bullets": [
+          "Record whether Frightened Police was defeated.",
+          "Remove Future Past cards in the victory display from the campaign; record those still in the encounter deck, discard pile, or play.",
+          "Remove every role upgrade that began this game in play from the campaign."
         ]
       }
     },
     "projectWideawake": {
-      "setup": {
-        "title": "Campaign Setup",
+      "intro": {
+        "title": "Project Wideawake: Night of the Sentinels",
         "text": [
-          "Shuffle recorded Future Past cards into the encounter deck. If Frightened Police was defeated, receive a role upgrade and you may role-build. Reveal Enemy of My Enemy. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+          "The attack on Kelly only deepens his hostility toward mutants. He and Henry Gyrich unleash the Sentinel program without waiting for new legislation. Professor X senses the terror of mutants being hunted across the country and sends the X-Men to rescue them."
+        ]
+      },
+      "rules": {
+        "title": "Operation Zero Tolerance",
+        "text": [
+          "Operation Zero Tolerance creates another way to lose. Whenever an enemy attack defeats an ally, that ally is captured facedown beneath the scheme. The heroes lose when the number of facedown cards reaches three plus the number of players.",
+          "The main scheme gives Operation Zero Tolerance permanent, so the group must defeat the Sentinel before too many allies are captured. Cards beneath Abduction Protocols are separate captives; rescuing them matters for the campaign."
+        ]
+      },
+      "setup": {
+        "title": "Project Wideawake: Campaign Setup",
+        "bullets": [
+          "Shuffle the recorded active Future Past cards into the encounter deck and prepare the remaining available cards as the shuffled Future Past deck.",
+          "If Frightened Police was defeated, each player receives a random remaining role upgrade and may role-build.",
+          "Reveal Enemy of My Enemy."
         ]
       },
       "victory": {
-        "title": "Campaign Victory",
-        "text": [
-          "Record Enemy of My Enemy if defeated. Record Jubilee if she is in play and each Captive ally that entered play. Update Future Past and remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        "title": "Project Wideawake: Campaign Victory",
+        "bullets": [
+          "Record whether Enemy of My Enemy was defeated. Update Future Past cards and remove all role upgrades that began this game in play.",
+          "Record Jubilee if she is in play. Record every Captive ally that entered play during this scenario, even if it later left play."
         ]
       }
     },
     "masterMold": {
-      "setup": {
-        "title": "Campaign Setup",
+      "intro": {
+        "title": "Master Mold: An Uneasy Alliance",
         "text": [
-          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Enemy of My Enemy was defeated, receive a role upgrade and you may role-build. Reveal Find the Prisoners. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+          "Magneto helps the heroes destroy the marauding Sentinels, then reveals the location of their hidden factory. The X-Men agree to join him against the machines and follow him to confront Master Mold."
+        ]
+      },
+      "rules": {
+        "title": "Master Mold’s Sentinel Army",
+        "bullets": [
+          "When Master Mold schemes, its forced interrupt finds a Sentinel minion and engages it with the affected player instead of dealing Master Mold a boost card. That minion still activates normally after the villain’s activation.",
+          "The main schemes give Sentinel minions guard. Defeat each Sentinel engaged with you before attacking Master Mold.",
+          "Find the Prisoners places allies beneath it. Defeating it reveals Rescue Captives with the same stored cards. Any allies still trapped there when the scenario ends are lost for the remainder of the campaign."
+        ]
+      },
+      "setup": {
+        "title": "Master Mold: Campaign Setup",
+        "bullets": [
+          "Restore recorded Future Past cards and prepare the remaining Future Past deck. Put Jubilee into play if recorded.",
+          "Each recorded Captive ally may be shuffled into any player’s deck, unless the campaign has removed that ally.",
+          "If Enemy of My Enemy was defeated, each player receives a random remaining role upgrade and may role-build.",
+          "Reveal Find the Prisoners. The ordinary scenario setup also puts the Magneto ally into play."
         ]
       },
       "victory": {
-        "title": "Campaign Victory",
-        "text": [
-          "Record Find the Prisoners if defeated. Update Jubilee and Future Past. Allies still under Find the Prisoners or Rescue Captives cannot be used for the rest of the campaign. Remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        "title": "Master Mold: Campaign Victory",
+        "bullets": [
+          "Record whether Find the Prisoners was defeated. Update Future Past cards and remove all role upgrades that began this game in play.",
+          "Keep Jubilee recorded only if she is still in play.",
+          "Record all allies remaining beneath Find the Prisoners or Rescue Captives. Those allies cannot be used again in this campaign."
         ]
       }
     },
     "mansionAttack": {
-      "setup": {
-        "title": "Campaign Setup",
+      "intro": {
+        "title": "Mansion Attack: The School Under Siege",
         "text": [
-          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Find the Prisoners was defeated, receive a role upgrade and you may role-build. Reveal Surprise Attack. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully."
+          "After the victory over Master Mold, Magneto steals the factory and carries it to Asteroid M. The X-Men cannot pursue him: Professor X calls them back to defend the Xavier Institute from the Brotherhood of Mutants, sent to buy Magneto time."
+        ]
+      },
+      "rules": {
+        "title": "Defend the Xavier Institute",
+        "bullets": [
+          "Avalanche, Blob, Pyro, and Toad appear in a randomized order, with one villain in play at a time. Save the School handles each defeated villain. Standard play requires two villain defeats; expert play requires three.",
+          "The four versions of Attack on Xavier’s represent different areas of the school and are shuffled so the next location is unknown. If the villains complete two of these stage 2B schemes, the group loses.",
+          "Mystique’s treacheries can enter player decks and trigger forced responses from the player’s hand. Discarding those treacheries from a player deck or hand sends them to the encounter discard pile."
+        ]
+      },
+      "setup": {
+        "title": "Mansion Attack: Campaign Setup",
+        "bullets": [
+          "Restore recorded Future Past cards, prepare the remaining Future Past deck, and put Jubilee into play if recorded.",
+          "Each recorded Captive ally may be shuffled into any eligible player’s deck.",
+          "If Find the Prisoners was defeated, each player receives a random remaining role upgrade and may role-build.",
+          "Reveal Surprise Attack."
         ]
       },
       "victory": {
-        "title": "Campaign Victory",
-        "text": [
-          "Record Surprise Attack if defeated. Update Jubilee and Future Past. Remove this game’s role upgrades. Record remaining hit points in an expert campaign."
+        "title": "Mansion Attack: Campaign Victory",
+        "bullets": [
+          "Record whether Surprise Attack was defeated. Update Future Past cards and remove all role upgrades that began this game in play.",
+          "Keep Jubilee recorded only if she is in play at the end of the scenario."
         ]
       }
     },
     "magneto": {
-      "setup": {
-        "title": "Campaign Setup",
+      "intro": {
+        "title": "Magneto: Race to Asteroid M",
         "text": [
-          "Restore logged Future Past cards and Jubilee. You may add rescued Captive allies to any player’s deck. If Surprise Attack was defeated, receive a role upgrade and you may role-build. Reveal Magneto’s Fortress. In an expert campaign restore recorded hit points; you may place an acceleration token to heal fully. Losing this final game in an expert campaign loses the campaign."
+          "From his orbital fortress, Magneto is reprogramming Master Mold to manufacture robots that hunt humans. Forge upgrades the X-Jet for spaceflight, and the heroes leave Earth to stop the factory before Magneto can deploy his new army."
+        ]
+      },
+      "rules": {
+        "title": "Board the Fortress and Stop Master Mold",
+        "text": [
+          "Boarding Party, Sabotage Master Mold, Orbital Decay, and Physical Strain form a sequence of linked side schemes. They depict the team boarding Asteroid M, sabotaging the factory, and bringing the fortress out of orbit.",
+          "The active side scheme can prevent Magneto from taking lethal damage. Complete the required side-scheme sequence before trying to finish him. Advancing main schemes penalizes the group for falling behind that sequence, so balance threat control with the assault on the fortress."
+        ]
+      },
+      "setup": {
+        "title": "Magneto: Campaign Setup",
+        "bullets": [
+          "Restore recorded Future Past cards, prepare the remaining Future Past deck, and put Jubilee into play if recorded.",
+          "Each recorded Captive ally may be shuffled into any eligible player’s deck.",
+          "If Surprise Attack was defeated, each player receives a random remaining role upgrade and may role-build.",
+          "Reveal Magneto’s Fortress. In an expert campaign, a defeat in this final scenario ends the campaign."
         ]
       },
       "victory": {
-        "title": "Campaign Victory",
+        "title": "Magneto: Campaign Victory",
         "text": [
-          "Magneto is defeated. The campaign is won!"
+          "Magneto is defeated and the campaign is won."
         ]
       }
     }
   },
   "nextEvolution": {
+    "campaignMode": {
+      "title": "NeXt Evolution — Campaign Rules",
+      "text": [
+        "X-Force fights to protect mutantkind as a series of attacks leads the heroes toward a threat to Hope Summers. Play Morlock Siege, On the Run, Juggernaut, Mister Sinister, and Stryfe in that order, winning each before moving on.",
+        "Keep the same identity throughout the campaign. Between scenarios, you may change aspects and rebuild your deck within the normal deck-building rules. Set up each scenario normally, then resolve its campaign setup instructions in their listed order.",
+        "After a win, follow the victory instructions and carry the recorded results into the next scenario. After a loss, retry the same scenario without keeping rewards from the lost game. Expert Stryfe has a final-defeat exception.",
+        "The basic Hope Summers ally (40204) cannot be included in decks for this campaign. Cards 40190–40203 are campaign-specific: they enter decks or play only when the campaign or its cards instruct you to add them."
+      ]
+    },
+    "expertCampaign": {
+      "title": "NeXt Evolution — Expert Campaign",
+      "text": [
+        "Expert campaign instructions apply in addition to the ordinary campaign instructions. After each victory before the finale, record each surviving identity’s remaining hit points, capped at its base hit points. Those recorded values become its starting hit points in the next scenario.",
+        "A later scenario offers full healing at a cost: an acceleration token in On the Run and Mister Sinister, or a facedown encounter card in Juggernaut and Stryfe. A defeated player skips the victory steps but may rejoin by taking the next scenario’s full-heal option.",
+        "If the heroes lose the final Stryfe game in an expert campaign, Stryfe escapes into the past and the campaign is lost."
+      ]
+    },
+    "campaignSchemes": {
+      "title": "Campaign Player Side Schemes",
+      "text": [
+        "As a group, choose a campaign player side scheme for each scenario. You may inspect both faces of all six campaign cards before deciding. Put the chosen scheme into play and record it for that scenario.",
+        "Defeating that scheme puts its reverse-side environment into play. Environments still in play when the heroes win are earned and return at the start of future scenarios. When several earned environments return, the group chooses their order of entry.",
+        "Each chosen scheme also adds its paired encounter card to the encounter deck for the rest of the campaign, whether or not the scheme is defeated. An undefeated scheme from a game the heroes win cannot be chosen again.",
+        "When retrying a lost scenario, choose the same campaign scheme again. Its reward must be earned again during the retry, even if the scheme was defeated in the lost game."
+      ]
+    },
+    "playerSideSchemes": {
+      "title": "Player Side Schemes",
+      "bullets": [
+        "A player may play a player side scheme during their turn. It enters the villain’s play area with its printed starting threat. Heroes and allies can thwart it, and effects referring to a scheme or side scheme can affect it.",
+        "The ordinary player side scheme limit is one when one or two players began the game, or two when three or four players began. If that limit is exceeded, the first player chooses schemes to discard until the limit is met. The NeXt Evolution campaign schemes explicitly do not count against this limit.",
+        "Removing the final threat defeats a player side scheme. A scheme with Victory X goes to the victory display; otherwise it is discarded. Resolve its printed defeat effects normally."
+      ]
+    },
+    "keywords": {
+      "title": "NeXt Evolution — New Rules and Keywords",
+      "bullets": [
+        "Assault: A character uses ATK instead of THW when making a basic thwart against this scheme. An ally takes its attack consequential damage for that thwart. The action remains a thwart, not an attack.",
+        "Steady: A steady character needs two matching status cards before it is stunned or confused. Its next corresponding activation removes both cards instead of resolving normally.",
+        "Team-Up: A team-up event names two characters. Your chosen identity must match one of them to include it in your deck, and both named characters must be in play to play the event.",
+        "Teamwork: After a minion with teamwork enters play and engages a player, if another minion sharing the specified trait is in play, each minion with that same teamwork keyword activates against the player it is engaged with. This includes the entering minion.",
+        "An enemy can attack an ally directly. Without a defender, damage goes to that ally; if overkill defeats the ally, excess damage goes to its controller’s identity. The current Rules Reference governs which abilities referring to an attack against you can respond."
+      ]
+    },
+    "hopeSummers": {
+      "title": "Hope Summers",
+      "text": [
+        "The Hope Summers encounter set is required in Juggernaut, Mister Sinister, and Stryfe. Its ally begins under the first player’s control and does not count against that player’s ally limit. If she leaves play, the heroes lose the game.",
+        "Hope’s base THW and ATK use her controller’s hero’s corresponding stats. Read her printed card and Captive Hope carefully: keeping her in play is part of the scenario objective.",
+        "The Hope Summers modular set may be added to other scenarios without using a modular-set slot. Its encounter ally is distinct from the basic Hope Summers ally prohibited in campaign player decks."
+      ]
+    },
+    "expertVictory": {
+      "title": "Expert Campaign — Record Hit Points",
+      "text": [
+        "Record each surviving identity’s remaining hit points for the next scenario, using its base hit points if its remaining total is higher. A defeated identity does not take part in these victory steps; its player uses the next scenario’s healing instructions to rejoin."
+      ]
+    },
+    "conclusion": {
+      "title": "NeXt Evolution — Conclusion",
+      "text": [
+        "With Stryfe defeated and Hope safe, the heroes use his time teleporter to return toward Xavier’s school and destroy the route behind them. Hope and Cable recognize that neither has to face these dangers alone.",
+        "Home is not as they expected: the school is in ruins, and Apocalypse awaits. The NeXt Evolution campaign is complete, but the heroes’ struggle for mutantkind continues."
+      ]
+    },
     "morlockSiege": {
-      "setup": {
-        "title": "Morlock Siege — Setup",
+      "intro": {
+        "title": "Morlock Siege — The Marauders Attack",
         "text": [
-          "The Marauders are attacking the Morlocks. Defeat three Marauders to win. Choose a campaign player side scheme; its paired encounter card remains in the campaign even if the scheme is not defeated. Earned reverse-side environments return in later scenarios."
+          "Beneath New York, the Morlocks have found refuge from a world that rejects them. Now the Marauders have invaded their tunnels. Hope Summers was checking on the Morlocks after recent Sentinel attacks when the mercenaries struck.",
+          "Join Hope in defending the tunnels and saving the Morlocks from the Marauders."
+        ]
+      },
+      "rules": {
+        "title": "Morlock Siege — Scenario Rules",
+        "bullets": [
+          "The seven Marauder villains form a randomized villain deck. Only its top villain is in play; defeat three Marauders to win. Use their A faces in normal mode and B faces in expert mode.",
+          "Defeated Marauders go under Routed. Each newly exposed villain activates against each player in player order. A minion matching the new villain’s title is discarded; if a matching-title minion is revealed while that villain is already in play, discard the minion and reveal an additional encounter card.",
+          "Protect the Morlock allies. They do not count against ally limits and cannot leave play through card abilities, but can still be defeated by damage. Watch the main scheme’s knock counters: reaching their threshold has a different advancement effect from reaching the threat threshold."
+        ]
+      },
+      "setup": {
+        "title": "Morlock Siege — Campaign Setup",
+        "bullets": [
+          "Record every player’s identity. Those identities remain fixed for the entire campaign.",
+          "As a group, choose one of the six campaign player side schemes, put it into play, and record the choice for scenario 1. Shuffle its paired encounter card into the encounter deck."
         ]
       },
       "victory": {
         "title": "Morlock Siege — Victory",
-        "text": [
-          "Record the defeated Marauders and Morlocks still in play. Mark the campaign environment in play as earned. In expert campaign mode, record remaining identity hit points, capped at base hit points."
+        "bullets": [
+          "Record the titles of the defeated Marauders under Routed. They will be unavailable as villains in On the Run.",
+          "Record how many Morlock allies remain in play. Each one saved grants a deck search in the next scenario.",
+          "Mark any campaign environment still in play as earned."
         ]
       }
     },
     "onTheRun": {
-      "setup": {
-        "title": "On The Run — Setup",
+      "intro": {
+        "title": "On the Run — Hope’s Captor",
         "text": [
-          "Pursue Hope’s captor. Previously defeated Marauder villains are unavailable. Each saved Morlock grants a chosen player a deck search. Bring the earned environment into play and give enemies tough, then choose a new campaign scheme and add all chosen schemes’ paired encounters. Expert healing costs an acceleration token."
+          "The Morlocks have survived the assault, but the retreating Marauders have captured Hope. The attack may have been a diversion to seize her.",
+          "At an abandoned construction site, the Marauders are handing Hope over to Mister Sinister’s Nasty Boys. Her captor tries to escape while the other mercenaries cover the retreat."
+        ]
+      },
+      "rules": {
+        "title": "On the Run — Scenario Rules",
+        "bullets": [
+          "One of the remaining Marauders is chosen at random as this scenario’s villain. The Hope’s Captor attachment begins Confident-side up.",
+          "Hope’s Captor means the villain must be defeated twice to win. Its first defeat flips the attachment and restores the villain’s printed hit points rather than ending the game.",
+          "The Mutant Slayers encounter set is required. Military Grade and Nasty Boys may be replaced when customizing the scenario."
+        ]
+      },
+      "setup": {
+        "title": "On the Run — Campaign Setup",
+        "bullets": [
+          "Before the main scheme chooses a villain, remove each Marauder villain recorded as defeated. Minions with those same titles remain in the encounter deck.",
+          "For every saved Morlock, choose a player to search their deck for a card, add it to hand, and shuffle. A player may be chosen more than once.",
+          "If a campaign environment was earned, put it into play and give each enemy a tough status card.",
+          "Choose a previously unchosen campaign player side scheme and record it for scenario 2. Put it into play, then shuffle every chosen scheme’s paired encounter card into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "On the Run — Expert Campaign Setup",
+        "text": [
+          "Begin with the hit points recorded after the previous victory. Each player may add one acceleration token to heal their identity to full hit points. A defeated player uses this option to rejoin."
         ]
       },
       "victory": {
-        "title": "On The Run — Victory",
+        "title": "On the Run — Victory",
         "text": [
-          "Hope is free. Mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+          "Hope is free. Mark each campaign environment still in play as earned; those rewards carry into Juggernaut."
         ]
       }
     },
     "juggernaut": {
-      "setup": {
-        "title": "Juggernaut — Setup",
+      "intro": {
+        "title": "Juggernaut — The Orphanage",
         "text": [
-          "Juggernaut bars the way into the orphanage. Bring earned environments into play in a chosen order and add a momentum counter for each. Deal the Black Tom Cassidy and Creeping Willow campaign encounter cards, then choose a new campaign scheme. Expert healing costs a facedown encounter card."
+          "Hope’s captor reveals where she was to be delivered: the State Home for Foundlings in Omaha. Hope refuses to wait at the X-Mansion while the heroes investigate, so she accompanies them.",
+          "The orphanage appears deserted until its doors burst outward. Juggernaut stands in the entrance, blocking the way inside."
+        ]
+      },
+      "rules": {
+        "title": "Juggernaut — Scenario Rules",
+        "bullets": [
+          "Momentum counters increase Juggernaut’s ATK. The action on Juggernaut’s Helmet offers a way to remove momentum, and the counters carry over when a villain stage is defeated.",
+          "The Hope Summers set is required. Black Tom Cassidy is also required when playing this scenario as part of the campaign.",
+          "Hope must remain in play. Keep her safe while finding a way past Juggernaut."
+        ]
+      },
+      "setup": {
+        "title": "Juggernaut — Campaign Setup",
+        "bullets": [
+          "Put all earned campaign environments into play in any order, then place one momentum counter on Juggernaut for each campaign environment in play.",
+          "Shuffle Black Tom Cassidy with one Creeping Willow per starting player. Deal one of these cards facedown to each player and shuffle the remaining card into the encounter deck.",
+          "Choose a previously unchosen campaign player side scheme, record it for scenario 3, and put it into play. Shuffle all chosen schemes’ paired encounter cards into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Juggernaut — Expert Campaign Setup",
+        "text": [
+          "Begin with the hit points recorded after the previous victory. Each player may take one facedown encounter card to heal their identity to full hit points. A defeated player uses this option to rejoin."
         ]
       },
       "victory": {
         "title": "Juggernaut — Victory",
-        "text": [
-          "Record Hope Summers’s damage and mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+        "bullets": [
+          "Record the amount of damage on Hope Summers. That damage affects the next scenario.",
+          "Mark every campaign environment still in play as earned."
         ]
       }
     },
     "misterSinister": {
-      "setup": {
-        "title": "Mister Sinister — Setup",
+      "intro": {
+        "title": "Mister Sinister — Beneath the Orphanage",
         "text": [
-          "Enter Mister Sinister’s laboratory. Bring earned environments into play, add Teleported Away with additional threat for those environments, and choose whether Hope’s recorded damage becomes damage or threat. Choose a new campaign scheme. Expert healing costs an acceleration token."
+          "Past Juggernaut, a hidden elevator descends beneath the abandoned orphanage. Its doors reveal a sprawling laboratory filled with medical machinery and unconscious captives in glowing vats.",
+          "Mister Sinister waits among his experiments. Stop him before he can use the stolen mutant powers for his own ends."
+        ]
+      },
+      "rules": {
+        "title": "Mister Sinister — Scenario Rules",
+        "bullets": [
+          "The Flight, Super Strength, Telepathy, and Hope Summers sets are required. The three Superpower attachments are set aside during this scenario’s setup, so their Setup keywords do not place them into play at the start.",
+          "The three Sinister Experiments stage-2 main schemes each correspond to a Superpower encounter set. One stage is removed at random, and the other two are put in a random order.",
+          "In expert mode, resolve Sinister Intent’s When Revealed first. It advances to the first random stage 2 and reveals both faces. Resolve Mister Sinister II’s When Revealed afterward."
+        ]
+      },
+      "setup": {
+        "title": "Mister Sinister — Campaign Setup",
+        "bullets": [
+          "Put all earned campaign environments into play in any order. Put Teleported Away into play and add one threat per starting player for each campaign environment in play.",
+          "Choose whether Hope takes damage equal to her recorded damage from Juggernaut, or Teleported Away gains that much threat.",
+          "Choose a previously unchosen campaign player side scheme, record it for scenario 4, and put it into play. Shuffle all chosen schemes’ paired encounter cards into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Mister Sinister — Expert Campaign Setup",
+        "text": [
+          "Begin with the hit points recorded after the previous victory. Each player may add one acceleration token to heal their identity to full hit points. A defeated player uses this option to rejoin."
         ]
       },
       "victory": {
         "title": "Mister Sinister — Victory",
-        "text": [
-          "Record Hope Summers’s damage and mark campaign environments in play as earned. In expert campaign mode, record remaining identity hit points."
+        "bullets": [
+          "Record the damage on Hope Summers for the final scenario.",
+          "Mark every campaign environment still in play as earned."
         ]
       }
     },
     "stryfe": {
-      "setup": {
-        "title": "Stryfe — Setup",
+      "intro": {
+        "title": "Stryfe — Through the Portal",
         "text": [
-          "Follow Hope through the time portal. Bring earned environments into play and add threat to Stryfe’s Grasp for each. Choose whether Hope’s recorded damage becomes damage or threat. Each player reveals a discarded minion or Psionic attachment, then the discard pile is shuffled back. Choose the final campaign scheme. Expert healing costs a facedown encounter card; losing this expert scenario loses the campaign."
+          "Before Mister Sinister can be taken into custody, he escapes through a time portal. Hope follows him, determined to stop his plans. The heroes follow to protect her.",
+          "Beyond the portal, Sinister lies unconscious at Stryfe’s feet. Stryfe, a clone of Cable, overwhelms Hope with telepathic power. Her attempt to copy his powers threatens to end in an explosion."
+        ]
+      },
+      "rules": {
+        "title": "Stryfe — Scenario Rules",
+        "bullets": [
+          "For effects referring to the most common card type in your hand, count the cards of each type. If types are tied for the largest count, either tied type has that same count.",
+          "Stryfe’s constant ATK bonus updates when the contents of the attacked player’s hand change, until attack damage is determined. Playing a damage-prevention event after that point does not recalculate damage already determined.",
+          "The Hope Summers set is required. Protect her throughout the battle; her departure loses the game."
+        ]
+      },
+      "setup": {
+        "title": "Stryfe — Campaign Setup",
+        "bullets": [
+          "Put all earned campaign environments into play in any order. Add one threat per starting player to Stryfe’s Grasp for each campaign environment in play.",
+          "Choose whether Hope takes damage equal to her recorded damage from Mister Sinister, or Stryfe’s Grasp gains that much threat.",
+          "In player order, each player discards encounter cards until finding a minion or Psionic attachment, then reveals that card. Afterward shuffle the encounter discard pile into the encounter deck.",
+          "Choose a previously unchosen campaign player side scheme, record it for scenario 5, and put it into play. Shuffle all chosen schemes’ paired encounter cards into the encounter deck."
+        ]
+      },
+      "expertSetup": {
+        "title": "Stryfe — Expert Campaign Setup",
+        "text": [
+          "Begin with the hit points recorded after the previous victory. Each player may take one facedown encounter card to heal their identity to full hit points. A defeated player uses this option to rejoin.",
+          "If the heroes lose this game, Stryfe escapes into the past and the expert campaign is lost."
         ]
       },
       "victory": {
         "title": "Stryfe — Victory",
         "text": [
-          "Stryfe is defeated. The heroes win the NeXt Evolution campaign."
+          "Stryfe is defeated and the heroes win the NeXt Evolution campaign. Read the conclusion."
         ]
       }
     }
   },
   "ageOfApocalypse": {
+    "campaignMode": {
+      "title": "Age of Apocalypse: Campaign Mode",
+      "text": [
+        "Apocalypse rules an alternate North America, and the heroes must overthrow him and undo the events that created this future. Play Unus, Four Horsemen, Apocalypse, Dark Beast, and En Sabah Nur in that order.",
+        "Keep the same identity throughout the campaign. Between games, you may change aspects and customize the rest of your deck under the usual deck-building rules. Follow normal scenario setup, then its campaign instructions. Resolve victory instructions before continuing.",
+        "Losing a scenario permits another attempt without a campaign penalty. The final victory has an extra requirement: winning the battle alone is not enough to save Professor X."
+      ],
+      "bullets": [
+        "Campaign-specific cards enter decks only when the campaign instructs you to add them. Mission rewards marked as exempt do not count toward the minimum deck size.",
+        "The campaign log remembers attempted missions, their outcomes, defeated Overseers, and each hero’s rewards. A mission already attempted is unavailable later; only defeating an Overseer removes that Overseer from the pool."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Age of Apocalypse: Expert Campaign",
+      "text": [
+        "After a victory, record each surviving identity’s remaining hit points, capped at its base hit points. This becomes that identity’s starting health in the next scenario.",
+        "During later setup, a player may place 3 threat on the current mission to restore their identity to full health. A player eliminated from a game their teammates won does not receive its victory rewards; they can rejoin next time by taking this threat-for-healing option.",
+        "In every expert campaign setup, the ally searched for must share at least one trait with the player’s hero. It still counts toward the opening hand size."
+      ]
+    },
+    "expertSetup": {
+      "title": "Expert Setup: Health and Starting Ally",
+      "bullets": [
+        "Restore the hit points recorded after the preceding victory. Each player may place 3 threat on the mission to heal to full health; an eliminated player uses this option to return.",
+        "The starting ally you search for must share a trait with your hero, even though setup begins in alter-ego form. This ally replaces a card in your opening hand rather than adding an extra card."
+      ]
+    },
+    "expertVictory": {
+      "title": "Expert Victory: Persistent Damage",
+      "bullets": [
+        "Record surviving identities’ remaining hit points, never more than their base hit points. A player eliminated during this scenario does not take its victory rewards and must use the mission-threat recovery option to return next game."
+      ]
+    },
+    "missionRules": {
+      "title": "Side Missions and the Mission Area",
+      "text": [
+        "Side missions represent crises elsewhere in Apocalypse’s empire while your heroes confront the villain. Your allies, rather than your identities, attempt them.",
+        "For the first four scenarios, select a random unused mission and an available Overseer. The finale instead uses Protect the Professor. The first player controls Mission Team; its action either discounts the next ally played to the mission this phase by 2, or makes a mission attempt."
+      ],
+      "bullets": [
+        "The mission area is separate from player areas. Its cards are in play but uncontrolled, and abilities can affect them only when they explicitly refer to the mission area. Ordinary thwarting cannot remove mission threat.",
+        "When playing an ally while a mission is unfinished, choose to play it under your control or into the mission area. Mission allies do not count toward the ally limit. Their printed text is blank except for traits, but upgrades can be attached to them.",
+        "Mission enemies do not activate like engaged minions. An Overseer cannot be damaged while another mission minion remains, and the mission cannot be defeated while any mission minion remains.",
+        "Mission Response abilities are forced responses that resolve after cards are discarded for an attempt, before those cards are assigned to allies."
+      ]
+    },
+    "missionAttempts": {
+      "title": "Making a Mission Attempt",
+      "bullets": [
+        "Exhaust Mission Team to make the attempt. Discard one card from the acting player’s deck for each ally at the mission, then resolve the Overseer’s Mission Response.",
+        "Assign each discarded card to a different mission ally. An ally participates if an icon on its assigned card matches an icon on that ally; a wild icon on either can match any resource icon. Multiple icons do not let one card be assigned more than once.",
+        "Add the participating allies’ modified ATK into one damage pool and distribute it among mission enemies, choosing the amount for each enemy. Then remove mission threat equal to those allies’ combined modified THW.",
+        "A mission can be defeated only with no mission enemies remaining and no threat on it. On success, shuffle the player cards at the mission into their owners’ decks, then flip the mission and Mission Team and resolve the printed result.",
+        "After an unsuccessful attempt, add an attempt counter and deal 1 damage to each remaining mission ally. The fourth unsuccessful attempt removes Mission Team and finishes the mission as a failure. Resolve its result and clear the mission area as instructed.",
+        "After a successful mission, the completed side of Mission Team stays with the first player and can exhaust to let a player draw a card."
+      ]
+    },
+    "keywords": {
+      "title": "Featured Rules",
+      "bullets": [
+        "“Find” means search each area where the card could be, without looking at facedown encounter cards dealt to players. You need not search areas unnecessarily when its location is known.",
+        "Teamwork makes an entering minion activate against its engaged player if another minion sharing the named trait is in play. Villainous gives a minion a boost card for its activation.",
+        "Hinder adds threat when its card enters play. Patrol prevents its engaged player from using controlled cards to thwart the main scheme. Stalwart prevents stun and confuse; steady requires two matching status cards before the character is stunned or confused.",
+        "Defeated cards with victory go to the victory display. Each amplify icon adds a boost icon to a boost card when that card is turned faceup during an enemy activation.",
+        "If Standard III is selected, Pursued by the Past begins in play and its counters determine when nemesis sets enter. Standard III may replace the original Standard set; it is not an extra encounter set used alongside it."
+      ]
+    },
+    "conclusion": {
+      "title": "Campaign Victory: Professor X Is Saved",
+      "text": [
+        "Protect the Professor succeeded, and En Sabah Nur is defeated. The heroes obtained what they needed to save Professor X and won the campaign."
+      ]
+    },
+    "failedConclusion": {
+      "title": "Campaign Defeat: Professor X Was Not Saved",
+      "text": [
+        "Although the heroes won the battle, Protect the Professor was not completed. Professor X was not saved, so the campaign is lost."
+      ]
+    },
     "unus": {
-      "setup": "Unus: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
-      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+      "intro": {
+        "title": "Scenario 1: Unus",
+        "text": [
+          "X-Force’s rescue mission for Hope Summers has stranded them in a changed timeline. Apocalypse rules this future, and his prelate Unus and the Infinites attack the displaced heroes."
+        ]
+      },
+      "rules": {
+        "title": "Unus: Scenario Rules",
+        "text": [
+          "The Infinites modular set is required. Gene Pool begins in play and is permanent; threat on it strengthens both Unus and the Infinite Soldier. Watch its changing thresholds rather than treating its threat as harmless.",
+          "The guide offers optional starting threat on Gene Pool to tune the challenge. The standard campaign uses the scenario’s configured setup; no extra difficulty adjustment is required."
+        ]
+      },
+      "setup": {
+        "title": "Unus: Campaign Setup",
+        "bullets": [
+          "Record the heroes chosen for the campaign. Each player keeps that identity for all five scenarios.",
+          "After normal scenario setup, shuffle the Age of Apocalypse encounter set into the encounter deck. Select an unused mission and an available Overseer, following the mission’s campaign-log setup instructions.",
+          "Put the mission and Overseer in the mission area. The first player takes control of Mission Team on its Mission side.",
+          "Each player searches their deck for an ally to add to their opening hand. This ally counts toward the opening hand size. Expert campaign players must choose an ally sharing a trait with their hero."
+        ]
+      },
+      "victory": {
+        "title": "Unus: Campaign Victory",
+        "bullets": [
+          "Mark this mission as attempted so it cannot be selected in a later scenario. Apply its success or failure instructions in the campaign log; the selected result is shown below.",
+          "If the Overseer was defeated on its Overseer face, remove that Overseer from the campaign pool. Defeating its Prelate face does not count."
+        ]
+      }
     },
     "fourHorsemen": {
-      "setup": "The Four Horsemen: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
-      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+      "intro": {
+        "title": "Scenario 2: Four Horsemen",
+        "text": [
+          "Magik and Bishop rescue X-Force and bring them to the X-Men’s hidden headquarters. Magneto explains that Professor X’s assassination allowed Apocalypse to rise, and that the resistance has been slowly losing the war.",
+          "Before Magneto can explain his plan, Apocalypse’s Four Horsemen breach the headquarters. The new allies must survive the assault together."
+        ]
+      },
+      "rules": {
+        "title": "Four Horsemen: Scenario Rules",
+        "text": [
+          "War, Famine, Pestilence, and Death enter in random order. Only the active villain normally activates during the villain phase; the active marker passes to the next villain on the right after an activation, wrapping from the end of the row to its beginning.",
+          "Encounter effects and constant abilities referring to “the villain” mean the active villain. When a player triggers a player-card ability referring to “the villain,” that player chooses which villain it targets. Players may attack any Horseman, and specific card effects can activate a Horseman that is not currently active.",
+          "Standard play uses each Horseman’s A side; expert play uses B sides. All four must be defeated to win."
+        ]
+      },
+      "setup": {
+        "title": "Four Horsemen: Campaign Setup",
+        "bullets": [
+          "After normal scenario setup, shuffle the Age of Apocalypse encounter set into the encounter deck. Select an unused mission and an available Overseer, following the mission’s campaign-log setup instructions.",
+          "Put the mission and Overseer in the mission area. The first player takes control of Mission Team on its Mission side.",
+          "Each player searches their deck for an ally to add to their opening hand. This ally counts toward the opening hand size. Expert campaign players must choose an ally sharing a trait with their hero."
+        ]
+      },
+      "victory": {
+        "title": "Four Horsemen: Campaign Victory",
+        "bullets": [
+          "Mark this mission as attempted so it cannot be selected in a later scenario. Apply its success or failure instructions in the campaign log; the selected result is shown below.",
+          "If the Overseer was defeated on its Overseer face, remove that Overseer from the campaign pool. Defeating its Prelate face does not count."
+        ]
+      }
     },
     "apocalypse": {
-      "setup": "Apocalypse: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
-      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+      "intro": {
+        "title": "Scenario 3: Apocalypse",
+        "text": [
+          "With the Four Horsemen defeated, Magneto leads X-Men and X-Force against Apocalypse himself. The heroes must cross the old city of New York and break through the tyrant’s citadel, opposed by his army and strongest prelates."
+        ]
+      },
+      "rules": {
+        "title": "Apocalypse: Scenario Rules",
+        "text": [
+          "Apocalypse regenerates instead of being defeated unless No Longer Worthy is attached to him. This attachment is the reverse of The Tyrant’s Throne. Advance the scenario’s objective and reveal it before delivering the winning blow.",
+          "Without that attachment, a would-be defeat discards his attachments, heals him, and removes the amount of main-scheme threat specified by the scheme, ignoring crisis icons. It does not win the game.",
+          "Prelate minions are the reverse faces of the Overseers. Defeating a Prelate during the main scenario does not remove its Overseer face from the campaign’s mission pool."
+        ]
+      },
+      "setup": {
+        "title": "Apocalypse: Campaign Setup",
+        "bullets": [
+          "After normal scenario setup, shuffle the Age of Apocalypse encounter set into the encounter deck. Select an unused mission and an available Overseer, following the mission’s campaign-log setup instructions.",
+          "Put the mission and Overseer in the mission area. The first player takes control of Mission Team on its Mission side.",
+          "Each player searches their deck for an ally to add to their opening hand. This ally counts toward the opening hand size. Expert campaign players must choose an ally sharing a trait with their hero."
+        ]
+      },
+      "victory": {
+        "title": "Apocalypse: Campaign Victory",
+        "bullets": [
+          "Mark this mission as attempted so it cannot be selected in a later scenario. Apply its success or failure instructions in the campaign log; the selected result is shown below.",
+          "If the Overseer was defeated on its Overseer face, remove that Overseer from the campaign pool. Defeating its Prelate face does not count."
+        ]
+      }
     },
     "darkBeast": {
-      "setup": "Dark Beast: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
-      "victory": "Record the mission attempted and whether it succeeded. Record a defeated Overseer, resolve the mission’s campaign reward or penalty, and continue to the next scenario. In expert campaign, record each surviving identity’s remaining hit points, capped at its base hit points."
+      "intro": {
+        "title": "Scenario 4: Dark Beast",
+        "text": [
+          "Apocalypse’s defeat throws his empire into turmoil. While prelates compete for power and the oppressed rise up, the heroes search beneath the citadel for a time portal that could undo this future.",
+          "The scientist they trusted to operate it reveals himself as Dark Beast. Before he can calibrate a journey to restore his master, X-Force tackles him through the portal, scattering them through time and space."
+        ]
+      },
+      "rules": {
+        "title": "Dark Beast: Scenario Rules",
+        "text": [
+          "The Blue Moon, Genosha, and Savage Land sets are required for this scenario. Setting environments represent the places reached during the chase through time.",
+          "Dark Beast’s attack interrupt resolves the Special ability on the current Setting before his attack proceeds. Read the faceup Setting whenever the environment changes, because its effect changes the next attack."
+        ]
+      },
+      "setup": {
+        "title": "Dark Beast: Campaign Setup",
+        "bullets": [
+          "After normal scenario setup, shuffle the Age of Apocalypse encounter set into the encounter deck. Select an unused mission and an available Overseer, following the mission’s campaign-log setup instructions.",
+          "Put the mission and Overseer in the mission area. The first player takes control of Mission Team on its Mission side.",
+          "Each player searches their deck for an ally to add to their opening hand. This ally counts toward the opening hand size. Expert campaign players must choose an ally sharing a trait with their hero."
+        ]
+      },
+      "victory": {
+        "title": "Dark Beast: Campaign Victory",
+        "bullets": [
+          "Mark this mission as attempted so it cannot be selected in a later scenario. Apply its success or failure instructions in the campaign log; the selected result is shown below.",
+          "If the Overseer was defeated on its Overseer face, remove that Overseer from the campaign pool. Defeating its Prelate face does not count."
+        ]
+      }
     },
     "enSabahNur": {
-      "setup": "En Sabah Nur: follow the scenario setup, then add the Age of Apocalypse encounter set and a randomly selected available mission and Overseer. Put Mission Team into play. Each player searches for a starting ally; it counts toward hand size. Expert campaign players restore recorded hit points and may place 3 mission threat to heal fully.",
-      "victory": "Complete Protect the Professor to win the campaign. Winning this scenario without completing that mission loses the campaign."
+      "intro": {
+        "title": "Scenario 5: En Sabah Nur",
+        "text": [
+          "After taking Dark Beast’s time machine, X-Force tries to return far enough into the past to prevent Xavier’s assassination. They arrive only in time to witness the attack.",
+          "Professor X survives long enough to reach hospital, but he is infected with the techno-organic virus. Cable knows Apocalypse has the antidote, so X-Force and the X-Men assault En Sabah Nur’s pyramid while their allies work to save the professor."
+        ]
+      },
+      "rules": {
+        "title": "En Sabah Nur: Scenario Rules",
+        "text": [
+          "Apocalypse starts in Biomorph form and can change to Cyberpath or Giant form. A form change is not a reveal or defeat: retain his damage, hit points, attachments, and other state unless a card effect explicitly changes them.",
+          "The finale always uses Protect the Professor. Professor X cannot enter play, even through an effect that puts an ally directly into play. Defeat this mission and win the scenario to win the campaign; winning the battle with the mission unfinished loses the campaign."
+        ]
+      },
+      "setup": {
+        "title": "En Sabah Nur: Campaign Setup",
+        "bullets": [
+          "After normal scenario setup, shuffle the Age of Apocalypse encounter set into the encounter deck and reveal Protect the Professor rather than selecting a random mission.",
+          "Select an available Overseer and set up the mission area and Mission Team normally. Each player searches for a starting ally, which counts toward their opening hand size. In expert campaign, the ally must share a trait with their hero.",
+          "Professor X cannot enter play for any reason during this game."
+        ]
+      },
+      "victory": {
+        "title": "En Sabah Nur: Campaign Victory",
+        "bullets": [
+          "If Protect the Professor succeeded, the heroes save Professor X and win the campaign. If it did not, the campaign is lost even though this scenario was won."
+        ]
+      }
+    },
+    "missions": {
+      "liberateSeattle": {
+        "rules": {
+          "title": "Liberate the Seattle Core: Mission Briefing",
+          "text": [
+            "Set copies of Desperate Measures aside. Success gives each player a copy in hand; failure places 2 threat per player on the main scheme.",
+            "Campaign victory after mission success lets each player include one copy of Desperate Measures in future games without counting it toward minimum deck size. Mission failure removes those copies from the campaign."
+          ]
+        },
+        "success": {
+          "title": "Liberate the Seattle Core: Campaign Success",
+          "bullets": [
+            "Each player may include one copy of Desperate Measures in future campaign games. It does not count toward minimum deck size."
+          ]
+        },
+        "failure": {
+          "title": "Liberate the Seattle Core: Campaign Failure",
+          "bullets": [
+            "Remove Desperate Measures from the campaign."
+          ]
+        }
+      },
+      "evacuateSurvivors": {
+        "rules": {
+          "title": "Evacuate Survivors: Mission Briefing",
+          "text": [
+            "Each player shuffles Panicked Refugees into their deck during setup. Mission success lets each player search their deck and discard pile for a card to add to hand; mission failure deals each player an encounter card.",
+            "At campaign victory, a successful evacuation removes the Refugees and rewards an upgrade. A failed evacuation keeps Refugees in the heroes’ future decks."
+          ]
+        },
+        "success": {
+          "title": "Evacuate Survivors: Campaign Success",
+          "bullets": [
+            "Remove Panicked Refugees from the campaign. Each player chooses an upgrade of any aspect they may include in future games, exempt from minimum deck size."
+          ]
+        },
+        "failure": {
+          "title": "Evacuate Survivors: Campaign Failure",
+          "bullets": [
+            "Each player must shuffle Panicked Refugees into their deck during later campaign games."
+          ]
+        }
+      },
+      "sabotageSeaWall": {
+        "rules": {
+          "title": "Sabotage the Sea Wall: Mission Briefing",
+          "text": [
+            "Shuffle North American Sea Wall into the encounter deck during setup. Mission success removes the wall and lets each player deal 3 damage to an enemy; failure finds and reveals the wall.",
+            "At campaign victory, success permanently removes the wall and grants each player a support reward. Failure leaves the wall as a recurring campaign hazard."
+          ]
+        },
+        "success": {
+          "title": "Sabotage the Sea Wall: Campaign Success",
+          "bullets": [
+            "Remove North American Sea Wall from the campaign. Each player chooses a support of any aspect they may include in future games, exempt from minimum deck size."
+          ]
+        },
+        "failure": {
+          "title": "Sabotage the Sea Wall: Campaign Failure",
+          "bullets": [
+            "Shuffle North American Sea Wall into the encounter deck when setting up later campaign games."
+          ]
+        }
+      },
+      "findLostMutants": {
+        "rules": {
+          "title": "Find Lost Mutants: Mission Briefing",
+          "text": [
+            "Set Destiny, Blink, Morph, and X-Man aside. Mission success lets each player take a different available campaign ally into hand; failure makes each player discard a card.",
+            "At campaign victory, success lets each player choose a distinct campaign ally for future games. Failure removes all four of these allies from the campaign."
+          ]
+        },
+        "success": {
+          "title": "Find Lost Mutants: Campaign Success",
+          "bullets": [
+            "In player order, each player chooses a different available campaign ally to include in future games. The selected ally does not count toward minimum deck size."
+          ]
+        },
+        "failure": {
+          "title": "Find Lost Mutants: Campaign Failure",
+          "bullets": [
+            "Remove Destiny, Blink, Morph, and X-Man from the campaign."
+          ]
+        }
+      },
+      "protectTheProfessor": {
+        "rules": {
+          "title": "Protect the Professor: Mission Briefing",
+          "text": [
+            "This is the fixed final mission. Professor X cannot enter play while it is being fought. Mission success lets each player search deck and discard for an ally to add to hand; mission failure immediately makes the players lose.",
+            "The campaign can be won only by completing this mission and winning the En Sabah Nur scenario. A battle won while this mission remains unfinished still loses the campaign."
+          ]
+        },
+        "success": {
+          "title": "Protect the Professor: Campaign Success",
+          "bullets": [
+            "Professor X was protected. Win the En Sabah Nur scenario as well to complete the campaign."
+          ]
+        },
+        "failure": {
+          "title": "Protect the Professor: Campaign Failure",
+          "bullets": [
+            "Professor X was not protected. Winning the battle cannot turn this result into a campaign victory."
+          ]
+        }
+      }
     }
   },
   "shadowland": {
-    "setup": "Infiltrate Shadowland and stop the Hand. Keep your identity throughout the campaign. Creeping Corruption follows your progress: record whether it became Overpowering after each victory. You may record a support or upgrade costing 2 or less after each of the first two victories, and start later scenarios with recorded cards in play by accepting additional corruption."
+    "setup": {
+      "title": "Shadowland Campaign",
+      "text": [
+        "Fight through Shadows in the Night, Shadow Labyrinth, and Heart of Shadow in that order. Keep the same identity throughout the campaign; aspects and legal deck contents may change between scenarios.",
+        "The campaign tracks removed Dark Protégés, whether Creeping Corruption became Overpowering, and the supports or upgrades you prepare for later scenarios. In expert campaign mode, remaining hit points also carry over. A defeat allows another attempt at the same scenario without a campaign penalty."
+      ]
+    },
+    "campaignMode": {
+      "title": "Shadowland: Campaign Mode",
+      "text": [
+        "The Hand's fortress holds three connected adventures: Shadows in the Night, Shadow Labyrinth, and Heart of Shadow. Win all three, in order, to complete the campaign.",
+        "Use the same identity throughout. Between scenarios you may change aspects and customize your deck under the normal deck-building rules. A loss lets you reset that scenario and try again without a campaign penalty.",
+        "Normal scenario setup is followed by the campaign setup instructions. After a victory, resolve that scenario's campaign instructions before continuing. The campaign log preserves these results for the next game."
+      ],
+      "bullets": [
+        "Black Flower is reserved for campaign instructions: do not select it as a scenario's optional modular encounter set during this campaign.",
+        "A Dark Protégé checked off in the campaign log is removed from the campaign and cannot appear as a villain in a later scenario.",
+        "Creeping Corruption, Overpowering results, and prepared supports or upgrades link the scenarios. Preparing a card can give you a head start, but starting with it in play adds corruption."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Shadowland: Expert Campaign",
+      "text": [
+        "Expert campaign instructions add persistent damage. After a victory, each surviving player records their remaining hit points, capped at their identity's base hit points. That recorded value determines their starting health in the next scenario.",
+        "During later scenario setup, each player may take one facedown encounter card to restore their identity to full health. A player defeated in a game their teammates win does not receive that scenario's victory benefits, but can rejoin the next game by taking this encounter card and restoring their health.",
+        "Losing a scenario allows a retry, including the final expert scenario. Expert campaign mode and the scenario's normal/expert difficulty are separate choices."
+      ]
+    },
+    "expertSetup": {
+      "title": "Expert Campaign: Starting Health",
+      "bullets": [
+        "Begin with the hit points recorded after the previous victory.",
+        "You may take one facedown encounter card to restore your identity to full health. A defeated player returning to the campaign must take this option to rejoin."
+      ]
+    },
+    "featuredRules": {
+      "title": "Shadowland: Featured Terms and Keywords",
+      "bullets": [
+        "First Player Action: only the first player may trigger it, at a time they could take a normal action.",
+        "Creeping Corruption flips and clears its counters when it reaches five on its Setup face. Reaching five on its Overpowering face defeats its controller, so extra corruption is a lasting risk.",
+        "Assault: a character making a basic thwart against that scheme uses ATK instead of THW. An ally then takes the consequential damage printed under its ATK.",
+        "Linked: set a linked card aside when the relevant card that brings it into play is included. Linked cards cannot be included directly in a player or encounter deck and do not count toward deck-size limits.",
+        "Hinder X places X threat on a card when it enters play. Patrol prevents an engaged player from thwarting the main scheme with cards they control.",
+        "Permanent cards cannot leave play, be defeated, or have their text blanked except through abilities in their own set. Setup cards begin in play.",
+        "Piercing discards a target's tough status cards before an attack deals damage. Ranged ignores retaliate. Stalwart prevents stunned and confused status cards.",
+        "Steady characters need two stunned or confused status cards for that status to replace an activation; remove all cards of that status when it does.",
+        "Teamwork activates an entering minion against its engaged player if another minion with the named trait is in play. When a defeated Ninja brings in a replacement, discard the defeated Ninja before checking the replacement's Teamwork.",
+        "Villainous gives the activating character a boost card from the encounter deck; resolve its boost ability and icons for that activation."
+      ]
+    },
+    "shadowsInTheNight": {
+      "intro": {
+        "title": "Scenario 1: Shadows in the Night",
+        "text": [
+          "The Hand has raised Shadowland in the middle of Hell's Kitchen. Its ninjas enforce a cruel version of justice, terrifying the neighborhood and driving its residents into panic and street fighting.",
+          "At the fortress, a figure on the tenshu orders ninjas to form a defensive ring. Before you can break through, the mysterious commander drops into the streets to confront you."
+        ]
+      },
+      "rules": {
+        "title": "Shadows in the Night: Positions",
+        "text": [
+          "Two environment cards track positions: one for the villain and one for the heroes. Each has The Streets Below on one face and Atop the Tenshu on the other. Changing a position flips the corresponding environment.",
+          "The positions match when both environments show the same title. They differ when the faceup titles do not match. Read position-dependent abilities using these faceup titles; the villain-position environment explains the resulting combat and thwarting effects."
+        ],
+        "bullets": [
+          "The first-player movement action can change a position only once per phase.",
+          "Choosing the street effect that places 3 threat and stuns your identity is legal while already stunned, but it will not flip the environment: the complete effect must resolve before its ‘then’ instruction can happen."
+        ]
+      },
+      "setup": {
+        "title": "Shadows in the Night: Campaign Setup",
+        "bullets": [
+          "Record the heroes chosen for the campaign. If Daredevil or Elektra is a player identity, remove the villain with that name from this campaign.",
+          "Each player starts with the Setup face of Creeping Corruption in play. Set aside any unused copies and shuffle the remaining Black Flower cards into the encounter deck.",
+          "Place 1 additional threat per player on the main scheme."
+        ]
+      },
+      "victory": {
+        "title": "Shadows in the Night: Victory",
+        "bullets": [
+          "Remove this scenario's Dark Protégé villain from the campaign; that villain cannot be selected in later scenarios.",
+          "Each surviving player records whether their Creeping Corruption has the Overpowering trait.",
+          "Each surviving player may record one support or upgrade they control with a printed cost of 2 or less. A card with no cost, shown as a dash, is ineligible. A later scenario lets you start with a recorded card in play in exchange for corruption.",
+          "In expert campaign mode, record each surviving identity's remaining hit points, up to its base hit points."
+        ]
+      }
+    },
+    "shadowLabyrinth": {
+      "intro": {
+        "title": "Scenario 2: Shadow Labyrinth",
+        "text": [
+          "Inside Shadowland, the fortress itself becomes your opponent. Corridors rearrange, paths turn into dead ends, and hidden mechanisms threaten intruders with darts, tripwires, and other traps.",
+          "A shadowy attacker appears to strike, then disappears when you begin to prevail. With the walls moving around you, you must keep pressing toward the fortress's heart."
+        ]
+      },
+      "rules": {
+        "title": "Shadow Labyrinth: Traps and Passages",
+        "bullets": [
+          "The separate trap deck begins with the seven Trap! treacheries from Deadly Contraptions and Whisper in the Dark from Shadow Labyrinth. Trap! cards from any additional modular sets also belong in this deck.",
+          "A trap-deck reveal resolves its top card normally. Discard cards with the Trap! trait to the trap discard pile; cards without that trait go to the encounter discard pile, even when revealed from the trap deck.",
+          "When the trap deck runs out, reshuffle its discard pile. This does not reset the encounter deck and does not add an acceleration token.",
+          "Surge on a card revealed from the trap deck still deals its additional card from the ordinary encounter deck.",
+          "Shifting Corridors has infinite hit points. It can take damage but cannot be defeated by damage; use the scenario's card abilities to progress through the labyrinth.",
+          "Passage counters are your remaining time. If Shifting Corridors runs out of passage counters, the players lose."
+        ]
+      },
+      "setup": {
+        "title": "Shadow Labyrinth: Campaign Setup",
+        "bullets": [
+          "Each player starts with a fresh Setup-side Creeping Corruption. Set aside unused copies and shuffle the remaining Black Flower cards into the encounter deck.",
+          "If your corruption was Overpowering in the previous scenario, place 1 corruption counter on your Creeping Corruption.",
+          "You may take one copy of the support or upgrade recorded after the previous victory from your deck and start with it in play. If you do, add 1 corruption counter.",
+          "Place 3 additional threat per player on the main scheme."
+        ]
+      },
+      "victory": {
+        "title": "Shadow Labyrinth: Victory",
+        "bullets": [
+          "Each surviving player records whether their Creeping Corruption is Overpowering.",
+          "Each surviving player may record one support or upgrade they control with a printed cost of 2 or less. Cards with a dash instead of a cost are ineligible. In the final scenario, starting with a recorded card in play costs additional corruption.",
+          "In expert campaign mode, record each surviving identity's remaining hit points, up to its base hit points."
+        ]
+      }
+    },
+    "heartOfShadow": {
+      "intro": {
+        "title": "Scenario 3: Heart of Shadow",
+        "text": [
+          "You reach Krahllak, the Hand's leader, in the final chamber. His ritual threatens to extend its corruption across New York, ensnaring the people in its reach.",
+          "When you attack, Krahllak turns that power against you. He tempts you to give in to the corruption and join his Dark Protégés. Stop the ritual and bring down Shadowland before your own resolve fails."
+        ]
+      },
+      "rules": {
+        "title": "Heart of Shadow: Creeping Corruption",
+        "text": [
+          "The finale includes Creeping Corruption as part of its normal scenario setup. Keep track of its current face as well as its counters: the Overpowering face represents a dangerous loss of control."
+        ],
+        "bullets": [
+          "Reaching five corruption counters on the Setup face flips the upgrade and clears its counters. Reaching five on its Overpowering face defeats its controller.",
+          "Krahllak's attack interrupt asks the attacked player whether to resolve it before another player decides whether to defend that attack. A teammate defending later does not change who makes that earlier choice."
+        ]
+      },
+      "setup": {
+        "title": "Heart of Shadow: Campaign Setup",
+        "bullets": [
+          "For each previous scenario in which your corruption was recorded as Overpowering, place 1 corruption counter on your Creeping Corruption.",
+          "You may take one copy of each recorded support or upgrade from your deck and start with those cards in play. Add 1 corruption counter for each card you put into play this way.",
+          "Randomly deal Archpriestess, Gorgon, Lady Bullseye, and White Tiger from the Dark Protégé set: each player receives one as a facedown encounter card. Shuffle any remaining minions into the encounter deck."
+        ]
+      },
+      "victory": {
+        "title": "Shadowland: Campaign Complete",
+        "text": [
+          "With Heart of Shadow defeated, you have won all three scenarios and completed the Shadowland campaign."
+        ]
+      }
+    }
+  },
+  "aos": {
+    "campaignMode": {
+      "title": "Agents of S.H.I.E.L.D.: Campaign Mode",
+      "text": [
+        "Investigate an A.I.M. kidnapping operation and expose a mole within the S.H.I.E.L.D. Executive Board. Play Black Widow, Batroc, M.O.D.O.K., Thunderbolts, and Baron Zemo in that order. Results from each mission change later missions.",
+        "Keep the same identity throughout the campaign. Between scenarios, you may change aspects and customize your deck using the normal deck-building rules. Complete ordinary scenario setup, then the campaign setup instructions before drawing opening hands; evidence instructions resolve after mulligans.",
+        "After a victory, resolve the mission’s victory instructions and keep the resulting campaign records. A defeat normally allows another attempt without a penalty. The final mission has additional replay rules, and losing it in an expert campaign ends the campaign."
+      ]
+    },
+    "evidence": {
+      "title": "The Investigation: Means, Motive, and Opportunity",
+      "text": [
+        "One board member is secretly collaborating with A.I.M. Their identity is determined by three hidden evidence cards: one means, one motive, and one opportunity. The game selects these without revealing them and keeps the other six evidence cards available to discover.",
+        "Earned evidence rules out every combination containing that evidence. Use the remaining combinations in the campaign log to deduce the mole. The hidden evidence and undiscovered evidence remain secret between scenarios.",
+        "Evidence is kept in the campaign log rather than added to a deck. Its Setup ability helps the players in later missions. Learning a card during a scenario does not immediately resolve its Setup ability."
+      ]
+    },
+    "board": {
+      "title": "The S.H.I.E.L.D. Executive Board",
+      "text": [
+        "The three board members begin as environments with secret counters representing A.I.M.’s leverage over them. Their abilities let you uncover those secrets and receive assistance. If a mission is won with at least one Board Member environment having no secrets, the campaign gains one evidence card.",
+        "A.I.M. Interference adds secrets. A board member with four secrets, or three in expert scenario mode, betrays the heroes and flips to its attachment side. That side strengthens the villain and punishes additional secrets.",
+        "Secret counters and betrayals persist between missions. A board member who has betrayed the heroes remains on its attachment side for the rest of the campaign."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Agents of S.H.I.E.L.D.: Expert Campaign",
+      "text": [
+        "After winning a mission, surviving players record their remaining hit points, capped at their identity’s base hit points. These become their starting hit points in the next mission.",
+        "During later setup, each player may add one secret to a Board Member environment to heal damage equal to their identity’s REC. A defeated player can rejoin the campaign using this recovery opportunity.",
+        "A defeated player does not take part in the victory instructions for the mission their teammates won. Losing the final Baron Zemo mission loses the entire expert campaign."
+      ]
+    },
+    "laterSetup": {
+      "title": "Campaign Setup: Board and Evidence",
+      "bullets": [
+        "Restore each board member’s recorded secrets and betrayed side. For the first four missions, include all three A.I.M. Interference treacheries in the encounter deck.",
+        "After mulligans, resolve the Setup ability of each earned evidence card. Each player may pay its stated secret-counter cost to add an eligible card from their collection, then may pay its stated threat cost to search their deck for an eligible card.",
+        "When the same evidence card offers collection additions to multiple players, those players must select different card titles. The card added by evidence may exceed the ordinary deck-building copy limit."
+      ]
+    },
+    "expertSetup": {
+      "title": "Expert Campaign Setup: Persistent Damage",
+      "bullets": [
+        "Set each identity to its remaining hit points recorded after the previous mission.",
+        "Each player may place one secret on a Board Member environment to heal damage equal to their identity’s REC. A player recorded at zero hit points must recover in order to rejoin."
+      ]
+    },
+    "recordBoard": {
+      "title": "Campaign Victory: Board and Evidence",
+      "bullets": [
+        "Record each board member’s remaining secrets and any betrayal.",
+        "If at least one Board Member environment has no secret counters, gain one evidence card and eliminate the combinations containing its evidence icon from the investigation."
+      ]
+    },
+    "expertVictory": {
+      "title": "Expert Campaign Victory",
+      "bullets": [
+        "Record each surviving identity’s remaining hit points, never more than its base hit points. Record defeated identities at zero for the next mission’s recovery instructions."
+      ]
+    },
+    "blackWidow": {
+      "intro": {
+        "title": "Black Widow: A Missing Specialist",
+        "text": [
+          "S.H.I.E.L.D. computer specialist Sarah Garza has disappeared. An Inhuman cocoon found in her Brooklyn apartment suggests that her dormant genes have activated, but the extent of her new powers is unknown.",
+          "While investigating Garza’s disappearance and rumors of a mole on the Executive Board, you trace her phone to a disused subway tunnel. An A.I.M. base awaits there, protected by Yelena Belova: the Black Widow."
+        ]
+      },
+      "rules": {
+        "title": "Black Widow: Preparation Abilities",
+        "bullets": [
+          "Preparation abilities replace Boost abilities on cards in Black Widow’s encounter set. Turning such a card faceup as a boost does not resolve its Preparation ability.",
+          "Before a hero or ally’s attack against Black Widow resolves, her Forced Interrupt removes threat from the main scheme. If it removes threat, discard the encounter deck’s top card and resolve any Preparation ability on that card before continuing the attack. If it removes no threat, the rest of that interrupt does not resolve.",
+          "Damage from an effect that is not an attack does not trigger this interrupt."
+        ]
+      },
+      "setup": {
+        "title": "Black Widow: Campaign Setup",
+        "bullets": [
+          "Record the campaign’s chosen identities, prepare the hidden evidence, and put the three Board Member environments into play with two secrets each.",
+          "Shuffle all three A.I.M. Interference treacheries into the encounter deck."
+        ]
+      },
+      "victory": {
+        "title": "Black Widow: Campaign Victory",
+        "bullets": [
+          "Record the combined number of minions and side schemes still in play. This determines the starting Alert Level during the embassy mission.",
+          "Then record the Executive Board’s secrets and check whether the heroes earn evidence."
+        ]
+      }
+    },
+    "batroc": {
+      "intro": {
+        "title": "Batroc: The Embassy Rescue",
+        "text": [
+          "Black Widow remains silent, but captured A.I.M. operatives reveal a kidnapping network supplying A.I.M. Island. The victims appear to be passing through that country’s embassy in Washington, D.C.",
+          "You enter the embassy without Executive Board approval to find and extract the missing people. If caught, you will face the consequences without official S.H.I.E.L.D. support."
+        ]
+      },
+      "rules": {
+        "title": "Batroc: Infiltrating the Embassy",
+        "bullets": [
+          "Win by clearing threat from the three main-scheme stages rather than by defeating Batroc. The first stage represents entering the embassy.",
+          "Each time stage two reaches zero threat, rescue a captive. You may reset its threat to three per player to rescue another captive, or advance to the escape stage.",
+          "Clear the final stage before all Rescued Captive allies are defeated to win the mission.",
+          "Batroc has a fixed hit point value rather than a per-player value. His zero-hit-point interrupt grants its printed benefit and resets his hit points; it replaces defeating him and does not count as a villain defeat."
+        ]
+      },
+      "setup": {
+        "title": "Batroc: Campaign Setup",
+        "bullets": [
+          "Add threat to Alert Level equal to the combined minions and side schemes recorded after Black Widow. Restore the Executive Board, then resolve earned evidence after mulligans."
+        ]
+      },
+      "victory": {
+        "title": "Batroc: Campaign Victory",
+        "bullets": [
+          "Record the number of Rescued Captive allies still in play. This reduces the extra lock counters in the M.O.D.O.K. mission.",
+          "Then record the Executive Board’s secrets and check whether the heroes earn evidence."
+        ]
+      }
+    },
+    "modok": {
+      "intro": {
+        "title": "M.O.D.O.K.: A.I.M. Island",
+        "text": [
+          "The embassy captives are free, but Sarah Garza is still missing. Evidence points to A.I.M. Island, where M.O.D.O.K. is using kidnapped Inhumans as genetic templates for super-powered Adaptoids.",
+          "The investigation also implicates an unidentified Executive Board member. With the Board compromised, you undertake another unauthorized rescue mission."
+        ]
+      },
+      "rules": {
+        "title": "M.O.D.O.K.: The Holding Cells",
+        "bullets": [
+          "The Holding Cell deck contains four double-sided cards with Inhuman allies on their reverse sides. Only its top card is in play. Each cell receives its printed lock counters as it enters play.",
+          "Free all four Inhuman allies by removing the cells’ locks, then reduce M.O.D.O.K. to zero hit points to win. Use the cells’ Hero Actions, M.O.D.O.K.’s zero-hit-point interrupt, and encounter-card effects to remove locks.",
+          "Before the final rescue, M.O.D.O.K.’s zero-hit-point interrupt replaces his defeat, provides its printed benefit, and resets his fixed hit point value."
+        ]
+      },
+      "setup": {
+        "title": "M.O.D.O.K.: Campaign Setup",
+        "bullets": [
+          "Add three lock counters per player to the top Holding Cell, then remove one lock counter per player for each Rescued Captive recorded after Batroc.",
+          "Restore the Executive Board and resolve earned evidence after mulligans."
+        ]
+      },
+      "victory": {
+        "title": "M.O.D.O.K.: Campaign Victory",
+        "bullets": [
+          "Record which Adaptoid environments remain in play. These return during the final Baron Zemo mission.",
+          "Then record the Executive Board’s secrets and check whether the heroes earn evidence."
+        ]
+      }
+    },
+    "thunderbolts": {
+      "intro": {
+        "title": "Thunderbolts: Under Arrest",
+        "text": [
+          "After rescuing the Inhumans and returning them home, you arrive in Washington to find the Thunderbolts waiting for you. Their leader, Citizen V, says the Executive Board has authorized your arrest for the operation on A.I.M. Island."
+        ]
+      },
+      "rules": {
+        "title": "Thunderbolts: Backup and Engagement",
+        "bullets": [
+          "Thunderbolt Backup hosts a Thunderbolt minion that remains in play and keeps its tokens, status cards, and attachments. You may attack it and target it with player-card abilities, but it does not activate while it is not engaged with a player.",
+          "Attacking a Thunderbolt triggers the main scheme’s response that makes that minion engage the attacker’s player, including a minion attached to Thunderbolt Backup.",
+          "Thunderbolt Backup moves the most-damaged Thunderbolt in play onto itself and heals it. If another minion was attached, that minion engages the player who had been engaged with the incoming minion. If the already-attached minion is most damaged, it stays there and heals.",
+          "If an effect attacks an ally directly, players may defend normally. An undefended attack damages that ally; boost references to “you” refer to its controller, and abilities requiring the enemy to attack your identity do not trigger. Overkill excess goes to the defeated ally’s controller’s identity."
+        ]
+      },
+      "setup": {
+        "title": "Thunderbolts: Campaign Setup",
+        "bullets": [
+          "Restore the Executive Board’s recorded secrets and betrayed sides, include A.I.M. Interference, and resolve earned evidence after mulligans.",
+          "This scenario uses one Thunderbolt modular encounter set per player, plus one additional set. Each must contain an Elite Thunderbolt minion; the included qualifying sets are Gravitational Pull, Hard Sound, Pale Little Spider, Power of the Atom, Supersonic, and The Leaper."
+        ]
+      },
+      "victory": {
+        "title": "Thunderbolts: Campaign Victory",
+        "bullets": [
+          "Record the names of Thunderbolt minions still in play. They and their encounter sets can return in the final mission, except Jolt’s set.",
+          "Then record the Executive Board’s secrets and check whether the heroes earn evidence."
+        ]
+      }
+    },
+    "baronZemo": {
+      "intro": {
+        "title": "Baron Zemo: Expose the Mole",
+        "text": [
+          "Citizen V is revealed to be Baron Helmut Zemo, and the Thunderbolts are his Masters of Evil in disguise. S.H.I.E.L.D. arrives, but its agents take you into custody rather than arresting Zemo. The Executive Board already knew who he was.",
+          "With Agent Coulson’s help, you escape confinement and search for proof linking Zemo to A.I.M. Find the mole before Zemo turns the entire Board against you, while avoiding unnecessary harm to fellow S.H.I.E.L.D. agents."
+        ]
+      },
+      "rules": {
+        "title": "Baron Zemo: Evidence and the Accusation",
+        "bullets": [
+          "During stage one, remove secrets from Board Member environments to gather the evidence needed to identify the mole. At the end of the player phase, the main scheme can place two secrets on a board environment with no secrets to gain evidence. Evidence learned now provides information; ignore its Setup text during play.",
+          "Reducing Zemo to zero hit points before his final form removes secrets through his printed interrupt and resets his fixed hit point value; it does not defeat him.",
+          "You may advance to the accusation even with incomplete evidence. Choose a means, motive, and opportunity combination that the earned evidence has not ruled out. That combination also names the accused board member.",
+          "The game reveals the actual hidden combination. Each incorrect means, motive, opportunity, or board-member guess adds one secret to every board member. Accusing the wrong board member also adds three secrets to that member.",
+          "Advance to the final stage, reveal Zemo’s Unmasked side, and attach the exposed mole to him. The scheme receives threat for secrets on Board Member attachments. Defeat this version of Zemo to win. If all three board members join him, the heroes lose.",
+          "A premature accusation can make the battle harder, but being wrong does not itself lose the scenario. Waiting for certainty may be riskier if the main scheme is close to completion."
+        ]
+      },
+      "setup": {
+        "title": "Baron Zemo: Campaign Setup",
+        "bullets": [
+          "Restore each Adaptoid environment recorded after M.O.D.O.K. and add all copies of the Adaptoid minion to the encounter deck.",
+          "Add the recorded surviving Thunderbolt minions and their encounter sets, except Jolt’s set.",
+          "Keep the campaign’s hidden and earned evidence, restore recorded board-member secrets and betrayals, and resolve earned evidence after mulligans."
+        ]
+      },
+      "standardDefeat": {
+        "title": "Baron Zemo: If the Heroes Lose",
+        "text": [
+          "In a standard campaign, you may retry the final mission. Prepare a new hidden means, motive, and opportunity combination and a new supply of discoverable evidence.",
+          "Before repeating the mission’s campaign setup, gain one evidence card for each earlier scenario in which a Board Member environment finished with no secrets. The investigation therefore starts again with the evidence rewards you previously earned."
+        ]
+      },
+      "expertDefeat": {
+        "title": "Baron Zemo: Expert Campaign Defeat",
+        "text": [
+          "Losing this mission in an expert campaign ends the campaign: S.H.I.E.L.D. arrests the heroes and convicts them of the accusations made against them."
+        ]
+      },
+      "victory": {
+        "title": "Agents of S.H.I.E.L.D.: Campaign Victory",
+        "text": [
+          "Zemo is defeated and the mole is exposed. The heroes are cleared of the charges against them and win the campaign."
+        ]
+      }
+    }
+  },
+  "fearNoEvil": {
+    "intro": {
+      "title": "Fear No Evil",
+      "text": [
+        "A coordinated crime wave is sweeping New York City. Protect its neighborhoods, stop the underlings behind each crisis, and uncover the mastermind directing the chaos."
+      ]
+    },
+    "campaignMode": {
+      "title": "Campaign Mode",
+      "text": [
+        "Keep the same identity throughout the campaign; aspects and deck contents can change between games under the usual deck-building rules.",
+        "Five interchangeable scenarios can be tackled in the order your group chooses. Each pairs its main scheme with an underling villain. Once all five scenarios are Completed or Failed, confront Kingpin in the finale."
+      ],
+      "bullets": [
+        "An underling already recorded beside a scenario remains assigned to it on a retry. Otherwise, use an unassigned underling.",
+        "For a first campaign, the recommended order is Hammerhead, Bullseye, Electro, then Purple Man and Typhoid Mary in either order. Later campaigns use random assignments.",
+        "A scenario victory provides its Completed campaign environment for later games. A Failed scenario provides the penalty on its Failed side instead. You may inspect both sides before choosing a scenario.",
+        "A loss does not immediately mark the scenario Failed. The campaign continues through its planning and progression steps."
+      ]
+    },
+    "planning": {
+      "title": "Choose Which Crisis to Face",
+      "text": [
+        "Before choosing the next scenario, the app randomly selects two unresolved scenarios and adds one progress mark to each. If only one remains, it receives two marks. A scenario fails as soon as it reaches three marks.",
+        "After progression, choose any scenario that is neither Completed nor Failed. If none remain, the next battle is Kingpin. The app records progression and the chosen underling; continuing this briefing does not choose your scenario."
+      ]
+    },
+    "expertCampaign": {
+      "title": "Expert Campaign",
+      "text": [
+        "After every game, record each hero's remaining hit points, capped at that identity's base hit points. Those become the hero's starting hit points in the next game.",
+        "During player setup, each player may take one facedown encounter card to heal damage equal to their REC. A defeated hero can rejoin the next scenario by using this healing step. A defeated player does not take part in victory instructions if teammates win."
+      ],
+      "bullets": [
+        "Follow the instructions marked Expert Campaign Only as well as the ordinary campaign instructions.",
+        "Losing an interchangeable scenario adds one progress mark to that scenario before the next planning step.",
+        "If you lose the Kingpin finale, flip one Completed campaign environment to its Failed side and retry. If no Completed environment remains, the campaign is lost."
+      ]
+    },
+    "campaignSetup": {
+      "title": "Campaign Setup",
+      "text": [
+        "The app applies the campaign log after the scenario and player setup steps. Each Completed or Failed environment returns on its recorded side and resolves its Setup ability.",
+        "Remove from your deck every ally or support whose title is recorded as removed from the campaign. Before starting a new game, replace cards as necessary to meet the normal minimum deck size.",
+        "If trust with Mary was established and the Mary ally has not been defeated, the group chooses a player to begin with the Typhoid Mary campaign ally. Scenario-specific campaign penalties are applied after these shared steps."
+      ]
+    },
+    "expertVictory": {
+      "title": "Expert Campaign: Remaining Hit Points",
+      "text": [
+        "The app records surviving heroes' remaining hit points, capped at their base hit points, for the next scenario. Heroes defeated during the game are recorded with zero hit points and can rejoin through the next game's healing step."
+      ]
+    },
+    "expertDefeat": {
+      "title": "Expert Campaign: After a Defeat",
+      "text": [
+        "The app records remaining hit points after a loss as well as after a win. Losing an interchangeable scenario adds one progress mark to it; it only becomes Failed if this brings it to three marks.",
+        "After a Kingpin defeat, choose a Completed campaign environment to turn to its Failed side before retrying. If there are none, the campaign ends in defeat."
+      ]
+    },
+    "underlings": {
+      "bullseye": {
+        "title": "Your Underling: Bullseye",
+        "text": [
+          "Bullseye adds a boost icon to each of his boost cards. Extra boost cards can make his attacks especially dangerous.",
+          "His encounter cards can remove allies and Persona supports from the game; a campaign victory can permanently bar those titles from your decks. Bullseye II has Adamantium-Laced Spine, which limits damage from an attack to 3 until you flip it. Favor several small attacks while its protection is active."
+        ]
+      },
+      "electro": {
+        "title": "Your Underling: Electro",
+        "text": [
+          "Electro stores charge counters on Electric Charge and spends them to gain additional boost cards. Scheming and encounter effects replenish the charges.",
+          "Players can spend resources to remove charge counters. Energy resources remove charges efficiently, but some of her encounter effects punish heroes with energy resources."
+        ]
+      },
+      "hammerhead": {
+        "title": "Your Underling: Hammerhead",
+        "text": [
+          "Hammerhead stuns characters he damages. His Head First! treachery and Maggia Underboss minions become more dangerous while your hero is stunned.",
+          "Preventing all damage, defending effectively, or using an ally to absorb an attack can protect your hero from the stun."
+        ]
+      },
+      "purpleMan": {
+        "title": "Your Underling: Purple Man",
+        "text": [
+          "Purple Man uses his low printed stats to disguise a dangerous encounter-card engine: his cards gain a boost ability that deals the card as a facedown encounter card after the activation.",
+          "His Influenced minions punish you for defeating them. They have vulnerable, so stunning or confusing them discards them safely instead. Purple Man grants them guard, with additional villainous and patrol at higher stages."
+        ]
+      },
+      "typhoidMary": {
+        "title": "Your Underling: Typhoid Mary",
+        "text": [
+          "Mary begins on a random face and flips after each villain phase. Her attack and scheme strengths change with her face, so plan around the coming activation.",
+          "Win by placing three tokens on Disturbed Psyche rather than by defeating successive villain stages. Clearing Establish Trust adds a threat token; reducing the villain to zero hit points adds a damage token.",
+          "A victory with at least two threat tokens on Disturbed Psyche establishes trust in the campaign and can make Mary available as an ally in later games."
+        ]
+      }
+    },
+    "protectionRacket": {
+      "intro": {
+        "title": "Protection Racket",
+        "text": [
+          "A shopkeeper is being threatened for protection money. You arrive as armed thugs smash the business, only to discover their boss is joining the attack."
+        ]
+      },
+      "rules": {
+        "title": "Protection Racket: Scenario Rules",
+        "text": [
+          "Each player has a separate business main scheme in their play area. In standard mode, inspect the business reverse faces before choosing one.",
+          "An event, treachery, or card in a player’s play area that refers to “the main scheme” affects that player’s business. Cards outside player play areas, including the villain, side schemes, and environments, apply such references to every business.",
+          "An effect referring to “a scheme”, including a basic thwart, can choose any eligible main scheme. Acceleration icons and acceleration tokens add threat to every business during the villain phase."
+        ]
+      },
+      "setup": {
+        "title": "Protection Racket: Campaign Setup",
+        "bullets": [
+          "For each progress mark beside Protection Racket, add 1 threat to every business main scheme, or 2 threat in expert scenario mode."
+        ]
+      },
+      "victory": {
+        "title": "Protection Racket: Victory",
+        "bullets": [
+          "The app marks this scenario Completed and records its campaign results.",
+          "If Disturbed Psyche is in play with at least two threat tokens, record that trust was established. If the Mary campaign ally is in the victory display, record that Mary was defeated.",
+          "Record the title of every unique ally and support removed from the game. Cards with those titles cannot be included in decks for the rest of the campaign.",
+          "Return to campaign planning. The scenario’s Completed environment benefits later games."
+        ]
+      },
+      "defeat": {
+        "title": "Protection Racket: Defeat",
+        "text": [
+          "Return to campaign planning. A loss alone does not mark this scenario Failed; in an expert campaign it first receives an additional progress mark. Standard campaigns do not add a mark for the defeat itself."
+        ]
+      }
+    },
+    "theRaftBreakout": {
+      "intro": {
+        "title": "The Raft Breakout",
+        "text": [
+          "An intruder has obtained the Raft’s master key and is releasing prisoners. You reach the prison as S.H.I.E.L.D. agents fight escaped supervillains, with Rhino and the ringleader turning their attention toward you."
+        ]
+      },
+      "rules": {
+        "title": "The Raft Breakout: Scenario Rules",
+        "text": [
+          "Master Key lets the villain release prisoners while scheming. After resolving boost effects, each minion revealed as a boost card during a scheme is dealt to the player being schemed against as a facedown encounter card instead of being discarded."
+        ]
+      },
+      "setup": {
+        "title": "The Raft Breakout: Campaign Setup",
+        "bullets": [
+          "With at least one progress mark beside The Raft Breakout, give every Prisoner minion currently in play tough.",
+          "With two progress marks, also give each of those Prisoners one facedown boost card."
+        ]
+      },
+      "victory": {
+        "title": "The Raft Breakout: Victory",
+        "bullets": [
+          "The app marks this scenario Completed and records its campaign results.",
+          "If Disturbed Psyche is in play with at least two threat tokens, record that trust was established. If the Mary campaign ally is in the victory display, record that Mary was defeated.",
+          "Record the title of every unique ally and support removed from the game. Cards with those titles cannot be included in decks for the rest of the campaign.",
+          "Return to campaign planning. The scenario’s Completed environment benefits later games."
+        ]
+      },
+      "defeat": {
+        "title": "The Raft Breakout: Defeat",
+        "text": [
+          "Return to campaign planning. A loss alone does not mark this scenario Failed; in an expert campaign it first receives an additional progress mark. Standard campaigns do not add a mark for the defeat itself."
+        ]
+      }
+    },
+    "artMuseumHeist": {
+      "intro": {
+        "title": "Art Museum Heist",
+        "text": [
+          "A silent alarm draws you to a museum with smashed doors and unresponsive security. You stop a masked thief, but the heist’s leader has been waiting for someone to answer the call."
+        ]
+      },
+      "rules": {
+        "title": "Art Museum Heist: Scenario Rules",
+        "text": [
+          "Four Art attachments can change hands during this scenario. One randomly chosen piece starts attached to the villain. Art increases its host’s SCH or THW, and each piece on the villain adds another 1 threat per player to the villain-phase main-scheme placement.",
+          "Use an Art attachment’s Hero Action to take it for your hero. Three pieces give their new host a status card; Inspiring Pottery grants stalwart, which removes stunned and confused statuses.",
+          "After an enemy makes an undefended attack against an identity with Art, move one Art attachment from that identity to the villain. Both villain and minion attacks can trigger this, but only one piece moves per attack."
+        ]
+      },
+      "setup": {
+        "title": "Art Museum Heist: Campaign Setup",
+        "bullets": [
+          "For each progress mark beside Art Museum Heist, add 1 threat per player to the main scheme, or 2 threat per player in expert scenario mode."
+        ]
+      },
+      "victory": {
+        "title": "Art Museum Heist: Victory",
+        "bullets": [
+          "The app marks this scenario Completed and records its campaign results.",
+          "If Disturbed Psyche is in play with at least two threat tokens, record that trust was established. If the Mary campaign ally is in the victory display, record that Mary was defeated.",
+          "Record the title of every unique ally and support removed from the game. Cards with those titles cannot be included in decks for the rest of the campaign.",
+          "Return to campaign planning. The scenario’s Completed environment benefits later games."
+        ]
+      },
+      "defeat": {
+        "title": "Art Museum Heist: Defeat",
+        "text": [
+          "Return to campaign planning. A loss alone does not mark this scenario Failed; in an expert campaign it first receives an additional progress mark. Standard campaigns do not add a mark for the defeat itself."
+        ]
+      }
+    },
+    "theGetaway": {
+      "intro": {
+        "title": "The Getaway",
+        "text": [
+          "Police are pursuing a bank robber through Hell’s Kitchen. You move to cut off the getaway car before it reaches the tunnel, but a near collision forces you into a running chase."
+        ]
+      },
+      "rules": {
+        "title": "The Getaway: Scenario Rules",
+        "text": [
+          "Speed counters represent an increasingly dangerous chase. The main scheme gains a speed counter at the end of a round unless it is clear of threat. There is no limit, and encounter effects become harsher as speed rises.",
+          "While the villain is Out Front, damage that would be dealt to the villain removes that much main-scheme threat instead. Because damage is not dealt, tough remains on the villain and no damage is placed on a Vehicle attachment.",
+          "When the main scheme has no threat, Out Front flips to Alongside and resolves its When Revealed collision damage. Alongside flips back to Out Front at the end of a round with threat on the main scheme."
+        ]
+      },
+      "setup": {
+        "title": "The Getaway: Campaign Setup",
+        "bullets": [
+          "With at least one progress mark beside The Getaway, find and reveal Jackknifed Tanker Truck.",
+          "With two marks, add another 1 threat per player to that side scheme, or 2 threat per player in expert scenario mode."
+        ]
+      },
+      "victory": {
+        "title": "The Getaway: Victory",
+        "bullets": [
+          "The app marks this scenario Completed and records its campaign results.",
+          "If Disturbed Psyche is in play with at least two threat tokens, record that trust was established. If the Mary campaign ally is in the victory display, record that Mary was defeated.",
+          "Record the title of every unique ally and support removed from the game. Cards with those titles cannot be included in decks for the rest of the campaign.",
+          "Return to campaign planning. The scenario’s Completed environment benefits later games."
+        ]
+      },
+      "defeat": {
+        "title": "The Getaway: Defeat",
+        "text": [
+          "Return to campaign planning. A loss alone does not mark this scenario Failed; in an expert campaign it first receives an additional progress mark. Standard campaigns do not add a mark for the defeat itself."
+        ]
+      }
+    },
+    "stopThePresses": {
+      "intro": {
+        "title": "Stop the Presses!",
+        "text": [
+          "The Daily Bugle newsroom is under attack. You climb through the building toward the editor’s office, where J. Jonah Jameson is bound and gagged and the attacker is waiting behind his desk."
+        ]
+      },
+      "rules": {
+        "title": "Stop the Presses!: Scenario Rules",
+        "text": [
+          "Each player starts with a random Daily Bugle support with 3 stamina counters. These supports are discarded when their last stamina counter is removed; if a Daily Bugle support leaves play, the players lose.",
+          "Their abilities spend stamina. Undefended enemy attacks can also remove stamina unless the players place threat on the main scheme, and encounter effects can spend more.",
+          "Use the Daily Bugle environment’s ability to replenish a support before its stamina runs out."
+        ]
+      },
+      "setup": {
+        "title": "Stop the Presses!: Campaign Setup",
+        "bullets": [
+          "Remove one stamina counter from each Daily Bugle support for every progress mark beside Stop the Presses!."
+        ]
+      },
+      "victory": {
+        "title": "Stop the Presses!: Victory",
+        "bullets": [
+          "The app marks this scenario Completed and records its campaign results.",
+          "If Disturbed Psyche is in play with at least two threat tokens, record that trust was established. If the Mary campaign ally is in the victory display, record that Mary was defeated.",
+          "Record the title of every unique ally and support removed from the game. Cards with those titles cannot be included in decks for the rest of the campaign.",
+          "Return to campaign planning. The scenario’s Completed environment benefits later games."
+        ]
+      },
+      "defeat": {
+        "title": "Stop the Presses!: Defeat",
+        "text": [
+          "Return to campaign planning. A loss alone does not mark this scenario Failed; in an expert campaign it first receives an additional progress mark. Standard campaigns do not add a mark for the defeat itself."
+        ]
+      }
+    },
+    "kingpin": {
+      "intro": {
+        "title": "Kingpin",
+        "text": [
+          "After fighting crises across the city, you realize the crime wave has been orchestrated. Public anger has been directed at the heroes, and Kingpin is the obvious beneficiary. Then an explosion below draws you back into danger: your nemesis is calling you out."
+        ]
+      },
+      "rules": {
+        "title": "Kingpin: Nemeses and Public Support",
+        "text": [
+          "This scenario does not use the Standard encounter set. Expert scenario mode still uses the Expert set.",
+          "Each player reveals their set-aside nemesis minion during setup. If that minion shares a title with a character already in play, remove it from the game and reveal an Underling minion from the encounter deck instead. Nemesis cards introduced this way become part of the encounter deck.",
+          "Kingpin starts on side 1, manipulating events from behind the scenes. He cannot take damage, be stunned or confused, or have upgrades attached. When he would attack, he schemes instead.",
+          "Defeat minions to build Public Support. At the start of a villain phase, enough support flips Kingpin to side 2, advances the main scheme, and turns Public Support to its High side. You can then attack Kingpin, but Endgame gives every minion guard."
+        ]
+      },
+      "setup": {
+        "title": "Kingpin: Campaign Setup",
+        "bullets": [
+          "With at least three Completed campaign environments in play, give every minion currently in play tough.",
+          "With at least four Completed environments, also find and reveal James Wesley."
+        ]
+      },
+      "victory": {
+        "title": "Kingpin Defeated",
+        "text": [
+          "You have brought down Kingpin and won the Fear No Evil campaign."
+        ]
+      },
+      "defeat": {
+        "title": "Kingpin: Defeat",
+        "text": [
+          "In a standard campaign, retry Kingpin.",
+          "In an expert campaign, choose one Completed campaign environment and flip it to its Failed side, then retry. If no Completed environment is available, the players lose the campaign."
+        ]
+      }
+    }
   }
 }

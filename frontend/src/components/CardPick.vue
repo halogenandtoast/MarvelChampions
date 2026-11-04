@@ -69,7 +69,7 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
           <section v-for="g in groups" :key="g.place ?? ''" class="group">
             <h3 v-if="g.place">{{ keyed(g.place) }}</h3>
             <div class="cards">
-              <button v-for="c in g.picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
+              <button v-for="c in g.picks" :key="c.key" type="button" class="card" :class="{ unmatched: c.index === null, landscape: cards.landscape(c.code) }" :disabled="!canChoose || c.index === null" @click="choose(c.index)"
                 @pointerenter="$event.pointerType === 'mouse' && preview(c.code, $event.currentTarget as HTMLElement)"
                 @pointerleave="cancelPress(); overlay.hide()"
                 @pointerdown="press($event, c.code)" @pointerup="cancelPress" @pointercancel="cancelPress"
@@ -117,14 +117,14 @@ h2 { overflow-wrap: anywhere; min-width: 0; margin: 0 auto 0 0; font-size: 1.4re
 .close svg { width: 20px; height: 20px; }
 .group { display: grid; gap: 8px; }
 h3 { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 150px)); justify-content: center; gap: 14px; }
-.card { display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
+.cards { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 14px; }
+.card { width: 150px; max-width: 100%; display: grid; gap: 8px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: center; }
 .card:disabled { cursor: default; }
 .unmatched .face { filter: grayscale(0.85) brightness(0.6); }
 .face { aspect-ratio: 5 / 7; border-radius: 10px; overflow: hidden; border: 2px solid var(--line); transition: border-color 0.12s, transform 0.12s; }
 .scan { display: block; width: 100%; height: 100%; }
-.face.sideways { position: relative; }
-.sideways .scan { position: absolute; top: 50%; left: 50%; width: 140%; height: calc(100% * 5 / 7); translate: -50% -50%; rotate: 90deg; }
+.card.landscape { width: 210px; }
+.face.sideways { aspect-ratio: 7 / 5; }
 .card:not(:disabled) .face { border-color: var(--interactive); box-shadow: 0 0 0 2px var(--interactive), 0 0 16px var(--interactive-glow); }
 .card:not(:disabled):focus-visible .face { outline: 2px solid var(--interactive); outline-offset: 4px; }
 .card:not(:disabled):hover .face { border-color: var(--interactive); transform: translateY(-3px); box-shadow: 0 0 12px var(--interactive-glow); }

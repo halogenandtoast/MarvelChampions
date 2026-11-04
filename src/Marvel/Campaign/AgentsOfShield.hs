@@ -63,13 +63,17 @@ gainEvidence n = do
 
 runShieldStep :: ReverseQueue m => Campaign -> CampaignStepKind -> m ()
 runShieldStep c = \case
-  CampaignChoices -> pure ()
+  CampaignChoices -> do
+    first <- selectJust FirstPlayer
+    readThenContinue first (briefing c)
   CampaignSetup -> do
     prepareEvidence
     when (scenarioNumber c == 5 && null c.campaignLog.shield.hiddenEvidence && c.campaignLog.shield.evidenceVictories > 0) $
       cardSpecific GameRef "aosGainEvidence" c.campaignLog.shield.evidenceVictories
     campaignStep (CampaignSetupThen "shield:setup")
   CampaignVictory -> do
+    first <- selectJust FirstPlayer
+    readThenContinue first (victoryInstructions c)
     log <- getShieldLog
     members <- boardMembers
     secrets <- traverse (\t -> (,) <$> boardCode t <*> getCountersOn t) members
@@ -136,6 +140,30 @@ runShieldStep c = \case
     when (scenarioNumber c > 1 && isExpertCampaign c) $ campaignStep (CampaignSetupThen "shield:expert")
   CampaignSetupThen "shield:expert" -> expertSetup c
   _ -> pure ()
+
+-- MC50 pp.4–6,9,11,13,15,18–19: explain the instructions before
+-- their existing engine steps run. Evidence faces remain hidden until earned.
+shieldStory :: Campaign -> Text -> [Text]
+shieldStory c section =
+  ["$story.aos." <> fromMaybe "baronZemo" (atMay ["blackWidow", "batroc", "modok", "thunderbolts"] (scenarioNumber c - 1)) <> "." <> section]
+
+briefing :: Campaign -> [Text]
+briefing c =
+  shieldStory c "intro"
+  <> (if scenarioNumber c == 1 then ["$story.aos.campaignMode", "$story.aos.evidence", "$story.aos.board"] else [])
+  <> ["$story.aos.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
+  <> shieldStory c "rules"
+  <> shieldStory c "setup"
+  <> ["$story.aos.laterSetup" | scenarioNumber c > 1]
+  <> ["$story.aos.expertSetup" | scenarioNumber c > 1 && isExpertCampaign c]
+  <> ["$story.aos.baronZemo.expertDefeat" | scenarioNumber c == 5 && isExpertCampaign c]
+  <> ["$story.aos.baronZemo.standardDefeat" | scenarioNumber c == 5 && not (isExpertCampaign c)]
+
+victoryInstructions :: Campaign -> [Text]
+victoryInstructions c =
+  shieldStory c "victory"
+  <> ["$story.aos.recordBoard" | scenarioNumber c < 5]
+  <> ["$story.aos.expertVictory" | scenarioNumber c < 5 && isExpertCampaign c]
 
 boardCode :: HasGame m => Target -> m (Maybe CardCode)
 boardCode target = fmap (\def -> CardCode (unCardCode (toBaseCardCode $ toCardCode def) <> "a")) <$> getCardDefForTarget target

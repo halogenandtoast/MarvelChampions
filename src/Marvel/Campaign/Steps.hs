@@ -78,7 +78,9 @@ briefing c = storyKeys c \v -> case scenarioNumber c of
 
 -- | As the scenario is won: its Victory instructions.
 victoryInstructions :: Campaign -> [Text]
-victoryInstructions c = storyKeys c \v -> [v <> ".victory"] <> expertOnly c ["expertVictory" | scenarioNumber c < 5]
+victoryInstructions c = storyKeys c \v -> [v <> ".victory"]
+  <> expertOnly c ["expertVictory" | scenarioNumber c < 5]
+  <> ["redSkull.conclusion" | scenarioNumber c == 5]
 
 expertOnly :: Campaign -> [a] -> [a]
 expertOnly c xs = if isExpertCampaign c then xs else []

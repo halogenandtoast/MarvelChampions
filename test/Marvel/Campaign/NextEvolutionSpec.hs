@@ -24,6 +24,40 @@ isCampaignCard code = \case CardLabel candidate _ -> code == candidate; _ -> Fal
 
 spec :: Spec
 spec = describe "Next Evolution campaign runtime" do
+  for_ [StandardCampaign, ExpertCampaign] $ \mode ->
+    for_ (zip [0..] ["morlockSiege", "onTheRun", "juggernaut", "misterSinister", "stryfe"]) $ \(completed, scenarioSlug) ->
+      it ("reads the scenario introduction and applicable guide rules before setup: " <> show (completed + 1) <> " " <> show mode) do
+        tg <- testGame ["spider-man"]
+        attachCampaign tg mode completed []
+        inGame tg do
+          runNow [CampaignStep CampaignChoices]
+          let key section = "$story.nextEvolution." <> scenarioSlug <> "." <> section
+              expected = [key "intro"]
+                <> ["$story.nextEvolution." <> section | completed == 0, section <- ["campaignMode", "campaignSchemes", "playerSideSchemes", "keywords"]]
+                <> ["$story.nextEvolution.expertCampaign" | completed == 0 && mode == ExpertCampaign]
+                <> ["$story.nextEvolution.hopeSummers" | completed == 2]
+                <> [key "rules",key "setup"]
+                <> [key "expertSetup" | completed > 0 && mode == ExpertCampaign]
+          openQuestion >>= \case
+            Just (_,Read sections _) -> sections `shouldBe` expected
+            question -> error $ "expected campaign guide reading: " <> show question
+          (.chosenSchemes) <$> logNow `shouldReturn` []
+          campaign <- campaignNow
+          campaign.completed `shouldBe` completed
+
+  it "reads the campaign conclusion before recording the final victory" do
+    tg <- testGame ["spider-man"]
+    attachCampaign tg StandardCampaign 4 []
+    inGame tg do
+      runNow [CampaignStep CampaignVictory]
+      openQuestion >>= \case
+        Just (_,Read sections _) -> sections `shouldBe` ["$story.nextEvolution.stryfe.victory", "$story.nextEvolution.conclusion"]
+        question -> error $ "expected final campaign reading: " <> show question
+      campaign <- campaignNow
+      campaign.completed `shouldBe` 4
+      choose "read the conclusion" (isLabel "$label.continue")
+      (.completed) <$> campaignNow `shouldReturn` 5
+
   it "plays the five scenarios in their printed order" do
     campaignScenarios NextEvolution `Hspec.shouldBe` ["40077", "40103", "40118", "40136", "40163"]
 

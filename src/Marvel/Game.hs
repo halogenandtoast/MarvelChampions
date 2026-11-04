@@ -6446,7 +6446,7 @@ runGameMessagesWith before = go (0 :: Int)
           pop >>= \case
             Nothing -> pure ()
             Just (Ask ident asked) | competitiveFinishedPhaseQuestion g ident asked -> go (n + 1)
-            Just (Ask ident asked) | not (HashMap.member ident $ gamePlayers g), not (competitiveReplyChoice g ident asked) -> go (n + 1)
+            Just (Ask ident asked) | not (HashMap.member ident $ gamePlayers g), not (competitiveReplyChoice g ident asked), not (campaignDefeatChoice g ident asked) -> go (n + 1)
             Just (IdentityMessage ident _) | not (HashMap.member ident $ gamePlayers g) -> go (n + 1)
             Just (Ask ident asked) -> do
               patrolled <- isPatrolled ident
@@ -6463,6 +6463,15 @@ runGameMessagesWith before = go (0 :: Int)
               before other
               withGameM $ runMessage other
               go (n + 1)
+  -- The seat still handles the campaign outcome after its last hero is defeated.
+  -- Ordinary gameplay questions for eliminated identities continue to be skipped.
+  campaignDefeatChoice g ident question =
+    ident `elem` gameSeats g && HashMap.null (gamePlayers g) && case gameCampaign g of
+      Just c | c.kind == Campaign.FearNoEvilCampaign, isJust c.campaignLog.fearNoEvil.selectedScenario -> case question of
+        Read _ _ -> True
+        QuestionLabel "$label.fneFailCompletedScenario" _ _ -> True
+        _ -> False
+      _ -> False
   competitiveReplyChoice g ident question = case gameCompetition g of
     Nothing -> False
     Just c -> ident `elem` [CW.teamFirstPlayer c CW.Registration,CW.teamFirstPlayer c CW.Resistance] && enemyChoice question

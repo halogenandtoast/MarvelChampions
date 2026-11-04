@@ -2,14 +2,17 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { Check, Play, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Check, Play, Trash2 } from 'lucide-vue-next'
 import { buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
 import { currentUser } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
 import { useCards } from '../cards'
+import { campaignGuides, campaignGuideSections } from '../campaigns'
+import { scenarioPortraits } from '../scenarios'
 import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
+import StoryReading from '../components/StoryReading.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
 import type { CampaignView, StarterDeck, TitanMark } from '../server'
@@ -25,6 +28,7 @@ const cards = useCards()
 const view = ref<CampaignView | null>(null)
 const error = ref<string | null>(null)
 const working = ref(false)
+const guideOpen = ref(false)
 const id = String(route.params.id)
 
 const load = () =>
@@ -129,6 +133,7 @@ const details = computed(() => {
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
 const names = (codes: string[]) => (codes.length ? codes.map((c) => name(c)).join(', ') : t('campaign.none'))
 const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
+const scenarioPortrait = (code: string) => scenarioPortraits(code)[0]!
 const stage = (i: number) => {
   const c = view.value?.campaign
   if (!c) return 'later'
@@ -172,12 +177,13 @@ const remove = async () => {
           <p class="eyebrow">{{ details.join(' · ') }}</p>
           <h1 class="page-title">{{ view.name }}</h1>
         </div>
+        <button type="button" class="btn ghost" @click="guideOpen = true"><BookOpen aria-hidden="true" />{{ $t('campaign.readGuide') }}</button>
         <button v-if="view.table.owner === currentUser?.id" type="button" class="btn ghost" :title="$t('campaign.delete')" @click="remove"><Trash2 aria-hidden="true" />{{ $t('campaign.delete') }}</button>
       </header>
 
-      <ol v-if="!fearNoEvil" class="track">
+      <ol v-if="!fearNoEvil" class="track" :class="{ shadowland }">
         <li v-for="(code, i) in view.campaign.scenarios" :key="`${code}-${i}`" class="stop" :class="stage(i)">
-          <span class="art" :style="{ backgroundImage: art(code) }" />
+          <span class="art portrait" :class="{ 'scheme-art': cards.landscape(scenarioPortrait(code)) }" :style="{ backgroundImage: art(scenarioPortrait(code)) }" />
           <span class="label">{{ $t('campaign.scenario', { n: i + 1 }) }}</span>
           <span class="villain">{{ name(code) }}</span>
           <Check v-if="stage(i) === 'won'" class="tick" aria-hidden="true" />
@@ -396,6 +402,10 @@ const remove = async () => {
     </div>
     <div v-else-if="error" class="page-content"><p class="error">{{ tr(error) }}</p></div>
 
+    <Teleport to="body">
+      <StoryReading v-if="guideOpen && view" :sections="campaignGuideSections(view.campaign.kind, view.campaign.mode)" :can-continue="false" reference :source-url="campaignGuides[view.campaign.kind].source" @close="guideOpen = false" />
+    </Teleport>
+
     <dialog ref="dialog" class="picker-dialog" @close="changing = null" @click="$event.target === dialog && dialog?.close()">
       <div v-if="changing !== null && seatOf(changing)" class="picker-body">
         <header>
@@ -411,15 +421,17 @@ const remove = async () => {
 
 <style scoped>
 .campaign { display: grid; gap: 18px; }
-.head { display: flex; align-items: flex-end; gap: 12px; }
-.head > div { margin-right: auto; }
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.head > div { flex: 1 1 16rem; min-width: 0; margin-right: auto; }
 .head .page-title { margin: 0; }
 .eyebrow { margin: 0 0 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); }
 h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(--title); }
 
 .track { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.track.shadowland { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.track.shadowland .art { aspect-ratio: 16 / 10; }
 .stop { position: relative; display: grid; border-radius: 12px; overflow: hidden; border: 2px solid var(--line); background: var(--ink-3); }
-.stop .art { aspect-ratio: 4 / 5; background-size: cover; background-position: center top; filter: grayscale(0.7) brightness(0.6); }
+.stop .art { aspect-ratio: 4 / 5; filter: grayscale(0.7) brightness(0.6); }
 .stop.won .art { filter: none; }
 .stop.current { border-color: var(--crimson); box-shadow: 0 0 0 4px rgb(184 50 58 / 0.2); }
 .stop.current .art { filter: none; }
@@ -439,7 +451,7 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(
 .player header { display: flex; align-items: center; gap: 10px; }
 .player header div { display: grid; }
 .player small { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-.portrait { width: 44px; height: 44px; flex: none; border-radius: 50%; background-size: cover; background-position: center top; }
+.player .portrait { width: 44px; height: 44px; flex: none; border-radius: 50%; background-size: cover; background-position: center top; }
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
 dt { color: var(--text-muted); }
 dd { margin: 0; }

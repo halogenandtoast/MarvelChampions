@@ -4,19 +4,21 @@ import { Trash2 } from 'lucide-vue-next'
 import ConfirmDelete from './ConfirmDelete.vue'
 import HeroPortrait from './HeroPortrait.vue'
 import { useCards } from '../cards'
+import { scenarioPortraits } from '../scenarios'
 import type { GameSummary } from '../server'
 
 const props = defineProps<{ game: GameSummary; deleteGame?: () => void; spectate?: boolean }>()
 
 const confirm = useTemplateRef<InstanceType<typeof ConfirmDelete>>('confirm')
 const cards = useCards()
-const villainArt = computed(() => cards.sources(props.game.villain).map((s) => `url('${s}')`).join(', '))
+const portraitCode = computed(() => scenarioPortraits(props.game.villain)[0]!)
+const villainArt = computed(() => cards.sources(portraitCode.value).map((s) => `url('${s}')`).join(', '))
 const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate` : `/games/${props.game.id}`))
 </script>
 
 <template>
   <article class="game-row" :class="{ won: game.outcome === 'Won', lost: game.outcome === 'Lost' }">
-    <RouterLink class="villain portrait" :to="link" :style="{ backgroundImage: villainArt }" :aria-label="game.scenario" />
+    <RouterLink class="villain portrait" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :to="link" :style="{ backgroundImage: villainArt }" :aria-label="game.scenario" />
     <div class="body">
       <div class="title-line">
         <RouterLink class="title" :to="link">{{ game.name }}</RouterLink>
@@ -41,7 +43,7 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
       <Trash2 aria-hidden="true" />
     </button>
     <ConfirmDelete v-if="deleteGame" ref="confirm" :title="$t('home.confirmDelete')" @confirm="deleteGame()">
-      <span class="confirm-art portrait square" :style="{ backgroundImage: villainArt }" />
+      <span class="confirm-art portrait square" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :style="{ backgroundImage: villainArt }" />
       <span class="confirm-details">
         <strong>{{ game.name }}</strong>
         <span class="confirm-meta">{{ $t('home.versus', { villain: game.scenario }) }}</span>

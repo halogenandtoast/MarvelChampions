@@ -13,6 +13,50 @@ import Test.Hspec qualified as H
 
 spec :: Spec
 spec = describe "Agents of SHIELD campaign" do
+  it "offers the opening guide before preparing hidden evidence" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let c = shieldCampaign StandardCampaign 0
+      L.runQueueT (L.capture $ runShieldStep c CampaignChoices) >>= runNow
+      question <- openQuestion
+      case question of
+        Just (_, Read sections _) -> do
+          sections `shouldSatisfy` elem "$story.aos.blackWidow.intro"
+          sections `shouldSatisfy` elem "$story.aos.campaignMode"
+          sections `shouldSatisfy` elem "$story.aos.evidence"
+          sections `shouldSatisfy` elem "$story.aos.board"
+          sections `shouldSatisfy` (not . elem "$story.aos.expertCampaign")
+        _ -> error "expected the opening S.H.I.E.L.D. briefing"
+      log <- getShieldLog
+      log.hiddenEvidence `shouldBe` []
+      choose "continue after reading the campaign guide" (isLabel "$label.continue")
+
+  it "selects later mission instructions and only the active campaign's defeat rule" do
+    let standard = briefing $ shieldCampaign StandardCampaign 4
+        expert = briefing $ shieldCampaign ExpertCampaign 4
+    standard `H.shouldSatisfy` elem "$story.aos.baronZemo.rules"
+    standard `H.shouldSatisfy` elem "$story.aos.baronZemo.standardDefeat"
+    standard `H.shouldSatisfy` (not . elem "$story.aos.baronZemo.expertDefeat")
+    expert `H.shouldSatisfy` elem "$story.aos.expertSetup"
+    expert `H.shouldSatisfy` elem "$story.aos.baronZemo.expertDefeat"
+    expert `H.shouldSatisfy` (not . elem "$story.aos.baronZemo.standardDefeat")
+
+  it "lets players read victory instructions before updating the campaign log" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let c = shieldCampaign StandardCampaign 0
+      withGame_ $ campaignL ?~ c
+      _ <- addMinion (player1 tg) Minions.hydraSoldier
+      L.runQueueT (L.capture $ runShieldStep c CampaignVictory) >>= runNow
+      openQuestion >>= \case
+        Just (_, Read sections _) -> sections `shouldSatisfy` elem "$story.aos.blackWidow.victory"
+        _ -> error "expected the S.H.I.E.L.D. victory instructions"
+      log <- getShieldLog
+      log.widowRemaining `shouldBe` 0
+      choose "continue with the victory instructions" (isLabel "$label.continue")
+      after <- getShieldLog
+      after.widowRemaining `shouldBe` 1
+
   it "plays the five missions in printed order" do
     campaignScenarios AgentsOfShieldCampaign `H.shouldBe` ["50064","50086a","50103a","50129a","50165a"]
 
@@ -266,7 +310,13 @@ shieldCampaign :: CampaignMode -> Int -> Campaign
 shieldCampaign mode completed = (newCampaignOf AgentsOfShieldCampaign mode ["01001a"]) {completed}
 
 shieldDo :: L.QueueT GameAppT () -> GameAppT ()
-shieldDo action = L.runQueueT (L.capture action) >>= runNow
+shieldDo action = do
+  L.runQueueT (L.capture action) >>= runNow
+  continueReadings
+ where
+  continueReadings = openQuestion >>= \case
+    Just (_, Read _ _) -> choose "continue campaign instructions" (isLabel "$label.continue") >> continueReadings
+    _ -> pure ()
 
 revealBoards :: IdentityId -> GameAppT ()
 revealBoards you = for_ boardCodes $ \code -> revealNow you (encounterDef code) >> pass

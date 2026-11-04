@@ -22,7 +22,7 @@ import Text.Read (readMaybe)
 
 runApocalypseStep :: ReverseQueue m => Campaign -> CampaignStepKind -> m ()
 runApocalypseStep c = \case
-  CampaignChoices -> selectJust FirstPlayer >>= (\you -> readThenContinue you $ story c "setup")
+  CampaignChoices -> selectJust FirstPlayer >>= (\you -> readThenContinue you $ briefing c)
   CampaignSetup -> do
     shuffleIntoEncounterDeck =<< gatherEncounterSet Set.AgeOfApocalypse
     let previous = List.lookup (scenarioNumber c) c.campaignLog.apocalypse.missions
@@ -36,10 +36,18 @@ runApocalypseStep c = \case
       later "missionSetup"
   CampaignVictory -> do
     first <- selectJust FirstPlayer
-    readThenContinue first (story c "victory")
+    mission <- getMission
+    readThenContinue first $
+      story c "victory"
+      <> [missionStory m.missionCard (if m.missionSucceeded then "success" else "failure") | Just m <- [mission]]
+      <> ["$story.ageOfApocalypse.expertVictory" | isExpertCampaign c && scenarioNumber c < 5]
+      <> ["$story.ageOfApocalypse." <> (if maybe False (.missionSucceeded) mission then "conclusion" else "failedConclusion") | scenarioNumber c == 5]
     later "victory"
   CampaignSetupThen step -> case T.stripPrefix "aoa:" step of
     Just "missionSetup" -> do
+      first <- selectJust FirstPlayer
+      mission <- getMission
+      for_ mission $ \m -> readThenContinue first [missionStory m.missionCard "rules"]
       for_ (List.lookup (scenarioNumber c) c.campaignLog.apocalypse.missions) \mission -> do
         when (mission == "45167a") $ forPlayers \you -> addRefugees you
         when (mission == "45168a" || failedEarlier c "45168a") $ shuffleEncounter "45177"
@@ -61,6 +69,21 @@ runApocalypseStep c = \case
 
 story :: Campaign -> Text -> [Text]
 story c section = ["$story.ageOfApocalypse." <> fromMaybe "enSabahNur" (atMay ["unus", "fourHorsemen", "apocalypse", "darkBeast"] (scenarioNumber c - 1)) <> "." <> section]
+
+-- MC45 pp.3–6,8,11–12,14,16,19–20: the guide accompanies the
+-- scenario and selected mission, before their queued campaign effects resolve.
+briefing :: Campaign -> [Text]
+briefing c = story c "intro"
+  <> ["$story.ageOfApocalypse." <> section | scenarioNumber c == 1, section <- ["campaignMode", "missionRules", "missionAttempts", "keywords"]]
+  <> ["$story.ageOfApocalypse.expertCampaign" | scenarioNumber c == 1 && isExpertCampaign c]
+  <> story c "rules" <> story c "setup"
+  <> ["$story.ageOfApocalypse.expertSetup" | scenarioNumber c > 1 && isExpertCampaign c]
+
+missionStory :: CardCode -> Text -> Text
+missionStory code section = "$story.ageOfApocalypse.missions."
+  <> fromMaybe "protectTheProfessor" (List.lookup code
+    [("45166a", "liberateSeattle"), ("45167a", "evacuateSurvivors"), ("45168a", "sabotageSeaWall"), ("45169a", "findLostMutants")])
+  <> "." <> section
 
 later :: ReverseQueue m => Text -> m ()
 later = campaignStep . CampaignSetupThen . ("aoa:" <>)

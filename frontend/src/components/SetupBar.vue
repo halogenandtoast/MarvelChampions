@@ -13,7 +13,7 @@ const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join
 <template>
   <header class="setup-bar">
     <span v-if="portraits.length" class="thumb">
-      <span v-for="code in portraits" :key="code" class="portrait" :class="{ several: portraits.length > 1 }" :style="{ backgroundImage: art(code) }" />
+      <span v-for="code in portraits" :key="code" class="portrait" :class="{ several: portraits.length > 1, 'scheme-art': cards.landscape(code) }" :style="{ backgroundImage: art(code) }" />
     </span>
     <span v-else-if="campaign" class="thumb box" :style="{ backgroundImage: `url('${campaignArt[campaign]}')` }" />
     <span class="text">

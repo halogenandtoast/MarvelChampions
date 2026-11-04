@@ -1,5 +1,6 @@
 module Marvel.Campaign.AgeOfApocalypseSpec (spec) where
 
+import Data.List qualified as List
 import TestImport
 import Marvel.AgeOfApocalypse.MissionTypes
 import Marvel.Campaign
@@ -22,6 +23,58 @@ campaignGame mode completed = do
 
 spec :: Spec
 spec = describe "Age of Apocalypse campaign runtime" do
+  for_ [StandardCampaign, ExpertCampaign] $ \mode ->
+    for_ (zip [0..] ["unus", "fourHorsemen", "apocalypse", "darkBeast", "enSabahNur"]) $ \(completed, scenario) ->
+      it ("reads the correct scenario guide before setup: " <> show (completed + 1) <> " " <> show mode) do
+        tg <- testGame ["spider-man"]
+        inGame tg do
+          let c = (newCampaignOf AgeOfApocalypseCampaign mode ["01001a"]) {completed}
+              key section = "$story.ageOfApocalypse." <> scenario <> "." <> section
+              expected = [key "intro"]
+                <> ["$story.ageOfApocalypse." <> section | completed == 0, section <- ["campaignMode", "missionRules", "missionAttempts", "keywords"]]
+                <> ["$story.ageOfApocalypse.expertCampaign" | completed == 0 && mode == ExpertCampaign]
+                <> [key "rules", key "setup"]
+                <> ["$story.ageOfApocalypse.expertSetup" | completed > 0 && mode == ExpertCampaign]
+          withGame_ $ campaignL ?~ c
+          runNow [CampaignStep CampaignChoices]
+          openQuestion >>= \case
+            Just (_, Read sections _) -> sections `shouldBe` expected
+            question -> error $ "expected campaign guide reading: " <> show question
+          (.completed) <$> campaignNow `shouldReturn` completed
+          (.missions) . (.campaignLog.apocalypse) <$> campaignNow `shouldReturn` []
+
+  it "explains the actual selected mission before its setup choices" do
+    tg <- campaignGame StandardCampaign 0
+    inGame tg do
+      mission <- getMission >>= maybe (error "missing mission") pure
+      let slug = fromMaybe (error "unexpected mission") $ List.lookup mission.missionCard
+            [("45166a", "liberateSeattle"), ("45167a", "evacuateSurvivors"), ("45168a", "sabotageSeaWall"), ("45169a", "findLostMutants")]
+      runNow [CampaignStep $ CampaignSetupThen "aoa:missionSetup"]
+      openQuestion >>= \case
+        Just (_, Read sections _) -> sections `shouldBe` ["$story.ageOfApocalypse.missions." <> slug <> ".rules"]
+        question -> error $ "expected selected mission reading: " <> show question
+      (.completed) <$> campaignNow `shouldReturn` 0
+
+  for_ [False, True] $ \succeeded ->
+    it ("reads the actual finale mission outcome before completing the campaign: " <> show succeeded) do
+      tg <- campaignGame StandardCampaign 4
+      inGame tg do
+        when succeeded $ resolve [CardSpecific GameRef "aoaMissionFinish" (toJSON True)]
+        runNow [GameOver Won]
+        openQuestion >>= \case
+          Just (_, Read sections _) -> sections `shouldBe`
+            [ "$story.ageOfApocalypse.enSabahNur.victory"
+            , "$story.ageOfApocalypse.missions.protectTheProfessor." <> if succeeded then "success" else "failure"
+            , "$story.ageOfApocalypse." <> if succeeded then "conclusion" else "failedConclusion"
+            ]
+          question -> error $ "expected finale reading: " <> show question
+        (.completed) <$> campaignNow `shouldReturn` 4
+        (.lost) <$> campaignNow `shouldReturn` False
+        choose "continue after reading the final outcome" (isLabel "$label.continue")
+        (.completed) <$> campaignNow `shouldReturn` 5
+        (.lost) <$> campaignNow `shouldReturn` not succeeded
+
+
   for_ [0..4] $ \completed ->
     it ("sets up scenario " <> show (completed + 1) <> " with a mission and starting ally") do
       tg <- campaignGame StandardCampaign completed

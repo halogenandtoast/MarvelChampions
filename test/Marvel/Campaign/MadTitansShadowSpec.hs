@@ -8,6 +8,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign
 import Marvel.EncounterCard (allEncounterCards)
 import Marvel.Environment.Types ( Attrs(environmentId) )
+import Data.Text qualified as Text
 import TestImport
 
 spiderMan, captainMarvel :: CardCode
@@ -94,6 +95,21 @@ isCard code = \case
 
 spec :: Spec
 spec = describe "The Mad Titan's Shadow campaign" do
+  describe "guide readings" do
+    for_ (zip [0..] ["ebonyMaw", "towerDefense", "thanos", "hela", "loki"]) $ \(n, scenario) ->
+      for_ [StandardCampaign, ExpertCampaign] $ \mode ->
+        it ("shows " <> Text.unpack scenario <> " scenario guidance in " <> show mode) do
+          tg <- dealUnread (mts mode n) [starter "spider-man"]
+          inGame tg do
+            sections <- readStory
+            let key section = "$story.mts." <> scenario <> "." <> section
+            sections `shouldSatisfy` elem (key "intro")
+            sections `shouldSatisfy` elem (key "rules")
+            sections `shouldSatisfy` elem (key "setup")
+            ("$story.mts.keywords" `elem` sections) `shouldBe` (n == 0)
+            ("$story.mts.expertCampaign" `elem` sections) `shouldBe` (n == 0 && mode == ExpertCampaign)
+            (key "expertSetup" `elem` sections) `shouldBe` (n > 0 && mode == ExpertCampaign)
+
   describe "the log" do
     it "plays its five scenarios, its section empty" $ (id :: IO () -> IO ()) do
       let c = newCampaignOf MadTitansShadow StandardCampaign [spiderMan]
@@ -126,7 +142,7 @@ spec = describe "The Mad Titan's Shadow campaign" do
       tg <- dealUnread (mts ExpertCampaign 0) [starter "spider-man"]
       inGame tg do
         readStory
-          `shouldReturn` map ("$story.mts." <>) ["ebonyMaw.intro", "campaignMode", "expertCampaign", "ebonyMaw.rules", "ebonyMaw.setup"]
+          `shouldReturn` map ("$story.mts." <>) ["ebonyMaw.intro", "campaignMode", "keywords", "expertCampaign", "ebonyMaw.rules", "ebonyMaw.setup"]
 
     it "puts Secure the Landing Pad into play and shuffles Security Breach into the encounter deck" do
       tg <- deal (mts StandardCampaign 0) [starter "spider-man"]

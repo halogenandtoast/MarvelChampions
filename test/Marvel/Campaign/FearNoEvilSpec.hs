@@ -1,6 +1,7 @@
 module Marvel.Campaign.FearNoEvilSpec (spec) where
 
 import Data.List qualified as List
+import Data.Text qualified as Text
 import Marvel.Campaign
 import Marvel.CampaignPlayers.Helpers qualified as Stored
 import Marvel.FearNoEvil.Cards qualified as Cards
@@ -28,6 +29,60 @@ removedTitlesNow = getsGame $ maybe [] (.campaignLog.fearNoEvil.removedTitles) .
 
 spec :: Spec
 spec = describe "Fear No Evil campaign" do
+  it "explains the campaign and expert rules before choosing the villain order" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      withGame_ $ campaignL ?~ freshCampaign ExpertCampaign
+      runNow [CampaignStep CampaignChoices]
+      currentReading `shouldReturn`
+        ["$story.fearNoEvil.intro","$story.fearNoEvil.campaignMode","$story.fearNoEvil.expertCampaign","$story.fearNoEvil.planning"]
+      campaign <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
+      campaign.campaignLog.fearNoEvil.progress `shouldBe` []
+      choose "continue the campaign introduction" (isLabel "$label.continue")
+      offers (isLabel "$label.fneRecommendedVillains") `shouldReturn` True
+
+  it "briefs the selected scenario and its actual assigned underling" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let c = recordInLog (RecordFearNoEvilUnderling "60121a" "60065")
+            $ recordInLog (RecordFearNoEvilScenario "60121a") $ freshCampaign StandardCampaign
+      withGame_ $ campaignL ?~ c
+      runNow [CampaignStep CampaignSetup]
+      currentReading `shouldReturn`
+        ["$story.fearNoEvil.artMuseumHeist.intro","$story.fearNoEvil.artMuseumHeist.rules","$story.fearNoEvil.underlings.bullseye","$story.fearNoEvil.campaignSetup","$story.fearNoEvil.artMuseumHeist.setup"]
+
+  it "shows victory instructions before recording the scenario as completed" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      runNow [GameOver Won]
+      currentReading `shouldReturn` ["$story.fearNoEvil.protectionRacket.victory"]
+      before <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
+      before.campaignLog.fearNoEvil.resolved `shouldBe` []
+      choose "continue after the victory instructions" (isLabel "$label.continue")
+      after <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
+      List.lookup "60134a" after.campaignLog.fearNoEvil.resolved `shouldBe` Just True
+      getsGame gameState `shouldReturn` Finished Won
+
+  it "can read the defeat instructions after the final identity has left play" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      runNow [RemoveFromPlay $ IdentityRef $ player1 tg]
+      currentReading `shouldReturn` ["$story.fearNoEvil.protectionRacket.defeat"]
+      choose "continue after the defeat instructions" (isLabel "$label.continue")
+      getsGame gameState `shouldReturn` Finished Lost
+
+  it "announces a defeat only once after recording the campaign outcome" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      runNow [GameOver Lost]
+      currentReading `shouldReturn` ["$story.fearNoEvil.protectionRacket.defeat"]
+      choose "continue after the defeat instructions" (isLabel "$label.continue")
+      getsGame gameState `shouldReturn` Finished Lost
+      entries <- liftIO $ readIORef tg.logged
+      length (filter (Text.isInfixOf "$log.gameOver.lost" . entryText) entries) `shouldBe` 1
+      campaign <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
+      campaign.campaignLog.fearNoEvil.selectedScenario `shouldBe` Nothing
+
   it "offers the expert healing choice and heals only REC for one facedown encounter card" do
     tg <- campaignSandbox "spider-man"
     inGame tg do
@@ -190,3 +245,8 @@ spec = describe "Fear No Evil campaign" do
       won <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
       length won.campaignLog.fearNoEvil.resolved `shouldBe` 1
       won.campaignLog.fearNoEvil.gamesPlayed `shouldBe` 1
+
+currentReading :: GameAppT [Text]
+currentReading = openQuestion >>= \case
+  Just (_,Read sections _) -> pure sections
+  _ -> error "Fear No Evil campaign reading was not asked"

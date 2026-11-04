@@ -337,7 +337,9 @@
     "fneMaryDefeated": "Mary defeated",
     "fneRemoved": "Allies and supports removed from the campaign",
     "fneYes": "Yes",
-    "fneNo": "No"
+    "fneNo": "No",
+    "readGuide": "Campaign guide",
+    "rulebook": "Official rulebook"
   },
   "settings": {
     "title": "Settings",

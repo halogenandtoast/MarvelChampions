@@ -1,6 +1,7 @@
 module Marvel.Campaign.SinisterMotivesSpec (spec) where
 
 import Data.HashSet qualified as HashSet
+import Data.Text qualified as Text
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Campaign
 import Marvel.Campaign.SinisterMotives (reputationScore)
@@ -40,6 +41,41 @@ encounters ident = length . (.playerIdentityEncounterCards) <$> playerAttrs iden
 
 spec :: Spec
 spec = describe "Sinister Motives campaign runtime" do
+  for_ (zip [0..] ["sandman", "venom", "mysterio", "sinisterSix", "venomGoblin"]) $ \(completed, scenario) ->
+    for_ [StandardCampaign, ExpertCampaign] $ \mode ->
+      it ("shows the " <> Text.unpack scenario <> " guide in " <> show mode <> " before any pending rewards") do
+        tg <- testGame ["spider-man"]
+        attachCampaign tg mode completed []
+        inGame tg do
+          runNow [CampaignStep CampaignChoices]
+          openQuestion >>= \case
+            Just (_, Read sections _) -> do
+              for_ ["intro", "rules", "setup"] $ \part ->
+                sections `shouldSatisfy` elem ("$story.sm." <> scenario <> "." <> part)
+              ("$story.sm.keywords" `elem` sections) `shouldBe` (completed == 0)
+              ("$story.sm.reputationTrack" `elem` sections) `shouldBe` (completed == 0)
+              ("$story.sm.expertCampaign" `elem` sections) `shouldBe` (completed == 0 && mode == ExpertCampaign)
+              (("$story.sm." <> scenario <> ".expertSetup") `elem` sections) `shouldBe` (mode == ExpertCampaign)
+            _ -> error "expected the scenario guide before setup rewards"
+          completedCount <- (.completed) <$> campaignNow
+          completedCount `shouldBe` completed
+
+  it "reads the printed conclusion before the final score choice and campaign completion" do
+    tg <- testGame ["spider-man"]
+    attachCampaign tg StandardCampaign 4 []
+    inGame tg do
+      runNow [CampaignStep CampaignVictory]
+      openQuestion >>= \case
+        Just (_, Read sections _) -> sections `shouldBe` ["$story.sm.venomGoblin.victory", "$story.sm.conclusion"]
+        _ -> error "expected the final victory reading"
+      (.completed) <$> campaignNow `shouldReturn` 4
+      offers (isLabel "$label.sinisterCalculateFinalScore") `shouldReturn` False
+      choose "continue after the conclusion" (isLabel "$label.continue")
+      offers (isLabel "$label.sinisterCalculateFinalScore") `shouldReturn` True
+      (.completed) <$> campaignNow `shouldReturn` 4
+      choose "finish without calculating a final score" (isLabel "$label.pass")
+      (.completed) <$> campaignNow `shouldReturn` 5
+
   it "briefs the campaign and its rules before any setup rewards" do
     tg <- testGame ["spider-man"]
     attachCampaign tg ExpertCampaign 0 []
@@ -48,7 +84,7 @@ spec = describe "Sinister Motives campaign runtime" do
       question <- openQuestion
       case question of
         Just (_, Read sections _) -> liftIO $ sections `shouldBe`
-          [ "$story.sm.sandman.intro", "$story.sm.campaignMode", "$story.sm.expertCampaign"
+          [ "$story.sm.sandman.intro", "$story.sm.campaignMode", "$story.sm.keywords", "$story.sm.reputationTrack", "$story.sm.expertCampaign"
           , "$story.sm.sandman.rules", "$story.sm.sandman.setup", "$story.sm.sandman.expertSetup"
           ]
         _ -> error "campaign briefing was not asked"
