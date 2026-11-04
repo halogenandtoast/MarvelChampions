@@ -551,7 +551,7 @@ printedXParameters :: PlayerCard -> (Natural, UpgradeMatcher)
 printedXParameters c = fromMaybe (0, UpgradeMatches []) $ headMay
   [(minimumX, matcher) | PrintedXCost minimumX matcher <- flattenCosts (cdAbilityCost $ getCardDef c)]
 
-printedXChoices :: (HasQueue m, MonadRandom m, MonadThrow m, Projection m PlayerIdentity, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> Maybe Target -> m [Natural]
+printedXChoices :: (HasQueue m, MonadRandom m, MonadThrow m, HasGame m) => Bool -> PlayerIdentity -> PlayerCard -> Maybe Target -> m [Natural]
 printedXChoices ignoringCost attrs c mTarget = do
   let ident = toId attrs
       (minimumX, meaningful) = printedXParameters c
@@ -680,7 +680,7 @@ playableTargetsAtDestination ignoringCost attrs c = do
 
 -- | Only cards with a continuously evaluated resource cost consider counter
 -- generation while spending. Ordinary card costs retain their standard timing.
-continuousSpendingCostReduction :: (HasGame m, HasQueue m, MonadThrow m, Projection m PlayerIdentity) => PlayerIdentity -> PlayerCard -> Maybe Target -> [IdentityId] -> m Int
+continuousSpendingCostReduction :: (HasGame m, HasQueue m, MonadThrow m) => PlayerIdentity -> PlayerCard -> Maybe Target -> [IdentityId] -> m Int
 continuousSpendingCostReduction attrs card target payers = do
   continuous <- elem ContinuouslyRecalculateResourceCost <$> getModifiers card
   if not continuous then pure 0 else do
