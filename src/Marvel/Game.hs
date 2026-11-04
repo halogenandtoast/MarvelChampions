@@ -3089,6 +3089,10 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       EnemyMinionId mid -> minionStep mid $ MinionDealtBoost card
       EnemyAttachmentId _ -> pure ()
     pure g
+  CardSpecific GameRef "resolveTreacheryAsBoost" (fromJSON -> Success (tid,you,card)) -> do
+    checkWindows [W.Window W.After $ W.ResolvedTreacheryCard you card]
+    pure $ g {gameRemovedFromGameEncounterCards = filter ((/= ecCardId card) . ecCardId) gameRemovedFromGameEncounterCards}
+      & entitiesL . treacheriesL %~ deleteMap tid
   CreatedEffect def source matcher -> do
     effectId <- getRandom
     ident <- toId <$> getActivePlayer

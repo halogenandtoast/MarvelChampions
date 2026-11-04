@@ -65,7 +65,7 @@ street60069 = (hoodCardDef "60069" "Raise the Stakes" Set.FneBullseye Attachment
   { cdTraits = fromList [T.Condition]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -75,7 +75,7 @@ street60070 = (hoodCardDef "60070" "Deadly Sai" Set.FneBullseye AttachmentType 1
   { cdTraits = fromList [T.Weapon]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Boost]
+  , cdBoostIcons = [B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -93,7 +93,7 @@ street60071 = (hoodCardDef "60071" "Incessant Pursuit" Set.FneBullseye Attachmen
 street60072 :: CardDef
 street60072 = (hoodCardDef "60072" "Lady Bullseye" Set.FneBullseye MinionType 1)
   { cdTraits = fromList [T.Assassin, T.TheHand]
-  , cdUnique = True
+  , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
   , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
@@ -105,7 +105,7 @@ street60073 = (hoodCardDef "60073" "Deranged Bloodlust" Set.FneBullseye SideSche
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = [B.Boost, B.Star]
+  , cdBoostIcons = [B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 1
   , cdAlternateCardCodes = []
   }

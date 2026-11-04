@@ -1143,6 +1143,7 @@ library
       Marvel.Exception
       Marvel.FalconWinter.Cards
       Marvel.FalconWinter.Helpers
+      Marvel.FearNoEvil.Bullseye
       Marvel.FearNoEvil.Cards
       Marvel.FearNoEvil.Cops
       Marvel.FearNoEvil.Disasters

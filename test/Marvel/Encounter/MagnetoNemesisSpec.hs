@@ -189,6 +189,8 @@ spec = describe "Magneto nemesis and Hellfire" do
       settle
       discarded <- encounterDiscard
       card `elem` discarded `shouldBe` False
+      removed <- getsGame gameRemovedFromGameEncounterCards
+      card `elem` removed `shouldBe` False
 
   it "a stunned replacement does not leak no-boost suppression into the next activation" do
     tg <- testGame ["magneto"]

@@ -137,6 +137,7 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
+      "boost": 0,
       "doubleSided": true,
       "linkedTo": "60068b",
       "hidden": false
@@ -167,6 +168,7 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
+      "boost": 0,
       "doubleSided": true,
       "linkedTo": "60068a",
       "hidden": true
@@ -196,7 +198,7 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
-      "boost": 3,
+      "boost": 2,
       "boostStar": false,
       "acceleration": 0,
       "crisis": 0,
@@ -228,12 +230,13 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
       "textVerified": true,
-      "boost": 2,
+      "boost": 1,
       "boostStar": false,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0
+      "amplify": 0,
+      "attack": 2
     },
     {
       "name": "Incessant Pursuit",
@@ -301,8 +304,7 @@
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 0,
-      "unique": true
+      "amplify": 0
     },
     {
       "name": "Deranged Bloodlust",
@@ -327,12 +329,14 @@
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
       "textVerified": true,
-      "boost": 1,
-      "boostStar": false,
+      "boost": 0,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
-      "amplify": 1
+      "amplify": 1,
+      "baseThreat": 4,
+      "baseThreatFixed": true
     },
     {
       "name": "Everything is a Weapon",
@@ -358,7 +362,7 @@
       "orientation": "portrait",
       "textVerified": true,
       "boost": 1,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,
@@ -388,7 +392,7 @@
       "orientation": "portrait",
       "textVerified": true,
       "boost": 3,
-      "boostStar": false,
+      "boostStar": true,
       "acceleration": 0,
       "crisis": 0,
       "hazard": 0,

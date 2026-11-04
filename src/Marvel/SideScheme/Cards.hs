@@ -222,7 +222,7 @@ allSideSchemes = fromList $ concatMap
   , CampaignPlayers.fne60012, CampaignPlayers.fne60024
   , WM.wm58027, HC.hc59028, HC.hc59038, HC.hc59041, HC.hc59045
   , JL.jl61007, JL.jl61020, JL.jl61028, JL.jl61029, JL.jl61032, JL.jl61039, JL.jl62030
-  , SL.street65035, FNE.street60180, StreetTrapsCards.street65048, StreetTrapsCards.street65049, FlowerCards.street65075, FlowerCards.street65076, DarkDefs.street65024, DarkDefs.street65025, ShadowsDefs.street65007, ShadowsDefs.street65008, ShadowsDefs.street65009, ShadowsDefs.street65042, ShadowsDefs.street65043, ShadowsDefs.street65070, OwlDefs.street60189, OwlDefs.street60204, OwlDefs.street60199, TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
+  , SL.street65035, FNE.street60180, StreetTrapsCards.street65048, StreetTrapsCards.street65049, FlowerCards.street65075, FlowerCards.street65076, DarkDefs.street65024, DarkDefs.street65025, ShadowsDefs.street65007, ShadowsDefs.street65008, ShadowsDefs.street65009, ShadowsDefs.street65042, ShadowsDefs.street65043, ShadowsDefs.street65070, OwlDefs.street60073, OwlDefs.street60189, OwlDefs.street60204, OwlDefs.street60199, TT.tt55006, TT.tt55021, TT.tt55022, TT.tt55045, TT.tt55046, TT.tt55047, TT.tt55048, TT.tt55060, TT.tt55061
   , aos50074, aos50075, aos50081, aos50085, aos50095, aos50101, aos50121, aos50122, aos50127, aos50135, aos50136, aos50140, aos50146, aos50150, aos50154, aos50159, aos50162, aos50173, aos50174, aos50180
   , FalconWinter.fw53031, FalconWinter.fw53041, FalconWinter.fw54029, FalconWinter.fw54036
   , aosP50031, aosP50061

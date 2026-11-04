@@ -12,7 +12,6 @@ import Marvel.Query
 import Marvel.Ref
 import Marvel.Treachery.Cards qualified as Cards
 import Marvel.Treachery.Types
-import Marvel.Window qualified as W
 
 powerAndDecadence :: TreacheryCard PowerAndDecadence
 powerAndDecadence = treachery (PowerAndDecadence . (`With` False)) Cards.powerAndDecadence
@@ -34,9 +33,8 @@ instance RunMessage PowerAndDecadence where
     -- It resolves as a treachery, but its new physical zone is the villain's
     -- facedown boost cards, so the ordinary resolved-treachery discard is skipped.
     TreacheryMessage tid (ResolvedTreachery you) | tid == treacheryId attrs, movedToBoost -> do
-      removeFromGame attrs
       let card = MkEncounterCard (CardId $ unTreacheryId tid) (getCardDef attrs)
-      checkWindows [W.Window W.After $ W.ResolvedTreacheryCard you card]
+      resolveTreacheryAsBoost tid you card
       pure e
     Boost (RevealedAsBoost target enemy) | isTarget attrs target -> do
       you <- getBoostedPlayer enemy

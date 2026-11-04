@@ -17,6 +17,7 @@ import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Query
 import Marvel.Phase (Phase(VillainPhase))
+import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
 import Marvel.Ref
 import TestImport
@@ -632,3 +633,80 @@ spec = describe "Fear No Evil encounter cards" do
       resolve [MinionMessage mid MinionSchemed]
       trafficThreat consume `shouldReturn` before
       trafficThreat traffic `shouldReturn` 7
+
+  it "Everything is a Weapon deals two indirect damage in alter ego" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60074
+      choose "assign the first indirect damage" (isTargetChoice you)
+      choose "assign the second indirect damage" (isTargetChoice you)
+      pass
+      damageOf you `shouldReturn` 2
+
+  it "Everything is a Weapon can remove a controlled ally from the game" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      ally <- putIntoPlay you "01002"
+      _ <- revealNow you Cards.street60074
+      pass
+      choose "remove the ally" (isTargetChoice $ allyIdOf ally)
+      pass
+      selectAny (AllyWithId $ allyIdOf ally) `shouldReturn` False
+      discardOf you >>= (liftIO . (`shouldNotContain` [ally]))
+
+  it "Unerring Desire offers only Persona supports controlled by its revealer" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      let you = player1 tg
+      own <- putIntoPlay you "01006"
+      other <- putIntoPlay (player2 tg) "01033"
+      _ <- revealNow you Cards.street60075
+      offers (isTargetChoice $ supportIdOf own) `shouldReturn` True
+      offers (isTargetChoice $ supportIdOf other) `shouldReturn` False
+      choose "remove Aunt May" (isTargetChoice $ supportIdOf own)
+      pass
+      getsGame (HashMap.member (supportIdOf own) . gameSupports) `shouldReturn` False
+      getsGame (HashMap.member (supportIdOf other) . gameSupports) `shouldReturn` True
+      discardOf you >>= (liftIO . (`shouldNotContain` [own]))
+
+  it "Unerring Desire becomes a facedown boost without changing its physical card" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      card <- revealNow (player1 tg) Cards.street60075
+      choose "give the card as a boost" (isTargetChoice $ enemyRef $ EnemyVillainId vid)
+      pass
+      Villain.villainBoostCards . toAttrs <$> getVillain `shouldReturn` [card]
+      getsGame gameRemovedFromGameEncounterCards >>= (liftIO . (`shouldNotContain` [card]))
+      getEncounterDiscard >>= (liftIO . (`shouldNotContain` [card]))
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      resolve [VillainMessage vid $ VillainAttacks $ player1 tg]
+      pass
+      Villain.villainBoostCards . toAttrs <$> getVillain `shouldReturn` []
+      filter ((== ecCardId card) . ecCardId) <$> getEncounterDiscard `shouldReturn` [card]
+
+  it "Deranged Bloodlust adds an amplify icon and four fixed threat" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- revealNow (player1 tg) Cards.street60073
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60073)
+      trafficThreat sid `shouldReturn` 4
+      getAmplifyCount `shouldReturn` 1
+
+  it "Deranged Bloodlust's boost reveals it after the activation, so its amplify does not boost that activation" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      vid <- villainIdNow
+      (cards,_) <- setEncounterDeck [Cards.street60073,Cards.street60188,Cards.street60188] []
+      resolve [VillainMessage vid $ VillainSchemesAgainst you]
+      mainSchemeThreatNow `shouldReturn` 1
+      sid <- selectJust (SideSchemeIs Cards.street60073)
+      trafficThreat sid `shouldReturn` 4
+      getEncounterDiscard >>= (liftIO . (`shouldNotContain` take 1 cards))
+      resolve [VillainMessage vid $ VillainSchemesAgainst you]
+      mainSchemeThreatNow `shouldReturn` 3

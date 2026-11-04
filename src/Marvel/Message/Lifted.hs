@@ -3656,3 +3656,8 @@ redirectCharacterThreatRemoval old new n = replaceMatchingMessage rewrite matche
   rewrite message = case Msg.threatRemovalMessage message of
     Just (source,_,_,_,thwarting) -> [SideSchemeMessage new $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n]
     Nothing -> [message]
+
+-- | Finish a treachery already moved to a facedown boost, without discarding it
+-- or marking it removed from the game. Its resolution response still opens.
+resolveTreacheryAsBoost :: ReverseQueue m => TreacheryId -> IdentityId -> EncounterCard -> m ()
+resolveTreacheryAsBoost tid you card = cardSpecific GameRef "resolveTreacheryAsBoost" (tid,you,card)

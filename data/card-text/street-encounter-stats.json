@@ -204,7 +204,10 @@
     "unique": true
   },
   "60072": {
-    "unique": true
+    "scheme": 2,
+    "attack": 1,
+    "health": 6,
+    "boost": 3
   },
   "60081": {
     "unique": true
@@ -296,5 +299,54 @@
   },
   "60190": {
     "boost": 2
+  },
+  "60065": {
+    "scheme": 0,
+    "attack": 1,
+    "health": 14,
+    "healthPerHero": true
+  },
+  "60066": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 16,
+    "healthPerHero": true
+  },
+  "60067": {
+    "scheme": 1,
+    "attack": 3,
+    "health": 18,
+    "healthPerHero": true
+  },
+  "60068a": {
+    "boost": 0
+  },
+  "60068b": {
+    "boost": 0
+  },
+  "60069": {
+    "boost": 2
+  },
+  "60070": {
+    "attack": 2,
+    "boost": 1
+  },
+  "60071": {
+    "boost": 1
+  },
+  "60073": {
+    "baseThreat": 4,
+    "baseThreatFixed": true,
+    "boost": 0,
+    "boostStar": true,
+    "amplify": 1
+  },
+  "60074": {
+    "boost": 1,
+    "boostStar": true
+  },
+  "60075": {
+    "boost": 3,
+    "boostStar": true
   }
 }
