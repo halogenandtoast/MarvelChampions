@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -O0 #-}
+
 module Marvel.Window.Types where
 
 import Marvel.Prelude

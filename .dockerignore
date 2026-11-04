@@ -1,5 +1,4 @@
-.stack-work/
-.stack-work-claude/
+**/.stack-work*/
 .git/
 .claude/
 .DS_Store
