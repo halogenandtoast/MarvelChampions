@@ -106,6 +106,11 @@ spec = describe "Fear No Evil encounter cards" do
       vid <- villainIdNow
       before <- getVillainHitPoints vid
       choose "attack with Black Cat" (isAllyAttack cat)
+      getsGame (length . gameFriendlyBoosts) `shouldReturn` 1
+      game <- getGame
+      case fromJSON @Game (toJSON game) of
+        Error err -> liftIO $ expectationFailure err
+        Success saved -> withGame_ $ const saved
       choose "attack Rhino" (isTargetChoice $ EnemyVillainId vid)
       pass
       getVillainHitPoints vid `shouldReturn` subtractNatural 3 before
@@ -129,11 +134,15 @@ spec = describe "Fear No Evil encounter cards" do
       restored <- allyIn "60169"
       allyDamage restored `shouldBe` 2
 
-  it "Black Cat returns to being a minion when a fifth threat is placed on her" do
+  it "Black Cat retains her allegiance-changing action after reloading and returns to being a minion at five threat" do
     tg <- testGame ["spider-man"]
     inGame tg do
       let you = player1 tg
       cat <- recruitBlackCat you
+      game <- getGame
+      case fromJSON @Game (toJSON game) of
+        Error err -> liftIO $ expectationFailure err
+        Success saved -> withGame_ $ const saved
       resource <- putInHand you "01089"
       choose "give Black Cat a fifth threat" (isAbilityOf $ allyId cat)
       payWith [resource]

@@ -35,7 +35,7 @@ instance FromJSON Ally where
     cardDef <- o .: "allyCardDef"
     originalMinion <- o .:? "allyOriginalMinion" :: Parser (Maybe Value)
     mission <- o .:? "missionAlly" .!= False
-    if mission then Ally . MissionAlly <$> parseJSON (Object o) else withAllyCardCode (if isJust originalMinion then "xcontrolledminion" else cdCardCode cardDef)
+    if mission then Ally . MissionAlly <$> parseJSON (Object o) else withAllyCardCode (if isJust originalMinion && cdCardCode cardDef /= "60169" then "xcontrolledminion" else cdCardCode cardDef)
       $ \(_ :: AllyCard a) -> Ally <$> parseJSON @a (Object o)
 
 withAllyCardCode :: CardCode -> (forall a . IsAlly a => AllyCard a -> r) -> r
