@@ -16,7 +16,7 @@ street65001a = (hoodCardDef "65001a" "A Barricade of Blades" Set.SlShadowsInTheN
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65001b"]
+  , cdAlternateCardCodes = []
   }
 
 street65001b :: CardDef
@@ -26,7 +26,7 @@ street65001b = (hoodCardDef "65001b" "A Barricade of Blades" Set.SlShadowsInTheN
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65001a"]
+  , cdAlternateCardCodes = []
   }
 
 street65002a :: CardDef
@@ -36,7 +36,7 @@ street65002a = (hoodCardDef "65002a" "Fortress Lockdown" Set.SlShadowsInTheNight
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65002b"]
+  , cdAlternateCardCodes = []
   }
 
 street65002b :: CardDef
@@ -46,7 +46,7 @@ street65002b = (hoodCardDef "65002b" "Fortress Lockdown" Set.SlShadowsInTheNight
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65002a"]
+  , cdAlternateCardCodes = []
   }
 
 street65003a :: CardDef
@@ -56,7 +56,7 @@ street65003a = (hoodCardDef "65003a" "The Streets Below" Set.SlShadowsInTheNight
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65003b"]
+  , cdAlternateCardCodes = []
   }
 
 street65003b :: CardDef
@@ -66,7 +66,7 @@ street65003b = (hoodCardDef "65003b" "Atop the Tenshu" Set.SlShadowsInTheNight E
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65003a"]
+  , cdAlternateCardCodes = []
   }
 
 street65004a :: CardDef
@@ -76,7 +76,7 @@ street65004a = (hoodCardDef "65004a" "The Streets Below" Set.SlShadowsInTheNight
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65004b"]
+  , cdAlternateCardCodes = []
   }
 
 street65004b :: CardDef
@@ -86,7 +86,7 @@ street65004b = (hoodCardDef "65004b" "Atop the Tenshu" Set.SlShadowsInTheNight E
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65004a"]
+  , cdAlternateCardCodes = []
   }
 
 street65005 :: CardDef
@@ -166,7 +166,7 @@ street65012a = (hoodCardDef "65012a" "Archpriestess" Set.SlDarkProtege VillainTy
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65012b"]
+  , cdAlternateCardCodes = []
   }
 
 street65012b :: CardDef
@@ -176,7 +176,7 @@ street65012b = (hoodCardDef "65012b" "Archpriestess" Set.SlDarkProtege VillainTy
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65012a"]
+  , cdAlternateCardCodes = []
   }
 
 street65013a :: CardDef
@@ -186,7 +186,7 @@ street65013a = (hoodCardDef "65013a" "Daredevil" Set.SlDarkProtege VillainType 0
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65013b"]
+  , cdAlternateCardCodes = []
   }
 
 street65013b :: CardDef
@@ -196,7 +196,7 @@ street65013b = (hoodCardDef "65013b" "Daredevil" Set.SlDarkProtege VillainType 0
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65013a"]
+  , cdAlternateCardCodes = []
   }
 
 street65014a :: CardDef
@@ -206,7 +206,7 @@ street65014a = (hoodCardDef "65014a" "Elektra" Set.SlDarkProtege VillainType 0)
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65014b"]
+  , cdAlternateCardCodes = []
   }
 
 street65014b :: CardDef
@@ -216,7 +216,7 @@ street65014b = (hoodCardDef "65014b" "Elektra" Set.SlDarkProtege VillainType 0)
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65014a"]
+  , cdAlternateCardCodes = []
   }
 
 street65015a :: CardDef
@@ -226,7 +226,7 @@ street65015a = (hoodCardDef "65015a" "Gorgon" Set.SlDarkProtege VillainType 0)
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65015b"]
+  , cdAlternateCardCodes = []
   }
 
 street65015b :: CardDef
@@ -236,7 +236,7 @@ street65015b = (hoodCardDef "65015b" "Gorgon" Set.SlDarkProtege VillainType 0)
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65015a"]
+  , cdAlternateCardCodes = []
   }
 
 street65016a :: CardDef
@@ -246,7 +246,7 @@ street65016a = (hoodCardDef "65016a" "Lady Bullseye" Set.SlDarkProtege VillainTy
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65016b"]
+  , cdAlternateCardCodes = []
   }
 
 street65016b :: CardDef
@@ -256,7 +256,7 @@ street65016b = (hoodCardDef "65016b" "Lady Bullseye" Set.SlDarkProtege VillainTy
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65016a"]
+  , cdAlternateCardCodes = []
   }
 
 street65017a :: CardDef
@@ -266,7 +266,7 @@ street65017a = (hoodCardDef "65017a" "White Tiger" Set.SlDarkProtege VillainType
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65017b"]
+  , cdAlternateCardCodes = []
   }
 
 street65017b :: CardDef
@@ -276,7 +276,7 @@ street65017b = (hoodCardDef "65017b" "White Tiger" Set.SlDarkProtege VillainType
   , cdKeywords = fromList [K.Steady, K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65017a"]
+  , cdAlternateCardCodes = []
   }
 
 street65018 :: CardDef
@@ -486,7 +486,7 @@ street65038a = (hoodCardDef "65038a" "Into the Labyrinth" Set.SlShadowLabyrinth 
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65038b"]
+  , cdAlternateCardCodes = []
   }
 
 street65038b :: CardDef
@@ -496,7 +496,7 @@ street65038b = (hoodCardDef "65038b" "Into the Labyrinth" Set.SlShadowLabyrinth 
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65038a"]
+  , cdAlternateCardCodes = []
   }
 
 street65039a :: CardDef
@@ -506,7 +506,7 @@ street65039a = (hoodCardDef "65039a" "Chamber of Vile Secrets" Set.SlShadowLabyr
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65039b"]
+  , cdAlternateCardCodes = []
   }
 
 street65039b :: CardDef
@@ -516,7 +516,7 @@ street65039b = (hoodCardDef "65039b" "Chamber of Vile Secrets" Set.SlShadowLabyr
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65039a"]
+  , cdAlternateCardCodes = []
   }
 
 street65040 :: CardDef
@@ -726,7 +726,7 @@ street65060a = (hoodCardDef "65060a" "Dark Invitation" Set.SlHeartOfShadow MainS
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65060b"]
+  , cdAlternateCardCodes = []
   }
 
 street65060b :: CardDef
@@ -736,7 +736,7 @@ street65060b = (hoodCardDef "65060b" "Dark Invitation" Set.SlHeartOfShadow MainS
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65060a"]
+  , cdAlternateCardCodes = []
   }
 
 street65061a :: CardDef
@@ -746,7 +746,7 @@ street65061a = (hoodCardDef "65061a" "Beast Be Praised" Set.SlHeartOfShadow Main
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65061b"]
+  , cdAlternateCardCodes = []
   }
 
 street65061b :: CardDef
@@ -756,7 +756,7 @@ street65061b = (hoodCardDef "65061b" "Beast be Praised" Set.SlHeartOfShadow Main
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65061a"]
+  , cdAlternateCardCodes = []
   }
 
 street65062 :: CardDef
@@ -866,7 +866,7 @@ street65072a = (hoodCardDef "65072a" "Creeping Corruption" Set.SlBlackFlower Upg
   , cdKeywords = fromList [K.Permanent, K.Setup]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65072b"]
+  , cdAlternateCardCodes = []
   }
 
 street65072b :: CardDef
@@ -876,7 +876,7 @@ street65072b = (hoodCardDef "65072b" "Creeping Corruption" Set.SlBlackFlower Upg
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["65072a"]
+  , cdAlternateCardCodes = []
   }
 
 street65073 :: CardDef

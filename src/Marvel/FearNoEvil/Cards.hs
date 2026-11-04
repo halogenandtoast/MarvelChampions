@@ -48,7 +48,7 @@ street60068a = (hoodCardDef "60068a" "Adamantium-Laced Spine" Set.FneBullseye At
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60068b"]
+  , cdAlternateCardCodes = []
   }
 
 street60068b :: CardDef
@@ -58,7 +58,7 @@ street60068b = (hoodCardDef "60068b" "Damaged Spine" Set.FneBullseye AttachmentT
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60068a"]
+  , cdAlternateCardCodes = []
   }
 
 street60069 :: CardDef
@@ -478,7 +478,7 @@ street60110a = (hoodCardDef "60110a" "Typhoid Mary" Set.FneTyphoidMary VillainTy
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60110b"]
+  , cdAlternateCardCodes = []
   }
 
 street60110b :: CardDef
@@ -488,7 +488,7 @@ street60110b = (hoodCardDef "60110b" "Bloody Mary" Set.FneTyphoidMary VillainTyp
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60110a"]
+  , cdAlternateCardCodes = []
   }
 
 street60111a :: CardDef
@@ -498,7 +498,7 @@ street60111a = (hoodCardDef "60111a" "Typhoid Mary" Set.FneTyphoidMary VillainTy
   , cdKeywords = fromList [K.Toughness]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60111b"]
+  , cdAlternateCardCodes = []
   }
 
 street60111b :: CardDef
@@ -508,7 +508,7 @@ street60111b = (hoodCardDef "60111b" "Bloody Mary" Set.FneTyphoidMary VillainTyp
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60111a"]
+  , cdAlternateCardCodes = []
   }
 
 street60112 :: CardDef
@@ -528,7 +528,7 @@ street60113a = (hoodCardDef "60113a" "Establish Trust" Set.FneTyphoidMary SideSc
   , cdKeywords = fromList [K.Permanent, K.Setup]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60113b"]
+  , cdAlternateCardCodes = []
   }
 
 street60113b :: CardDef
@@ -538,7 +538,7 @@ street60113b = (hoodCardDef "60113b" "Mary Walker" Set.FneTyphoidMary Attachment
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60113a"]
+  , cdAlternateCardCodes = []
   }
 
 street60114 :: CardDef
@@ -618,7 +618,7 @@ street60121a = (hoodCardDef "60121a" "Art Museum Heist" Set.FneArtMuseumHeist Ma
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60121b"]
+  , cdAlternateCardCodes = []
   }
 
 street60121b :: CardDef
@@ -628,7 +628,7 @@ street60121b = (hoodCardDef "60121b" "Art Museum Heist" Set.FneArtMuseumHeist Ma
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60121a"]
+  , cdAlternateCardCodes = []
   }
 
 street60122 :: CardDef
@@ -698,7 +698,7 @@ street60128a = (hoodCardDef "60128a" "The Getaway" Set.FneTheGetaway MainSchemeT
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60128b"]
+  , cdAlternateCardCodes = []
   }
 
 street60128b :: CardDef
@@ -708,7 +708,7 @@ street60128b = (hoodCardDef "60128b" "The Getaway" Set.FneTheGetaway MainSchemeT
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60128a"]
+  , cdAlternateCardCodes = []
   }
 
 street60129a :: CardDef
@@ -718,7 +718,7 @@ street60129a = (hoodCardDef "60129a" "Out Front" Set.FneTheGetaway AttachmentTyp
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60129b"]
+  , cdAlternateCardCodes = []
   }
 
 street60129b :: CardDef
@@ -728,7 +728,7 @@ street60129b = (hoodCardDef "60129b" "Alongside" Set.FneTheGetaway AttachmentTyp
   , cdKeywords = fromList [K.Permanent]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60129a"]
+  , cdAlternateCardCodes = []
   }
 
 street60130 :: CardDef
@@ -778,7 +778,7 @@ street60134a = (hoodCardDef "60134a" "Protection Racket" Set.FneProtectionRacket
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60134b"]
+  , cdAlternateCardCodes = []
   }
 
 street60134b :: CardDef
@@ -788,7 +788,7 @@ street60134b = (hoodCardDef "60134b" "Battle in the Bodega" Set.FneProtectionRac
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60134a"]
+  , cdAlternateCardCodes = []
   }
 
 street60135a :: CardDef
@@ -798,7 +798,7 @@ street60135a = (hoodCardDef "60135a" "Protection Racket" Set.FneProtectionRacket
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60135b"]
+  , cdAlternateCardCodes = []
   }
 
 street60135b :: CardDef
@@ -808,7 +808,7 @@ street60135b = (hoodCardDef "60135b" "Bull in a China Shop" Set.FneProtectionRac
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60135a"]
+  , cdAlternateCardCodes = []
   }
 
 street60136a :: CardDef
@@ -818,7 +818,7 @@ street60136a = (hoodCardDef "60136a" "Protection Racket" Set.FneProtectionRacket
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60136b"]
+  , cdAlternateCardCodes = []
   }
 
 street60136b :: CardDef
@@ -828,7 +828,7 @@ street60136b = (hoodCardDef "60136b" "Hung Out to Dry" Set.FneProtectionRacket M
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60136a"]
+  , cdAlternateCardCodes = []
   }
 
 street60137a :: CardDef
@@ -838,7 +838,7 @@ street60137a = (hoodCardDef "60137a" "Protection Racket" Set.FneProtectionRacket
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60137b"]
+  , cdAlternateCardCodes = []
   }
 
 street60137b :: CardDef
@@ -848,7 +848,7 @@ street60137b = (hoodCardDef "60137b" "Pawn Shop Showdown" Set.FneProtectionRacke
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60137a"]
+  , cdAlternateCardCodes = []
   }
 
 street60138a :: CardDef
@@ -858,7 +858,7 @@ street60138a = (hoodCardDef "60138a" "Protection Racket" Set.FneProtectionRacket
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60138b"]
+  , cdAlternateCardCodes = []
   }
 
 street60138b :: CardDef
@@ -868,7 +868,7 @@ street60138b = (hoodCardDef "60138b" "A Slice of the Pizza Dough" Set.FneProtect
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60138a"]
+  , cdAlternateCardCodes = []
   }
 
 street60139 :: CardDef
@@ -908,7 +908,7 @@ street60142a = (hoodCardDef "60142a" "The Raft Breakout" Set.FneTheRaftBreakout 
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60142b"]
+  , cdAlternateCardCodes = []
   }
 
 street60142b :: CardDef
@@ -918,7 +918,7 @@ street60142b = (hoodCardDef "60142b" "The Raft Breakout" Set.FneTheRaftBreakout 
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60142a"]
+  , cdAlternateCardCodes = []
   }
 
 street60143 :: CardDef
@@ -1008,7 +1008,7 @@ street60151a = (hoodCardDef "60151a" "Stop the Presses!" Set.FneStopThePresses M
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60151b"]
+  , cdAlternateCardCodes = []
   }
 
 street60151b :: CardDef
@@ -1018,7 +1018,7 @@ street60151b = (hoodCardDef "60151b" "Stop the Presses!" Set.FneStopThePresses M
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60151a"]
+  , cdAlternateCardCodes = []
   }
 
 street60152 :: CardDef
@@ -1098,7 +1098,7 @@ street60159a = (hoodCardDef "60159a" "Kingpin" Set.FneKingpin VillainType 0)
   , cdKeywords = fromList [K.Stalwart]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60159b"]
+  , cdAlternateCardCodes = []
   }
 
 street60159b :: CardDef
@@ -1108,7 +1108,7 @@ street60159b = (hoodCardDef "60159b" "Kingpin" Set.FneKingpin VillainType 0)
   , cdKeywords = fromList [K.Steady]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60159a"]
+  , cdAlternateCardCodes = []
   }
 
 street60160a :: CardDef
@@ -1118,7 +1118,7 @@ street60160a = (hoodCardDef "60160a" "Kingpin" Set.FneKingpin VillainType 0)
   , cdKeywords = fromList [K.Stalwart]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60160b"]
+  , cdAlternateCardCodes = []
   }
 
 street60160b :: CardDef
@@ -1128,7 +1128,7 @@ street60160b = (hoodCardDef "60160b" "Kingpin" Set.FneKingpin VillainType 0)
   , cdKeywords = fromList [K.Steady]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60160a"]
+  , cdAlternateCardCodes = []
   }
 
 street60161a :: CardDef
@@ -1138,7 +1138,7 @@ street60161a = (hoodCardDef "60161a" "The King's Gambit" Set.FneKingpin MainSche
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60161b"]
+  , cdAlternateCardCodes = []
   }
 
 street60161b :: CardDef
@@ -1148,7 +1148,7 @@ street60161b = (hoodCardDef "60161b" "The King's Gambit" Set.FneKingpin MainSche
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60161a"]
+  , cdAlternateCardCodes = []
   }
 
 street60162a :: CardDef
@@ -1158,7 +1158,7 @@ street60162a = (hoodCardDef "60162a" "Endgame" Set.FneKingpin MainSchemeType 0)
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60162b"]
+  , cdAlternateCardCodes = []
   }
 
 street60162b :: CardDef
@@ -1168,7 +1168,7 @@ street60162b = (hoodCardDef "60162b" "Endgame" Set.FneKingpin MainSchemeType 0)
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60162a"]
+  , cdAlternateCardCodes = []
   }
 
 street60163a :: CardDef
@@ -1178,7 +1178,7 @@ street60163a = (hoodCardDef "60163a" "Public Support" Set.FneKingpin Environment
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60163b"]
+  , cdAlternateCardCodes = []
   }
 
 street60163b :: CardDef
@@ -1188,7 +1188,7 @@ street60163b = (hoodCardDef "60163b" "Public Support" Set.FneKingpin Environment
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60163a"]
+  , cdAlternateCardCodes = []
   }
 
 street60164 :: CardDef
@@ -1608,7 +1608,7 @@ street60205a = (hoodCardDef "60205a" "Art Museum Heist" Set.FneFearNoEvilCampaig
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60205b"]
+  , cdAlternateCardCodes = []
   }
 
 street60205b :: CardDef
@@ -1618,7 +1618,7 @@ street60205b = (hoodCardDef "60205b" "Art Museum Heist" Set.FneFearNoEvilCampaig
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60205a"]
+  , cdAlternateCardCodes = []
   }
 
 street60206a :: CardDef
@@ -1628,7 +1628,7 @@ street60206a = (hoodCardDef "60206a" "The Getaway" Set.FneFearNoEvilCampaign Env
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60206b"]
+  , cdAlternateCardCodes = []
   }
 
 street60206b :: CardDef
@@ -1638,7 +1638,7 @@ street60206b = (hoodCardDef "60206b" "The Getaway" Set.FneFearNoEvilCampaign Env
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60206a"]
+  , cdAlternateCardCodes = []
   }
 
 street60207a :: CardDef
@@ -1648,7 +1648,7 @@ street60207a = (hoodCardDef "60207a" "Protection Racket" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60207b"]
+  , cdAlternateCardCodes = []
   }
 
 street60207b :: CardDef
@@ -1658,7 +1658,7 @@ street60207b = (hoodCardDef "60207b" "Protection Racket" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60207a"]
+  , cdAlternateCardCodes = []
   }
 
 street60208a :: CardDef
@@ -1668,7 +1668,7 @@ street60208a = (hoodCardDef "60208a" "The Raft Breakout" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60208b"]
+  , cdAlternateCardCodes = []
   }
 
 street60208b :: CardDef
@@ -1678,7 +1678,7 @@ street60208b = (hoodCardDef "60208b" "The Raft Breakout" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60208a"]
+  , cdAlternateCardCodes = []
   }
 
 street60209a :: CardDef
@@ -1688,7 +1688,7 @@ street60209a = (hoodCardDef "60209a" "Stop the Presses!" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60209b"]
+  , cdAlternateCardCodes = []
   }
 
 street60209b :: CardDef
@@ -1698,7 +1698,7 @@ street60209b = (hoodCardDef "60209b" "Stop the Presses!" Set.FneFearNoEvilCampai
   , cdKeywords = fromList []
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60209a"]
+  , cdAlternateCardCodes = []
   }
 
 street60210a :: CardDef
@@ -1708,7 +1708,7 @@ street60210a = (hoodCardDef "60210a" "Typhoid Mary" Set.FneFearNoEvilCampaign Al
   , cdKeywords = fromList [K.Setup, K.Victory (-1)]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60210b"]
+  , cdAlternateCardCodes = []
   , cdAspect = Just Aspect.Justice
   }
 
@@ -1719,7 +1719,7 @@ street60210b = (hoodCardDef "60210b" "Bloody Mary" Set.FneFearNoEvilCampaign All
   , cdKeywords = fromList [K.Victory (-1)]
   , cdBoostIcons = []
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
-  , cdAlternateCardCodes = ["60210a"]
+  , cdAlternateCardCodes = []
   , cdAspect = Just Aspect.Aggression
   }
 
