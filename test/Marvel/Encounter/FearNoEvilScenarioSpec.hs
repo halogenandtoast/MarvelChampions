@@ -9,6 +9,7 @@ import Marvel.Keyword (Keyword(Guard))
 import Marvel.Phase (Phase(VillainPhase))
 import Marvel.Window qualified as W
 import Data.List (findIndex)
+import Data.Text qualified as Text
 import TestImport
 
 scenarioGame :: CardCode -> Difficulty -> [Text] -> IO TestGame
@@ -33,6 +34,48 @@ scenarioGameChoosing code mode heroes preferred = do
 
 spec :: Spec
 spec = describe "Fear No Evil scenarios" do
+  it "announces the chosen underling instead of the placeholder Hammerhead" do
+    tg <- scenarioGameChoosing "60151a" Normal ["spider-man"] (Just "60065")
+    inGame tg do
+      selectAny (VillainWithCardCode "60065") `shouldReturn` True
+      entries <- liftIO $ readIORef tg.logged
+      let starts = filter (Text.isInfixOf "$log.scenarioBegins" . entryText) entries
+      length starts `shouldBe` 1
+      Text.concat (map entryText starts) `shouldSatisfy` Text.isInfixOf "Bullseye"
+      Text.concat (map entryText starts) `shouldSatisfy` (not . Text.isInfixOf "Hammerhead")
+
+  for_ [False,True] $ \otherHasArt ->
+    it ("Art Museum Heist skips its response when the attacked identity has no Art, other Art: " <> show otherHasArt) do
+      tg <- scenarioGame "60121a" Normal ["spider-man","she-hulk"]
+      inGame tg do
+        let you = player1 tg
+        SchemeMainSchemeId main <- selectJust EncounterMainScheme
+        when otherHasArt do
+          art <- selectJust $ AttachmentWithTrait T.Art
+          resolve =<< L.runQueueT (L.capture $ L.attachToIdentity art (player2 tg))
+        mid <- addMinion you Cards.street60126
+        runNow [MinionMessage mid $ MinionAttacks you]
+        pass
+        offers (isAbilityOf main) `shouldReturn` False
+        offers (== EndTurn) `shouldReturn` True
+        damageOf you `shouldReturn` 2
+
+  it "Art Museum Heist moves Art from the attacked identity to the villain" do
+    tg <- scenarioGame "60121a" Normal ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      SchemeMainSchemeId main <- selectJust EncounterMainScheme
+      art <- selectJust $ AttachmentWithTrait T.Art
+      resolve =<< L.runQueueT (L.capture $ L.attachToIdentity art you)
+      mid <- addMinion you Cards.street60126
+      runNow [MinionMessage mid $ MinionAttacks you]
+      pass
+      choose "Art Museum Heist's forced response" (isAbilityOf main)
+      choose "return the Art to the villain" (isTargetChoice $ AttachmentRef art)
+      pass
+      vid <- villainIdNow
+      getAttachedCharacter art `shouldReturn` Just (VillainCharacter vid)
+
   it "Public Support advances Kingpin and the main scheme after four defeated minions' support counters" do
     tg <- scenarioGame "60161a" Normal ["spider-man"]
     inGame tg do

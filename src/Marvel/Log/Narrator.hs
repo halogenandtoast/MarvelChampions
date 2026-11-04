@@ -92,10 +92,21 @@ narrationFor = \case
   SpentWithResources {} -> Nothing
   -- * Structure: the headings a reader finds their way by
   StartScenario -> Just do
-    villains <- getsGame (Scenario.scenarioVillains . toAttrs . gameScenario)
+    g <- getGame
+    let villains = Scenario.scenarioVillains . toAttrs $ gameScenario g
     pure
       [ structure [ikeyPart "log.scenarioBegins" ["villain" ~> (codeRef RefVillain v) {logRefName = maybe (unCardCode v) (display . cdName) (lookup v allVillainsMap)}]]
-      | v <- take 1 villains
+      | toId (gameScenario g) `notElem` Campaign.fearNoEvilScenarioPool
+      , v <- take 1 villains
+      ]
+  -- Fear No Evil chooses its underling after StartScenario. Its initial villain
+  -- is only a setup placeholder; announce the one actually entering play.
+  AddVillain v -> Just do
+    g <- getGame
+    pure
+      [ structure [ikeyPart "log.scenarioBegins" ["villain" ~> (codeRef RefVillain v) {logRefName = maybe (unCardCode v) (display . cdName) (lookup v allVillainsMap)}]]
+      | toId (gameScenario g) `elem` Campaign.fearNoEvilScenarioPool
+      , HashMap.null (gameVillains g)
       ]
   BeginPhase PlayerPhase -> Just do
     n <- getsGame gameRound
@@ -132,7 +143,11 @@ narrationFor = \case
         CampaignVictory -> True
     pure [structure [ikeyPart (campaignStepKey step) []] | told]
   RecordInCampaignLog r -> campaignNarration r
-  GameOver Lost -> Just $ one $ toned Bad $ structure [ikeyPart "log.gameOver.lost" []]
+  GameOver Lost -> Just do
+    pending <- getsGame \g -> case gameCampaign g of
+      Just c -> c.kind == Campaign.FearNoEvilCampaign && isJust c.campaignLog.fearNoEvil.selectedScenario
+      Nothing -> False
+    pure [toned Bad $ structure [ikeyPart "log.gameOver.lost" []] | not pending]
   GameOver RegistrationWon -> Just $ one $ structure [ikeyPart "log.gameOver.registrationWon" []]
   GameOver ResistanceWon -> Just $ one $ structure [ikeyPart "log.gameOver.resistanceWon" []]
   GameOver CompetitiveDraw -> Just $ one $ structure [ikeyPart "log.gameOver.draw" []]

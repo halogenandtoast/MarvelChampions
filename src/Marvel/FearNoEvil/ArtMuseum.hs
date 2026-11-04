@@ -75,7 +75,7 @@ instance IsMainScheme MuseumHeist where
   mainSchemeAbilities = getAbilities
   mainSchemeModifiersFor _ _ _ = pure []
 instance HasAbilities MuseumHeist where
-  getAbilities (MuseumHeist a) = [windowAbility a 1 (W.EnemyAttacked W.After UndefendedEnemy AnyIdentity) ForcedResponse NoCost (runAbility a 1)]
+  getAbilities (MuseumHeist a) = [windowAbility a 1 (W.EnemyAttacked W.After (UndefendedEnemy <> EnemyAttackingCharacter (CharacterWithAttachment $ AttachmentWithTrait T.Art)) AnyIdentity) ForcedResponse NoCost (runAbility a 1)]
 instance RunMessage MuseumHeist where
   runMessage msg e@(MuseumHeist a) = runQueueT $ case msg of
     SetupMainScheme -> do
