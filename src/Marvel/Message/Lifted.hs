@@ -1257,9 +1257,13 @@ engageMinionIfInPlay :: (ReverseQueue m) => MinionId -> IdentityId -> m ()
 engageMinionIfInPlay minion you = cardSpecific GameRef "engageMinionIfInPlay" (minion, you)
 
 defeatMinion :: (ReverseQueue m) => MinionId -> m ()
-defeatMinion mid = do
+defeatMinion = defeatMinionBy GameRef
+
+-- | Defeat without damage, retaining the source for defeat interrupts and responses.
+defeatMinionBy :: (ReverseQueue m, IsRef source) => source -> MinionId -> m ()
+defeatMinionBy source mid = do
   blocked <- elem CannotBeDefeated <$> getModifiers (MinionRef mid)
-  unless blocked $ push $ MinionMessage mid MinionDefeated
+  unless blocked $ push $ MinionMessage mid $ MinionDefeatedWithExcess (toSource source) (toDamage 0 FromAbility) 0
 
 -- | The player is no longer engaged with the minion.
 minionDisengages :: (ReverseQueue m) => IdentityId -> MinionId -> m ()

@@ -38,6 +38,6 @@ instance RunMessage NovaPrimeRichardRider where
   runMessage msg a@(NovaPrimeRichardRider attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
       minions <- selectList nonElite
-      chooseOne ident [targeting m (defeatMinion m) | m <- minions]
+      chooseOne ident [targeting m (defeatMinionBy attrs m) | m <- minions]
       pure a
     _ -> NovaPrimeRichardRider <$> runMessage msg attrs

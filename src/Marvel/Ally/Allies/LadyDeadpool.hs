@@ -38,6 +38,6 @@ instance RunMessage LadyDeadpool where
   runMessage msg e@(LadyDeadpool attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       minions <- selectList (AnyMinion <> NotMinion (MinionWithTrait Trait.Elite))
-      chooseOne you [targeting (enemyRef mid) (defeatMinion mid) | mid <- minions]
+      chooseOne you [targeting (enemyRef mid) (defeatMinionBy attrs mid) | mid <- minions]
       pure e
     _ -> LadyDeadpool <$> runMessage msg attrs

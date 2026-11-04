@@ -136,7 +136,7 @@ instance RunMessage HammerheadScheme where
         [] -> discardUntilAndReveal you (CardWithType MinionType)
         _ -> do
           let lowest = minimum $ map snd scored
-          chooseOne you [targeting mid (defeatMinion mid >> discardUntilAndReveal you (CardWithType MinionType)) | (mid,hp) <- scored,hp == lowest]
+          chooseOne you [targeting mid (defeatMinionBy a mid >> discardUntilAndReveal you (CardWithType MinionType)) | (mid,hp) <- scored,hp == lowest]
       pure e
     _ -> HammerheadScheme <$> runMessage msg a
 

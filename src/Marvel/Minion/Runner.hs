@@ -108,7 +108,7 @@ runMinionMessage msg attrs = case msg of
     unless blocked do
       attached <- enemyDefeatUpgrades (toEnemyId attrs)
       checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
-      defeatMinion (minionId attrs)
+      minionStep (minionId attrs) MinionDefeated
       when (overkill > 0 && damageOverkill damage) do
         traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
       checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]

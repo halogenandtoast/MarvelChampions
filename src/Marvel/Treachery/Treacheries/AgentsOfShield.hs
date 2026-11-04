@@ -350,7 +350,7 @@ instance RunMessage AosTreachery where
         enemies <- selectList AnyMinion
         scored <- traverse (\mid -> (mid,) <$> getEnemyRemainingHitPoints (EnemyMinionId mid)) enemies
         chooseEffect you $
-          [targeting mid (defeatMinion mid >> currentVillainSchemes you) | (mid,hp) <- scored, hp == minimum (map snd scored)]
+          [targeting mid (defeatMinionBy a mid >> currentVillainSchemes you) | (mid,hp) <- scored, hp == minimum (map snd scored)]
           <> [targeting target do
             def <- getsGame (`abilityCardDef` target)
             removeFromPlay target

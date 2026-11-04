@@ -47,6 +47,6 @@ instance RunMessage MonetStCroix where
   runMessage msg e@(MonetStCroix attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       eligible <- selectList (MinionCanBeDefeated <> MinionWithFewerRemainingHitPointsThanAlly (allyId attrs))
-      chooseOne you [targeting mid $ defeatMinion mid | mid <- eligible]
+      chooseOne you [targeting mid $ defeatMinionBy attrs mid | mid <- eligible]
       pure e
     _ -> MonetStCroix <$> runMessage msg attrs

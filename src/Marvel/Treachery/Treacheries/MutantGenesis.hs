@@ -198,7 +198,7 @@ instance RunMessage MutantGenesisTreachery where
         [targeting (MinionRef mid) (enemyAttacks mid you) | mid <- minions]
       pure e
     CardSpecific (isTarget attrs -> True) "prepareMissile" (fromJSON -> Success (you, mid)) -> do
-      defeatMinion mid
+      defeatMinionBy attrs mid
       cardSpecific attrs "missileDamage" (you, mid)
       pure $ MutantGenesisTreachery (attrs `With` Just (you, mid, False))
     DefeatedLeavesPlay (MinionRef mid) | Just (you, target, _) <- missile, mid == target -> pure $ MutantGenesisTreachery (attrs `With` Just (you, target, True))

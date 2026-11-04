@@ -46,6 +46,6 @@ instance RunMessage Nc48031 where
   runMessage msg a@(Nc48031 attrs) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ _) | eid == eventId attrs -> do
       minions <- selectList (NotMinion $ MinionWithTrait Trait.Elite)
-      chooseOne you [targeting mid (defeatMinion mid) | mid <- minions]
+      chooseOne you [targeting mid (defeatMinionBy attrs mid) | mid <- minions]
       pure a
     _ -> Nc48031 <$> runMessage msg attrs

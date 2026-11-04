@@ -3184,7 +3184,19 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       ResolveMinionLeavingPlay other (MinionMessage who MinionLeavesPlay) -> other == mid && who == mid
       _ -> False
     present <- inAnyArea $ selectAny $ EnemyWithId enemy
-    if not (pending && present && HashMap.member mid (gameMinions g)) then pure g else do
+    let departed = find ((== CardId (unMinionId mid)) . toCardId) $
+          map EncounterCard (scenarioDiscard $ toAttrs $ g.gameScenario)
+          <> [PlayerCard card | player <- HashMap.elems $ gamePlayers g,card <- unDiscard $ playerIdentityDiscard $ toAttrs player]
+          <> map EncounterCard (g.gameVictoryDisplay) <> map PlayerCard (g.gamePlayerVictoryDisplay)
+    if not (pending && present && HashMap.member mid (gameMinions g)) then case departed of
+      Just physical | present -> do
+        let (card,original) = case physical of
+              EncounterCard card -> (card,[])
+              PlayerCard card -> (MkEncounterCard (pcCardId card) (pcCardDef card),[(pcCardId card,card)])
+        giveCardAsBoost card enemy
+        pure g {gamePlayerBoostCards = original <> g.gamePlayerBoostCards}
+      _ -> pure g
+    else do
       -- The printed When Defeated resolves while its card is still in play (RR p48).
       -- Cleanup also survives an interrupt cancelling the defeat and its after window.
       replaceMatchingMessage

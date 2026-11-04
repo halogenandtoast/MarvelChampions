@@ -41,6 +41,6 @@ instance RunMessage Longshot where
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
       for_ [mid | W.AllyAttack _ (EnemyMinionId mid) <- windows] \mid ->
         discardTopOfEncounterDeckThen 1 \cards ->
-          when (any (elem Star . cdBoostIcons . getCardDef) cards) (defeatMinion mid)
+          when (any (elem Star . cdBoostIcons . getCardDef) cards) (defeatMinionBy attrs mid)
       pure e
     _ -> Longshot <$> runMessage msg attrs
