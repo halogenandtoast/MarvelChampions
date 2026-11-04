@@ -4,11 +4,14 @@ import Data.HashMap.Strict qualified as HashMap
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Message.Lifted qualified as L
 import Marvel.Modifier
+import Marvel.Minion.Cards qualified as MinionCards
+import Marvel.SideScheme.Cards qualified as SchemeCards
 import Marvel.Minion.Types qualified as Minion
 import Marvel.SideScheme.Types qualified as Side
 import Marvel.Trait qualified as Trait
 import Marvel.EncounterCard (gatherEncounterSet)
 import Marvel.EncounterSet qualified as Set
+import Marvel.Shadowland.Cards qualified as Shadow
 import Marvel.FearNoEvil.Cards qualified as Cards
 import Marvel.Keyword
 import Marvel.Matchers
@@ -27,8 +30,33 @@ attachmentOf = AttachmentId . unCardId . ecCardId
 attachmentDamageNow :: AttachmentId -> GameAppT Natural
 attachmentDamageNow aid = getsGame $ Attachment.attachmentDamage . toAttrs . (HashMap.! aid) . gameAttachments
 
+equipStreetVehicle :: CharacterId -> CardDef -> GameAppT ()
+equipStreetVehicle character def = do
+  card <- encounterCard def
+  resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card character)
+
+trafficThreat :: SideSchemeId -> GameAppT Natural
+trafficThreat sid = getsGame $ Side.sideSchemeThreat . toAttrs . (HashMap.! sid) . gameSideSchemes
+
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  it "attributes hero upgrades to their hero and keeps allies and supports distinct" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      ally <- putIntoPlay you "01002"
+      support <- putIntoPlay you "01006"
+      upgrade <- putIntoPlay you "01081"
+      threatSourceCharacter (AllyRef $ allyIdOf ally) `shouldReturn` Just (AllyCharacter $ allyIdOf ally)
+      threatSourceCharacter (SupportRef $ supportIdOf support) `shouldReturn` Nothing
+      threatSourceCharacter (UpgradeRef $ upgradeIdOf upgrade) `shouldReturn` Just (IdentityCharacter you)
+      inspired <- putInHand you "01074"
+      payment <- putInHand you "01089"
+      playOn inspired (allyIdOf ally) [payment]
+      pass
+      threatSourceCharacter (UpgradeRef $ upgradeIdOf inspired) `shouldReturn` Just (AllyCharacter $ allyIdOf ally)
+
   it "contains five physical cards" do
     tg <- testGame ["spider-man"]
     inGame tg $ length <$> gatherEncounterSet Set.FneDisasters >>= (`shouldBe` 5)
@@ -445,3 +473,162 @@ spec = describe "Fear No Evil encounter cards" do
       resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ AllyCharacter aid)
       selectAny (AttachmentWithId $ attachmentOf card) `shouldReturn` False
       getEncounterDiscard >>= (liftIO . (`shouldContain` [card]))
+
+  it "Traffic Jam starts with its fixed two threat plus hinder per player" do
+    tg <- testGame ["spider-man","captain-marvel"]
+    inGame tg do
+      _ <- revealNow (player1 tg) Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      trafficThreat sid `shouldReturn` 6
+
+  it "Traffic Jam redirects a vehicle-equipped villain's scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      vid <- villainIdNow
+      equipStreetVehicle (VillainCharacter vid) Cards.street60187
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      before <- mainSchemeThreatNow
+      resolve [VillainMessage vid $ VillainSchemesAgainst you]
+      pass
+      mainSchemeThreatNow `shouldReturn` before
+      trafficThreat sid `shouldReturn` 6
+
+  it "Traffic Jam redirects a vehicle-equipped minion's scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      mid <- addMinion you Cards.street60198
+      equipStreetVehicle (MinionCharacter mid) Cards.street60187
+      before <- mainSchemeThreatNow
+      resolve [MinionMessage mid MinionSchemes]
+      mainSchemeThreatNow `shouldReturn` before
+      trafficThreat sid `shouldReturn` 7
+
+  it "Traffic Jam redirects a hero's basic thwart after a vehicle is stolen" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      equipStreetVehicle (IdentityCharacter you) Cards.street60187
+      main <- mainSchemeIdNow
+      resolve [MainSchemeMessage main $ MainSchemePlaceThreat 3]
+      choose "basic thwart" (isHeroThwart you)
+      chooseMainScheme
+      choose "resolve Traffic Jam" (\case UseAbility ab -> abilitySource ab == SideSchemeRef sid; _ -> False)
+      pass
+      mainSchemeThreatNow `shouldReturn` 3
+      trafficThreat sid `shouldReturn` 2
+
+  it "Traffic Jam redirects an ally's basic thwart" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      ally <- putIntoPlay you "01002"
+      let aid = allyIdOf ally
+      equipStreetVehicle (AllyCharacter aid) Cards.street60187
+      main <- mainSchemeIdNow
+      resolve [MainSchemeMessage main $ MainSchemePlaceThreat 3]
+      attrs <- getsGame $ toAttrs . (HashMap.! aid) . gameAllies
+      choose "ally thwarts" (isAllyThwart attrs)
+      chooseMainScheme
+      choose "resolve Traffic Jam" (\case UseAbility ab -> abilitySource ab == SideSchemeRef sid; _ -> False)
+      pass
+      mainSchemeThreatNow `shouldReturn` 3
+      trafficThreat sid `shouldReturn` 2
+
+  it "Traffic Jam redirects a hero's event thwart" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      equipStreetVehicle (IdentityCharacter you) Cards.street60188
+      main <- mainSchemeIdNow
+      resolve [MainSchemeMessage main $ MainSchemePlaceThreat 3]
+      event <- putInHand you "01060"
+      payment <- putInHand you "01089"
+      playWith event [payment]
+      chooseMainScheme
+      choose "resolve Traffic Jam" (\case UseAbility ab -> abilitySource ab == SideSchemeRef sid; _ -> False)
+      pass
+      mainSchemeThreatNow `shouldReturn` 3
+      trafficThreat sid `shouldReturn` 1
+
+  it "Traffic Jam redirects removal that is not a thwart, capped by the original imminent removal" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      equipStreetVehicle (IdentityCharacter you) Cards.street60188
+      main <- mainSchemeIdNow
+      resolve [MainSchemeMessage main $ MainSchemePlaceThreat 1]
+      resolve [MainSchemeMessage main $ MainSchemeThreatRemoved (IdentityRef you) 3]
+      mainSchemeThreatNow `shouldReturn` 1
+      trafficThreat sid `shouldReturn` 3
+
+  it "Traffic Jam does not replace a zero removal or a character without a vehicle" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      sid <- selectJust (SideSchemeIs Cards.street60189)
+      main <- mainSchemeIdNow
+      equipStreetVehicle (IdentityCharacter you) Cards.street60188
+      resolve [MainSchemeMessage main $ MainSchemeThreatRemoved (IdentityRef you) 3]
+      trafficThreat sid `shouldReturn` 4
+      vid <- villainIdNow
+      resolve =<< L.runQueueT (L.capture $ L.placeThreatOn vid main 2)
+      mainSchemeThreatNow `shouldReturn` 2
+      trafficThreat sid `shouldReturn` 4
+
+  it "Traffic Jam does not replace a removal prohibited on the original scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      pass
+      traffic <- selectJust (SideSchemeIs Cards.street60189)
+      _ <- addMinion you Shadow.street65030
+      _ <- revealNow you Shadow.street65035
+      pass
+      locked <- selectJust (SideSchemeIs Shadow.street65035)
+      before <- trafficThreat locked
+      equipStreetVehicle (IdentityCharacter you) Cards.street60188
+      resolve [SideSchemeMessage locked $ SideSchemeThreatRemoved (IdentityRef you) 1]
+      trafficThreat locked `shouldReturn` before
+      trafficThreat traffic `shouldReturn` 4
+
+  it "Traffic Jam redirects Dark Phoenix's custom scheme destination" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      _ <- revealNow you Cards.street60189
+      _ <- revealNow you SchemeCards.consumeTheWorld
+      pass
+      traffic <- selectJust (SideSchemeIs Cards.street60189)
+      consume <- selectJust (SideSchemeIs SchemeCards.consumeTheWorld)
+      mid <- addMinion you MinionCards.darkPhoenix
+      equipStreetVehicle (MinionCharacter mid) Cards.street60187
+      before <- trafficThreat consume
+      resolve [MinionMessage mid MinionSchemed]
+      trafficThreat consume `shouldReturn` before
+      trafficThreat traffic `shouldReturn` 7

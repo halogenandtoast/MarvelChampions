@@ -57,6 +57,17 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  ResolveCharacterThreatRemoval (MainSchemeMessage sid inner) -> schemeNarration (MainSchemeRef sid) inner
+  ResolveCharacterThreatRemoval (SideSchemeMessage sid inner) -> sideSchemeNarration sid inner
+  ResolveCharacterThreatRemoval _ -> Nothing
+  message | Just (source,scheme,n,basic,thwarting) <- threatRemovalMessage message -> Just do
+    actor <- threatSourceCharacter source
+    allowed <- characterThreatRemovalAllowed basic thwarting source scheme
+    amount <- min n <$> getSchemeThreatAmount scheme
+    if isJust actor && allowed && amount > 0 then pure [] else fromMaybe (pure []) $ case message of
+      MainSchemeMessage sid inner -> schemeNarration (MainSchemeRef sid) inner
+      SideSchemeMessage sid inner -> sideSchemeNarration sid inner
+      _ -> Nothing
   WithThreatPlacementResult _ message -> narrationFor message
   WithSimultaneousAttackContext _ message -> narrationFor message
   PrepareAllyDepartureByDefeat _ _ -> Nothing

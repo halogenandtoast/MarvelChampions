@@ -1826,6 +1826,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           when (difficulty == Expert) $ giveStatus mid ToughStatus
         pure g {gameAosBackup = (eid,mid) : filter (\(env,attached) -> env /= eid && attached /= mid) g.gameAosBackup}
   MinionMessage mid (MinionEngagedIdentity _) -> pure g {gameAosBackup = filter ((/=mid) . snd) g.gameAosBackup}
+  CardSpecific GameRef key (fromJSON -> Success (source,from :: W.ThreatSource,scheme,n :: Natural))
+    | key `elem` ["placeThreatBy","placeReportingThreatBy","placeVillainThreatBy"] -> do
+      actor <- threatSourceCharacter source
+      when (n > 0) $ for_ actor $ \character -> checkWindows [W.Window W.Would $ W.CharacterPlacingThreat character scheme n]
+      let continuation = case key of
+            "placeReportingThreatBy" -> "placeReportingThreatAfterCharacterWindow"
+            "placeVillainThreatBy" -> "placeVillainThreatAfterCharacterWindow"
+            _ -> "placeThreatAfterCharacterWindow"
+      cardSpecific GameRef continuation (source,from,scheme,n)
+      pure g
+  CardSpecific GameRef "placeReportingThreatAfterCharacterWindow" (fromJSON -> Success (source,_ :: W.ThreatSource,scheme,n)) ->
+    g <$ placeThreatOnReportingAfterCharacterWindow source scheme n
+  CardSpecific GameRef "placeVillainThreatAfterCharacterWindow" (fromJSON -> Success (VillainRef vid,_ :: W.ThreatSource,scheme,n)) ->
+    g <$ placeVillainSchemeThreatAfterCharacterWindow vid scheme n
+  CardSpecific GameRef "placeThreatAfterCharacterWindow" (fromJSON -> Success (_ :: Source,from,scheme :: SchemeId,n :: Natural)) ->
+    g <$ placeThreatFrom from scheme n
   CardSpecific GameRef "attachEncounterToCharacter" (fromJSON -> Success (card,character)) -> do
     let aid = AttachmentId $ unCardId $ ecCardId card
         existing = lookup aid $ gameAttachments g
@@ -3962,6 +3978,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             _ -> False
           W.Window W.Would (W.IdentityDefeat iid) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window W.Would (W.IdentityDefeatFromDamage iid _ _) -> isQueued (== IdentityMessage iid IdentityDefeated)
+          W.Window W.Would (W.CharacterRemovingThreat _ scheme _) -> isQueued \message ->
+            maybe False (\(_,target,n,_,_) -> target == scheme && n > 0) (threatRemovalMessage message)
+          W.Window W.Would (W.CharacterPlacingThreat _ scheme _) -> isQueued \case
+            CardSpecific GameRef key (fromJSON -> Success (_ :: Source,_ :: W.ThreatSource,target :: SchemeId,n :: Natural))
+              | key `elem` ["placeThreatAfterCharacterWindow","placeReportingThreatAfterCharacterWindow","placeVillainThreatAfterCharacterWindow"] -> target == scheme && n > 0
+            _ -> False
           W.Window W.Would (W.ThreatPlaced _ scheme _) -> isQueued \case
             MainSchemeMessage sid (MainSchemePlaceThreat n) -> scheme == SchemeMainSchemeId sid && n > 0
             SideSchemeMessage sid (SideSchemePlaceThreat n) -> scheme == SchemeSideSchemeId sid && n > 0
@@ -4493,6 +4515,17 @@ sourceHasBegunLabeledThwart source = do
 -- | The departure is bracketed once, before the departing card sees the message.
 -- The continuation goes through ordinary entity handlers without reopening it.
 instance RunMessage Game where
+  runMessage (ResolveCharacterThreatRemoval original) g = dispatchGameMessage original g
+  runMessage original g | Just (source,scheme,n,basic,thwarting) <- threatRemovalMessage original = do
+    actor <- threatSourceCharacter source
+    allowed <- characterThreatRemovalAllowed basic thwarting source scheme
+    amount <- min n <$> getSchemeThreatAmount scheme
+    case actor of
+      Just character | allowed && amount > 0 -> runQueueT do
+        checkWindows [W.Window W.Would $ W.CharacterRemovingThreat character scheme amount]
+        push $ ResolveCharacterThreatRemoval original
+        pure g
+      _ -> dispatchGameMessage original g
   runMessage message@(CheckWindows windows) g
     | Just enemy <- headMay [enemy | W.Window W.After window <- windows, enemy <- case window of
         W.HeroDefends _ attacker -> [attacker]
@@ -5944,6 +5977,25 @@ getSourceController source = getsGame \g ->
         _ -> Nothing
   in controllerOf (refocus source)
 
+-- | The character acting through this source. Supports and encounter-card effects
+-- act independently; an upgrade attached to an ally acts through that ally.
+threatSourceCharacter :: HasGame m => Source -> m (Maybe CharacterId)
+threatSourceCharacter = \case
+  CharacterRef character -> pure $ Just character
+  EnemyRef enemy -> pure $ Just $ toCharacter enemy
+  IdentityRef you -> pure $ Just $ IdentityCharacter you
+  AllyRef ally -> pure $ Just $ AllyCharacter ally
+  MinionRef minion -> pure $ Just $ MinionCharacter minion
+  VillainRef villain -> pure $ Just $ VillainCharacter villain
+  source@(EventRef _) -> fmap IdentityCharacter <$> getSourceController source
+  source@(UpgradeRef uid) -> do
+    ally <- getsGame (join . fmap (upgradeAttachedAlly . toAttrs) . lookup uid . gameUpgrades)
+    case ally of
+      Just aid -> pure $ Just $ AllyCharacter aid
+      Nothing -> fmap IdentityCharacter <$> getHeroSourceController source
+  EffectRef eid -> getsGame (fmap (Effect.effectSource . toAttrs) . lookup eid . gameEffects) >>= maybe (pure Nothing) threatSourceCharacter
+  _ -> pure Nothing
+
 -- | RR You/Your: allies, supports and encounter cards do not extend the identity.
 getHeroSourceController :: (HasGame m) => Source -> m (Maybe IdentityId)
 getHeroSourceController source = case source of
@@ -6458,6 +6510,7 @@ gameSelectIdentity m = do
 
 gameSelectCharacter :: (HasGame m) => CharacterMatcher -> m (HashSet CharacterId)
 gameSelectCharacter = \case
+  CharacterWithAttachment matcher -> fromList . catMaybes <$> (traverse getAttachedCharacter =<< selectList matcher)
   CharacterWithId c -> HashSet.filter (== c) <$> gameSelectCharacter AnyCharacter
   CharacterCanBeHealed -> fromList <$> (filterM (fmap (notElem CannotBeHealedByPlayerCards) . getModifiers . characterRef) . toList =<< gameSelectCharacter AnyCharacter)
   CharacterWithDamage gameValueMatcher -> do
@@ -9645,3 +9698,36 @@ canPutPlayerAllyIntoPlay you card = asYou you do
       clash = cdUnique def && any (uniqueMatch name) uniques
   allowed <- playerCardEntryAllowed (card {pcController = Just you})
   pure $ cdCardType def == AllyType && not live && not clash && allowed
+
+-- | Check the original removal before its replacement window. A prohibited
+-- removal never becomes imminent merely because another scheme can receive it.
+characterThreatRemovalAllowed :: HasGame m => Bool -> Bool -> Source -> SchemeId -> m Bool
+characterThreatRemovalAllowed basic thwarting source scheme = do
+  allowed <- canRemoveThreatFrom source scheme
+  modifiers <- getModifiers (schemeRef scheme)
+  controller <- getSourceController source
+  own <- getModifiers source
+  let locked = ThreatCannotBeRemoved `elem` modifiers || (thwarting && ThreatCannotBeRemovedByThwarting `elem` modifiers)
+  if not allowed || locked then pure False else case scheme of
+    SchemeSideSchemeId _ -> do
+      forbidden <- maybe (pure False) (fmap (elem CannotThwartSideSchemes) . getModifiers . IdentityRef) controller
+      let onlyBy = [you | ThreatRemovableOnlyBy you <- modifiers]
+      pure $ not (thwarting && forbidden) && not (any (\you -> maybe False (/= you) controller) onlyBy)
+    SchemeMainSchemeId sid -> do
+      restricted <- isRestrictedMainScheme sid
+      if thwarting then do
+        patrolled <- maybe (pure False) isPatrolled controller
+        pure $ not (patrolled && restricted && IgnoresPatrol `notElem` own && not (basic && BasicThwartIgnoresPatrol `elem` own))
+      else do
+        crisis <- hasCrisisInYourArea
+        controllerIgnores <- case source of
+          AllyRef _ -> pure False
+          _ -> maybe (pure False) (fmap (elem IgnoresCrisis) . getModifiers . IdentityRef) controller
+        let playerCard = case source of
+              IdentityRef _ -> True
+              AllyRef _ -> True
+              EventRef _ -> True
+              SupportRef _ -> True
+              UpgradeRef _ -> True
+              _ -> False
+        pure $ not (crisis && restricted && playerCard && IgnoresCrisis `notElem` own && not controllerIgnores)

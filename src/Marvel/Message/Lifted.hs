@@ -566,12 +566,21 @@ placeThreat :: (ReverseQueue m, IsScheme scheme) => scheme -> Natural -> m ()
 placeThreat = placeThreatFrom ThreatFromAbility
 
 placeThreatOn :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> scheme -> Natural -> m ()
-placeThreatOn source scheme n = toSource source `seq` placeThreat scheme n
+placeThreatOn source scheme n = placeThreatBy source ThreatFromAbility scheme n
+
+-- | Retain the acting source until character replacement interrupts have resolved.
+placeThreatBy :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> ThreatSource -> scheme -> Natural -> m ()
+placeThreatBy source from (toScheme -> scheme) n =
+  cardSpecific GameRef "placeThreatBy" (toSource source,from,scheme,n)
 
 -- | Report positive actual placements to the source's "threatPlaced" step.
 -- A canceled or fully prevented placement reports nothing.
 placeThreatOnReporting :: (ReverseQueue m, IsRef source, IsScheme scheme) => source -> scheme -> Natural -> m ()
 placeThreatOnReporting source (toScheme -> scheme) n = when (n > 0) $
+  cardSpecific GameRef "placeReportingThreatBy" (toSource source,ThreatFromAbility,scheme,n)
+
+placeThreatOnReportingAfterCharacterWindow :: ReverseQueue m => Source -> SchemeId -> Natural -> m ()
+placeThreatOnReportingAfterCharacterWindow source scheme n = when (n > 0) $
   pushAll [CheckWindows [Window Would $ W.ThreatPlaced ThreatFromAbility scheme n],WithThreatPlacementResult (toSource source) $ threatPlacement scheme n]
 
 -- | Threat placed on the scheme by what the window says, the window first.
@@ -3586,7 +3595,10 @@ tuckPlayerCardUnder host card = removeFromGame card >> cardSpecific host "holdTu
 -- Preserve the actual pending amount after threat interrupts, before the board can
 -- advance or a response can remove threat. Nested schemes retain their own receipt.
 placeVillainSchemeThreat :: ReverseQueue m => VillainId -> SchemeId -> Natural -> m ()
-placeVillainSchemeThreat vid scheme n = do
+placeVillainSchemeThreat vid scheme n = cardSpecific GameRef "placeVillainThreatBy" (VillainRef vid,ThreatFromVillain,scheme,n)
+
+placeVillainSchemeThreatAfterCharacterWindow :: ReverseQueue m => VillainId -> SchemeId -> Natural -> m ()
+placeVillainSchemeThreatAfterCharacterWindow vid scheme n = do
   when (n > 0) $ checkWindows [Window Would $ W.ThreatPlaced ThreatFromVillain scheme n]
   cardSpecific (VillainRef vid) "recordPendingSchemeThreat" scheme
   push $ threatPlacement scheme n
@@ -3623,3 +3635,24 @@ placeCharacterDamageOnAttachment (toCharacter -> character) aid damage = instead
     VillainMessage villain (VillainDamaged _ _) -> character == VillainCharacter villain
     MinionMessage minion (MinionDamaged _ _) -> character == MinionCharacter minion
     _ -> False
+
+-- | Replace the destination without re-opening the replaced character window.
+redirectCharacterThreatPlacement :: ReverseQueue m => SchemeId -> SideSchemeId -> m ()
+redirectCharacterThreatPlacement old new = replaceMatchingMessage rewrite matches
+ where
+  matches = \case
+    CardSpecific GameRef key (fromJSON -> Success (_ :: Source,_ :: ThreatSource,scheme :: SchemeId,_ :: Natural)) ->
+      key `elem` ["placeThreatAfterCharacterWindow","placeReportingThreatAfterCharacterWindow","placeVillainThreatAfterCharacterWindow"] && scheme == old
+    _ -> False
+  rewrite = \case
+    CardSpecific target key (fromJSON -> Success (source :: Source,from :: ThreatSource,_ :: SchemeId,n :: Natural)) ->
+      [Msg.cardSpecific target key (source,from,SchemeSideSchemeId new,n)]
+    message -> [message]
+
+redirectCharacterThreatRemoval :: ReverseQueue m => SchemeId -> SideSchemeId -> Natural -> m ()
+redirectCharacterThreatRemoval old new n = replaceMatchingMessage rewrite matches
+ where
+  matches message = maybe False (\(_,scheme,_,_,_) -> scheme == old) (Msg.threatRemovalMessage message)
+  rewrite message = case Msg.threatRemovalMessage message of
+    Just (source,_,_,_,thwarting) -> [SideSchemeMessage new $ if thwarting then SideSchemeThwarted source n else SideSchemeThreatRemoved source n]
+    Nothing -> [message]

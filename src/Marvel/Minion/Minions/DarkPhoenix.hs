@@ -28,7 +28,7 @@ instance RunMessage DarkPhoenix where
         Nothing -> DarkPhoenix <$> runMessage msg attrs
         Just sid -> do
           threat <- getModifiedScheme attrs
-          placeThreatFrom W.ThreatFromMinion sid (threat + minionBoost attrs)
+          placeThreatBy attrs W.ThreatFromMinion sid (threat + minionBoost attrs)
           checkWindows [W.Window W.After $ W.SchemedByMinion mid]
           pure $ DarkPhoenix attrs {minionBoost = 0}
     _ -> DarkPhoenix <$> runMessage msg attrs

@@ -412,6 +412,7 @@ data CharacterMatcher
   | -- | the identities of the players matching: "damages you"
     IdentityCharacters IdentityMatcher
   | AllyCharacters AllyMatcher
+  | CharacterWithAttachment AttachmentMatcher
   | CharacterWithTrait Trait
   | -- | an exhausted friendly character allowed to ready through a player card
     CharacterCanBeReadied

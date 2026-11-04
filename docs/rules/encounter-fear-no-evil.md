@@ -2,7 +2,7 @@
 
 Sources: [Fear No Evil rulebook](https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf), supplied MC60 PDF, printed card scans bundled with this repository, and Rules Reference v1.8 under this directory. Ordinary player cards and existing hero nemesis sets are outside this work.
 
-This expansion is in progress. Disasters, Cops, The Owl, Tombstone, and Tracksuit Mafia have runtime handlers. Drive, the villain encounter sets, six scenarios, and campaign remain to be implemented. Generated card definitions alone are metadata and do not establish implementation.
+This expansion is in progress. Disasters, Cops, Drive, The Owl, Tombstone, and Tracksuit Mafia have runtime handlers. The villain encounter sets, six scenarios, and campaign remain to be implemented. Generated card definitions alone are metadata and do not establish implementation.
 
 Printed statistics missing from the imported card data are recorded in `data/card-text/street-encounter-stats.json`. The enrichment and definition generators read this overlay, so rebuilding the data preserves the corrections. Runtime handlers use the same printed statistics.
 
@@ -18,6 +18,8 @@ Before implementing Kingpin, apply the [FFG ruling dated September 10, 2026](htt
 
 The same official ruling collection (September 14, 2026) confirms that Tracksuit Mafia's tucked-card reveal is outside the encounter deck and cannot chain into further tucked-card reveals. The September 22 clarification also says to preserve Change of Venue's intended non-surge boost resolution; FFG announced an erratum distinguishing its non-surge When Revealed ability. Apply that exception when implementing Protection Racket, rather than granting a surge from its boost.
 
-Drive’s three vehicle attachments and Carjacking have handlers under validation. Traffic Jam remains unfinished, so Drive is not yet exposed as a selectable modular set.
+Drive is selectable as a modular set. Its three vehicles replace a complete damage packet with damage placed on the attachment; excess does not spill to the host, and this replacement can apply to damage that cannot be prevented. Carjacking preserves the discarded vehicle’s physical card ID when it is paid for and attached to an identity.
+
+Traffic Jam retains the acting character through threat placement and removal. Its forced interrupt changes the destination before the scheme’s normal threat window, retains villain scheming receipts, and closes the replaced character window without chaining another copy. A removal that is blocked on the original scheme, or that would remove no threat, does not trigger it. The implementation interprets the amount replaced as the threat the character would actually remove from the original scheme; this is an inference from the printed replacement and RR v1.8 Interrupt, Replacement Effect, and Thwart entries. Ten focused Traffic Jam behavior tests pass, including Dark Phoenix’s separate scheming destination. The full unit regression run passed 9,135 examples, and Drive’s random-play modular smoke case passed with two seeds. Broader expansion validation remains required.
 
 The fixed-HP tests for Cold as Ice and Hard as Marble do not establish their “highest base hit points” selection for variable-HP or per-player-HP minions. Audit that distinction before marking the expansion complete; the existing highest-printed-HP matcher uses the minion's stored initial HP.

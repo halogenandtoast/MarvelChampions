@@ -512,6 +512,7 @@ data Message
   | GainSurge Target
   | -- | Report a positive placement to the source after prevention and replacement.
     WithThreatPlacementResult Source Message
+  | ResolveCharacterThreatRemoval Message
   | Surge IdentityId
   | DrawAndRevealEncounterCard IdentityId
   | DiscardedCard Card
@@ -767,6 +768,7 @@ data ReplaceKind = Swapped | Advanced
 -- the original message, while the continuation retains which windows have run.
 queuedMessage :: Message -> Message
 queuedMessage = \case
+  ResolveCharacterThreatRemoval original -> queuedMessage original
   WithThreatPlacementResult _ original -> queuedMessage original
   PrepareEnemyDamage original -> queuedMessage original
   ResolveEnemyDamage original -> queuedMessage original
@@ -777,6 +779,9 @@ queuedMessage = \case
 -- kinds normally. Canceling the raw damage therefore cancels its continuation.
 rewrapQueuedMessages :: Message -> [Message] -> [Message]
 rewrapQueuedMessages (WithSimultaneousAttackContext cursor original) = map (WithSimultaneousAttackContext cursor) . rewrapQueuedMessages original
+rewrapQueuedMessages (ResolveCharacterThreatRemoval original) = map wrap . rewrapQueuedMessages original
+ where
+  wrap message = if isJust (threatRemovalMessage message) then ResolveCharacterThreatRemoval message else message
 rewrapQueuedMessages (WithThreatPlacementResult source original) = map (reportingThreatPlacement source) . rewrapQueuedMessages original
 rewrapQueuedMessages wrapper = map $ case wrapper of
   PrepareEnemyDamage _ -> wrap PrepareEnemyDamage
@@ -808,6 +813,7 @@ enemyDamageMessage = \case
 -- A replacement may remove a child or insert several messages in its position.
 queuedChildEdits :: Message -> [(Message, [Message] -> [Message])]
 queuedChildEdits message = case message of
+  ResolveCharacterThreatRemoval original -> [(original,rewrapQueuedMessages message)]
   WithThreatPlacementResult source original -> [(original,map $ reportingThreatPlacement source)]
   WithSimultaneousAttackContext cursor original -> [(original, map (WithSimultaneousAttackContext cursor))]
   PrepareAllyDepartureByDefeat _ departure ->
@@ -836,3 +842,13 @@ queuedMessageLeaves :: Message -> [Message]
 queuedMessageLeaves message = case queuedChildEdits message of
   [] -> [queuedMessage message]
   children -> concatMap (queuedMessageLeaves . fst) children
+
+-- | Source, destination, amount, basic power, and whether the removal is a thwart.
+threatRemovalMessage :: Message -> Maybe (Source,SchemeId,Natural,Bool,Bool)
+threatRemovalMessage = \case
+  MainSchemeMessage sid (MainSchemeBasicThwarted source n) -> Just (source,SchemeMainSchemeId sid,n,True,True)
+  MainSchemeMessage sid (MainSchemeThwarted source n) -> Just (source,SchemeMainSchemeId sid,n,False,True)
+  MainSchemeMessage sid (MainSchemeThreatRemoved source n) -> Just (source,SchemeMainSchemeId sid,n,False,False)
+  SideSchemeMessage sid (SideSchemeThwarted source n) -> Just (source,SchemeSideSchemeId sid,n,False,True)
+  SideSchemeMessage sid (SideSchemeThreatRemoved source n) -> Just (source,SchemeSideSchemeId sid,n,False,False)
+  _ -> Nothing

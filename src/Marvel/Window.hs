@@ -262,6 +262,14 @@ windowMatches matcher w source = case matcher of
     AllyTakeDamageFrom aid source damage | windowTiming w == When, damageAmount damage > 0, damageSource damage == FromAttack, Just enemy <- sourceEnemy source ->
       (&&) <$> enemyMatches enemyMatcher enemy <*> characterMatches characterMatcher (AllyCharacter aid)
     _ -> pure False
+  CharacterWouldRemoveThreat character scheme -> case windowType w of
+    CharacterRemovingThreat actor target n | windowTiming w == Would, n > 0 ->
+      (&&) <$> characterMatches character actor <*> schemeMatches scheme target
+    _ -> pure False
+  CharacterWouldPlaceThreat character scheme -> case windowType w of
+    CharacterPlacingThreat actor target n | windowTiming w == Would, n > 0 ->
+      (&&) <$> characterMatches character actor <*> schemeMatches scheme target
+    _ -> pure False
   CharacterWouldTakeDamage matcher -> case windowType w of
     IdentityTakeDamage you damage | windowTiming w == When, damageAmount damage > 0 -> characterMatches matcher (IdentityCharacter you)
     AllyTakeDamage aid damage | windowTiming w == When, damageAmount damage > 0 -> characterMatches matcher (AllyCharacter aid)

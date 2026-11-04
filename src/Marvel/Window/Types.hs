@@ -93,6 +93,8 @@ data WindowMatcher
   | EnemyWouldTakeDamage EnemyMatcher
   | CharacterWithConditionWouldTakeDamage [StatusCard]
   | CharacterWouldTakeAttackDamageFrom EnemyMatcher CharacterMatcher
+  | CharacterWouldRemoveThreat CharacterMatcher SchemeMatcher
+  | CharacterWouldPlaceThreat CharacterMatcher SchemeMatcher
   | CharacterWouldTakeDamage CharacterMatcher
   | NonScenarioAttachmentWouldAttachToVillain Trait
   | DefendingCharacterWouldTakeDamage CharacterMatcher
@@ -357,6 +359,8 @@ data WindowType
   | AllyAttack AllyId EnemyId
   | -- | A hero or ally attacks a friendly identity, without becoming an enemy.
     FriendlyCharacterAttack CharacterId IdentityId
+  | CharacterRemovingThreat CharacterId SchemeId Natural
+  | CharacterPlacingThreat CharacterId SchemeId Natural
   | ThreatPlaced ThreatSource SchemeId Natural
   | AvengerChangedToAlterEgo IdentityId
   | MutantChangedToHero IdentityId

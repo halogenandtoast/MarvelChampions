@@ -8,6 +8,8 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Entity
 import Marvel.FearNoEvil.Cards qualified as Cards
+import Marvel.GameValue
+import Marvel.SideScheme.Types
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
@@ -95,3 +97,31 @@ instance RunMessage Carjacking where
       attachEncounterToCharacter card (IdentityCharacter you)
       pure e
     _ -> Carjacking <$> runMessage msg a
+
+newtype TrafficJam = TrafficJam (Attrs SideScheme)
+  deriving newtype (Show,Eq,ToJSON,FromJSON,HasCardCode,IsRef)
+  deriving anyclass HasModifiersFor
+instance IsSideScheme TrafficJam where
+  sideSchemeAbilities = getAbilities
+trafficJam :: SideSchemeCard TrafficJam
+trafficJam = sideScheme TrafficJam Cards.street60189 (Static 2)
+instance HasAbilities TrafficJam where
+  getAbilities (TrafficJam a) = [windowAbility a 1 windows ForcedInterrupt NoCost (runAbility a 1)]
+   where
+    character = CharacterWithAttachment $ AttachmentWithTrait T.Vehicle
+    scheme = NotScheme $ SchemeWithId $ SchemeSideSchemeId $ sideSchemeId a
+    windows = W.WindowOneOf [W.CharacterWouldPlaceThreat character scheme,W.CharacterWouldRemoveThreat character scheme]
+instance RunMessage TrafficJam where
+  runMessage msg e@(TrafficJam a) = runQueueT $ case msg of
+    RanAbility _ (isTarget a -> True) 1 windows _ -> do
+      for_ (headMay $ filter relevant windows) $ \case
+        W.CharacterPlacingThreat _ old _ -> redirectCharacterThreatPlacement old (sideSchemeId a)
+        W.CharacterRemovingThreat _ old n -> redirectCharacterThreatRemoval old (sideSchemeId a) n
+        _ -> pure ()
+      pure e
+    _ -> TrafficJam <$> runMessage msg a
+   where
+    relevant = \case
+      W.CharacterPlacingThreat _ old _ -> old /= SchemeSideSchemeId (sideSchemeId a)
+      W.CharacterRemovingThreat _ old _ -> old /= SchemeSideSchemeId (sideSchemeId a)
+      _ -> False

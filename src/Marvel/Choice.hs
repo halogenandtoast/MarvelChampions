@@ -338,9 +338,9 @@ resolveChoice ident = \case
     let schemes = if labeled && forbidden then filter (\case SchemeSideSchemeId _ -> False; _ -> True) eligible else eligible
         f target = ThwartScheme target source n
     pure [Ask ident $ ChooseOne [TargetLabel target [f target] | x <- schemes, let target = schemeRef x] | notNull schemes]
-  PlaceThreat _source n schemeMatcher -> do
+  PlaceThreat source n schemeMatcher -> do
     schemes <- selectList schemeMatcher
-    pure $ concatMap (`placeThreatOn` n) schemes
+    pure [CardSpecific GameRef "placeThreatBy" $ toJSON (source,W.ThreatFromAbility,scheme,n) | scheme <- schemes]
   ChooseHeal n characterMatcher -> do
     characters <- selectList characterMatcher
     let f character = Heal character n

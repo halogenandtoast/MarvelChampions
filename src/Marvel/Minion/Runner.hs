@@ -246,9 +246,9 @@ runMinionMessage msg attrs = case msg of
     destinations <- filterM (selectAny . SideSchemeWithId) [sid | MinionSchemesOn sid <- modifiers]
     case (minionSchemeRemoval attrs, headMay destinations) of
       (Just you, _) -> for_ mainScheme $ \scheme -> cardSpecific GameRef "aosInformantScheme" (you,toSource attrs,scheme,threat + minionBoost attrs)
-      (Nothing, Just sid) -> placeThreatFrom W.ThreatFromMinion sid (threat + minionBoost attrs)
+      (Nothing, Just sid) -> placeThreatBy attrs W.ThreatFromMinion sid (threat + minionBoost attrs)
       (Nothing, Nothing) -> for_ [m | Just (SchemeMainSchemeId m) <- [mainScheme]] \mainSchemeId ->
-        placeThreatFrom W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
+        placeThreatBy attrs W.ThreatFromMinion mainSchemeId (threat + minionBoost attrs)
     checkWindows [W.Window W.After $ W.SchemedByMinion (minionId attrs)]
     pure $ attrs {minionSchemeRemoval = Nothing} & boostL .~ 0
   MinionEndAttack -> pure $ attrs {minionActivationPlayer = Nothing,minionAttackTarget = Nothing,minionBoost = 0} & attackingL .~ Nothing
