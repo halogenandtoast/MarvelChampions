@@ -39,8 +39,222 @@ equipStreetVehicle character def = do
 trafficThreat :: SideSchemeId -> GameAppT Natural
 trafficThreat sid = getsGame $ Side.sideSchemeThreat . toAttrs . (HashMap.! sid) . gameSideSchemes
 
+recruitBlackCat :: IdentityId -> GameAppT (Attrs Ally)
+recruitBlackCat you = do
+  changeForm you
+  mid <- addMinion you Cards.street60169
+  for_ [1..4 :: Int] $ \_ -> do
+    resource <- putInHand you "01089"
+    choose "give Black Cat a threat" (isAbilityOf mid)
+    payWith [resource]
+    pass
+  allyIn "60169"
+
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  it "Deadly Sai is discarded after the defended attack and its retaliation have resolved" do
+    tg <- testGame ["black-panther"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60065" Advanced]
+      card <- revealNow you Cards.street60070
+      pass
+      mental <- putInHand you "01089"
+      energy <- putInHand you "01088"
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      runNow [VillainMessage vid $ VillainAttacks you]
+      pass
+      choose "Bullseye's activation interrupt" (isAbilityOf vid)
+      choose "defend the attack" isDefend
+      choose "discard Deadly Sai" (isAbilityOf $ attachmentOf card)
+      payWith [mental,energy]
+      pass
+      selectAny (AttachmentIs Cards.street60070) `shouldReturn` False
+      damageOf you `shouldReturn` 2
+      getVillainHitPoints vid `shouldReturn` 13
+
+  it "Cold as Ice compares per-player base hit points rather than the stored one-player value" do
+    tg <- testGame ["spider-man","she-hulk"]
+    inGame tg do
+      garm <- addMinion (player1 tg) MinionCards.garm
+      _ <- addMinion (player1 tg) Cards.street60149
+      card <- revealNow (player1 tg) Cards.street60195
+      choose "attach to Garm" (isTargetChoice garm)
+      pass
+      getAttachedCharacter (attachmentOf card) `shouldReturn` Just (MinionCharacter garm)
+
+  it "Hard as Marble ignores extra maximum hit points when comparing base hit points" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      low <- addMinion (player1 tg) Cards.street60182
+      high <- addMinion (player1 tg) Cards.street60198
+      resolve =<< L.runQueueT (L.capture $ L.untilNextVillainPhase GameRef low [HitPointModifier 20])
+      card <- revealNow (player1 tg) Cards.street60196
+      choose "attach to the higher base hit points" (isTargetChoice high)
+      pass
+      getAttachedCharacter (attachmentOf card) `shouldReturn` Just (MinionCharacter high)
+
+  it "Black Cat changes sides at four threat and keeps villainous on her basic attack" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      cat <- recruitBlackCat (player1 tg)
+      getCharacterThreat (AllyCharacter $ allyId cat) `shouldReturn` 4
+      _ <- setEncounterDeck [Cards.street60174,Cards.street60188] []
+      vid <- villainIdNow
+      before <- getVillainHitPoints vid
+      choose "attack with Black Cat" (isAllyAttack cat)
+      choose "attack Rhino" (isTargetChoice $ EnemyVillainId vid)
+      pass
+      getVillainHitPoints vid `shouldReturn` subtractNatural 3 before
+      restored <- allyIn "60169"
+      allyDamage restored `shouldBe` 2
+      getsGame (length . gameFriendlyBoosts) `shouldReturn` 0
+
+  it "Black Cat's villainous boost adds to her basic thwart and is discarded once" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      cat <- recruitBlackCat (player1 tg)
+      scheme <- selectJust EncounterMainScheme
+      resolve =<< L.runQueueT (L.capture $ L.placeThreatWithoutWindow scheme 5)
+      (cards,_) <- setEncounterDeck [Cards.street60174,Cards.street60188] []
+      choose "thwart with Black Cat" (isAllyThwart cat)
+      choose "thwart the main scheme" (isTargetChoice scheme)
+      pass
+      mainSchemeThreatNow `shouldReturn` 2
+      discarded <- getEncounterDiscard
+      length (filter ((== ecCardId (testHead cards)) . ecCardId) discarded) `shouldBe` 1
+      restored <- allyIn "60169"
+      allyDamage restored `shouldBe` 2
+
+  it "Black Cat returns to being a minion when a fifth threat is placed on her" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      cat <- recruitBlackCat you
+      resource <- putInHand you "01089"
+      choose "give Black Cat a fifth threat" (isAbilityOf $ allyId cat)
+      payWith [resource]
+      pass
+      selectAny (AllyWithId $ allyId cat) `shouldReturn` False
+      let mid = MinionId $ unAllyId $ allyId cat
+      selectAny (MinionWithId mid) `shouldReturn` True
+      getCharacterThreat (MinionCharacter mid) `shouldReturn` 5
+
+  it "Electro finds the physical Electrical Charge and starts with two charges" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      (cards,_) <- setEncounterDeck [Cards.street60079,Cards.street60188,Cards.street60188] []
+      resolve [ReplaceVillain vid "60076" Advanced]
+      let charge = attachmentOf $ fromMaybe (error "charge fixture missing") $ headMay cards
+      getAttachedCharacter charge `shouldReturn` Just (VillainCharacter vid)
+      getCountersOn charge `shouldReturn` 2
+      getVillainHitPoints vid `shouldReturn` 15
+      resolve [VillainMessage vid $ VillainSchemesAgainst (player1 tg)]
+      getCountersOn charge `shouldReturn` 3
+
+  it "Hammerhead's hard head grants stalwart and one extra scheme" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60086" Advanced]
+      _ <- revealNow (player1 tg) Cards.street60090
+      pass
+      getModifiers vid >>= (liftIO . (`shouldContain` [KeywordModifier Stalwart]))
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      resolve [VillainMessage vid $ VillainSchemesAgainst (player1 tg)]
+      mainSchemeThreatNow `shouldReturn` 3
+
+  it "Purple Man grants guard, then villainous and patrol to Influenced minions as his stages advance" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      resolve [ReplaceVillain vid "60097" Advanced]
+      mid <- addMinion (player1 tg) Cards.street60101
+      minionMatches (MinionWithKeyword Guard) mid `shouldReturn` True
+      minionMatches (MinionWithKeyword Villainous) mid `shouldReturn` False
+      resolve [ReplaceVillain vid "60098" Advanced]
+      minionMatches (MinionWithKeyword Villainous) mid `shouldReturn` True
+      resolve [ReplaceVillain vid "60099" Advanced]
+      minionMatches (MinionWithKeyword Patrol) mid `shouldReturn` True
+
+  it "Converted turns an ally into an Influenced minion and restores it when discarded" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      ally <- putIntoPlay you "01002"
+      card <- revealNow you Cards.street60100
+      choose "convert the ally" (isTargetChoice $ allyIdOf ally)
+      pass
+      let mid = MinionId $ unAllyId $ allyIdOf ally
+      selectAny (AllyWithId $ allyIdOf ally) `shouldReturn` False
+      minionMatches (MinionWithTrait Trait.Influenced) mid `shouldReturn` True
+      resolve =<< L.runQueueT (L.capture $ L.removeFromPlay $ attachmentOf card)
+      selectAny (AllyWithId $ allyIdOf ally) `shouldReturn` True
+      selectAny (MinionWithId mid) `shouldReturn` False
+
+  it "Baron Zemo converts an ally carrying threat and restores its damage when he leaves" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      ally <- putIntoPlay you "01002"
+      let aid = allyIdOf ally
+          mid = MinionId $ unAllyId aid
+      resolve [AllyMessage aid $ AllySetDamage 1]
+      resolve =<< L.runQueueT (L.capture $ L.placeCharacterThreat aid 1)
+      zemoCard <- encounterCard Cards.street60145
+      resolve [RevealEncounterCard you zemoCard]
+      let zemo = minionOf zemoCard
+      selectAny (AllyWithId aid) `shouldReturn` False
+      minionMatches (MinionWithTrait Trait.Deceived) mid `shouldReturn` True
+      getCharacterThreat (MinionCharacter mid) `shouldReturn` 1
+      resolve =<< L.runQueueT (L.capture $ L.removeFromPlay zemo)
+      selectAny (AllyWithId aid) `shouldReturn` True
+      minionDamages `shouldReturn` []
+      restored <- allyIn "01002"
+      allyDamage restored `shouldBe` 1
+      getCharacterThreat (AllyCharacter aid) `shouldReturn` 1
+
+  it "Tanker Truck forbids damage to the villain before tough is consumed" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      _ <- revealNow (player1 tg) Cards.street60131
+      pass
+      before <- getVillainHitPoints vid
+      resolve [GiveStatus (VillainRef vid) ToughStatus]
+      resolve [VillainMessage vid $ VillainDamaged GameRef $ toDamage 4 FromAbility]
+      getVillainHitPoints vid `shouldReturn` before
+      villainMatches VillainWithToughStatus vid `shouldReturn` True
+
+  it "Stilt-Man loses one height counter instead of taking an entire damage packet" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60172
+      for_ [1,0 :: Natural] $ \remaining -> do
+        resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 3 FromAbility]
+        getCountersOn mid `shouldReturn` remaining
+        minionDamages `shouldReturn` [0]
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 1 FromAbility]
+      minionDamages `shouldReturn` [1]
+
+  it "Spot reflects an attack packet to its attacker, but accepts the next attack and replaces his counter" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      mid <- addMinion you Cards.street60171
+      resolve [MinionMessage mid $ MinionDamaged (IdentityRef you) $ toDamage 2 FromAttack]
+      minionDamages `shouldReturn` [0]
+      damageOf you `shouldReturn` 2
+      getCountersOn mid `shouldReturn` 0
+      resolve [MinionMessage mid $ MinionDamaged (IdentityRef you) $ toDamage 2 FromAttack]
+      minionDamages `shouldReturn` [2]
+      getCountersOn mid `shouldReturn` 1
+
   it "attributes hero upgrades to their hero and keeps allies and supports distinct" do
     tg <- testGame ["spider-man"]
     inGame tg do
@@ -735,7 +949,6 @@ spec = describe "Fear No Evil encounter cards" do
       mid <- addMinion you Cards.street60072
       (cards,_) <- setEncounterDeck [Cards.street60188,Cards.street60195,Cards.street60188] []
       runNow [MinionMessage mid $ MinionAttacks you]
-      pass
       choose "defend the attack" isDefend
       pass
       offers (isAbilityOf mid) `shouldReturn` False
@@ -792,8 +1005,6 @@ spec = describe "Fear No Evil encounter cards" do
       runNow [VillainMessage vid $ VillainAttacks you]
       pass
       choose "Bullseye's activation interrupt" (isAbilityOf vid)
-      pass
-      choose "take it undefended" (isLabel "$label.noDefender")
       pass
       damageOf you `shouldReturn` 2
       getVillainHitPoints vid `shouldReturn` 14

@@ -540,6 +540,7 @@ library
       Marvel.Campaign
       Marvel.Campaign.AgentsOfShield
       Marvel.Campaign.AgeOfApocalypse
+      Marvel.Campaign.FearNoEvil
       Marvel.Campaign.GalaxysMostWanted
       Marvel.Campaign.MadTitansShadow
       Marvel.Campaign.MutantGenesis
@@ -1143,30 +1144,28 @@ library
       Marvel.Exception
       Marvel.FalconWinter.Cards
       Marvel.FalconWinter.Helpers
+      Marvel.FearNoEvil.ArtMuseum
       Marvel.FearNoEvil.Bullseye
       Marvel.FearNoEvil.BullseyeAttachments
       Marvel.FearNoEvil.BullseyeVillain
+      Marvel.FearNoEvil.CampaignCards
       Marvel.FearNoEvil.Cards
       Marvel.FearNoEvil.Cops
       Marvel.FearNoEvil.Disasters
       Marvel.FearNoEvil.DriveVehicles
       Marvel.FearNoEvil.Electro
+      Marvel.FearNoEvil.Getaway
       Marvel.FearNoEvil.Hammerhead
-      Marvel.FearNoEvil.PurpleMan
-    Marvel.FearNoEvil.Mary
-    Marvel.FearNoEvil.ArtMuseum
-    Marvel.FearNoEvil.Getaway
-    Marvel.FearNoEvil.Raft
-    Marvel.FearNoEvil.Presses
-    Marvel.FearNoEvil.Racket
-    Marvel.FearNoEvil.Kingpin
-    Marvel.FearNoEvil.KingpinEquipment
-    Marvel.FearNoEvil.KingpinMinions
-    Marvel.FearNoEvil.KingpinTreacheries
-    Marvel.FearNoEvil.CampaignCards
-    Marvel.Campaign.FearNoEvil
-    Marvel.Scenario.FearNoEvil
+      Marvel.FearNoEvil.Kingpin
+      Marvel.FearNoEvil.KingpinEquipment
+      Marvel.FearNoEvil.KingpinMinions
+      Marvel.FearNoEvil.KingpinTreacheries
+      Marvel.FearNoEvil.Mary
       Marvel.FearNoEvil.OwlTombstone
+      Marvel.FearNoEvil.Presses
+      Marvel.FearNoEvil.PurpleMan
+      Marvel.FearNoEvil.Racket
+      Marvel.FearNoEvil.Raft
       Marvel.FearNoEvil.TracksuitMafia
       Marvel.Frontend
       Marvel.Game
@@ -1690,6 +1689,7 @@ library
       Marvel.Scenario.AgeOfApocalypseFourHorsemen
       Marvel.Scenario.AgeOfApocalypseUnus
       Marvel.Scenario.CivilWar
+      Marvel.Scenario.FearNoEvil
       Marvel.Scenario.Mojo
       Marvel.Scenario.MojoOpening
       Marvel.Scenario.MutantGenesis
@@ -2939,6 +2939,7 @@ test-suite MarvelChampions-test
       Marvel.Aspect.X23PackSpec
       Marvel.Campaign.AgentsOfShieldSpec
       Marvel.Campaign.AgeOfApocalypseSpec
+      Marvel.Campaign.FearNoEvilSpec
       Marvel.Campaign.GalaxysMostWantedSpec
       Marvel.Campaign.MadTitansShadowSpec
       Marvel.Campaign.MarketCheapEventsSpec
@@ -3021,6 +3022,8 @@ test-suite MarvelChampions-test
       Marvel.Encounter.EnchantressSpec
       Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.FalconNemesisSpec
+      Marvel.Encounter.FearNoEvilCoverageSpec
+      Marvel.Encounter.FearNoEvilScenarioSpec
       Marvel.Encounter.FearNoEvilSpec
       Marvel.Encounter.GalaxysMostWantedModularsSpec
       Marvel.Encounter.GambitNemesisSpec

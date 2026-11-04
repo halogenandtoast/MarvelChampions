@@ -108,7 +108,7 @@ spec = parallel do
                   | (i, villain) <- zip [0..] scenarioCodes, heroes' <- tables i villain, not (any (`elem` skipHeroes) heroes'), difficulty <- [Normal, Expert]]
       modulars = [(modularName villain modular, villain, modular)
                  | (i, modular) <- zip [0..] modularSets, villain <- modularVillains i modular]
-      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign, campaignScenarios AgentsOfShieldCampaign, campaignScenarios ShadowlandCampaign], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
+      campaigns = [campaignName villain n mode | campaign <- [madTitansShadow, sinisterMotives, campaignScenarios MutantGenesis, campaignScenarios NextEvolution, campaignScenarios AgeOfApocalypseCampaign, campaignScenarios AgentsOfShieldCampaign, campaignScenarios ShadowlandCampaign, fearNoEvilScenarioPool <> ["60161a"]], (n, villain) <- zip [0 :: Int ..] campaign, mode <- [StandardCampaign, ExpertCampaign]]
       baselineRelevant = any (`elem` focusHeroes) ["spider-man", "she-hulk"]
       catalogue = [(name, any (`elem` focusHeroes) heroes') | (name, _, heroes', _) <- scenarios]
                <> [(name,any (`elem` focusHeroes) heroes') | (name,_,heroes') <- competitive]
@@ -287,6 +287,27 @@ spec = parallel do
                   <> [RecordHitPoints identity hp | n > 0, (identity,hp) <- zip identities [5,0]]
                 c = foldl' (flip recordInLog) base records
             playWith (campaignL ?~ c) (fromMaybe (error "no setup") (recommendedSetup villain)) heroes'
+
+    describe "Fear No Evil campaign" do
+      for_ (zip [0 ..] $ fearNoEvilScenarioPool <> ["60161a"]) $ \(n,villain) ->
+        for_ [StandardCampaign,ExpertCampaign] $ \mode -> do
+          let name = campaignName villain n mode
+          when (selectedCase name) $ it name do
+            let heroes' = ["spider-man","she-hulk"]
+                identities = map ((.hero) . starter) heroes'
+                previous = take n fearNoEvilScenarioPool
+                log = noFearNoEvilLog
+                  {resolved=zip previous (cycle [True,False])
+                  ,progress=[(villain,fromIntegral $ n `mod` 3)]
+                  ,underlings=zip (take (min 5 $ n+1) fearNoEvilScenarioPool) ["60086","60065","60076","60097","60110a"]
+                  ,selectedScenario=if n == 0 then Nothing else Just villain
+                  ,trustEstablished=n >= 3,gamesPlayed=fromIntegral n}
+                base = newCampaignOf FearNoEvilCampaign mode identities
+                c = foldl' (flip recordInLog) (base {scenarios=previous,campaignLog=base.campaignLog {fearNoEvil=log}})
+                  [RecordHitPoints identity hp | n > 0,(identity,hp) <- zip identities [5,0]]
+                setup = (fromMaybe (error "no Fear No Evil setup") $ recommendedSetup villain)
+                  {difficulty=if mode == ExpertCampaign then Expert else Normal}
+            playWith (campaignL ?~ c) setup heroes'
 
  where
   csvEnv name = maybe [] (filter (not . Text.null) . map Text.strip . Text.splitOn "," . Text.pack) <$> lookupEnv name
