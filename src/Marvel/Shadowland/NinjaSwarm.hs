@@ -57,7 +57,7 @@ instance RunMessage Ninja where
       if toCardCode a == "65029" then do
         canPay <- canAffordCost who (toSource a) (MultiResourceCost [Nothing,Nothing])
         chooseOne who $ [labeled "$label.slPayTwo" (payForTreachery who $ MultiResourceCost [Nothing,Nothing]) | canPay]
-          <> [labeled "$label.slShuffleKirigi" $ afterMatching (== MinionMessage (minionId a) MinionDefeated) $ shuffleMinionIntoEncounterDeck (minionId a)]
+          <> [labeled "$label.slShuffleKirigi" $ shuffleMinionIntoEncounterDeck (minionId a)]
       else discardTopOfEncounterDeckThen 2 $ \cards ->
         for_ (headMay $ filter (\c -> cdCardType (getCardDef c) == MinionType && any (\case Teamwork _ -> True; _ -> False) (cdKeywords $ getCardDef c)) cards) $ revealFoundEncounterCard who
       pure e

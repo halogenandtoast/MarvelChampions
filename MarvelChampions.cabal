@@ -3092,6 +3092,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.SandmanSpec
       Marvel.Encounter.ScarletWitchNemesisSpec
       Marvel.Encounter.ShadowlandCoverageSpec
+      Marvel.Encounter.ShadowlandModularSpec
       Marvel.Encounter.ShadowlandSpec
       Marvel.Encounter.ShieldHeroesNemesisSpec
       Marvel.Encounter.SilkNemesisSpec
