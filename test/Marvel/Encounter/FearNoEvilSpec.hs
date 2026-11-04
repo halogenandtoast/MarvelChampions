@@ -795,23 +795,25 @@ spec = describe "Fear No Evil encounter cards" do
       getCharacterStatusCount (AllyCharacter aid) StunnedStatus `shouldReturn` 1
       getCharacterStatusCount (AllyCharacter aid) ConfusedStatus `shouldReturn` 1
 
-  it "Hit List removes one threat per player for an ally actually defeated by its indirect damage" do
-    tg <- testGame ["spider-man"]
-    inGame tg do
-      ally <- putIntoPlay (player1 tg) "01067"
-      let aid = allyIdOf ally
-      card <- encounterCard Cards.street60199
-      resolve [RevealEncounterCard (player1 tg) card]
-      sid <- selectJust (SideSchemeIs Cards.street60199)
-      runNow [CheckWindows [W.Window W.After $ W.PhaseBegan VillainPhase]]
-      whenM (offers $ isAbilityOf sid) $ choose "Hit List's forced response" (isAbilityOf sid)
-      choose "assign the first damage to Black Cat" (isTargetChoice aid)
-      choose "assign lethal damage to Black Cat" (isTargetChoice aid)
-      pass
-      whenM (offers $ isTargetChoice sid) $ choose "remove threat from Hit List" (isTargetChoice sid)
-      pass
-      selectAny (AllyWithId aid) `shouldReturn` False
-      getsGame (Side.sideSchemeThreat . toAttrs . (HashMap.! sid) . gameSideSchemes) `shouldReturn` 2
+  for_ [False,True] $ \eliminated ->
+    it ("Hit List keeps its per-player removal after elimination=" <> show eliminated) do
+      tg <- testGame $ if eliminated then ["spider-man","captain-marvel"] else ["spider-man"]
+      inGame tg do
+        when eliminated $ resolve [IdentityMessage (player2 tg) IdentityDefeated]
+        ally <- putIntoPlay (player1 tg) "01067"
+        let aid = allyIdOf ally
+        card <- encounterCard Cards.street60199
+        resolve [RevealEncounterCard (player1 tg) card]
+        sid <- selectJust (SideSchemeIs Cards.street60199)
+        runNow [CheckWindows [W.Window W.After $ W.PhaseBegan VillainPhase]]
+        whenM (offers $ isAbilityOf sid) $ choose "Hit List's forced response" (isAbilityOf sid)
+        choose "assign the first damage to Black Cat" (isTargetChoice aid)
+        choose "assign lethal damage to Black Cat" (isTargetChoice aid)
+        pass
+        whenM (offers $ isTargetChoice sid) $ choose "remove threat from Hit List" (isTargetChoice sid)
+        pass
+        selectAny (AllyWithId aid) `shouldReturn` False
+        getsGame (Side.sideSchemeThreat . toAttrs . (HashMap.! sid) . gameSideSchemes) `shouldReturn` (if eliminated then 4 else 2)
 
   it "Tombstone's boost gives the villain tough" do
     tg <- testGame ["spider-man"]

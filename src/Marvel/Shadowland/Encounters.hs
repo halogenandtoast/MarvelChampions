@@ -133,12 +133,12 @@ instance RunMessage ShadowSideScheme where
         "65009" -> changePosition True >> cardSpecific a "surroundPosition" ()
         "65042" -> do
           corridor <- selectOne (VillainWithCardCode "65037")
-          case corridor of Just vid -> removeCounters vid 1; Nothing -> fromIntegral <$> getPlayerCount >>= placeThreatOn a sid
+          case corridor of Just vid -> removeCounters vid 1; Nothing -> fromIntegral <$> getStartingPlayerCount >>= placeThreatOn a sid
         _ -> pure ()
       pure e
     CardSpecific (isTarget a -> True) "surroundPosition" _ -> do
       atop <- villainAtop
-      n <- fromIntegral <$> getPlayerCount
+      n <- fromIntegral <$> getStartingPlayerCount
       if atop then selectOne EncounterMainScheme >>= traverse_ (\mid -> placeThreatOn a mid n) else placeThreatOn a (sideSchemeId a) n
       pure e
     RanAbility you (isTarget a -> True) 1 windows _ -> do

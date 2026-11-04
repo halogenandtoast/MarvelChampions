@@ -53,6 +53,19 @@ spec = describe "Shadowland general encounter behaviors" do
         getSchemeThreatAmount (SchemeSideSchemeId sid) `shouldReturn` (if startsOnStreets then 2 else 3)
         mainSchemeThreatNow `shouldReturn` (if startsOnStreets then 1 else 0)
 
+  it "Surround the Fortress retains its printed per-player threat after another player is eliminated" do
+    tg <- testGame ["captain-marvel","spider-man"]
+    inGame tg do
+      let you = player1 tg
+      positions you Cards.street65003b
+      resolve [IdentityMessage (player2 tg) IdentityDefeated]
+      getPlayerCount `shouldReturn` 1
+      getStartingPlayerCount `shouldReturn` 2
+      card <- encounterCard Cards.street65009
+      resolve [RevealEncounterCard you card]
+      sid <- selectJust $ SideSchemeIs Cards.street65009
+      getSchemeThreatAmount (SchemeSideSchemeId sid) `shouldReturn` 6
+
   it "position changes happen at most once per phase for repeated encounter effects" do
     tg <- testGame ["captain-marvel"]
     inGame tg do

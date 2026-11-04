@@ -39,7 +39,7 @@ instance IsMainScheme ShadowMainScheme where
     | toCardCode a `elem` ["65001b","65002b"] = do
       hard <- (== Expert) <$> getDifficulty
       villains <- selectList AnyVillain
-      n <- getPlayerCount
+      n <- getStartingPlayerCount
       pure [modifier | hard, target `elem` map VillainRef villains, modifier <- [SchemeModifier 1,HitPointModifier (3 * fromIntegral n)]]
     | otherwise = pure []
 instance HasAbilities ShadowMainScheme where
@@ -63,7 +63,7 @@ instance RunMessage ShadowMainScheme where
       case toCardCode a of
         "65002b" -> changePosition False >> (getAllPlayers >>= traverse_ (\you -> searchAndRevealEncounterCard you $ CardWithType MinionType))
         "65038b" -> do
-          n <- fromIntegral <$> getPlayerCount
+          n <- fromIntegral <$> getStartingPlayerCount
           hard <- (== Expert) <$> getDifficulty
           selectOne ActiveVillain >>= traverse_ (\vid -> placeCounters vid $ (if hard then 7 else 10) * n)
         "65039b" -> do

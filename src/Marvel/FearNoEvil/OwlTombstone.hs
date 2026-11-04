@@ -149,7 +149,7 @@ instance RunMessage HitList where
       pure $ HitList (a `With` Just (defeated<>defeated',damaged<>damaged'))
     CardSpecific (isTarget a -> True) "hitListAfterDamage" (fromJSON -> Success you) -> do
       for_ checking $ \(defeated,damaged) -> do
-        n <- fromIntegral <$> getPlayerCount
+        n <- fromIntegral <$> getStartingPlayerCount
         let count = length $ filter (`elem` defeated) $ nub damaged
         when (count>0) $ removeThreat you a (n * fromIntegral count) (SchemeWithId $ SchemeSideSchemeId $ sideSchemeId a)
       pure $ HitList (a `With` Nothing)
