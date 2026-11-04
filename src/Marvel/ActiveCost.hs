@@ -245,6 +245,7 @@ payCostPartAs contributing activeCost cost = do
         UpgradeRef upgrade -> discardUpgrade upgrade
         SupportRef _ -> removeFromPlay target
         AllyRef _ -> removeFromPlay target
+        AttachmentRef _ -> removeFromPlay target
         _ -> error "Unhandled"
       paid $ DiscardPayment target
     CountersFromAttachmentCost matcher n -> do

@@ -3022,6 +3022,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.EnchantressSpec
       Marvel.Encounter.EscapeTheMuseumSpec
       Marvel.Encounter.FalconNemesisSpec
+      Marvel.Encounter.FearNoEvilAttackEffectsSpec
       Marvel.Encounter.FearNoEvilChaseArtSpec
       Marvel.Encounter.FearNoEvilCoverageSpec
       Marvel.Encounter.FearNoEvilHammerheadSpec
