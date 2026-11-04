@@ -41,18 +41,17 @@ instance HasModifiersFor ArtPiece where
     [case target of IdentityRef _ -> ThwartModifier 1; AllyRef _ -> ThwartModifier 1; _ -> SchemeModifier 1]
     <> [KeywordModifier Stalwart | toCardCode a == "60123"] else []
 instance HasAbilities ArtPiece where
-  getAbilities (ArtPiece a) = [ability a 1 HeroAction NoCriteria NoCost $ runAbility a 1]
+  getAbilities (ArtPiece a) =
+    [label text $ ability a index HeroAction NoCriteria cost $ runAbility a index
+    | isNothing $ attachmentIdentity a
+    , (index,text,cost) <- [(1,"$label.fnePayForArt",PrintedResourceCost [resource]),(3,"$label.fneExhaustForArt",ExhaustCost)]]
     <> [windowAbility a 2 (W.AttachmentAttachedToCharacter W.After (AttachmentWithId $ attachmentId a) AnyCharacter) ForcedResponse NoCost (runAbility a 2) | toCardCode a /= "60123"]
+   where
+    resource = case toCardCode a of "60122" -> Mental; "60123" -> Wild; "60124" -> Physical; _ -> Energy
 instance RunMessage ArtPiece where
   runMessage msg e@(ArtPiece a) = runQueueT $ case msg of
     AttachmentMessage aid (RevealAttachment you) | aid == attachmentId a -> withTheVillain you (attachTo aid) >> pure e
-    RanAbility you (isTarget a -> True) 1 _ _ -> do
-      let resource = case toCardCode a of "60122" -> Mental; "60123" -> Wild; "60124" -> Physical; _ -> Energy
-          costs = [PrintedResourceCost [resource],ExhaustCost]
-      payable <- filterM (canAffordCost you (toSource you)) costs
-      chooseOne you [labeled text $ payCostThenWithPayment you you cost a "moveArt" you | cost <- payable,let text=if cost == ExhaustCost then "$label.fneExhaustForArt" else "$label.fnePayForArt"]
-      pure e
-    CardSpecific (isTarget a -> True) "moveArt" (fromJSON -> Success (you,_ :: Payment)) -> attachToIdentity (attachmentId a) you >> pure e
+    RanAbility you (isTarget a -> True) index _ _ | index `elem` [1,3] -> attachToIdentity (attachmentId a) you >> pure e
     RanAbility _ (isTarget a -> True) 2 _ _ -> do
       for_ (artHost a) $ \host -> case toCardCode a of
         "60122" -> giveStatus host ConfusedStatus

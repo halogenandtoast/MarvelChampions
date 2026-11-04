@@ -52,6 +52,61 @@ recruitBlackCat you = do
 
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
+  for_ [Cards.street60122,Cards.street60123,Cards.street60124,Cards.street60125] $ \def ->
+    it ("takes " <> show (toCardCode def) <> " by exhausting the hero, resolves its attachment effect, and cannot take it again") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        let you = player1 tg
+        changeForm you
+        clearHand you
+        vid <- villainIdNow
+        card <- encounterCard def
+        resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ VillainCharacter vid)
+        (deck,_) <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+        choose "exhaust the hero to take the art" (isLabeledAbility "$label.fneExhaustForArt")
+        when (toCardCode def /= "60123") $ choose "resolve the art's attachment effect" (isAbilityOf $ attachmentOf card)
+        pass
+        isExhaustedPlayer you `shouldReturn` True
+        getAttachedCharacter (attachmentOf card) `shouldReturn` Just (IdentityCharacter you)
+        getModifiers you >>= (liftIO . (`shouldContain` [ThwartModifier 1]))
+        case toCardCode def of
+          "60122" -> getCharacterStatusCount (IdentityCharacter you) ConfusedStatus `shouldReturn` 1
+          "60124" -> getCharacterStatusCount (IdentityCharacter you) ToughStatus `shouldReturn` 1
+          "60125" -> getCharacterStatusCount (IdentityCharacter you) StunnedStatus `shouldReturn` 1
+          _ -> characterCanGainStatus (IdentityCharacter you) StunnedStatus `shouldReturn` False
+        offers (isAbilityOf $ attachmentOf card) `shouldReturn` False
+        getEncounterDeck `shouldReturn` deck
+
+  it "takes Replica Shield by paying its physical resource without exhausting the hero" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      card <- encounterCard Cards.street60124
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ VillainCharacter vid)
+      resource <- putInHand you "01090"
+      choose "pay a physical resource for the art" (isLabeledAbility "$label.fnePayForArt")
+      payWith [resource]
+      choose "gain tough from the shield" (isAbilityOf $ attachmentOf card)
+      pass
+      isExhaustedPlayer you `shouldReturn` False
+      getAttachedCharacter (attachmentOf card) `shouldReturn` Just (IdentityCharacter you)
+      getCharacterStatusCount (IdentityCharacter you) ToughStatus `shouldReturn` 1
+
+  it "offers no art action when the hero is exhausted and cannot pay its resource" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      card <- encounterCard Cards.street60124
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ VillainCharacter vid)
+      resolve =<< L.runQueueT (L.capture $ L.exhaust you)
+      offers (isAbilityOf $ attachmentOf card) `shouldReturn` False
+
   it "Baron Zemo blanks a recruited Black Cat and restores her original ally state after leaving, including through a reload" do
     tg <- testGame ["spider-man"]
     inGame tg do
