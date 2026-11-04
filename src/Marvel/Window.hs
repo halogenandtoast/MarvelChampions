@@ -610,6 +610,10 @@ windowMatches matcher w source = case matcher of
   UpgradeLosesLastCounter timing upgradeMatcher -> case windowType w of
     UpgradeCounterAmountChanged uid old new | windowTiming w == timing, old > 0, new == 0 -> upgradeMatches upgradeMatcher uid
     _ -> pure False
+  AttachmentAttachedToCharacter timing attachmentMatcher characterMatcher -> case windowType w of
+    AttachmentAttachedCharacter aid character | windowTiming w == timing ->
+      (&&) <$> (elem aid <$> selectList attachmentMatcher) <*> characterMatches characterMatcher character
+    _ -> pure False
   AttachmentCountersPlaced timing attachmentMatcher -> case windowType w of
     AttachmentCounterAmountChanged aid old new | windowTiming w == timing, new > old -> elem aid <$> selectList attachmentMatcher
     _ -> pure False

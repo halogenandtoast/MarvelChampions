@@ -63,16 +63,6 @@ instance HasAbilities DisturbedPsyche where
   getAbilities (DisturbedPsyche a) = [windowAbility a 1 (W.PhaseEnds W.When VillainPhase) ForcedInterrupt NoCost (runAbility a 1)]
 instance RunMessage DisturbedPsyche where
   runMessage msg e@(DisturbedPsyche a) = runQueueT $ case msg of
-    EnvironmentMessage eid (RevealEnvironment _ _) | eid == environmentId a -> do
-      side <- getRandomR (False,True)
-      villains <- selectList AnyVillain
-      for_ villains $ \vid -> do
-        when side $ flipVillain vid
-        cardSpecific a "revealMary" vid
-      pure e
-    CardSpecific (isTarget a -> True) "revealMary" (fromJSON -> Success (vid :: VillainId)) -> do
-      checkWindows [W.Window W.When $ W.RevealVillain vid W.RevealedFromVillain]
-      pure e
     RanAbility you (isTarget a -> True) 1 _ _ -> withTheVillain you flipVillain >> pure e
     CardSpecific (isTarget a -> True) "psycheToken" (fromJSON -> Success (isDamage :: Bool)) -> do
       let damage = environmentDamage a + if isDamage then 1 else 0

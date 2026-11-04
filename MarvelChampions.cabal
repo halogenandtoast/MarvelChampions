@@ -1154,6 +1154,8 @@ library
       Marvel.FearNoEvil.Hammerhead
       Marvel.FearNoEvil.PurpleMan
     Marvel.FearNoEvil.Mary
+    Marvel.FearNoEvil.ArtMuseum
+    Marvel.Scenario.FearNoEvil
       Marvel.FearNoEvil.OwlTombstone
       Marvel.FearNoEvil.TracksuitMafia
       Marvel.Frontend

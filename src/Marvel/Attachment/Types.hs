@@ -183,9 +183,11 @@ instance RunMessage (Attrs Attachment) where
           AttachedToEnemy enemyId -> do
             when (attached attrs) $ attachmentRemoved (attachmentId attrs)
             attachedTo enemyId (attachmentId attrs)
+            checkWindows [W.Window W.After $ W.AttachmentAttachedCharacter (attachmentId attrs) (toCharacter enemyId)]
             pure $ attrs & enemyL ?~ enemyId & \a -> a {attachmentIdentity = Nothing, attachmentAlly = Nothing}
           AttachedToIdentity ident -> do
             when (attached attrs) $ attachmentRemoved (attachmentId attrs)
+            checkWindows [W.Window W.After $ W.AttachmentAttachedCharacter (attachmentId attrs) (IdentityCharacter ident)]
             pure attrs {attachmentIdentity = Just ident, attachmentEnemy = Nothing, attachmentAlly = Nothing}
           AttachedToAlly ally -> do
             -- "cannot have (encounter) cards attached" (Odin): it cannot attach there,
@@ -195,6 +197,7 @@ instance RunMessage (Attrs Attachment) where
               then attrs <$ removeFromPlay attrs
               else do
                 when (attached attrs) $ attachmentRemoved (attachmentId attrs)
+                checkWindows [W.Window W.After $ W.AttachmentAttachedCharacter (attachmentId attrs) (AllyCharacter ally)]
                 pure attrs {attachmentAlly = Just ally, attachmentIdentity = Nothing, attachmentEnemy = Nothing}
           AttachmentHostBecameAlly aid -> pure attrs {attachmentAlly = Just aid, attachmentEnemy = Nothing}
           AttachmentHostBecameMinion mid -> pure attrs {attachmentAlly = Nothing, attachmentEnemy = Just (EnemyMinionId mid)}

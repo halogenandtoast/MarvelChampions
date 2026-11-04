@@ -654,7 +654,7 @@ street60124 :: CardDef
 street60124 = (hoodCardDef "60124" "Replica Shield" Set.FneArtMuseumHeist AttachmentType 1)
   { cdTraits = fromList [T.Art]
   , cdUnique = False
-  , cdKeywords = fromList []
+  , cdKeywords = fromList [K.Surge]
   , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []

@@ -2142,7 +2142,7 @@
       "position": 124,
       "faction": "encounter",
       "factionName": "Encounter",
-      "text": "Attach to the villain.\n<b>Forced Response</b>: After this card attaches to a character, give that character a tough status card.\n<b>Hero Action</b>: Spend a [physical] resource or exhaust your hero → attach this card to your hero.",
+      "text": "Surge.\nAttach to the villain.\n<b>Forced Response</b>: After this card attaches to a character, give that character a tough status card.\n<b>Hero Action</b>: Spend a [physical] resource or exhaust your hero → attach this card to your hero.",
       "image": "60124.avif",
       "bundledImage": true,
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_3.png",

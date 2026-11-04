@@ -755,5 +755,9 @@
   "fneDoNotReadyUpgrade": "Do not ready this upgrade",
   "fneExhaustCharacter": "Exhaust this character",
   "fneLightningDamage": "Deal damage and remove a charge counter",
-  "fneTakeIndirectDamage": "Take 1 indirect damage"
+  "fneTakeIndirectDamage": "Take 1 indirect damage",
+  "fneExhaustForArt": "Exhaust your hero to take the art",
+  "fnePayForArt": "Spend the required resource to take the art",
+  "fneTakeArt": "Spend three physical resources to take an art piece",
+  "fneLoseArt": "Return an art piece to the villain and gain surge"
 }

@@ -161,6 +161,7 @@ data WindowMatcher
   | WeatherSpecialResolvedFor WindowTiming IdentityMatcher
   | MassFormChangedTo WindowTiming UpgradeMatcher
   | UpgradeLosesLastCounter WindowTiming UpgradeMatcher
+  | AttachmentAttachedToCharacter WindowTiming AttachmentMatcher CharacterMatcher
   | AttachmentCountersPlaced WindowTiming AttachmentMatcher
   | UpgradeCountersPlaced WindowTiming UpgradeMatcher
   | EnemyExactlyDefeatedByAttack IdentityMatcher
@@ -294,6 +295,7 @@ data Window = Window
 data WindowType
   = ChoseTrapOption IdentityId Text
   | UsedCardAbility IdentityId Source Natural
+  | AttachmentAttachedCharacter AttachmentId CharacterId
   | AttachmentCounterAmountChanged AttachmentId Natural Natural
   | UpgradeCounterAmountChanged UpgradeId Natural Natural
   | GeneratedResources IdentityId Natural
