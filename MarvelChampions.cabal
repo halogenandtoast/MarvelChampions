@@ -3094,6 +3094,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.ShadowlandCoverageSpec
       Marvel.Encounter.ShadowlandDarkProtegeSpec
       Marvel.Encounter.ShadowlandModularSpec
+      Marvel.Encounter.ShadowlandProtegesSpec
       Marvel.Encounter.ShadowlandSpec
       Marvel.Encounter.ShadowlandSpellsSpec
       Marvel.Encounter.ShadowlandTrapsSpec

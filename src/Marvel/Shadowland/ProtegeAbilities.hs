@@ -46,8 +46,10 @@ resolveProtegeAbility source code enemy attack you index windows = do
     3 -> discardFromDeck who 1 source
     4 -> do
       payable <- canAffordCost who (toSource source) (ResourceCost $ Just Physical)
+      canStun <- characterCanGainStatus (IdentityCharacter who) StunnedStatus
       chooseOne who $ [labeled "$label.slSpendPhysical" (payForTreachery who $ ResourceCost $ Just Physical) | payable]
-        <> [labeled "$label.stunYourIdentity" (stunIdentity who),labeled "$label.slTwoIndirect" (dealIndirectDamage who source 2)]
+        <> [labeled "$label.stunYourIdentity" (stunIdentity who) | canStun]
+        <> [labeled "$label.slTwoIndirect" (dealIndirectDamage who source 2)]
     5 -> if maybe False attackDefended attack then selectOne EncounterMainScheme >>= traverse_ (\mid -> placeThreatOn source mid 1) else dealIndirectDamage who source 1
     6 -> do
       let bonus = if code == "65017a" then 1 else 0
