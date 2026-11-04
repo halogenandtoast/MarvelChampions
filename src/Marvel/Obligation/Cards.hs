@@ -187,7 +187,7 @@ import Marvel.Trait qualified as Trait
 allObligations :: HashMap CardCode CardDef
 allObligations = fromList $ map
   (toFst toCardCode)
-    [ PurpleDefs.street60105, PurpleDefs.street60106, PurpleDefs.street60107,  StreetCopsCards.street60184,  CW.cw56106,CW.cw56114,CN.enc56023, CN.enc56054, CN.enc60032, CN.enc60060
+    [ PurpleDefs.street60150, PurpleDefs.street60105, PurpleDefs.street60106, PurpleDefs.street60107,  StreetCopsCards.street60184,  CW.cw56106,CW.cw56114,CN.enc56023, CN.enc56054, CN.enc60032, CN.enc60060
   , WM.wm58025, HC.hc59004, HC.hc59035
   , JL.jl61030, JL.jl61033a, JL.jl61033b, JL.jl61033c, JL.jl62028
   , aos50134, aos50179

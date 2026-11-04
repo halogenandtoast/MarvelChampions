@@ -27,6 +27,7 @@ import Marvel.Card
 import Marvel.Damage
 import Marvel.Game.Source
 import Marvel.Keyword
+import Marvel.Trait (Trait(Elite))
 import Marvel.Matchers
 import Marvel.Window qualified as W
 
@@ -320,6 +321,13 @@ instance RunMessage (Attrs Minion) where
       CardSpecific (isTarget attrs -> True) "ignoreWhenDefeated" (fromJSON -> Success flag) -> pure attrs {minionIgnoreWhenDefeated = flag}
       CardSpecific (isTarget attrs -> True) "informantScheme" (fromJSON -> Success you) -> pure attrs {minionSchemeRemoval = Just you}
       BeginPhase _ -> pure attrs {minionDamageThisPhase = 0}
+      RanAbility _ (isTarget attrs -> True) 97001 _ _ -> do
+        elite <- minionMatches (MinionWithTrait Elite) (minionId attrs)
+        main <- selectOne EncounterMainScheme
+        for_ main $ \scheme -> removeSchemeThreat attrs scheme (if elite then 2 else 1)
+        pure attrs
+      CardSpecific (isTarget attrs -> True) "holdTuckedCard" (fromJSON -> Success card) ->
+        pure attrs {minionHeldCards=minionHeldCards attrs <> [card]}
       RanAbility _ (isTarget attrs -> True) 9901 _ _ -> do
         afterPendingMinionDefeat $ cardSpecific attrs "resolveTeamwork" ()
         pure attrs

@@ -114,6 +114,7 @@ data Cost
   | -- | exhaust between the given minimum and maximum number of ready cards the
     -- payer controls with this trait, including identities, allies, supports and upgrades
     ExhaustCardsWithTraitCost Trait Natural Natural
+  | ExhaustCharactersWithTotalThwartCost Natural
   | ExhaustCharactersWithThwartGreaterThanCost EnemyId
   | ExhaustControlledCardsCost Natural
   | -- | discard encounter cards until a minion is discarded, and put it into play
@@ -213,6 +214,7 @@ costResources (CountersFromThisCost _) = []
 costResources (ExhaustCharacterWithTraitCost _) = []
 costResources (ExhaustCharacterCost _) = []
 costResources (ExhaustCardsWithTraitCost _ _ _) = []
+costResources (ExhaustCharactersWithTotalThwartCost _) = []
 costResources (ExhaustCharactersWithThwartGreaterThanCost _) = []
 costResources (ExhaustControlledCardsCost _) = []
 costResources DiscardEncounterCardsUntilMinionCost = []

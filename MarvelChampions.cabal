@@ -1156,6 +1156,7 @@ library
     Marvel.FearNoEvil.Mary
     Marvel.FearNoEvil.ArtMuseum
     Marvel.FearNoEvil.Getaway
+    Marvel.FearNoEvil.Raft
     Marvel.Scenario.FearNoEvil
       Marvel.FearNoEvil.OwlTombstone
       Marvel.FearNoEvil.TracksuitMafia

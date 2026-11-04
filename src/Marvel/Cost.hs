@@ -252,6 +252,10 @@ canAffordCost identityId source cost = do
       coversResources (costResources c) <$> (concatMapM (`resourcesFor` context) . filter notPlaying =<< getAvailablePaymentSources identityId)
     ExhaustAlliesMatchingCost matcher n ->
       (>= n) <$> selectListCount (matcher <> UnexhaustedAlly <> AllyControlledBy (IdentityWithId identityId))
+    ExhaustCharactersWithTotalThwartCost required -> do
+      ready <- readyCharacterCandidates identityId AnyCharacter
+      total <- sum <$> traverse getCharacterThwart ready
+      pure $ total >= required
     ExhaustCharactersWithThwartGreaterThanCost enemy -> do
       ready <- readyCharacterCandidates identityId AnyCharacter
       total <- sum <$> traverse getCharacterThwart ready

@@ -587,5 +587,51 @@
     "quantity": 2,
     "boost": 1,
     "boostStar": false
+  },
+  "60144": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 6,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60145": {
+    "scheme": 2,
+    "attack": 1,
+    "health": 6,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60146": {
+    "scheme": 1,
+    "attack": 1,
+    "health": 6,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60147": {
+    "scheme": 2,
+    "attack": 1,
+    "health": 6,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60148": {
+    "scheme": 1,
+    "attack": 2,
+    "health": 7,
+    "boost": 3,
+    "boostStar": false
+  },
+  "60149": {
+    "scheme": 1,
+    "attack": 3,
+    "health": 7,
+    "boost": 3,
+    "boostStar": true
+  },
+  "60150": {
+    "boost": 0,
+    "boostStar": true
   }
 }

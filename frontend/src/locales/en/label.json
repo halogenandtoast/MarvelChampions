@@ -761,5 +761,6 @@
   "fneTakeArt": "Spend three physical resources to take an art piece",
   "fneLoseArt": "Return an art piece to the villain and gain surge",
   "fneSpendResource": "Spend 1 resource",
-  "fnePlaceThreat": "Place 1 threat on the main scheme"
+  "fnePlaceThreat": "Place 1 threat on the main scheme",
+  "fneProximaAttackBonus": "Proxima Midnight gets +2 ATK for this attack"
 }

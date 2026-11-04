@@ -22,7 +22,7 @@ newtype FearNoEvilScenario = FearNoEvilScenario (Attrs Scenario)
 -- The campaign will supply its recorded assignment through the same continuation.
 fearNoEvilScenarios :: [ScenarioCard FearNoEvilScenario]
 fearNoEvilScenarios = [scenario FearNoEvilScenario code ("60086","60087") [main] [set] | (code,main,set) <-
-  [("60121a","60121b",Set.FneArtMuseumHeist),("60128a","60128b",Set.FneTheGetaway)]]
+  [("60121a","60121b",Set.FneArtMuseumHeist),("60128a","60128b",Set.FneTheGetaway),("60142a","60142b",Set.FneTheRaftBreakout)]]
 underlings :: [(CardCode,CardCode,Set.EncounterSet)]
 underlings = [("60065","60066",Set.FneBullseye),("60076","60077",Set.FneElectro),("60086","60087",Set.FneHammerhead),("60097","60098",Set.FnePurpleMan),("60110a","60111a",Set.FneTyphoidMary)]
 instance RunMessage FearNoEvilScenario where

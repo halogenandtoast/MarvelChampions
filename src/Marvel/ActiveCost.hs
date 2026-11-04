@@ -352,6 +352,8 @@ payCostPartAs contributing activeCost cost = do
       else when (maximumCount > 0 && notNull upgrades) $ chooseOne iid $
         [labeled "$label.done" (pure ()) | minimumCount == 0]
         <> [targeting uid (exhaust uid >> paid (ExhaustedCardPayment $ toTarget uid) >> payCost acid (ExhaustUpgradesMatchingCost matcher (subtractNatural 1 minimumCount) (maximumCount - 1))) | uid <- upgrades]
+    ExhaustCharactersWithTotalThwartCost required ->
+      cardSpecific (ActiveCostRef acid) "chooseTotalThwart" (required,[] :: [CharacterId])
     ExhaustCharactersWithThwartGreaterThanCost enemy ->
       cardSpecific (ActiveCostRef acid) "fwChooseThwartExhaustion" (enemy, [] :: [CharacterId])
     ExhaustControlledCardsCost n -> do
@@ -874,6 +876,18 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
         _ -> Nothing
       when (contributor `elem` allowed) $
         payCostPartAs True (activeCost {activeCostIdentityId = contributor}) cost
+      pure activeCost
+    CardSpecific (ActiveCostRef ident) "chooseTotalThwart" (fromJSON -> Success (required :: Natural,chosen :: [CharacterId])) | ident == activeCostId activeCost -> do
+      ready <- readyCharacterCandidates (activeCostIdentityId activeCost) AnyCharacter
+      let selected = filter (`elem` ready) chosen
+          candidates = filter (`notElem` selected) ready
+      total <- sum <$> traverse getCharacterThwart selected
+      available <- sum <$> traverse getCharacterThwart candidates
+      if total + available < required then abortPayment ident else chooseOne (activeCostIdentityId activeCost) $
+        [labeled "$label.done" (for_ selected (\character -> do
+          case character of IdentityCharacter who -> exhaust who; AllyCharacter aid -> exhaust aid; _ -> pure ()
+          paid $ ExhaustedCharacterPayment character)) | total >= required]
+        <> [targeting (characterRef character) $ cardSpecific (ActiveCostRef ident) "chooseTotalThwart" (required,selected <> [character]) | character <- candidates]
       pure activeCost
     CardSpecific (ActiveCostRef ident) "fwChooseThwartExhaustion" (fromJSON -> Success (enemy, chosen :: [CharacterId])) | ident == activeCostId activeCost -> do
       candidates <- filter (`notElem` chosen) <$> readyCharacterCandidates (activeCostIdentityId activeCost) AnyCharacter

@@ -4,6 +4,7 @@ import Marvel.Prelude
 
 data Trait
   = Art
+  | Deceived
   | Completed
   | DailyBugle
   | Demon

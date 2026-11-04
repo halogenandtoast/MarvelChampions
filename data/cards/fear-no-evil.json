@@ -2977,7 +2977,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_18.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 6,
+      "boost": 3,
+      "boostStar": false
     },
     {
       "name": "Baron Zemo",
@@ -3005,7 +3010,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_19.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 2,
+      "attack": 1,
+      "health": 6,
+      "boost": 3,
+      "boostStar": false
     },
     {
       "name": "Drang",
@@ -3033,7 +3043,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_20.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 1,
+      "health": 6,
+      "boost": 3,
+      "boostStar": false
     },
     {
       "name": "Mysterio",
@@ -3061,7 +3076,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_21.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 2,
+      "attack": 1,
+      "health": 6,
+      "boost": 3,
+      "boostStar": false
     },
     {
       "name": "Proxima Midnight",
@@ -3089,7 +3109,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_22.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 2,
+      "health": 7,
+      "boost": 3,
+      "boostStar": false
     },
     {
       "name": "Rhino",
@@ -3117,7 +3142,12 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_23.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "attack": 3,
+      "health": 7,
+      "boost": 3,
+      "boostStar": true
     },
     {
       "name": "Imprisoned",
@@ -3141,7 +3171,9 @@
       "sourceFile": "MarvelHD/cropped/891_Stop_the_Presses__Encounter_Cards_FaceURL_24.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 0,
+      "boostStar": true
     },
     {
       "name": "Stop the Presses!",

@@ -935,7 +935,7 @@ street60144 = (hoodCardDef "60144" "Absorbing Man" Set.FneTheRaftBreakout Minion
   { cdTraits = fromList [T.Brute, T.Elite, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -945,7 +945,7 @@ street60145 = (hoodCardDef "60145" "Baron Zemo" Set.FneTheRaftBreakout MinionTyp
   { cdTraits = fromList [T.Elite, T.Hydra, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -955,7 +955,7 @@ street60146 = (hoodCardDef "60146" "Drang" Set.FneTheRaftBreakout MinionType 1)
   { cdTraits = fromList [T.Badoon, T.Elite, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -965,7 +965,7 @@ street60147 = (hoodCardDef "60147" "Mysterio" Set.FneTheRaftBreakout MinionType 
   { cdTraits = fromList [T.Criminal, T.Elite, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -975,7 +975,7 @@ street60148 = (hoodCardDef "60148" "Proxima Midnight" Set.FneTheRaftBreakout Min
   { cdTraits = fromList [T.BlackOrder, T.Elite, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Villainous]
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -985,7 +985,7 @@ street60149 = (hoodCardDef "60149" "Rhino" Set.FneTheRaftBreakout MinionType 1)
   { cdTraits = fromList [T.Brute, T.Elite, T.Prisoner]
   , cdUnique = False
   , cdKeywords = fromList [K.Toughness, K.Villainous]
-  , cdBoostIcons = [B.Star]
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost, B.Star]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

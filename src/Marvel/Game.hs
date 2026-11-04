@@ -3723,6 +3723,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
             , Minion.minionAttachments = attachments
             }) (allyAsMinion ident card a)
       pure $ g & (entitiesL . alliesL %~ deleteMap aid) & (entitiesL . minionsL %~ insertMap mid minion)
+        & \game -> game {gameCharacterThreat=[(if character == AllyCharacter aid then MinionCharacter mid else character,n) | (character,n) <- game.gameCharacterThreat]}
   TakeControlOfMinion controller mid -> case lookup mid (gameMinions g) of
     Nothing -> pure g
     Just minion -> do
@@ -3783,7 +3784,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               , Minion.minionUpgrades = allyUpgrades a
               , Minion.minionAttachments = attachments
               , Minion.minionHeldCards = Ally.allyHeldCards a
-              , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
+              , Minion.minionCounters = Ally.allyCounters a
+      , Minion.minionHeldCards = Ally.allyHeldCards a
+      , Minion.minionHeldTreacheries = Ally.allyHeldTreacheries a
               , Minion.minionEngagedIdentity = controller
               }) minion
         for_ (allyUpgrades a) $ \uid -> upgradeStep uid (UpgradeHostBecameMinion mid)
@@ -3817,18 +3820,15 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
               aid = toId ally
           for_ (minionUpgrades a) $ \uid -> upgradeStep uid (UpgradeAttachedToAlly aid)
           for_ (minionAttachments a) $ \at -> attachmentStep at (AttachmentHostBecameAlly aid)
-          for_ (Minion.minionHeldCards a) discardCard
           minionDisengages (minionEngagedIdentity a) mid
           -- This is still the same physical card in play. Its facedown treacheries
           -- remain attached, rather than being discarded by the change of allegiance.
           for_ (Minion.minionHeldTreacheries a) (allyStep aid . AllyHoldsTreachery)
           allyStep aid (AllyOwnedBy owner)
-          when (Minion.minionExhausted a) $ exhaust aid
-          allyStep aid (AllySetDamage $ Minion.minionDamage a)
-          for_ [(Minion.minionStunned a, StunnedStatus), (Minion.minionConfused a, ConfusedStatus), (Minion.minionTough a, ToughStatus)] \(on, s) ->
-            when on $ push $ GiveStatus (AllyRef aid) s
+          cardSpecific aid "convertedState" (Minion.minionExhausted a,Minion.minionDamage a,Minion.minionStunned a,Minion.minionConfused a,Minion.minionTough a,Minion.minionAdditionalStun a,Minion.minionAdditionalConfuse a,Minion.minionAdditionalTough a,Minion.minionCounters a,Minion.minionHeldCards a)
           identityStep controller (AllyCreated aid)
           pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
+            & \game -> game {gameCharacterThreat=[(if character == MinionCharacter mid then AllyCharacter aid else character,n) | (character,n) <- game.gameCharacterThreat]}
         _ -> pure g
   EndCheckWindows -> pure g
   EntersPlayUnlessUnique ident revealed target rest -> do
@@ -5109,7 +5109,7 @@ dispatchGameMessageCore msg g = do
           added = [getCardDef card | card <- map EncounterCard (gameVictoryDisplay after) <> map PlayerCard (gamePlayerVictoryDisplay after), toCardId card `notElem` beforeIds]
       runQueueT $ for_ added $ \def -> checkWindows [W.Window W.After $ W.VictoryCardAdded def]
     _ -> pure ()
-  pure after
+  synchronizeDeceivedAllies after
 
 characterDamageMessage :: Message -> Maybe (CharacterId,Source,Damage)
 characterDamageMessage message = case message of
@@ -5855,6 +5855,8 @@ instance HasAbilities Game where
       <> concatMap getAbilities (HashMap.elems $ gameVillains g)
       <> concatMap getAbilities (HashMap.elems $ gameAttachments g)
       <> concatMap getAbilities (HashMap.elems $ gameMinions g)
+      <> [windowAbility (toAttrs minion) 97001 (W.MinionDefeated W.When $ MinionWithId $ toId minion) WhenRevealed NoCost (RunAbility (toRef minion) 97001)
+         | any ((== "60142b") . toCardCode . getCardDef) (HashMap.elems $ gameMainSchemes g),minion <- HashMap.elems $ gameMinions g]
       <> concatMap getAbilities (HashMap.elems $ gameEnvironments g)
       <> concatMap getAbilities (HashMap.elems $ gameObligations g)
       <> concatMap getAbilities (HashMap.elems $ gameSideSchemes g)
@@ -6139,7 +6141,7 @@ getAbilitiesForMatching ident matches = do
     else pure True) abilities
  where
   -- a blank text box leaves the game's own abilities: basic powers and changing form
-  printed a = not (engineAttackResponse a) && abilityType a /= Basic && not (isIdentity (abilitySource a) && abilityIndex a == 100)
+  printed a = abilityIndex a /= 97001 && not (engineAttackResponse a) && abilityType a /= Basic && not (isIdentity (abilitySource a) && abilityIndex a == 100)
   isIdentity = \case
     IdentityRef _ -> True
     _ -> False
@@ -9829,3 +9831,22 @@ damageDealingForbidden :: HasGame m => Message -> m Bool
 damageDealingForbidden message = case enemyDamageMessage message of
   Nothing -> pure False
   Just (enemy,_,_) -> elem CannotBeDealtDamage <$> getModifiers (enemyRef enemy)
+
+-- Baron Zemo's constant type change applies at message boundaries, including
+-- blanking, removal of threat, and Zemo leaving play. The physical card stays put.
+synchronizeDeceivedAllies :: (HasGame m,HasQueue m,MonadThrow m,MonadRandom m) => Game -> m Game
+synchronizeDeceivedAllies g
+  | null zemos && null deceived = pure g
+  | otherwise = do
+      active <- runReaderT (anyM (fmap not . isBlanked) zemos) (refreshTraits g)
+      let threatened character = fromMaybe 0 (Data.List.lookup character $ gameCharacterThreat g) > 0
+          revert = [mid | mid <- deceived,not active || not (threatened $ MinionCharacter mid)]
+          convert = [aid | (aid,_) <- HashMap.toList (gameAllies g),active,threatened $ AllyCharacter aid]
+      reverted <- foldM (\state mid -> runReaderT (runGameMessage (MinionBecomesAlly mid) state) (refreshTraits state)) g revert
+      foldM (\state aid -> do
+        next <- runReaderT (runGameMessage (AllyBecomesMinion aid) state) (refreshTraits state)
+        let mid = MinionId $ unAllyId aid
+        pure $ next & entitiesL . minionsL . ix mid %~ overMinion (\a -> a {Minion.minionCardDef=(Minion.minionCardDef a) {cdTraits=HashSet.insert Deceived $ cdTraits $ Minion.minionCardDef a}})) reverted convert
+ where
+  zemos = [minion | minion <- HashMap.elems (gameMinions g),toCardCode (getCardDef minion) == "60145"]
+  deceived = [mid | (mid,minion) <- HashMap.toList (gameMinions g),Deceived `HashSet.member` cdTraits (getCardDef minion),isJust $ Minion.minionFacedownCard $ toAttrs minion]

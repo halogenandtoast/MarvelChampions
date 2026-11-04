@@ -99,6 +99,8 @@ instance RunMessage (Attrs Ally) where
       present <- selectAny (AllyWithId $ allyId a)
       when present $ allyStep (allyId a) AllyDefeatedByDamage
       pure a {allyDefeatedByConsequential = present}
+    CardSpecific (isTarget a -> True) "convertedState" (fromJSON -> Success (exhausted,damage,stunned,confused,tough,extraStun,extraConfuse,extraTough,counters,held)) ->
+      pure a {allyExhausted=exhausted,allyDamage=damage,allyStunned=stunned,allyConfused=confused,allyTough=tough,allyAdditionalStun=extraStun,allyAdditionalConfuse=extraConfuse,allyAdditionalTough=extraTough,allyCounters=counters,allyHeldCards=held}
     RemovePlayerCardFromHeldZones cid -> pure a {allyHeldCards = filter ((/= cid) . pcCardId) (allyHeldCards a), allyHeldTreacheries = filter ((/= cid) . ecCardId) (allyHeldTreacheries a)}
     ReserveAllyHeldCard ident card | ident == allyId a ->
       pure $ a & heldCardsL %~ filter (/= card)
