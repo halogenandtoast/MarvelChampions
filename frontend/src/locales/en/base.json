@@ -8,6 +8,7 @@
     "delete": "Delete",
     "game": "Game",
     "scenario": "Scenario",
+    "campaign": "Campaign",
     "loading": "Loading…"
   },
   "nav": {
@@ -213,6 +214,7 @@
     "scenario": "Scenario {n}",
     "scenarioOf": "Scenario {n} of {total}",
     "progress": "{done} of {total} won",
+    "resolvedProgress": "{done} of {total} resolved",
     "next": "Next",
     "continue": "Play {villain}",
     "resume": "Return to the game",
@@ -237,8 +239,9 @@
     "alliesRemoved": "Allies removed from the campaign",
     "none": "—",
     "delete": "Delete campaign",
-    "confirmDelete": "Delete this campaign? Its games are kept.",
+    "confirmDelete": "Delete this campaign and all its games?",
     "couldNotContinue": "Could not deal the next scenario.",
+    "couldNotDelete": "Could not delete the campaign.",
     "notFound": "No such campaign.",
     "deckShort": "{count} card short of 40: change this deck before the next scenario | {count} cards short of 40: change this deck before the next scenario",
     "changeDeck": "Change deck",

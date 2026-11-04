@@ -3,12 +3,13 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Plus, Upload } from 'lucide-vue-next'
-import { deleteGame, fetchCampaigns, fetchGames, fetchSpectatableGames, importGame } from '../api'
+import { deleteCampaign, deleteGame, fetchCampaigns, fetchGames, fetchSpectatableGames, importGame } from '../api'
 import GameRow from '../components/GameRow.vue'
+import CampaignBar from '../components/CampaignBar.vue'
 import SegmentedToggle from '../components/SegmentedToggle.vue'
 import type { CampaignView, GameSummary } from '../server'
-import { useCards } from '../cards'
 import { useServerText } from '../i18n'
+import { currentUser } from '../auth'
 
 const tr = useServerText()
 type Tab = 'active' | 'finished'
@@ -38,17 +39,34 @@ fetchSpectatableGames()
   .then((result) => (watchable.value = result))
   .catch(() => {})
 
-const cards = useCards()
 const campaigns = ref<CampaignView[]>([])
 fetchCampaigns()
   .then((result) => (campaigns.value = result))
   .catch(() => {})
-const campaignNext = (c: CampaignView) => (c.next ? cards.name(c.next, c.next) : null)
+const campaignsById = computed(() => new Map(campaigns.value.map(c => [c.id, c])))
+const campaignsByGame = computed(() => new Map(campaigns.value.filter(c => c.currentGame).map(c => [c.currentGame!, c])))
+const campaignFor = (game: GameSummary) => (game.campaignId ? campaignsById.value.get(game.campaignId) : undefined) ?? campaignsByGame.value.get(game.id)
+const unlistedCampaigns = computed(() => {
+  const listed = new Set(shown.value.map(game => campaignFor(game)?.id))
+  return campaigns.value.filter(c => !listed.has(c.id))
+})
 
 const removeGame = (game: GameSummary) =>
   deleteGame(game.id).then(() => {
     games.value = (games.value ?? []).filter((g) => g.id !== game.id)
   })
+
+const removeCampaign = async (campaign: CampaignView) => {
+  const linkedGames = new Set((games.value ?? []).filter(game => campaignFor(game)?.id === campaign.id).map(game => game.id))
+  try {
+    const response = await deleteCampaign(campaign.id)
+    if (!response.ok) throw new Error(await response.text())
+    campaigns.value = campaigns.value.filter(c => c.id !== campaign.id)
+    games.value = (games.value ?? []).filter(game => !linkedGames.has(game.id))
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : t('campaign.couldNotDelete')
+  }
+}
 
 const showImportGame = ref(false)
 const importFile = ref<File | null>(null)
@@ -107,21 +125,15 @@ const submitImport = async () => {
         <p>{{ $t(tab === 'active' ? 'home.noActiveGames' : 'home.noFinishedGames') }}</p>
       </div>
       <div class="games">
-        <GameRow v-for="game in shown" :key="game.id" :game="game" :delete-game="() => removeGame(game)" />
+        <GameRow v-for="game in shown" :key="game.id" :game="game" :campaign="campaignFor(game)" :delete-campaign="campaignFor(game)?.table.owner === currentUser?.id ? () => removeCampaign(campaignFor(game)!) : undefined" :delete-game="() => removeGame(game)" />
       </div>
 
-      <section v-if="campaigns.length" class="watchable">
+      <section v-if="unlistedCampaigns.length" class="watchable">
         <header class="sub-head">
           <h2>{{ $t('campaign.campaigns') }}</h2>
         </header>
         <div class="games">
-          <RouterLink v-for="c in campaigns" :key="c.id" :to="`/campaigns/${c.id}`" class="box campaign-row">
-            <strong>{{ c.name }}</strong>
-            <span>{{ $t(`campaign.${c.campaign.mode}`) }} · {{ $t('campaign.progress', { done: c.campaign.completed, total: c.campaign.scenarios.length }) }}</span>
-            <span v-if="campaignNext(c)" class="next">{{ $t('campaign.next') }}: {{ campaignNext(c) }}</span>
-            <span v-else-if="c.won" class="next">{{ $t('home.won') }}</span>
-            <span v-else class="next">{{ $t('home.lost') }}</span>
-          </RouterLink>
+          <CampaignBar v-for="c in unlistedCampaigns" :key="c.id" :campaign="c" standalone :delete-campaign="c.table.owner === currentUser?.id ? () => removeCampaign(c) : undefined" />
         </div>
       </section>
 
@@ -154,9 +166,6 @@ const submitImport = async () => {
 .watchable { margin-top: 36px; }
 .sub-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
 .sub-head h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; color: var(--text-muted); }
-.campaign-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; color: var(--text); text-decoration: none; }
-.campaign-row span { color: var(--text-muted); font-size: 0.9rem; }
-.campaign-row .next { margin-left: auto; color: var(--amber); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

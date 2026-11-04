@@ -79,7 +79,7 @@ data Table = Table
   , seated :: [SeatView]
   , competition :: Maybe CW.CompetitionSetup
   , campaign :: Maybe MarvelCampaignId
-  -- ^ the campaign a game is the current scenario of
+  -- ^ the campaign this scenario belongs to
   }
   deriving stock (Generic)
   deriving anyclass (ToJSON)
@@ -168,6 +168,7 @@ data GameSummary = GameSummary
   { id :: MarvelGameId
   , name :: Text
   , playerName :: Text
+  , campaignId :: Maybe MarvelCampaignId
   , scenario :: Text
   , villain :: CardCode
   , difficulty :: Text
@@ -398,7 +399,9 @@ storedGame row = if awaitingPlayers row then pure Nothing else Just <$> decodeOr
 
 tableFor :: MarvelGameId -> MarvelGame -> Handler Table
 tableFor gid row = do
-  campaign <- runDB $ fmap entityKey <$> selectFirst [MarvelCampaignCurrentGame ==. Just gid] []
+  campaign <- case row.marvelGameCampaignId of
+    Just cid -> pure $ Just cid
+    Nothing -> runDB $ fmap entityKey <$> selectFirst [MarvelCampaignCurrentGame ==. Just gid] []
   seated <- runDB do
     seats <- selectList [MarvelSeatGameId ==. gid] [Asc MarvelSeatPosition]
     for seats \(Entity _ seat) -> do
@@ -464,6 +467,7 @@ summary friendDecks (Entity gid row) = do
           { id = gid
           , name = row.marvelGameName
           , playerName = row.marvelGamePlayerName
+          , campaignId = row.marvelGameCampaignId
           , scenario = villainName
           , villain = villainCode
           , difficulty = tshow setup.difficulty

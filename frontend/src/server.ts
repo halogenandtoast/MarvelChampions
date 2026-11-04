@@ -382,7 +382,7 @@ export interface Table {
   owner: number
   seated: { position: number; userId: number; username: string; hero?: string | null }[]
   /** the campaign the game is a scenario of */
-  campaign?: number | null
+  campaign?: string | null
 }
 
 export interface GameData {
@@ -414,6 +414,8 @@ export interface SeatSummary {
 }
 
 export interface GameSummary {
+  /** Its campaign, including when this scenario has finished. */
+  campaignId?: string | null
   id: string
   name: string
   playerName: string

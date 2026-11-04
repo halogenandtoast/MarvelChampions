@@ -1,14 +1,19 @@
 <script lang="ts" setup>
 import { computed, useTemplateRef } from 'vue'
-import { Trash2 } from 'lucide-vue-next'
+import { ChevronRight, Trash2 } from 'lucide-vue-next'
 import ConfirmDelete from './ConfirmDelete.vue'
 import HeroPortrait from './HeroPortrait.vue'
+import CampaignBar from './CampaignBar.vue'
 import { useCards } from '../cards'
 import { scenarioPortraits } from '../scenarios'
-import type { GameSummary } from '../server'
+import type { CampaignView, GameSummary } from '../server'
 
-const props = defineProps<{ game: GameSummary; deleteGame?: () => void; spectate?: boolean }>()
+const props = defineProps<{ game: GameSummary; campaign?: CampaignView | null; deleteCampaign?: () => void; deleteGame?: () => void; spectate?: boolean }>()
 
+const title = computed(() => {
+  const prefix = props.campaign ? `${props.campaign.name} – ` : ''
+  return prefix && props.game.name.startsWith(prefix) ? props.game.name.slice(prefix.length) : props.game.name
+})
 const confirm = useTemplateRef<InstanceType<typeof ConfirmDelete>>('confirm')
 const cards = useCards()
 const portraitCode = computed(() => scenarioPortraits(props.game.villain)[0]!)
@@ -18,31 +23,37 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
 
 <template>
   <article class="game-row" :class="{ won: game.outcome === 'Won', lost: game.outcome === 'Lost' }">
-    <RouterLink class="villain portrait" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :to="link" :style="{ backgroundImage: villainArt }" :aria-label="game.scenario" />
-    <div class="body">
-      <div class="title-line">
-        <RouterLink class="title" :to="link">{{ game.name }}</RouterLink>
-        <span v-if="game.outcome" class="badge" :class="game.outcome.toLowerCase()">{{ $t(game.outcome === 'Won' ? 'home.won' : game.outcome === 'Lost' ? 'home.lost' : `game.outcome.${game.outcome}`) }}</span>
-        <span v-if="game.difficulty === 'Expert'" class="badge expert">{{ $t('difficulty.Expert') }}</span>
-      </div>
-      <p class="meta">
-        <span class="vs">{{ $t('home.versus', { villain: game.scenario }) }}</span>
-        <template v-if="game.waiting"> · {{ $t('home.waitingForPlayers') }}</template>
-        <template v-else> · {{ $t('game.round', { round: game.round }) }} · {{ $t(`game.phases.${game.phase}`) }}</template>
-      </p>
-      <ul v-if="game.seats?.length" class="seats">
-        <li v-for="(seat, n) in game.seats" :key="n" class="seat" :class="{ eliminated: seat.eliminated }">
-          <HeroPortrait class="face square" :code="seat.identity" />
-          <span class="seat-name">{{ seat.name }}</span>
-          <span v-if="seat.damage" class="seat-damage">−{{ seat.damage }}</span>
-        </li>
-      </ul>
-      <p v-else class="meta">{{ game.playerName }}</p>
+    <CampaignBar v-if="campaign" :campaign="campaign" :delete-campaign="deleteCampaign" />
+    <div class="game-content">
+      <RouterLink class="scenario-link" :to="link" :aria-label="title">
+        <span class="villain portrait" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :style="{ backgroundImage: villainArt }" aria-hidden="true" />
+        <div class="body">
+          <div class="title-line">
+            <span class="title">{{ title }}</span>
+            <span v-if="game.outcome" class="badge" :class="game.outcome.toLowerCase()">{{ $t(game.outcome === 'Won' ? 'home.won' : game.outcome === 'Lost' ? 'home.lost' : `game.outcome.${game.outcome}`) }}</span>
+            <span v-if="game.difficulty === 'Expert'" class="badge expert">{{ $t('difficulty.Expert') }}</span>
+          </div>
+          <p class="meta">
+            <span class="vs">{{ $t('home.versus', { villain: game.scenario }) }}</span>
+            <template v-if="game.waiting"> · {{ $t('home.waitingForPlayers') }}</template>
+            <template v-else> · {{ $t('game.round', { round: game.round }) }} · {{ $t(`game.phases.${game.phase}`) }}</template>
+          </p>
+          <ul v-if="game.seats?.length" class="seats">
+            <li v-for="(seat, n) in game.seats" :key="n" class="seat" :class="{ eliminated: seat.eliminated }">
+              <HeroPortrait class="face square" :code="seat.identity" />
+              <span class="seat-name">{{ seat.name }}</span>
+              <span v-if="seat.damage" class="seat-damage">−{{ seat.damage }}</span>
+            </li>
+          </ul>
+          <p v-else class="meta">{{ game.playerName }}</p>
+        </div>
+        <ChevronRight class="select-chevron" aria-hidden="true" />
+      </RouterLink>
+      <button v-if="deleteGame && !campaign" type="button" class="delete" :aria-label="$t('home.deleteGame')" :title="$t('home.deleteGame')" @click="confirm?.open()">
+        <Trash2 aria-hidden="true" />
+      </button>
     </div>
-    <button v-if="deleteGame" type="button" class="delete" :aria-label="$t('home.deleteGame')" :title="$t('home.deleteGame')" @click="confirm?.open()">
-      <Trash2 aria-hidden="true" />
-    </button>
-    <ConfirmDelete v-if="deleteGame" ref="confirm" :title="$t('home.confirmDelete')" @confirm="deleteGame()">
+    <ConfirmDelete v-if="deleteGame && !campaign" ref="confirm" :title="$t('home.confirmDelete')" @confirm="deleteGame()">
       <span class="confirm-art portrait square" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :style="{ backgroundImage: villainArt }" />
       <span class="confirm-details">
         <strong>{{ game.name }}</strong>
@@ -58,14 +69,17 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
   --edge: var(--crimson);
   position: relative;
   display: flex;
-  align-items: stretch;
-  min-height: 104px;
+  flex-direction: column;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--ink-2);
   overflow: hidden;
   transition: border-color 0.15s, transform 0.15s;
 }
+.game-content { display: flex; align-items: stretch; min-height: 104px; }
+.scenario-link { flex: 1; min-width: 0; display: flex; align-items: stretch; color: inherit; text-decoration: none; }
+.select-chevron { flex: none; align-self: center; width: 20px; height: 20px; margin: 0 12px 0 0; color: var(--text-faint); }
+.scenario-link:hover .select-chevron { color: var(--text); }
 .game-row:hover { border-color: var(--line-strong); }
 .game-row.won { --edge: var(--health); }
 .game-row.lost { --edge: var(--ink-5); }
@@ -80,7 +94,7 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
 .body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 12px 16px 12px 4px; }
 .title-line { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; line-height: 1.1; color: var(--title); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.title:hover { color: #fff; text-decoration: underline; text-decoration-color: var(--crimson); text-underline-offset: 4px; }
+.scenario-link:hover .title { color: #fff; text-decoration: underline; text-decoration-color: var(--crimson); text-underline-offset: 4px; }
 .badge { flex: none; padding: 2px 8px; border-radius: 999px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 .badge.won { background: var(--health-deep); color: #9fd8ae; }
 .badge.lost { background: var(--ink-4); color: var(--text-muted); }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bug, Download, FlagTriangleRight, Menu, PanelRightClose, PanelRightOpen, Rewind, RotateCcw, Terminal, Undo2, Layers } from 'lucide-vue-next'
+import { BookOpen, Bug, Download, FlagTriangleRight, Menu, PanelRightClose, PanelRightOpen, Rewind, RotateCcw, Terminal, Undo2, Layers } from 'lucide-vue-next'
 import GameMenu from './GameMenu.vue'
 import type { CampaignInfo } from '../server'
 
@@ -18,6 +18,7 @@ const { round = null, phase = null } = defineProps<{
   name?: string | null
   /** the campaign this game is a scenario of */
   campaign?: CampaignInfo | null
+  campaignId?: string | null
 }>()
 const emit = defineEmits<{
   reset: []
@@ -63,6 +64,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
             <button type="button" :disabled="!canUndo" @click="emit('undo', 'round')"><Rewind aria-hidden="true" />{{ $t('game.bar.startOfRound') }}</button>
           </template>
         </GameMenu>
+        <RouterLink v-if="campaignId" :to="`/campaigns/${campaignId}`" class="bar-button campaign-link"><BookOpen aria-hidden="true" />{{ $t('common.campaign') }}</RouterLink>
         <button type="button" class="bar-button" @click="emit('fileBug')"><Bug aria-hidden="true" />{{ $t('game.bar.fileBug') }}</button>
       </template>
     </div>
@@ -127,6 +129,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
   align-items: center;
   cursor: pointer;
 }
+.campaign-link { text-decoration: none; }
 .bar-button:hover { background: var(--hover-tint); }
 .game-bar :deep(.menu-items) { border-radius: 0 0 10px 10px; overflow: hidden; }
 .game-bar :deep(.menu-items button) {
