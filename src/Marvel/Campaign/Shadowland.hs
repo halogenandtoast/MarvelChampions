@@ -83,7 +83,7 @@ expertSetup c = when (isExpertCampaign c && scenarioNumber c > 1) $ getPlayers >
     let restore = dealEncounterCard you >> setHitPoints you full
     if hp == 0 then restore else do
       setHitPoints you hp
-      when (hp < full) $ chooseOnePrompted you "$label.expertCampaignHeal"
+      when (hp < full) $ chooseOnePrompted you "$label.slCampaignHeal"
         [labeled "$label.slEncounterToHeal" restore,labeled "$label.keepHitPoints" (pure ())])
 
 choosePrepared :: ReverseQueue m => IdentityId -> CardCode -> m ()

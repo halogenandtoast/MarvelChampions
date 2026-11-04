@@ -1,6 +1,8 @@
 module Marvel.Campaign.ShadowlandSpec (spec) where
 
 import Marvel.Campaign
+import Marvel.Campaign.Shadowland (runShadowlandStep)
+import Marvel.Message.Lifted qualified as L
 import Marvel.Matchers
 import Marvel.Query
 import TestImport
@@ -22,6 +24,17 @@ campaignGameFor heroes mode completed = do
 
 spec :: Spec
 spec = describe "Shadowland campaign" do
+  it "lets a defeated expert player rejoin at full health for one encounter card" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let you = player1 tg
+          c = recordInLog (RecordHitPoints "01001a" 0)
+            $ (newCampaignOf ShadowlandCampaign ExpertCampaign ["01001a"]) {completed=1}
+      resolve =<< L.runQueueT (L.capture $ runShadowlandStep c $ CampaignSetupThen "shadowland:prepared")
+      pass
+      damageOf you `shouldReturn` 0
+      length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 1
+
   for_ [(0,3),(1,28),(2,2)] $ \(completed,threat) ->
     it ("sets up campaign scenario " <> show (completed+1) <> " with corruption") do
       tg <- campaignGame StandardCampaign completed

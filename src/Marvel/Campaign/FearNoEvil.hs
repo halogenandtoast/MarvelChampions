@@ -74,7 +74,7 @@ runFearNoEvilStep c = \case
         sides <- project PlayerIdentitySides you
         recovery <- maybe (pure 0) (AE.getModifiedRecovery . toAttrs) $ headMay [ae | AlterEgoSide ae <- HashMap.elems sides]
         let restore = dealEncounterCard you >> healFrom GameRef you recovery
-        if hp == 0 then restore else chooseOnePrompted you "$label.expertCampaignHeal"
+        if hp == 0 then restore else chooseOnePrompted you "$label.fneCampaignHeal"
           [labeled "$label.fneEncounterToHealRecovery" restore,labeled "$label.keepHitPoints" (pure ())]
   CampaignSetupThen "fearNoEvil:environments" -> do
     environments <- selectList AnyEnvironment

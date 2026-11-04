@@ -770,6 +770,8 @@
   "fneVillainOrder": "Choose how campaign villains are selected",
   "fneRecommendedVillains": "Use the recommended order",
   "fneRandomVillains": "Choose unused villains at random",
+  "fneCampaignHeal": "Take a facedown encounter card to heal damage equal to your REC?",
+  "slCampaignHeal": "Take a facedown encounter card to heal to full hit points?",
   "fneEncounterToHealRecovery": "Take a facedown encounter card and heal your REC",
   "fneFailCompletedScenario": "Choose a completed scenario to fail",
   "fneBeStunned": "Become stunned",

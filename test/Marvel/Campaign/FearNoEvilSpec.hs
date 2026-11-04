@@ -28,6 +28,51 @@ removedTitlesNow = getsGame $ maybe [] (.campaignLog.fearNoEvil.removedTitles) .
 
 spec :: Spec
 spec = describe "Fear No Evil campaign" do
+  it "offers the expert healing choice and heals only REC for one facedown encounter card" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      resolve =<< L.runQueueT (L.capture $ L.setHitPoints you 6)
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      runNow [CampaignStep $ CampaignSetupThen "fearNoEvil:heal"]
+      choose "take the encounter card" (isLabel "$label.fneEncounterToHealRecovery")
+      pass
+      damageOf you `shouldReturn` 1
+      length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 1
+
+  it "allows declining expert healing without dealing an encounter card" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      resolve =<< L.runQueueT (L.capture $ L.setHitPoints you 6)
+      runNow [CampaignStep $ CampaignSetupThen "fearNoEvil:heal"]
+      choose "keep the recorded hit points" (isLabel "$label.keepHitPoints")
+      pass
+      damageOf you `shouldReturn` 4
+      length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 0
+
+  it "rejoins a selected defeated hero by healing their REC and dealing one encounter card" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+      resolve =<< L.runQueueT (L.capture $ L.setHitPoints you 0)
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60188] []
+      resolve [CampaignStep $ CampaignSetupThen "fearNoEvil:heal"]
+      pass
+      damageOf you `shouldReturn` 7
+      length . playerIdentityEncounterCards . toAttrs <$> getPlayer you `shouldReturn` 1
+
+  it "records expert remaining hit points after a defeat as well as after a victory" do
+    tg <- campaignSandbox "spider-man"
+    inGame tg do
+      let you = player1 tg
+          c = recordInLog (RecordFearNoEvilScenario "60134a") $ freshCampaign ExpertCampaign
+      withGame_ $ campaignL ?~ c
+      resolve =<< L.runQueueT (L.capture $ L.setHitPoints you 4)
+      resolve [CampaignStep $ CampaignSetupThen "fearNoEvil:defeat"]
+      result <- getsGame $ fromMaybe (error "campaign missing") . gameCampaign
+      (campaignPlayer "01001a" result >>= (.hitPoints)) `shouldBe` Just 4
+
   it "removes every printing of a recorded title from the next deck" do
     let c = withLog (noFearNoEvilLog {removedTitles=["Nick Fury"]}) $ freshCampaign StandardCampaign
         deck = (starter "spider-man") {cards=[("01084",1),("08019",1),("50002",1),("01088",1)]}
