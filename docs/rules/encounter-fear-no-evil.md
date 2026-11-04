@@ -17,3 +17,7 @@ Behavior tests are in `test/Marvel/Encounter/FearNoEvilSpec.hs`. Remaining conte
 Before implementing Kingpin, apply the [FFG ruling dated September 10, 2026](https://hallofheroeslcg.com/latest-ffg-rulings-post-rrg-1-7/): The King's Gambit 1B hero action has no per-phase limit and resolves as much as possible. Shuffling an empty discard pile still shuffles the encounter deck and can satisfy that part of its instruction. Do not require the full printed threat-removal amount or a nonempty discard pile before offering the action. This specific official clarification governs its “then” handling.
 
 The same official ruling collection (September 14, 2026) confirms that Tracksuit Mafia's tucked-card reveal is outside the encounter deck and cannot chain into further tucked-card reveals. The September 22 clarification also says to preserve Change of Venue's intended non-surge boost resolution; FFG announced an erratum distinguishing its non-surge When Revealed ability. Apply that exception when implementing Protection Racket, rather than granting a surge from its boost.
+
+Drive’s three vehicle attachments and Carjacking have handlers under validation. Traffic Jam remains unfinished, so Drive is not yet exposed as a selectable modular set.
+
+The fixed-HP tests for Cold as Ice and Hard as Marble do not establish their “highest base hit points” selection for variable-HP or per-player-HP minions. Audit that distinction before marking the expansion complete; the existing highest-printed-HP matcher uses the minion's stored initial HP.

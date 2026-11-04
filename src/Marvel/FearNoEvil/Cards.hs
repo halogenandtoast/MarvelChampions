@@ -1415,7 +1415,7 @@ street60186 = (hoodCardDef "60186" "Sports Car" Set.FneDrive AttachmentType 1)
   { cdTraits = fromList [T.Vehicle]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -1425,7 +1425,7 @@ street60187 = (hoodCardDef "60187" "Motorcycle" Set.FneDrive AttachmentType 1)
   { cdTraits = fromList [T.Vehicle]
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
@@ -1445,8 +1445,8 @@ street60189 = (hoodCardDef "60189" "Traffic Jam" Set.FneDrive SideSchemeType 1)
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList [K.Hinder (GV.PerPlayer 2)]
-  , cdBoostIcons = []
-  , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
+  , cdBoostIcons = [B.Boost, B.Boost, B.Boost]
+  , cdHazards = 1, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }
 
@@ -1455,7 +1455,7 @@ street60190 = (hoodCardDef "60190" "Carjacking" Set.FneDrive TreacheryType 1)
   { cdTraits = fromList []
   , cdUnique = False
   , cdKeywords = fromList []
-  , cdBoostIcons = []
+  , cdBoostIcons = [B.Boost, B.Boost]
   , cdHazards = 0, cdAcceleration = 0, cdAmplify = 0
   , cdAlternateCardCodes = []
   }

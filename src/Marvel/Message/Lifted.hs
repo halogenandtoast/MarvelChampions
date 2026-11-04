@@ -3492,10 +3492,7 @@ redirectPlayerAttackToEnemy you source old new = withQueue_ $ map rewrite
 
 -- | A discarded encounter attachment enters play on a character without being revealed.
 attachEncounterToCharacter :: ReverseQueue m => EncounterCard -> CharacterId -> m ()
-attachEncounterToCharacter card character = do
-  first <- selectJust FirstPlayer
-  withTheVillain first (attachEncounterCard card)
-  attachToCharacter (AttachmentId $ unCardId $ ecCardId card) character
+attachEncounterToCharacter card character = cardSpecific GameRef "attachEncounterToCharacter" (card,character)
 
 -- | The condition loses stalwart but replaces a stun or confuse before the
 -- status can be given, so vulnerable does not also discard its host.
@@ -3612,3 +3609,17 @@ resolveInPlayMinionBoost you mid actor = cardSpecific GameRef "beginInPlayMinion
 -- | Flip across card types, discarding the old face's attachments and counters.
 flipSideSchemeToObligation :: ReverseQueue m => SideSchemeId -> IdentityId -> CardCode -> m ()
 flipSideSchemeToObligation sid you code = cardSpecific GameRef "flipSideSchemeToObligation" (sid,you,code)
+
+-- | Replace taking damage with placing the full packet on an attachment. This is
+-- a replacement, so damage that cannot be prevented can still change destination.
+placeCharacterDamageOnAttachment :: (ReverseQueue m, IsCharacter character) => character -> AttachmentId -> Damage -> m ()
+placeCharacterDamageOnAttachment (toCharacter -> character) aid damage = insteadOf matches do
+  when (piercesTough damage) $ removeAllTough character
+  damageAttachment aid (damageAmount damage)
+ where
+  matches = \case
+    IdentityMessage you (IdentityDamaged _ _) -> character == IdentityCharacter you
+    AllyMessage ally (AllyDamaged _ _) -> character == AllyCharacter ally
+    VillainMessage villain (VillainDamaged _ _) -> character == VillainCharacter villain
+    MinionMessage minion (MinionDamaged _ _) -> character == MinionCharacter minion
+    _ -> False

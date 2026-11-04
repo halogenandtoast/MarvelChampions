@@ -354,6 +354,7 @@ isIdentityDefending :: (HasGame m) => IdentityId -> m Bool
 getZoneHeldCards :: (HasGame m) => Target -> m [PlayerCard]
 
 getEnemyKeywords :: HasGame m => EnemyId -> m [Keyword]
+getEnemyAttackValue :: HasGame m => EnemyId -> m Natural
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
 getEnemyBaseScheme :: HasGame m => EnemyId -> m Natural
 getEnemyPrintedScheme :: HasGame m => EnemyId -> m Natural

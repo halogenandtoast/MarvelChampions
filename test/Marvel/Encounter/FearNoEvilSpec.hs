@@ -1,6 +1,7 @@
 module Marvel.Encounter.FearNoEvilSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Message.Lifted qualified as L
 import Marvel.Modifier
 import Marvel.Minion.Types qualified as Minion
@@ -19,6 +20,12 @@ import TestImport
 
 heldAt :: SideSchemeId -> GameAppT [EncounterCard]
 heldAt sid = getsGame $ Side.sideSchemeHeldEncounterCards . toAttrs . (HashMap.! sid) . gameSideSchemes
+
+attachmentOf :: EncounterCard -> AttachmentId
+attachmentOf = AttachmentId . unCardId . ecCardId
+
+attachmentDamageNow :: AttachmentId -> GameAppT Natural
+attachmentDamageNow aid = getsGame $ Attachment.attachmentDamage . toAttrs . (HashMap.! aid) . gameAttachments
 
 spec :: Spec
 spec = describe "Fear No Evil encounter cards" do
@@ -296,3 +303,145 @@ spec = describe "Fear No Evil encounter cards" do
       before <- damageOf p
       resolve [MinionMessage mid $ MinionAttacks p]
       damageOf p `shouldReturn` before + 3
+
+  it "Sports Car chooses the strongest enemy among those without a vehicle" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      first <- encounterCard Cards.street60186
+      resolve [RevealEncounterCard (player1 tg) first]
+      getModifiers vid >>= (`shouldSatisfy` elem (AttackModifier 1))
+      mid <- addMinion (player1 tg) Cards.street60198
+      second <- encounterCard Cards.street60186
+      resolve [RevealEncounterCard (player1 tg) second]
+      getAttachedCharacter (attachmentOf second) `shouldReturn` Just (MinionCharacter mid)
+
+  it "Motorcycle attaches to the highest-SCH eligible enemy and takes three damage in its place" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60198
+      card <- encounterCard Cards.street60187
+      resolve [RevealEncounterCard (player1 tg) card]
+      getAttachedCharacter (attachmentOf card) `shouldReturn` Just (MinionCharacter mid)
+      getModifiers mid >>= (`shouldSatisfy` elem (SchemeModifier 1))
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 3 FromAbility]
+      minionDamageOf mid `shouldReturn` Just 0
+      selectAny (AttachmentWithId $ attachmentOf card) `shouldReturn` False
+
+  it "Utility Van chooses the least remaining HP and absorbs an entire packet without spilling excess" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60192
+      card <- encounterCard Cards.street60188
+      resolve [RevealEncounterCard (player1 tg) card]
+      getAttachedCharacter (attachmentOf card) `shouldReturn` Just (MinionCharacter mid)
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 4 FromAbility]
+      attachmentDamageNow (attachmentOf card) `shouldReturn` 4
+      minionDamageOf mid `shouldReturn` Just 0
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 3 FromAbility]
+      selectAny (AttachmentWithId $ attachmentOf card) `shouldReturn` False
+      minionDamageOf mid `shouldReturn` Just 0
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 1 FromAbility]
+      minionDamageOf mid `shouldReturn` Just 1
+
+  it "a vehicle is not damaged when tough prevents its host taking damage" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60192
+      card <- encounterCard Cards.street60186
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterCard card mid >> L.giveStatus mid ToughStatus)
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ toDamage 2 FromAbility]
+      attachmentDamageNow (attachmentOf card) `shouldReturn` 0
+      getCharacterStatusCount (MinionCharacter mid) ToughStatus `shouldReturn` 0
+
+  it "piercing discards the host's tough before the vehicle replaces taking the damage" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      mid <- addMinion (player1 tg) Cards.street60192
+      card <- encounterCard Cards.street60186
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterCard card mid >> L.giveStatus mid ToughStatus)
+      resolve [MinionMessage mid $ MinionDamaged GameRef $ withPiercing $ toDamage 3 FromAttack]
+      attachmentDamageNow (attachmentOf card) `shouldReturn` 3
+      getCharacterStatusCount (MinionCharacter mid) ToughStatus `shouldReturn` 0
+      minionDamageOf mid `shouldReturn` Just 0
+
+  it "a vehicle replaces unpreventable damage rather than preventing it" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      card <- encounterCard Cards.street60188
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ IdentityCharacter p)
+      resolve =<< L.runQueueT (L.capture $ L.damageIdentity p GameRef $ withUnpreventable $ toDamage 1 FromAbility)
+      damageOf p `shouldReturn` 0
+      attachmentDamageNow (attachmentOf card) `shouldReturn` 1
+
+  it "an unattachable vehicle leaves play and surges" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      first <- encounterCard Cards.street60186
+      resolve [RevealEncounterCard p first]
+      _ <- setEncounterDeck [Cards.street60180] []
+      second <- encounterCard Cards.street60187
+      resolve [RevealEncounterCard p second]
+      selectAny (AttachmentWithId $ attachmentOf second) `shouldReturn` False
+      map toCardCode <$> dealtTo p `shouldReturn` ["60180"]
+
+  it "Carjacking can be paid with three matching resources to attach directly to the identity" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      energy <- putInHand p "01088"
+      haymaker <- putInHand p "01087"
+      (deck,_) <- setEncounterDeck [Cards.street60187,Cards.street60195] []
+      _ <- revealNow p Cards.street60190
+      pass
+      choose "take the vehicle" (isLabel "$label.fneTakeVehicle")
+      payWith [energy,haymaker]
+      pass
+      let car = fromMaybe (error "missing vehicle") $ headMay deck
+      getAttachedCharacter (attachmentOf car) `shouldReturn` Just (IdentityCharacter p)
+      getModifiers p >>= (`shouldSatisfy` elem (ThwartModifier 1))
+      getEncounterDiscard >>= (liftIO . (`shouldNotContain` [car]))
+
+  it "Carjacking offers no payment option without three matching resources" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      resolve [IdentityMessage p $ ChangedToForm A]
+      clearHand p
+      _ <- putInHand p "01089"
+      _ <- putInHand p "01087"
+      _ <- setEncounterDeck [Cards.street60188,Cards.street60195] []
+      _ <- revealNow p Cards.street60190
+      pass
+      offers (isLabel "$label.fneTakeVehicle") `shouldReturn` False
+      choose "reveal the vehicle" (isLabel "$label.fneRevealVehicle")
+      pass
+      vid <- villainIdNow
+      choose "attach the vehicle to the villain" (isTargetChoice vid)
+      pass
+      vehicle <- selectJust (AttachmentIs Cards.street60188)
+      getAttachedCharacter vehicle `shouldReturn` Just (VillainCharacter vid)
+
+  for_ [Cards.street60195,Cards.street60196] $ \def ->
+    it (show (toCardCode def) <> " leaves play and surges when no minion is available") do
+      tg <- testGame ["spider-man"]
+      inGame tg do
+        _ <- setEncounterDeck [Cards.street60180] []
+        card <- encounterCard def
+        resolve [RevealEncounterCard (player1 tg) card]
+        selectAny (AttachmentWithId $ attachmentOf card) `shouldReturn` False
+        length <$> dealtTo (player1 tg) `shouldReturn` 1
+
+  it "does not put a vehicle into play attached to a character that has left play" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      ally <- putIntoPlay (player1 tg) "01067"
+      let aid = allyIdOf ally
+      resolve [RemoveFromPlay $ AllyRef aid]
+      card <- encounterCard Cards.street60188
+      resolve =<< L.runQueueT (L.capture $ L.attachEncounterToCharacter card $ AllyCharacter aid)
+      selectAny (AttachmentWithId $ attachmentOf card) `shouldReturn` False
+      getEncounterDiscard >>= (liftIO . (`shouldContain` [card]))

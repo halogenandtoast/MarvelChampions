@@ -1826,6 +1826,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           when (difficulty == Expert) $ giveStatus mid ToughStatus
         pure g {gameAosBackup = (eid,mid) : filter (\(env,attached) -> env /= eid && attached /= mid) g.gameAosBackup}
   MinionMessage mid (MinionEngagedIdentity _) -> pure g {gameAosBackup = filter ((/=mid) . snd) g.gameAosBackup}
+  CardSpecific GameRef "attachEncounterToCharacter" (fromJSON -> Success (card,character)) -> do
+    let aid = AttachmentId $ unCardId $ ecCardId card
+        existing = lookup aid $ gameAttachments g
+        attachment = fromMaybe (createAttachment card) existing
+    present <- characterMatches AnyCharacter character
+    modifiers <- getModifiers (characterRef character)
+    if not present || any (`elem` modifiers) [CannotHaveAttachedCards,CannotHaveAttachedEncounterCards]
+      then do
+        when (isNothing existing) $ discardCard card
+        pure g
+      else do
+        cardSpecific GameRef "removeEncounterCardFromPiles" card
+        attachToCharacter aid (character :: CharacterId)
+        pure $ g {gameRemovedFromGameEncounterCards = filter ((/= ecCardId card) . ecCardId) gameRemovedFromGameEncounterCards}
+          & entitiesL . attachmentsL %~ insertMap aid attachment
+          & boostCardsL %~ HashMap.filter ((/= ecCardId card) . ecCardId)
   CardSpecific GameRef "aosAttachEncounterToCharacter" (fromJSON -> Success (card,character)) -> g <$ attachEncounterToCharacter card character
   CardSpecific GameRef "aosReflectPendingAttack" (fromJSON -> Success (_you :: IdentityId,vid,attacker :: Maybe CharacterId,source :: Maybe Source)) -> do
     pending <- withQueue $ \q -> (q,headMay [d | message <- concatMap queuedMessageLeaves q, VillainMessage target (VillainDamaged from d) <- [message], target == vid, Just from == source])
@@ -8182,6 +8198,13 @@ getEnemyKeywords enemy = case enemy of
   EnemyAttachmentId _ -> pure []
   EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure []) (Minion.getModifiedKeywords . toAttrs)
   EnemyVillainId vid -> getsGame (lookup vid . gameVillains) >>= maybe (pure []) (Villain.getModifiedKeywords . toAttrs)
+
+-- | The enemy's modified ATK outside any particular attack.
+getEnemyAttackValue :: HasGame m => EnemyId -> m Natural
+getEnemyAttackValue = \case
+  EnemyAttachmentId _ -> pure 0
+  EnemyMinionId mid -> getsGame (lookup mid . gameMinions) >>= maybe (pure 0) (Minion.getModifiedAttack . toAttrs)
+  EnemyVillainId vid -> getsGame (lookup vid . gameVillains) >>= maybe (pure 0) (Villain.getModifiedAttack . toAttrs)
 
 getEnemyScheme :: HasGame m => EnemyId -> m Natural
 getEnemyScheme enemy = case enemy of

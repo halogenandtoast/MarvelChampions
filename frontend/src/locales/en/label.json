@@ -748,5 +748,7 @@
   "slEncounterToHeal": "Deal yourself an encounter card and restore full hit points",
   "slNameVillain": "Name villain",
   "slNameMainScheme": "Name main scheme",
-  "slProtegeAttacks": "The Dark Protégé attacks you"
+  "slProtegeAttacks": "The Dark Protégé attacks you",
+  "fneTakeVehicle": "Spend 3 resources of the same type to take the vehicle",
+  "fneRevealVehicle": "Reveal the vehicle"
 }

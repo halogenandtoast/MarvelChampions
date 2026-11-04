@@ -276,5 +276,25 @@
     "baseThreat": 3,
     "baseThreatFixed": false,
     "boost": 2
+  },
+  "60186": {
+    "attack": 1,
+    "boost": 2
+  },
+  "60187": {
+    "scheme": 1,
+    "boost": 1
+  },
+  "60188": {
+    "boost": 0
+  },
+  "60189": {
+    "baseThreat": 2,
+    "baseThreatFixed": true,
+    "hazard": 1,
+    "boost": 3
+  },
+  "60190": {
+    "boost": 2
   }
 }

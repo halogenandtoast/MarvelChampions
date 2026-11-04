@@ -4388,7 +4388,9 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_9.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "attack": 1,
+      "boost": 2
     },
     {
       "name": "Motorcycle",
@@ -4414,7 +4416,9 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_10.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "scheme": 1,
+      "boost": 1
     },
     {
       "name": "Utility Van",
@@ -4440,7 +4444,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_11.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 0
     },
     {
       "name": "Traffic Jam",
@@ -4464,7 +4469,11 @@
       "sourceFile": "MarvelHD/cropped/032_Tracksuit_Mafia_Modular_Set_FaceURL_13.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "landscape",
-      "textVerified": true
+      "textVerified": true,
+      "baseThreat": 2,
+      "baseThreatFixed": true,
+      "hazard": 1,
+      "boost": 3
     },
     {
       "name": "Carjacking",
@@ -4488,7 +4497,8 @@
       "sourceFile": "MarvelHD/cropped/033_Tracksuit_Mafia_Modular_Set_FaceURL_12.png",
       "sourceUrl": "https://cdn.svc.asmodee.net/production-fantasyflightgames/uploads/2026/09/mc60_rulebook-web.pdf",
       "orientation": "portrait",
-      "textVerified": true
+      "textVerified": true,
+      "boost": 2
     },
     {
       "name": "Flight Serum",
