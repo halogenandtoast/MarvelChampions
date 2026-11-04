@@ -277,7 +277,7 @@ spec = describe "Shadowland encounter cards" do
       discarded <- encounterCard Cards.street65051
       resolve =<< L.runQueueT (L.capture do
         L.createDeck (NamedDeckKey "shadowlandTraps") traps
-        L.fromDeck (NamedDeckKey "shadowlandTraps") $ L.discardCard discarded)
+        L.discardCard discarded)
       void $ setEncounterDeck (replicate 4 FNE.street60085) []
       shift <- encounterCard Cards.street65045
       resolve [RevealEncounterCard you shift]
