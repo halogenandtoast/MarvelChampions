@@ -1,5 +1,7 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Modifier.Types where
 
+import Data.Aeson.TH (deriveJSON)
 import Marvel.Prelude
 import Marvel.Ref (Target, Source)
 
@@ -312,4 +314,7 @@ data Modifier
     -- returned to hand (Odin, King)
     RemovedFromGameInsteadOfLeavingPlay
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+
+-- Generate JSON directly: specializing Generic instances for these large sums
+-- makes optimized builds spend minutes in the simplifier.
+$(concat <$> traverse (deriveJSON defaultOptions) [''Modifier])

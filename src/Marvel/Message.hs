@@ -1,8 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
 module Marvel.Message (
   module Marvel.Message,
   module X,
 ) where
 
+import Data.Aeson.TH (deriveJSON)
 import Marvel.Prelude
 import Data.List (nub)
 import Marvel.Window.Types qualified as W
@@ -376,13 +378,11 @@ data FinishedStatus
   | CompetitiveDraw
   | BothTeamsLost
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 data DefensePriority
   = AnyDefense
   | AllyIfAble
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 data Message
   = ResolveWhenDefeated Message
@@ -758,13 +758,11 @@ data Message
     -- has ended (Master of Illusions' prevention lasts until then)
     AbilityResolved Source
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 -- | How a villain card is replaced: swapped (RR "Swap", the hit point dial kept) or
 -- advanced to (it enters play as a next stage would).
 data ReplaceKind = Swapped | Advanced
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 
 -- | The actionable message behind an enemy-damage continuation. Queue edits see
@@ -860,3 +858,7 @@ threatRemovalMessage = \case
   SideSchemeMessage sid (SideSchemeThwarted source n) -> Just (source,SchemeSideSchemeId sid,n,False,True)
   SideSchemeMessage sid (SideSchemeThreatRemoved source n) -> Just (source,SchemeSideSchemeId sid,n,False,False)
   _ -> Nothing
+
+-- Generate JSON directly: specializing Generic instances for these large sums
+-- makes optimized builds spend minutes in the simplifier.
+$(concat <$> traverse (deriveJSON defaultOptions) [''FinishedStatus, ''DefensePriority, ''Message, ''ReplaceKind])

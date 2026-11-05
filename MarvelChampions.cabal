@@ -1169,8 +1169,15 @@ library
       Marvel.FearNoEvil.TracksuitMafia
       Marvel.Frontend
       Marvel.Game
+      Marvel.Game.App
+      Marvel.Game.Base
+      Marvel.Game.Class
       Marvel.Game.Public
+      Marvel.Game.Query
       Marvel.Game.Run
+      Marvel.Game.Runner
+      Marvel.Game.Select
+      Marvel.Game.Setup
       Marvel.Game.Source
       Marvel.GameValue
       Marvel.GameValue.Types
@@ -3238,6 +3245,7 @@ test-suite MarvelChampions-test
       Marvel.Hero.WonderManSpec
       Marvel.Hero.X23SignatureSpec
       Marvel.Hero.X23Spec
+      Marvel.JsonCompatibilitySpec
       Marvel.LogSpec
       Marvel.PublicSpec
       Marvel.RoundSpec

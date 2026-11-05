@@ -1,7 +1,9 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -O0 #-}
 
 module Marvel.Window.Types where
 
+import Data.Aeson.TH (deriveJSON)
 import Marvel.Prelude
 import Marvel.Card.Id (CardId)
 import Marvel.Phase (Phase)
@@ -20,7 +22,7 @@ import Marvel.Ref (Source)
 
 data WindowTiming = After | When | Would
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass Hashable
 
 data RevealSource
   = RevealedFromEncounterDeck
@@ -30,7 +32,7 @@ data RevealSource
   | RevealedFromSetAside
   | RevealedFromRemovedFromGame
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass Hashable
 
 data ThreatSource
   = ThreatFromVillain
@@ -39,7 +41,7 @@ data ThreatSource
   | ThreatFromAcceleration
   | AnyThreatSource
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass Hashable
 
 data WindowMatcher
   = CharacterAttackedInPlayArea IdentityId
@@ -292,14 +294,13 @@ data WindowMatcher
     -- interrupts, before his defeat resolves
     VillainIsDefeated WindowTiming VillainMatcher
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass Hashable
 
 data Window = Window
   { windowTiming :: WindowTiming
   , windowType :: WindowType
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
 
 data WindowType
   = CharacterTookExcessDamage CharacterId Source Natural
@@ -497,4 +498,8 @@ data WindowType
   | -- | the villain is being defeated, his defeat not yet resolved
     VillainDefeat VillainId
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass Hashable
+
+-- Generate JSON directly: specializing Generic instances for these large sums
+-- makes optimized builds spend minutes in the simplifier.
+$(concat <$> traverse (deriveJSON defaultOptions) [''WindowTiming, ''RevealSource, ''ThreatSource, ''WindowMatcher, ''Window, ''WindowType])
