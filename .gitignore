@@ -10,6 +10,16 @@ tags
 MarvelHD.zip
 /images/
 frontend/public/images/cards/
+# Images and rulebook PDFs are local assets, not repository content.
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
+*.[jJ][pP][eE][gG]
+*.[gG][iI][fF]
+*.[wW][eE][bB][pP]
+*.[sS][vV][gG]
+*.[aA][vV][iI][fF]
+*.[iI][cC][oO]
+*.[pP][dD][fF]
 .stack-work-claude/
 .claude/worktrees/
 /.claude
