@@ -12,6 +12,7 @@
 #   MARVEL_DOCKERHUB_USER   Docker Hub namespace (default: halogenandtoast)
 #   MARVEL_BUILD_PLATFORM   buildx platform (default: linux/amd64)
 #   MARVEL_CLUSTER          DOKS cluster name (default: marvel-champions)
+#   MARVEL_BUILDER          buildx builder (default: marvel-builder-v2)
 
 set -euo pipefail
 
@@ -19,25 +20,27 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 DOCKER_USER="${MARVEL_DOCKERHUB_USER:-halogenandtoast}"
 PLATFORM="${MARVEL_BUILD_PLATFORM:-linux/amd64}"
 CLUSTER="${MARVEL_CLUSTER:-marvel-champions}"
+BUILDER="${MARVEL_BUILDER:-marvel-builder-v2}"
 
 SHA="$(git -C "$ROOT_DIR" rev-parse --short HEAD)"
 echo "deploy.sh: shipping $SHA"
 
 if ! git -C "$ROOT_DIR" diff --quiet || ! git -C "$ROOT_DIR" diff --cached --quiet; then
-  echo "deploy.sh: warning — working tree has uncommitted changes; they are NOT in the built image" >&2
+  echo "deploy.sh: warning — the image includes uncommitted working-tree changes under tag $SHA" >&2
 fi
 
-# Make sure a multi-platform-capable builder exists. The default
-# `docker-container` driver cross-builds via QEMU.
-if ! docker buildx inspect marvel-builder >/dev/null 2>&1; then
-  docker buildx create --name marvel-builder --driver docker-container --bootstrap >/dev/null
+# A separate builder applies the cache policy without interrupting deployments
+# still running on the original marvel-builder. Its first build populates caches.
+if ! docker buildx inspect "$BUILDER" >/dev/null 2>&1; then
+  docker buildx create --name "$BUILDER" --driver docker-container \
+    --buildkitd-config "$ROOT_DIR/scripts/buildkitd.toml" --bootstrap >/dev/null
 fi
-docker buildx use marvel-builder >/dev/null
 
 build_and_push() {
   local image="$1" ctx="$2"
   echo "deploy.sh: building $image:{$SHA,latest} for $PLATFORM"
   docker buildx build \
+    --builder "$BUILDER" \
     --platform "$PLATFORM" \
     --tag "$image:$SHA" \
     --tag "$image:latest" \

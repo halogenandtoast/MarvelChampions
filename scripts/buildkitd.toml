@@ -1,0 +1,17 @@
+# Keep the compiled Stack packages and application objects between deploys.
+# Absolute budgets avoid free-space targets that grow with the VM's disk size.
+[worker.oci]
+  gc = true
+
+  [[worker.oci.gcpolicy]]
+    filters = ["type==exec.cachemount"]
+    keepDuration = "2160h"
+    reservedSpace = "20GB"
+    maxUsedSpace = "30GB"
+
+  [[worker.oci.gcpolicy]]
+    all = true
+    keepDuration = "720h"
+    reservedSpace = "30GB"
+    maxUsedSpace = "60GB"
+    minFreeSpace = "15GB"

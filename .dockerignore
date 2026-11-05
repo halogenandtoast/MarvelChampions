@@ -1,4 +1,7 @@
 **/.stack-work*/
+**/dist-newstyle/
+**/.terraform/
+**/*.tfstate*
 .git/
 .claude/
 .DS_Store

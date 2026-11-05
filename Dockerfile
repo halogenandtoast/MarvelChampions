@@ -2,7 +2,10 @@
 
 # Stage 1: build the Haskell binary with stack. The haskell image's ghc matches
 # stack.yaml's compiler, which stack.yaml tells stack to use (system-ghc).
-FROM haskell:9.14.1 AS builder
+FROM haskell:9.14.1 AS dependencies
+
+ARG TARGETARCH
+ARG BUILD_CACHE_VERSION=1
 
 WORKDIR /build
 
@@ -22,10 +25,19 @@ RUN apt-get update \
 # Pull in just the dependency descriptors first so dependency compilation
 # can be cached independently from source changes.
 COPY stack.yaml stack.yaml.lock package.yaml MarvelChampions.cabal ./
-RUN stack build --only-dependencies
+RUN --mount=type=cache,id=marvel-stack-${TARGETARCH}-ghc9.14.1-v${BUILD_CACHE_VERSION},target=/root/.stack,sharing=locked \
+    --mount=type=cache,id=marvel-work-${TARGETARCH}-ghc9.14.1-v${BUILD_CACHE_VERSION},target=/build/.stack-work,sharing=locked \
+    stack +RTS -V0 -RTS build --only-dependencies --no-terminal
 
-COPY . .
-RUN stack install --local-bin-path /out MarvelChampions:exe:marvel-champions
+FROM dependencies AS builder
+
+COPY src/ src/
+COPY app/ app/
+COPY scripts/docker-build-backend.sh scripts/docker-build-backend.sh
+ARG BUILD_TIMINGS=0
+RUN --mount=type=cache,id=marvel-stack-${TARGETARCH}-ghc9.14.1-v${BUILD_CACHE_VERSION},target=/root/.stack,sharing=locked \
+    --mount=type=cache,id=marvel-work-${TARGETARCH}-ghc9.14.1-v${BUILD_CACHE_VERSION},target=/build/.stack-work,sharing=locked \
+    MARVEL_BUILD_TIMINGS="$BUILD_TIMINGS" sh scripts/docker-build-backend.sh
 
 # Stage 2: minimal runtime.
 FROM debian:bookworm-slim AS runtime
