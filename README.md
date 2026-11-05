@@ -63,3 +63,10 @@ docker buildx build --builder marvel-builder-v2 --platform linux/amd64 \
 
 Add `--build-arg BUILD_TIMINGS=1 --progress plain` to collect GHC phase timings
 and compiler allocation/GC statistics for modules that need recompiling.
+
+The engine and tests compile modules in parallel. The small API executable uses
+`-j1` because parallel GHC linking hangs under Rosetta after its C subprocess
+exits. This controls compilation, not the server's runtime thread count. Large
+engine JSON codecs use Template Haskell to avoid expensive Generic specialization;
+compatibility tests check the existing saved-game format. `Marvel.Window.Types`
+retains `-O0`; other engine modules retain the normal optimization level.

@@ -2752,7 +2752,7 @@ library
       NoPolyKinds
       MultiWayIf
       OverloadedRecordDot
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -j
   build-depends:
       MonadRandom
     , aeson
@@ -2821,7 +2821,7 @@ executable marvel-champions
       NoPolyKinds
       MultiWayIf
       OverloadedRecordDot
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -j1 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MarvelChampions
     , MonadRandom
@@ -3380,7 +3380,7 @@ test-suite MarvelChampions-test
       NoPolyKinds
       MultiWayIf
       OverloadedRecordDot
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -j -threaded -rtsopts -with-rtsopts=-N
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:

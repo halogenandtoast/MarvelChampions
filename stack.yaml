@@ -4,8 +4,8 @@ packages:
 - .
 system-ghc: true
 install-ghc: false
-# Stack runs packages in parallel but GHC builds a package's modules one at a
-# time unless told -j. -A128M sizes each capability's nursery, -c compacts the
-# old generation to bound memory (as in LordOfTheRings).
+# Component-level -j settings live in package.yaml: the library and tests build
+# in parallel, while the small executable avoids a GHC/Rosetta linking deadlock.
+# -A128M sizes each capability's nursery; -c bounds old-generation memory.
 ghc-options:
-  "$targets": -j +RTS -A128M -n4m -c -RTS
+  "$targets": +RTS -A128M -n4m -c -RTS
