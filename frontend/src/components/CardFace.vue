@@ -22,8 +22,12 @@ const title = computed(() => card.value?.name ?? name ?? code ?? '')
 </script>
 
 <template>
+  <span v-if="code === 'xdrone' && !back && src" class="card-face drone">
+    <img :src="src" alt="" :loading="eager ? 'eager' : 'lazy'" decoding="async" draggable="false" @error="attempt++" />
+    <span class="name">{{ title }}</span>
+  </span>
   <img
-    v-if="src"
+    v-else-if="src"
     class="card-face"
     :src="src"
     :alt="title"
@@ -41,6 +45,10 @@ const title = computed(() => card.value?.name ?? name ?? code ?? '')
 
 <style scoped>
 .card-face { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.drone { position: relative; overflow: hidden; container-type: inline-size; }
+.drone img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.drone::after { content: ''; position: absolute; inset: 0; background: rgb(0 0 0 / 0.55); }
+.drone .name { position: absolute; inset: 0; z-index: 1; display: grid; align-items: end; justify-items: center; padding: 8%; text-align: center; color: #fff; }
 .placeholder {
   display: flex;
   flex-direction: column;

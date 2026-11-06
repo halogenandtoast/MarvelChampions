@@ -38,6 +38,8 @@ export const boardCard = (code: string, cardByCode: (code: string) => Card | und
 
 /** The images to try for a card, best first; a placeholder follows when all fail. */
 export const imageSources = (code: string, cardByCode: (code: string) => Card | undefined): string[] => {
+  // Ultron's drones are player cards put into play facedown.
+  if (code === 'xdrone') return [BACKS.player]
   const card = boardCard(code, cardByCode)
   if (!card) return [`${CARD_IMAGES}/${code}.avif`]
   return [localImage(card), remoteImage(card)].filter((s): s is string => s !== null)
