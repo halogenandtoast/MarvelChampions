@@ -1,6 +1,8 @@
 module Marvel.Aspect.WonderManPackSpec (spec) where
 
 import Marvel.Hero.Runner qualified as Hero
+import Data.Aeson.KeyMap qualified as KM
+import Marvel.Game.Public (publicGameFor)
 import Marvel.Hercules.Cards qualified as HerculesCards
 import Marvel.Identity (currentIdentity)
 import Marvel.Message.Lifted qualified as Lifted
@@ -242,12 +244,40 @@ spec = describe "Wonder Man aspect cards" do
       card <- putInHand you "58018"
       payment <- putInHand you "01088"
       choose "play Everywhere" (isPlay card)
+      offers (isLabel $ countLabel "chooseXAmount" 0) `shouldReturn` False
       choose "X is two" (isLabel $ countLabel "chooseXAmount" 2)
       payWith [payment]
       chooseMainScheme
       choose "the distinct side scheme" (isTargetChoice side)
       pass
       mainSchemeThreatNow `shouldReturn` before - 2
+
+  it "Mr Hollywood overpays Everywhere without covering its declared X cost" do
+    tg <- testGame ["wonder-man"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      hollywood <- putIntoPlay you "58009"
+      placeMainThreat 4
+      before <- mainSchemeThreatNow
+      card <- putInHand you "58018"
+      payment <- putInHand you "58003"
+      choose "play Everywhere" (isPlay card)
+      offers (isLabel $ countLabel "chooseXAmount" 0) `shouldReturn` False
+      choose "X is one" (isLabel $ countLabel "chooseXAmount" 1)
+      choose "overpay with Mr Hollywood" (isAbilityOfCard hollywood)
+      offers isFinishPayment `shouldReturn` False
+      visible <- liftIO . publicGameFor (== you) =<< getGame
+      let owed = case toJSON visible of
+            Object view -> case KM.lookup "activeCost" view of
+              Just (Object cost) -> KM.lookup "owed" cost
+              _ -> Nothing
+            _ -> Nothing
+      owed `shouldBe` Just (toJSON [Nothing :: Maybe Resource])
+      payWith [payment]
+      chooseMainScheme
+      pass
+      mainSchemeThreatNow `shouldReturn` before - 3
 
   it "Disarming Defense adds DEF and discards an actionable attachment only after a damage-free defense" do
     tg <- testGame ["wonder-man"]

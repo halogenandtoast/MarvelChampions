@@ -530,6 +530,7 @@ gameView seesHand g = do
     pure $ ThreatView (schemeIdText sid) n src threshold
   activeCost <- for (headMay $ gameActiveCost g) \c -> do
     paid <- paymentResources c.activeCostPayment
+    let usable = paid L.\\ [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
     pure
       ActiveCostView
         { player = c.activeCostIdentityId
@@ -545,7 +546,7 @@ gameView seesHand g = do
         , owed = let required = printedResourceRequirements c.activeCostCost
                      receipts = [rs | PrintedResourcesPayment rs <- payments c.activeCostPayment]
                      printed = if null receipts then concatMap (printedResources . getCardDef) c.activeCostSpentCards else concat receipts
-                  in if null required then owedFor (costResources c.activeCostCost) paid
+                  in if null required then owedFor (costResources c.activeCostCost) usable
                      else map Just (foldl' (flip L.delete) required printed)
         , anyAmount = dynamic c.activeCostCost
         , spent = map (cardView . PlayerCard) c.activeCostSpentCards
