@@ -22,7 +22,7 @@ spec = describe "Daredevil" do
     tg <- testGame ["daredevil"]
     inGame tg do
       asHero (player1 tg)
-      heroPowers (player1 tg) `shouldReturn` (1,2,2)
+      heroPowers (player1 tg) `shouldReturn` (2,2,2)
 
   it "Cross-Examination deals three damage without upgrades" do
     tg <- testGame ["daredevil"]
@@ -82,7 +82,7 @@ spec = describe "Daredevil" do
       asHero p
       _ <- paying p "60017" ["01090"]
       pass
-      heroPowers p `shouldReturn` (1,3,2)
+      heroPowers p `shouldReturn` (2,3,2)
 
   it "returning the Billy Club to hand pays its damage action" do
     tg <- testGame ["daredevil"]
@@ -201,7 +201,7 @@ spec = describe "Daredevil" do
       chooseMainScheme
       choose "Superior Taste" (cardAbility taste)
       pass
-      mainSchemeThreatNow `shouldReturn` before - 3
+      mainSchemeThreatNow `shouldReturn` before - 4
 
   it "Karen Page shuffles a Daredevil card and draws in alter-ego form" do
     tg <- testGame ["daredevil"]

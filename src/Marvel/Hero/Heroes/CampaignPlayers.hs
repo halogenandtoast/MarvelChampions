@@ -44,7 +44,7 @@ cw56029a :: HeroCard CampaignHero
 cw56029a = hero (\attrs -> CampaignHero attrs [] Nothing Nothing) Cards.cw56029a (HP $ Static 13) (HandSize 5) (Thw 1) (Atk 1) (Def 1)
 
 fne60001a :: HeroCard CampaignHero
-fne60001a = hero (\attrs -> CampaignHero attrs [] Nothing Nothing) Cards.fne60001a (HP $ Static 10) (HandSize 5) (Thw 1) (Atk 2) (Def 2)
+fne60001a = hero (\attrs -> CampaignHero attrs [] Nothing Nothing) Cards.fne60001a (HP $ Static 10) (HandSize 5) (Thw 2) (Atk 2) (Def 2)
 
 fne60037a :: HeroCard CampaignHero
 fne60037a = hero (\attrs -> CampaignHero attrs [] Nothing Nothing) Cards.fne60037a (HP $ Static 9) (HandSize 5) (Thw 2) (Atk 2) (Def 2)

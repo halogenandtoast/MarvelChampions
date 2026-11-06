@@ -12,6 +12,7 @@ import { useScenarios } from '../scenarios'
 import AreaTabs from '../components/AreaTabs.vue'
 import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
+import ConfirmDelete from '../components/ConfirmDelete.vue'
 import FileBug from '../components/FileBug.vue'
 import GameBar from '../components/GameBar.vue'
 import CompetitionStatus from '../components/CompetitionStatus.vue'
@@ -121,6 +122,13 @@ const riverCards = computed<RiverCard[]>(() => {
     for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
   }
   for (const c of river.value) cards.set(c.id, { ...cards.get(c.id), ...c })
+  // Keep the source of an offered response or interrupt visible, including upgrades attached
+  // to schemes. Its choice is answered on the card in the river.
+  for (const choice of choices.value) {
+    if (choice.kind !== 'ability' || !/Response|Interrupt/.test(choice.abilityType ?? '') || !choice.target) continue
+    const card = things.value[choice.target]
+    if (card) cards.set(choice.target, { id: choice.target, ...card })
+  }
   return [...cards.values()]
 })
 // a card in the river may be on the table or in hand too, as a revealed minion is
@@ -137,6 +145,8 @@ const attacker = computed<RiverAttacker | null>(() => {
   return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find((e) => e.id === id) ?? null
 })
 const riverLabel = computed(() => {
+  if (choices.value.some((choice) => choice.kind === 'ability' && choice.abilityType?.includes('Interrupt'))) return t('game.river.interrupts')
+  if (choices.value.some((choice) => choice.kind === 'ability' && choice.abilityType?.includes('Response'))) return t('game.river.responses')
   if (riverCleared.value) return null
   const attack = game.value?.attack
   if (attack) return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
@@ -227,6 +237,15 @@ const things = computed(() => {
   }
   add(g.mainSchemes)
   add(g.sideSchemes)
+  for (const scheme of [...(g.mainSchemes ?? []), ...(g.sideSchemes ?? [])]) {
+    add(scheme.upgrades)
+    add(scheme.attachments)
+    add(scheme.attachedCards)
+  }
+  for (const environment of g.environments ?? []) {
+    add([environment])
+    add(environment.attachments)
+  }
   add(g.encounterDiscard)
   add(g.victoryDisplay ?? [])
   add(g.collection ?? [])
@@ -297,13 +316,15 @@ const scenarioName = computed(() => {
   return (game.value?.villains ?? []).find((v) => v.id === first)?.name ?? game.value?.villains?.[0]?.name ?? null
 })
 const active = computed(() => game.value?.activePlayer ?? null)
-const resetGame = () => {
-  if (window.confirm(t('game.bar.restartConfirm'))) void reset()
-}
+const restartDialog = ref<InstanceType<typeof ConfirmDelete> | null>(null)
+const resetGame = () => restartDialog.value?.open()
 </script>
 
 <template>
   <div class="game-view">
+    <ConfirmDelete ref="restartDialog" :title="t('game.bar.restartScenario')" :confirm-label="t('game.bar.restartScenario')" @confirm="reset()">
+      <p>{{ t('game.bar.restartConfirm') }}</p>
+    </ConfirmDelete>
     <GameBar
       :can-undo="canUndo"
       :show-sidebar="showSidebar"
@@ -366,7 +387,7 @@ const resetGame = () => {
             <MissionArea v-if="game.mission" :mission="game.mission" />
           </div>
 
-          <River class="river" :cards="riverCards" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :cards="riverCards" :reaction="choices.some(choice => choice.kind === 'ability' && /Response|Interrupt/.test(choice.abilityType ?? ''))" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" :declares="declares" @choose="choose" />
           </River>
 

@@ -4,6 +4,13 @@ import type { GameView, QuestionView, SearchedView } from '../server'
 // Keep those searches usable alongside questions carrying explicit searched groups.
 export const searchedCards = (game: GameView | null | undefined, question: QuestionView): SearchedView[] => {
   if (question.searched?.length) return question.searched
+  const senseDecks = (game?.players ?? []).flatMap((player) => {
+    const cards = player.senseDeck ?? []
+    return cards.some((card) => question.choices.some((choice) => choice.kind === 'target' && !choice.label && choice.target === card.id))
+      ? [{ place: '$game.piles.sense', cards }]
+      : []
+  })
+  if (senseDecks.length) return senseDecks
   const focused = game?.focusedCards ?? []
   const noMatches = question.choices.some((choice) => choice.label === '$label.noMatchingCardsFound')
   return noMatches || focused.some((card) => question.choices.some((choice) => choice.kind === 'target' && !choice.label && choice.target !== question.source && choice.target === card.id))

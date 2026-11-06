@@ -61,6 +61,8 @@
     "stunned": "Stunned: attack canceled",
     "confused": "Confused: thwart canceled",
     "revealed": "Revealed",
+    "responses": "Responses",
+    "interrupts": "Interrupts",
     "attacks": "{attacker} attacks {target}",
     "threat": "{source}: {amount} threat on {scheme}",
     "placeThreat": "Place threat on main scheme",

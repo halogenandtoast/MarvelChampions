@@ -38,10 +38,12 @@ export interface RiverAttacker {
   boostCards?: number
 }
 
-const { cards, label = null, attacker = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+const { cards, label = null, reaction = false, attacker = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
   canceledEvent?: { code: string; statuses: readonly ('stunned' | 'confused')[] } | null
   cards: readonly RiverCard[]
   label?: string | null
+  /** an interrupt or response window, highlighted like its available cards */
+  reaction?: boolean
   /** the enemy attacking, with its attack as modified now */
   attacker?: RiverAttacker | null
   /** the scheme threat would be placed on */
@@ -58,7 +60,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
-    <div v-if="cards.length || label || canceledEvent || !shared" class="lane" :class="{ live: cards.length || label || canceledEvent, danger: advances }">
+    <div v-if="cards.length || label || canceledEvent || !shared" class="lane" :class="{ live: cards.length || label || canceledEvent, reaction, danger: advances }">
       <div class="what">
         <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
         <p v-for="status in canceledEvent?.statuses ?? []" :key="status">{{ t(`game.river.${status}`) }}</p>
@@ -119,6 +121,13 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
   border: 1px solid rgb(226 163 59 / 0.35);
 }
 .what { display: flex; flex-direction: column; gap: 6px; }
+.lane.reaction {
+  background: color-mix(in srgb, var(--interactive) 8%, var(--ink-2));
+  border-color: var(--interactive);
+  box-shadow: 0 0 16px var(--interactive-glow), inset 0 0 16px var(--interactive-glow);
+}
+.lane.reaction .what { align-self: center; justify-self: start; }
+.lane.reaction .what p { color: var(--interactive); }
 .what p {
   margin: 0;
   font-family: var(--font-display);

@@ -1,4 +1,4 @@
-import { computed, inject, provide, type ComputedRef, type InjectionKey } from 'vue'
+import { computed, inject, provide, ref, type Ref, type ComputedRef, type InjectionKey } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { handleI18n } from '../i18n'
 import type { ChoiceView } from '../server'
@@ -8,6 +8,7 @@ import type { ChoiceView } from '../server'
  * card with something to do lights up and a click answers (or opens a menu, for several).
  */
 export interface Choices {
+  hoveredTarget: Ref<string | null>
   /** Damage allocated while answering the question, by character id. */
   assignedDamage: ComputedRef<Record<string, number>>
   /** The choices about each card or entity, by its id. */
@@ -28,12 +29,12 @@ export const provideChoices = (choices: () => ChoiceView[], choose: (index: numb
     }
     return map
   })
-  const provided = { assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source) }
+  const provided = { hoveredTarget: ref<string | null>(null), assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source) }
   provide(key, provided)
   return provided
 }
 
-export const useChoices = () => inject(key, { assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
+export const useChoices = () => inject(key, { hoveredTarget: ref<string | null>(null), assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
 
 /** Server text that may be a key the locale lacks yet: then its last word, spaced out. */
 export const useKeyed = () => {

@@ -1,5 +1,41 @@
 import { expect, test } from '@playwright/test'
 
+test('Sense deck choices use the card selection modal and preserve the selected answer', async ({ page }) => {
+  await page.goto('/#/cards/01001a')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: CardPick } = await load('/src/components/CardPick.vue')
+    const { searchedCards } = await load('/src/composables/cardSearch.ts')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const senseDeck = [
+      { id: 'acute', code: '60002', name: 'Acute Tactility' },
+      { id: 'taste', code: '60006', name: 'Superior Taste' },
+    ]
+    const question = { searched: [], choices: [
+      { index: 0, kind: 'label', label: '$label.done' },
+      { index: 1, kind: 'target', target: 'taste', label: null },
+    ] }
+    const game = { players: [{ senseDeck }], focusedCards: [], question: { player: question } }
+    const host = document.createElement('div')
+    document.body.replaceChildren(host)
+    host.id = 'sense-host'
+    createApp({ setup: () => () => h(CardPick, {
+      choices: question.choices, searched: searchedCards(game, question), canChoose: true,
+      onChoose: (index: number) => { host.dataset.chosen = String(index) },
+    }) }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+  })
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Sense deck', exact: true })).toBeVisible()
+  await expect(dialog.locator('.card')).toHaveCount(2)
+  await expect(dialog.locator('.card').first()).toBeDisabled()
+  await expect(dialog.getByRole('button', { name: 'Done', exact: true })).toBeVisible()
+  await dialog.locator('.card').last().click()
+  await expect(page.locator('#sense-host')).toHaveAttribute('data-chosen', '1')
+})
+
 for (const noMatches of [false, true]) {
   for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 667 }]) {
     test(`${noMatches ? 'unmatched' : 'focused'} search scrolls within the modal at ${viewport.width}px`, async ({ page }) => {

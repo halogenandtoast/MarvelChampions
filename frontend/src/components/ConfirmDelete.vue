@@ -3,7 +3,7 @@ import { useTemplateRef } from 'vue'
 
 // Asks before deleting something: a native dialog, so Escape closes it, and Delete has
 // the focus, so Enter confirms. What is to be deleted goes in the slot.
-defineProps<{ title: string }>()
+defineProps<{ title: string; confirmLabel?: string }>()
 const emit = defineEmits<{ confirm: [] }>()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
@@ -21,7 +21,7 @@ defineExpose({ open: () => dialog.value?.showModal() })
     <div class="subject"><slot /></div>
     <div class="actions">
       <button type="button" @click="close">{{ $t('common.cancel') }}</button>
-      <button type="button" class="confirm" autofocus @click="(close(), emit('confirm'))">{{ $t('common.delete') }}</button>
+      <button type="button" class="confirm" autofocus @click="(close(), emit('confirm'))">{{ confirmLabel ?? $t('common.delete') }}</button>
     </div>
   </dialog>
 </template>

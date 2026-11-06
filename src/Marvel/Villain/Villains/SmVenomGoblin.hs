@@ -59,9 +59,9 @@ instance RunMessage SmVenomGoblinVillain where
       SmVenomGoblinVillain <$> runMessage msg attrs
     CardSpecific GameRef "goblinAfterActivation" (fromJSON -> Success (you, sid)) -> do
       case villainStage attrs of
-        1 -> chooseOne you
-          [ targeting sid $ placeThreat sid 2
-          , targeting sid $ Goblin.resolveGoblinSpecial you sid
+        1 -> chooseOnePromptedAbout you "$label.goblinAfterActivation" sid
+          [ labeled "$label.goblinPlaceTwoThreat" $ placeThreat sid 2
+          , labeled "$label.goblinResolveSpecial" $ Goblin.resolveGoblinSpecial you sid
           ]
         3 -> placeThreat sid 1 >> Goblin.resolveGoblinSpecial you sid
         _ -> Goblin.resolveGoblinSpecial you sid

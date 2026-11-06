@@ -2,7 +2,7 @@
 // A card on the table: its scan, the tokens on it, its statuses, and what can be done
 // with it. A card the open question is about lights up; a click answers, or asks which
 // when it offers several choices, each named on a chip along its foot.
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
@@ -62,7 +62,11 @@ const props = withDefaults(
 
 const cards = useCards()
 const overlay = useCardOverlay()
-const { byTarget, choose, sourceId, assignedDamage } = useChoices()
+const { byTarget, choose, sourceId, assignedDamage, hoveredTarget } = useChoices()
+const clearHover = () => {
+  if (hoveredTarget.value === props.id) hoveredTarget.value = null
+}
+onBeforeUnmount(clearHover)
 const label = useChoiceLabel()
 const el = useTemplateRef<HTMLElement>('el')
 
@@ -147,8 +151,10 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :aria-label="title"
-      @pointerenter="$event.pointerType === 'mouse' && el && preview(el)"
-      @pointerleave="$event.pointerType === 'mouse' && overlay.hide()"
+      @pointerenter="$event.pointerType === 'mouse' && el && (hoveredTarget = id, preview(el))"
+      @pointerleave="$event.pointerType === 'mouse' && (clearHover(), overlay.hide())"
+      @focusin="hoveredTarget = id"
+      @focusout="clearHover"
       @pointerdown="press"
       @pointerup="cancelPress"
       @pointercancel="cancelPress"
@@ -185,7 +191,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <li
         v-for="a in attached"
         :key="a.id"
-        :class="{ active: attachedChoice(a), exhausted: a.exhausted }"
+        :class="{ active: attachedChoice(a), emphasized: attachedChoice(a) && hoveredTarget === a.id, exhausted: a.exhausted }"
         :data-card-id="a.id"
         @pointerenter="$event.pointerType === 'mouse' && preview($event.currentTarget as HTMLElement, false, a.code, null)"
         @pointerleave="$event.pointerType === 'mouse' && overlay.hide()"
@@ -251,6 +257,10 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
 .card.unfolded.landscape { width: calc(2 * var(--w)); aspect-ratio: calc(2 * var(--card-aspect)); }
 .card :deep(.card-face) { border-radius: inherit; }
+/* Landscape scans vary slightly in proportion: let the image set the frame's
+   height instead of cropping it or leaving space inside a fixed frame. */
+.card.landscape:not(.unfolded):has(> img.card-face) { aspect-ratio: auto; }
+.card.landscape:not(.unfolded) > :deep(img.card-face) { height: auto; }
 /* nothing behind a card that turns over shows while it is edge on */
 .card:has(> .flip, > .folding) { background: none; }
 .flip { position: absolute; inset: 0; border-radius: inherit; transform-style: preserve-3d; transform: perspective(1600px) rotateY(0); transition: transform 0.4s ease-in-out; }
@@ -376,6 +386,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 }
 .attached li.exhausted { opacity: 0.6; font-style: italic; }
 .attached li.active { cursor: pointer; border-color: var(--interactive); box-shadow: 0 0 8px var(--interactive-glow); }
+.attached li.active.emphasized { background: color-mix(in srgb, var(--interactive) 25%, var(--ink-2)); color: var(--title); outline: 2px solid var(--interactive); outline-offset: 2px; box-shadow: 0 0 20px var(--interactive-glow); }
 .attached-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .attached-uses, .attached-damage { flex: none; padding: 0 5px; border-radius: 999px; font-weight: 800; }
 .attached-uses { background: var(--steel-deep); }

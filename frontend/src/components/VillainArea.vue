@@ -27,7 +27,17 @@ const villains = computed(() => {
   const order = area?.villains ?? game.areas?.[0]?.villains
   return order ? order.flatMap((id) => (game.villains ?? []).filter((v) => v.id === id)) : (game.villains ?? [])
 })
-const mainSchemes = computed(() => inArea(game.mainSchemes, area?.mainSchemes))
+const mainSchemes = computed(() => {
+  const schemes = inArea(game.mainSchemes, area?.mainSchemes)
+  const manhattanOrder = ['27117', '27118', '27119']
+  if (!schemes.some((scheme) => manhattanOrder.includes(scheme.code.replace(/[ab]$/, '')))) return schemes
+  const rank = (scheme: SchemeView) => {
+    const index = manhattanOrder.indexOf(scheme.code.replace(/[ab]$/, ''))
+    return index < 0 ? manhattanOrder.length : index
+  }
+  return [...schemes].sort((a, b) => rank(a) - rank(b))
+})
+const hasSchemeMarker = computed(() => mainSchemes.value.some((scheme) => scheme.glider))
 const sideSchemes = computed(() => inArea(game.sideSchemes, area?.sideSchemes))
 // a Spell in a player's play area is drawn there
 const environments = computed(() => inArea(game.environments?.filter((e) => !e.owner), area?.environments))
@@ -133,7 +143,9 @@ const escalation = (scheme: SchemeView) => {
     <div class="schemes">
       <div v-for="scheme in mainSchemes" :key="scheme.id" class="scheme main">
         <span v-if="scheme.owner" class="scheme-owner">{{ t('label.fneProtectingBusiness', { name: game.players.find((player) => player.id === scheme.owner)?.name ?? '' }) }}</span>
-        <span v-if="scheme.glider" class="glider-marker">{{ t('game.glider') }}</span>
+        <div v-if="hasSchemeMarker" class="scheme-markers">
+          <TokenStack v-if="scheme.glider" class="glider-marker" kind="generic" :count="1" :title="t('game.glider')" :aria-label="t('game.glider')" />
+        </div>
         <BoardCard :id="scheme.id" :code="scheme.code"  :name="scheme.name" :exhausted="scheme.exhausted" :threat="scheme.threat" :flag="scheme.crisis ? t('game.crisis') : null" flag-icon="crisis" :counters="scheme.counters || null" :attached="[...(scheme.upgrades ?? []), ...(scheme.attachments ?? []), ...(scheme.attachedCards ?? [])]" :held="scheme.held || null" />
         <Meter :label="t('game.threat')" :value="scheme.threat" :max="target(scheme)" tone="threat" />
         <p v-if="escalation(scheme) !== null" class="escalation">
@@ -218,7 +230,8 @@ const escalation = (scheme: SchemeView) => {
 .scheme.main :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 .escalation .icons { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--crimson-bright); }
 .escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
-.glider-marker { align-self: center; padding: 3px 6px; border: 1px solid currentColor; font-size: 0.7rem; text-transform: uppercase; }
+.scheme-markers { display: flex; align-items: center; justify-content: center; height: 30px; }
+.glider-marker { --token-size: 30px; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
 .environments { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-inline: auto; min-width: 0; }

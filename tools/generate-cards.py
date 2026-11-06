@@ -90,7 +90,8 @@ def card(c, pack_order):
             for k in ("energy", "physical", "mental", "wild")
             if c.get("resource_" + k)
         },
-        "thwart": c.get("thwart"),
+        # Daredevil's printed THW is 2; MarvelCDB currently lists 1.
+        "thwart": 2 if c["code"] == "60001a" else c.get("thwart"),
         "thwartCost": c.get("thwart_cost"),
         "attack": c.get("attack"),
         "attackCost": c.get("attack_cost"),

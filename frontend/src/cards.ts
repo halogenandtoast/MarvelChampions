@@ -10,11 +10,11 @@ export const BACKS = {
 } as const
 export type Back = keyof typeof BACKS
 
-/** A main scheme is set up from its A side and played on its B side, which the engine
- * names by the bare code: show that side. */
+/** Most main schemes play on their B side. Schemes with an environment reverse
+ * (such as Venom Goblin's Manhattan schemes) play on their A side. */
 export const faceCode = (code: string, cardByCode: (code: string) => Card | undefined): string => {
   const card = cardByCode(code) ?? cardByCode(`${code}a`)
-  if (card?.type === 'main_scheme' && !/[a-z]$/.test(code) && cardByCode(`${code}b`)) return `${code}b`
+  if (card?.type === 'main_scheme' && !/[a-z]$/.test(code) && cardByCode(`${code}b`)?.type === 'main_scheme') return `${code}b`
   if (!cardByCode(code) && cardByCode(`${code}a`)) return `${code}a`
   return code
 }
