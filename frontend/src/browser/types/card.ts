@@ -1,3 +1,5 @@
+import { assetUrl } from '../../assets'
+
 /**
  * The card database, as frontend/public/data/cards.json has it: MarvelCDB's cards, with
  * the scan each is shown by.
@@ -74,7 +76,7 @@ export interface Card {
   linkedTo?: string
   duplicateOf?: string
   image?: string
-  /** Custom imports ship with the app instead of the external scan bucket. */
+  /** The scan was supplied by a custom import rather than the HD export. */
   bundledImage?: boolean
   remoteImage?: string
   remoteBackImage?: string
@@ -109,10 +111,10 @@ export const PLAYER_TYPES = ['hero', 'alter_ego', 'ally', 'event', 'support', 'u
 export const ENCOUNTER_TYPES = ['villain', 'main_scheme', 'side_scheme', 'minion', 'treachery', 'attachment', 'obligation', 'environment', 'leader'] as const
 
 /** Where the card scans are served from: this site, or a bucket named at build time. */
-export const CARD_IMAGES = `${import.meta.env.VITE_ASSET_HOST ?? ''}/images/cards`
+export const CARD_IMAGES = assetUrl('/images/cards')
 
 /** Where a card's scan is kept, by its file in the HD export. */
-export const localImage = (card: Pick<Card, 'code' | 'image' | 'bundledImage'>) => `${card.bundledImage ? '/images/cards' : CARD_IMAGES}/${card.image ?? `${card.code}.avif`}`
+export const localImage = (card: Pick<Card, 'code' | 'image' | 'bundledImage'>) => `${CARD_IMAGES}/${card.image ?? `${card.code}.avif`}`
 
 /** MarvelCDB's own scan, for a card the export has none of. */
 export const remoteImage = (card: Pick<Card, 'remoteImage'>) => (card.remoteImage ? `https://marvelcdb.com${card.remoteImage}` : null)

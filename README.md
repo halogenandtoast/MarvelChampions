@@ -20,7 +20,8 @@ the API answers. Tests: `stack test`.
 - `tools/import-images.py` turns the HD scans (`MarvelHD.zip`, not in the repo) into
   `frontend/public/images/cards/<code>.avif`. The images are not committed. To serve
   them from elsewhere (an S3 bucket), build the client with `VITE_ASSET_HOST` set to its
-  origin; it reads `<host>/images/cards/<code>.avif`.
+  origin; it reads `<host>/images/cards/<code>.avif`. The same setting serves token
+  images, product art and rulebook PDFs. Without it, local development uses `public/`.
 
 ## Rules
 
@@ -32,8 +33,9 @@ the API answers. Tests: `stack test`.
 docker compose up
 ```
 
-then open <http://localhost:3000>. The client image carries the card images it was
-built with.
+then open <http://localhost:3000>. The client image loads images and rulebooks from
+`https://assets.marvelchampions.app`; they are excluded from the Docker build.
+See [asset hosting](docs/asset-hosting.md) for uploads and CDN configuration.
 
 ## Deploying
 

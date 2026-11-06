@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { assetUrl } from '../assets'
 import { useI18n } from 'vue-i18n'
 import { STATUS_WIDTH, useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
@@ -18,7 +19,7 @@ const { t } = useI18n()
       <div class="face"><CardFace :code="card.code" :back="card.back ?? null" :name="card.name" eager /></div>
       <!-- its status cards, on the side away from the card hovered; ponytail: not scaled down with a pinned preview on a small screen -->
       <div v-if="card.statuses?.length" class="statuses" :class="side" :style="{ width: `${STATUS_WIDTH}px` }">
-        <img v-for="status in card.statuses" :key="status" :src="`/images/tokens/${status}.avif`" :alt="t(`game.status.${status}`)" />
+        <img v-for="status in card.statuses" :key="status" :src="assetUrl(`/images/tokens/${status}.avif`)" :alt="t(`game.status.${status}`)" />
       </div>
     </div>
   </Teleport>

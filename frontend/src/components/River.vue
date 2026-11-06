@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { assetUrl } from '../assets'
 // Between the villain's side and the players': what is happening now. An encounter card
 // as it is revealed, an attack with its attacker as it stands and its boost cards dealt
 // face down and turned up, a card
@@ -66,7 +67,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
       <div class="cards">
         <template v-if="canceledEvent">
           <BoardCard :code="canceledEvent.code" :morph="false" />
-          <img v-for="status in canceledEvent.statuses" :key="status" class="canceled-status" :src="`/images/tokens/${status}.avif`" :alt="t(`game.status.${status}`)" />
+          <img v-for="status in canceledEvent.statuses" :key="status" class="canceled-status" :src="assetUrl(`/images/tokens/${status}.avif`)" :alt="t(`game.status.${status}`)" />
         </template>
         <div v-if="attacker" class="attacker">
           <dl class="stats">

@@ -1,19 +1,20 @@
+import { assetUrl } from './assets'
 import type { CampaignKind, CampaignMode } from './server'
 
 export const campaignArt: Record<CampaignKind, string> = {
-  RiseOfRedSkull: '/images/products/rise-of-red-skull.avif',
-  GalaxysMostWanted: '/images/products/galaxys-most-wanted.webp',
-  MadTitansShadow: '/images/products/mad-titans-shadow.webp',
-  MutantGenesis: '/images/products/mutant-genesis.webp',
-  SinisterMotives: '/images/products/sinister-motives.webp',
-  AgeOfApocalypseCampaign: '/images/products/age-of-apocalypse.webp',
-  AgentsOfShieldCampaign: '/images/products/agents-of-shield.webp',
-  FearNoEvilCampaign: '/images/products/fear-no-evil.webp',
-  ShadowlandCampaign: '/images/products/shadowland.webp',
-  NextEvolution: '/images/products/next-evolution.webp',
+  RiseOfRedSkull: assetUrl('/images/products/rise-of-red-skull.avif'),
+  GalaxysMostWanted: assetUrl('/images/products/galaxys-most-wanted.webp'),
+  MadTitansShadow: assetUrl('/images/products/mad-titans-shadow.webp'),
+  MutantGenesis: assetUrl('/images/products/mutant-genesis.webp'),
+  SinisterMotives: assetUrl('/images/products/sinister-motives.webp'),
+  AgeOfApocalypseCampaign: assetUrl('/images/products/age-of-apocalypse.webp'),
+  AgentsOfShieldCampaign: assetUrl('/images/products/agents-of-shield.webp'),
+  FearNoEvilCampaign: assetUrl('/images/products/fear-no-evil.webp'),
+  ShadowlandCampaign: assetUrl('/images/products/shadowland.webp'),
+  NextEvolution: assetUrl('/images/products/next-evolution.webp'),
 }
 
-const RULEBOOK_ROOT = '/rulebooks/'
+const RULEBOOK_ROOT = assetUrl('/rulebooks/')
 export const campaignGuides: Record<CampaignKind, { namespace: string; overview: string[]; source: string }> = {
   RiseOfRedSkull: { namespace: '', overview: ["campaignMode", "newKeywords"], source: `${RULEBOOK_ROOT}mc10_the_rise_of_red_skull_rules_web.pdf` },
   GalaxysMostWanted: { namespace: 'galaxy', overview: ["campaignMode", "keywords", "market", "shipCommand"], source: `${RULEBOOK_ROOT}mc16_galaxys_most_wanted_rules_website-compressed.pdf` },

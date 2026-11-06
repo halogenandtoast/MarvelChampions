@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { assetUrl } from '../assets'
 // A count made of the printed tokens, as it would be on the table: the largest first.
 import { computed } from 'vue'
 
@@ -14,7 +15,7 @@ const tokens = computed(() => {
 
 <template>
   <span class="tokens">
-    <img v-for="(token, i) in tokens" :key="i" :src="`/images/tokens/${token}.avif`" alt="" draggable="false" />
+    <img v-for="(token, i) in tokens" :key="i" :src="assetUrl(`/images/tokens/${token}.avif`)" alt="" draggable="false" />
   </span>
 </template>
 

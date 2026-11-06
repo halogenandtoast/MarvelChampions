@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import { assetUrl } from '../assets'
 // Stunned, confused and tough: their status cards, tucked under the corner of the card.
 defineProps<{ stunCards?: number; confuseCards?: number; stunned?: boolean; confused?: boolean; tough?: boolean; toughCards?: number }>()
 </script>
 
 <template>
   <span v-if="stunned || confused || tough" class="statuses">
-    <img v-for="n in (stunCards ?? (stunned ? 1 : 0))" :key="`stun-${n}`" src="/images/tokens/stunned.avif" :alt="$t('game.status.stunned')" draggable="false" />
-    <img v-for="n in (confuseCards ?? (confused ? 1 : 0))" :key="`confuse-${n}`" src="/images/tokens/confused.avif" :alt="$t('game.status.confused')" draggable="false" />
-    <img v-for="n in (toughCards ?? (tough ? 1 : 0))" :key="`tough-${n}`" src="/images/tokens/tough.avif" :alt="$t('game.status.tough')" draggable="false" />
+    <img v-for="n in (stunCards ?? (stunned ? 1 : 0))" :key="`stun-${n}`" :src="assetUrl('/images/tokens/stunned.avif')" :alt="$t('game.status.stunned')" draggable="false" />
+    <img v-for="n in (confuseCards ?? (confused ? 1 : 0))" :key="`confuse-${n}`" :src="assetUrl('/images/tokens/confused.avif')" :alt="$t('game.status.confused')" draggable="false" />
+    <img v-for="n in (toughCards ?? (tough ? 1 : 0))" :key="`tough-${n}`" :src="assetUrl('/images/tokens/tough.avif')" :alt="$t('game.status.tough')" draggable="false" />
   </span>
 </template>
 

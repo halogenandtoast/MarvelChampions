@@ -53,5 +53,5 @@ until the first deploy.
 
 - No remote state. `terraform.tfstate` holds the JWT secret and DB password;
   treat it as a secret.
-- Card images ship inside the frontend image. Move them to a CDN when the
-  image size hurts.
+- AWS assets hosting is managed separately with the AWS CLI, outside this Terraform
+  state. See [asset hosting](../docs/asset-hosting.md).

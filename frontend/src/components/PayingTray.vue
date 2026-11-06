@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { assetUrl } from '../assets'
 // What is being paid for, held up while it is: the card played, or the card whose
 // ability it is, with the resources paid so far and the cards spent on them. A lane of the
 // river.
@@ -96,7 +97,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       </p>
     </header>
     <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" :morph="!elsewhere.has(paying.id)" />
-    <img v-for="status in cost.canceledBy ?? []" :key="status" class="canceling-status" :src="`/images/tokens/${status}.avif`" :alt="$t(`game.status.${status}`)" />
+    <img v-for="status in cost.canceledBy ?? []" :key="status" class="canceling-status" :src="assetUrl(`/images/tokens/${status}.avif`)" :alt="$t(`game.status.${status}`)" />
     <div v-if="cost.spent.length" class="spent">
       <span class="label">{{ $t('game.paying.spent') }}</span>
       <div class="spent-cards">

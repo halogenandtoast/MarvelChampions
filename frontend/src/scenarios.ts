@@ -1,3 +1,4 @@
+import { assetUrl } from './assets'
 // How the scenarios, their releases and the modular sets are named and drawn, for choosing
 // one and for the bar that says what was chosen.
 import { computed, type Ref } from 'vue'
@@ -14,13 +15,13 @@ const SET_CODES: Record<string, string> = { EnchantressScenario: 'enchantress_vi
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/^Cw/, '').replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
-const RULEBOOK_ROOT = '/rulebooks/'
+const RULEBOOK_ROOT = assetUrl('/rulebooks/')
 const MODULAR_RULEBOOKS: Record<string, string> = {
   aos: `${RULEBOOK_ROOT}mc50_rulebook-web.pdf`,
   fne: `${RULEBOOK_ROOT}mc60_rulebook-web.pdf`,
   shadowland: `${RULEBOOK_ROOT}MC65-Rulebook.pdf`,
   cw: `${RULEBOOK_ROOT}mc56_rulebook-web_1.pdf`,
-  ron: '/rulebooks/ronan_modular_set.pdf',
+  ron: assetUrl('/rulebooks/ronan_modular_set.pdf'),
   tt: `${RULEBOOK_ROOT}mc55_rulebook-web.pdf`,
   aoa: `${RULEBOOK_ROOT}mc45_age_of_apocalypse_rulebook.pdf`,
   mojo: `${RULEBOOK_ROOT}mc39_mojomania_rules_insert-compressed.pdf`,
@@ -34,7 +35,7 @@ const MODULAR_RULEBOOKS: Record<string, string> = {
   sm: `${RULEBOOK_ROOT}mc27_sinister_motives_rules_v5-compressed.pdf`,
   next_evol: `${RULEBOOK_ROOT}mc40_next_evolution_rulebook-web.pdf`,
   mut_gen: `${RULEBOOK_ROOT}mc32_mutant_genesis_rulebook_v5-compressed.pdf`,
-  hood: '/rulebooks/mc24_the_hood_rules_insert.pdf',
+  hood: assetUrl('/rulebooks/mc24_the_hood_rules_insert.pdf'),
 }
 // a scenario set up by its main scheme, as The Wrecking Crew is, shows its villains
 const SCENARIO_VILLAINS: Record<string, string[]> = {

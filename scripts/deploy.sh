@@ -13,6 +13,7 @@
 #   MARVEL_BUILD_PLATFORM   buildx platform (default: linux/amd64)
 #   MARVEL_CLUSTER          DOKS cluster name (default: marvel-champions)
 #   MARVEL_BUILDER          buildx builder (default: marvel-builder-v2)
+#   VITE_ASSET_HOST         images/rulebooks CDN (default: https://assets.marvelchampions.app)
 
 set -euo pipefail
 
@@ -21,6 +22,11 @@ DOCKER_USER="${MARVEL_DOCKERHUB_USER:-halogenandtoast}"
 PLATFORM="${MARVEL_BUILD_PLATFORM:-linux/amd64}"
 CLUSTER="${MARVEL_CLUSTER:-marvel-champions}"
 BUILDER="${MARVEL_BUILDER:-marvel-builder-v2}"
+ASSET_HOST="${VITE_ASSET_HOST:-https://assets.marvelchampions.app}"
+
+# Never ship an asset-free image pointing at an unavailable CDN.
+curl --fail --silent --show-error --location --max-time 30 \
+  --output /dev/null "${ASSET_HOST%/}/images/cards/back-player.avif"
 
 SHA="$(git -C "$ROOT_DIR" rev-parse --short HEAD)"
 echo "deploy.sh: shipping $SHA"
@@ -38,6 +44,7 @@ fi
 
 build_and_push() {
   local image="$1" ctx="$2"
+  shift 2
   echo "deploy.sh: building $image:{$SHA,latest} for $PLATFORM"
   docker buildx build \
     --builder "$BUILDER" \
@@ -45,11 +52,12 @@ build_and_push() {
     --tag "$image:$SHA" \
     --tag "$image:latest" \
     --push \
+    "$@" \
     "$ctx"
 }
 
 build_and_push "$DOCKER_USER/marvel-backend"  "$ROOT_DIR"
-build_and_push "$DOCKER_USER/marvel-frontend" "$ROOT_DIR/frontend"
+build_and_push "$DOCKER_USER/marvel-frontend" "$ROOT_DIR/frontend" --build-arg "VITE_ASSET_HOST=$ASSET_HOST"
 
 echo "deploy.sh: applying k8s/app.yaml to $CLUSTER"
 KUBECONFIG="$(mktemp)"

@@ -1,7 +1,8 @@
+import { assetUrl } from './assets'
 import sources from '../public/rulebooks/sources.json'
 
 const localCopies = new Map(Object.entries(sources).flatMap(([filename, entry]) =>
-  [entry.source, ...entry.aliases].map(source => [source, `/rulebooks/${filename}`] as const),
+  [entry.source, ...entry.aliases].map(source => [source, assetUrl(`/rulebooks/${filename}`)] as const),
 ))
 
 /** Keep original source attribution in the card data while opening our local copy. */

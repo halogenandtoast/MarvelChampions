@@ -7,6 +7,9 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+ARG VITE_ASSET_HOST=https://assets.marvelchampions.app
+ENV VITE_ASSET_HOST=$VITE_ASSET_HOST
+RUN test -n "$VITE_ASSET_HOST"
 RUN npm run build
 
 FROM caddy:2-alpine AS runtime
