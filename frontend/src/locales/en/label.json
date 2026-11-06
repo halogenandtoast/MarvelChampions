@@ -1,4 +1,5 @@
 {
+  "moreActions": "More actions",
   "resolveRetaliate": "Resolve retaliate",
   "metagameSlot": "Fill space {count}",
   "breakTimeMinutes": "How many whole minutes was the group away? {count} selected.",

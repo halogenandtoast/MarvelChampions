@@ -97,6 +97,16 @@ const chips = computed(() => {
     return { option, text: n > 1 ? `${text} ${n}` : text }
   })
 })
+// Replace crowded action stacks with one menu containing every action.
+const visibleChips = computed(() => chips.value.length > 3 ? [] : chips.value)
+const overflowChips = computed(() => chips.value.length > 3 ? chips.value : [])
+const overflowOpen = ref(false)
+watch(options, () => (overflowOpen.value = false))
+const toggleOverflow = () => {
+  overlay.hide()
+  menuOpen.value = false
+  overflowOpen.value = !overflowOpen.value
+}
 
 // the card previewed, with its status cards beside it; an attached card shows only itself
 const statuses = computed(() => (['stunned', 'confused', 'tough'] as const).filter((s) => props[s]))
@@ -113,6 +123,7 @@ const press = (event: PointerEvent) => {
 }
 
 const click = () => {
+  overflowOpen.value = false
   if (options.value.length > 1) {
     overlay.hide()
     menuOpen.value = !menuOpen.value
@@ -132,7 +143,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape, unfolded, source }"
+      :class="{ active, exhausted, landscape, unfolded, source, 'generic-actions': chips.length && (counters || bombCounters) }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :aria-label="title"
@@ -166,7 +177,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :aria-label="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
-        <button v-for="chip in chips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
+        <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
+        <button v-if="overflowChips.length" type="button" class="chip" :aria-label="$t('label.moreActions')" aria-haspopup="menu" :aria-expanded="overflowOpen" @click.stop="toggleOverflow">…</button>
       </div>
     </div>
     <ul v-if="attached.length" class="attached">
@@ -184,6 +196,14 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
         <span v-if="a.damage" class="attached-damage">{{ a.damage }}</span>
       </li>
     </ul>
+    <ChoiceMenu
+      v-if="overflowOpen && el"
+      :options="overflowChips.map(chip => chip.option)"
+      :anchor="el"
+      :card-name="title"
+      @choose="(index) => ((overflowOpen = false), choose(index))"
+      @close="overflowOpen = false"
+    />
     <ChoiceMenu
       v-if="menuOpen && el"
       :options="options"
@@ -305,6 +325,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   z-index: 2;
 }
 .card.landscape .chips { bottom: 22%; inset-inline: 18%; }
+/* Keep counters above the action area without changing the table's card spacing. */
+.card.generic-actions .token.counters { top: 20%; bottom: auto; }
+.card.generic-actions .token.bombs { top: 39%; bottom: auto; }
+.card.generic-actions .chips { inset: auto 3% 4%; max-height: 56%; overflow-y: auto; }
+.card.generic-actions .chip { flex-shrink: 0; }
 .chip {
   padding: 3px 4px;
   border: 1px solid var(--interactive);
