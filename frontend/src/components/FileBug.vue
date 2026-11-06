@@ -50,6 +50,7 @@ const submit = async () => {
       title: title.value,
       body,
       assignee: 'halogenandtoast',
+      projects: 'halogenandtoast/8',
     })
     const issue = `https://github.com/halogenandtoast/MarvelChampions/issues/new?${params}`
     if (tab) tab.location.href = issue
