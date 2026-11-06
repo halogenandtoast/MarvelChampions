@@ -42,6 +42,7 @@ export const useGame = (gameId: string, spectate = false) => {
   let draining = false
   let socket: WebSocket | null = null
   let reconnect: number | undefined
+  let socketUpdates = 0
 
   // the pile each encounter card dealt to a player lies on, until it is revealed from it
   const dealtTo = new Map<string, string>()
@@ -145,9 +146,14 @@ export const useGame = (gameId: string, spectate = false) => {
   }
 
   const refresh = async () => {
+    const updatesAtStart = socketUpdates
     const response = await apiFetch(gamePath).catch(() => null)
     if (response?.ok) {
-      queue.push({ tag: 'Update', contents: (await response.json()) as GameData })
+      const contents = (await response.json()) as GameData
+      // A broadcast received during this request is newer than its snapshot.
+      // Applying the snapshot afterwards can rewind a deal and replay it.
+      if (closed || socketUpdates !== updatesAtStart) return
+      queue.push({ tag: 'Update', contents })
       void drain()
     } else if (response) {
       error.value = (await response.text()) || response.statusText
@@ -162,7 +168,9 @@ export const useGame = (gameId: string, spectate = false) => {
     })
     socket.addEventListener('message', (event: MessageEvent<string>) => {
       try {
-        queue.push(JSON.parse(event.data) as ServerMessage)
+        const message = JSON.parse(event.data) as ServerMessage
+        if (message.tag === 'Update') socketUpdates++
+        queue.push(message)
       } catch {
         return
       }

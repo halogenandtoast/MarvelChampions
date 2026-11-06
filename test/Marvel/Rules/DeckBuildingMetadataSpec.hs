@@ -9,6 +9,13 @@ withCards hero cards = (starter hero) {cards = cards}
 
 spec :: Spec
 spec = describe "deck-building card metadata" do
+  it "allows Spider-Man identities with different alter-egos at one table" do
+    sharedHeroes [DeckList "01001a" [] [], DeckList "27030a" [] []] `shouldBe` []
+
+  it "rejects matching identities even when opposite faces are specified" do
+    sharedHeroes [DeckList "01001a" [] [], DeckList "01001b" [] []] `shouldBe` ["Spider-Man"]
+    sharedHeroes [DeckList "27030a" [] [], DeckList "27030b" [] []] `shouldBe` ["Spider-Man"]
+
   it "reads a legacy CardDef JSON object with neither new optional field" do
     let def = lookupPlayerCard "22022"
     case toJSON def of

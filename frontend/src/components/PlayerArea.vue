@@ -37,7 +37,11 @@ const stats = computed(() =>
   ).filter(([, v]) => v !== null && v !== undefined),
 )
 type TableCard = SupportView & Partial<Pick<UpgradeView, 'resourceSlots' | 'occupiedSlots' | 'heldCardsFacedown' | 'attachedTo'>>
-const supports = computed((): TableCard[] => [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])])
+const supports = computed<TableCard[]>((previous) => {
+  const rank = new Map(previous?.map((card, i) => [card.id, i]))
+  return [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])]
+    .sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity))
+})
 // cards attached to a support facedown, shown as such
 const facedown = (card: { id: string; facedownCards?: number; heldCardsFacedown?: number }) =>
   Array.from({ length: card.facedownCards ?? card.heldCardsFacedown ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))

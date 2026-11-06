@@ -32,6 +32,7 @@ import Marvel.EncounterSet (EncounterSet (MadTitansShadowCampaign, MutantGenesis
 import Marvel.Game (initPlayer)
 import Marvel.Hero.Cards (allHeroesMap)
 import Marvel.Identity.Types (PlayerIdentity (..), playerIdentityChosenAspects)
+import Marvel.Identity (uniqueMatch)
 import Marvel.Keyword (Keyword (Permanent, Linked, Starting))
 import Marvel.Resource.Types (Resource(Energy))
 import Marvel.Name
@@ -265,13 +266,19 @@ campaign does as it deals each game, never in a deck brought to the table.
 campaignOnlyCardsIn :: DeckList -> [CardCode]
 campaignOnlyCardsIn d = nub [c | (c, _) <- d.cards, Just def <- [HashMap.lookup c allPlayerCards], cdEncounterSet def `elem` [Just MadTitansShadowCampaign, Just MutantGenesisCampaign, Just NextEvolutionCampaign]]
 
--- | The titles of heroes that more than one of the decks bring: each hero is unique.
+-- | Identities matching under RR Unique Icon, including their alter-ego titles.
 sharedHeroes :: [DeckList] -> [Text]
-sharedHeroes ds =
-  nub [title | (title, n) <- HashMap.toList counts, n > (1 :: Int)]
+sharedHeroes = nub . clashes . map identityName
  where
-  counts = HashMap.fromListWith (+) [(heroTitle d, 1) | d <- ds]
-  heroTitle d = maybe (unCardCode d.hero) (display . cdName) $ lookup (toHeroCardCode d.hero) allHeroesMap
+  clashes [] = []
+  clashes (name : rest) = [fst name | any (uniqueMatch name) rest] <> clashes rest
+  identityName d =
+    let heroName = cdName <$> lookup (toHeroCardCode d.hero) allHeroesMap
+        alterEgoName = cdName <$> lookup (toAlterEgoCardCode d.hero) allAlterEgosMap
+     in ( maybe (unCardCode d.hero) title heroName
+        , maybe [] (maybe [] pure . subtitle) heroName
+            <> maybe [] (pure . title) alterEgoName
+        )
 
 {- | The core set's five starter decks, by the hero's name in lower case, as MarvelCDB
 lists them (decklists 1 to 5), and the hero packs' decks.

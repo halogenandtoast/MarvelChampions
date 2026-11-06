@@ -178,10 +178,13 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   const isDiscarded = discardsOf(after)
   const owner = ownerOf(after)
   const next = shown(after)
+  const was = new Map([...shown(before), ...extra])
 
   // new on the table: from a discard pile it was in, or the top of a deck
   for (const [id, code] of next) {
-    if (onScreen(id)) continue
+    // Other seats' hands and collapsed zones need not have a DOM card. Their
+    // absence on screen does not mean the server just dealt them again.
+    if (was.has(id) || onScreen(id)) continue
     const from = wasDiscarded.get(id)
     if (from) leaving.push(ghostFor(id, from, code, sources))
     else {
@@ -194,7 +197,6 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   }
   // gone from the table into a discard pile
   // with what the river held that the last state did not show
-  const was = new Map([...shown(before), ...extra])
   for (const [id, code] of was) {
     if (next.has(id) || !onScreen(id)) continue
     const to = isDiscarded.get(id)
