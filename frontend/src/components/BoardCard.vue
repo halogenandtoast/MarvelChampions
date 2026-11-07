@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import ActionLabel from './ActionLabel.vue'
 // A card on the table: its scan, the tokens on it, its statuses, and what can be done
 // with it. A card the open question is about lights up; a click answers, or asks which
 // when it offers several choices, each named on a chip along its foot.
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
-import { useChoiceLabel, useChoices, useKeyed } from '../composables/useChoices'
+import { useChoiceLabel, useChoiceName, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
 import { parseInput } from '../i18n'
 import CardFace from './CardFace.vue'
@@ -72,7 +73,7 @@ const clearHover = () => {
 }
 onBeforeUnmount(clearHover)
 const label = useChoiceLabel()
-const keyed = useKeyed()
+const actionName = useChoiceName()
 const el = useTemplateRef<HTMLElement>('el')
 const threatPulse = ref(0)
 const damagePulse = ref(0)
@@ -122,7 +123,8 @@ const slotChoices = computed(() => {
 const chips = computed(() => {
   const seen = new Map<string, number>()
   return options.value.filter((option) => ![...slotChoices.value.values()].some((slot) => slot.index === option.index)).map((option) => {
-    const text = options.value.length > 1 && option.kind === 'ability' && option.label ? keyed(option.label) : label(option, title.value)
+    const basic = option.abilityType === 'Basic' || /^\$label\.(changeForm|changeTo[AB]|attack|thwart|recover|defend)\b/.test(option.label ?? '')
+    const text = label(option.kind === 'ability' && !basic ? { ...option, label: null } : option, title.value)
     const n = (seen.get(text) ?? 0) + 1
     seen.set(text, n)
     return { option, text: n > 1 ? `${text} ${n}` : text }
@@ -223,7 +225,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :aria-label="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
-        <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
+        <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)"><ActionLabel :text="chip.text" :name="actionName(chip.option, code)" /></button>
         <button v-if="overflowChips.length" type="button" class="chip" :aria-label="groupedReaction ?? $t('label.moreActions')" aria-haspopup="menu" :aria-expanded="overflowOpen" @click.stop="toggleOverflow">{{ groupedReaction ?? '…' }}</button>
       </div>
     </div>

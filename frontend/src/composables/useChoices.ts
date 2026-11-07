@@ -1,6 +1,7 @@
 import { computed, inject, provide, ref, type Ref, type ComputedRef, type InjectionKey } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { handleI18n } from '../i18n'
+import { useCards } from '../cards'
 import type { ChoiceView } from '../server'
 
 /**
@@ -70,5 +71,22 @@ export const useChoiceLabel = () => {
     }
     const kind = `game.${named && cardName ? 'choicesNamed' : 'choices'}.${choice.kind}`
     return te(kind) ? t(kind, { card: cardName }) : cardName || choice.kind
+  }
+}
+
+/** Named abilities can be printed on a card even when the engine supplies only their type. */
+export const useChoiceName = () => {
+  const cards = useCards()
+  const keyed = useKeyed()
+  return (choice: ChoiceView, code?: string | null): string => {
+    const basic = choice.abilityType === 'Basic' || /^\$label\.(changeForm|changeTo[AB]|attack|thwart|recover|defend)\b/.test(choice.label ?? '')
+    if (choice.kind !== 'ability' || basic) return ''
+    if (choice.label) return keyed(choice.label)
+    const text = cards.card(code)?.text ?? ''
+    const type = (choice.abilityType ?? '').replace(/[^a-z]/gi, '').toLowerCase()
+    const names = [...text.matchAll(/<(?:i|em)>([^<]+)<\/(?:i|em)>\s*(?:—|–|-)\s*<(?:b|strong)>([^<]+)<\/(?:b|strong)>/gi)]
+      .filter((match) => match[2]!.replace(/[^a-z]/gi, '').toLowerCase() === type)
+      .map((match) => match[1]!)
+    return names.length === 1 ? new DOMParser().parseFromString(names[0]!, 'text/html').body.textContent ?? names[0]! : ''
   }
 }

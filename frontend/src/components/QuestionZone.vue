@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import ActionLabel from './ActionLabel.vue'
 // The open question: the choices that are not about a card on the table, as buttons, and
 // a hint when others are on the cards themselves. Or who is being waited on, or how the
 // game ended.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loader, Trophy, Skull, Minus } from 'lucide-vue-next'
-import { useChoiceLabel, useKeyed } from '../composables/useChoices'
+import { useChoiceLabel, useChoiceName, useKeyed } from '../composables/useChoices'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useCards } from '../cards'
 import CardFace from './CardFace.vue'
@@ -31,6 +32,7 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
 const emit = defineEmits<{ choose: [index: number]; reopen: [] }>()
 const { t, te } = useI18n()
 const label = useChoiceLabel()
+const actionName = useChoiceName()
 const cards = useCards()
 
 const keyed = useKeyed()
@@ -89,7 +91,7 @@ const tone = (choice: ChoiceView) =>
           @pointerleave="overlay.hide()"
         >
           <span v-if="about(choice) && choice.kind !== 'player'" class="thumb"><CardFace :code="about(choice)!.code" /></span>
-          <span>{{ text(choice) }}</span>
+          <ActionLabel :text="text(choice)" :name="actionName(choice, about(choice)?.code)" />
         </button>
       </div>
       <p v-if="onBoard" class="hint"><span class="swatch" />{{ t('game.prompt.orClickHighlighted', onBoard) }}</p>
