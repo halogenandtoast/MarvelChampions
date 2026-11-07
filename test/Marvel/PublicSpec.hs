@@ -5,6 +5,8 @@ import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.SideScheme.Cards qualified as Schemes
+import Marvel.Hercules.Cards qualified as Hercules
 import Marvel.Message.Deck
 import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
 import System.Environment (lookupEnv)
@@ -102,6 +104,32 @@ spec = describe "the game as the client sees it" do
       let choice = describeChoice p (TargetLabel (CardIdRef $ toCardId card) [Run [CardSpecific (IdentityRef p) "fneReleaseTuckedCard" (toJSON card), DiscardedCard (PlayerCard card)]])
       choice.kind `shouldBe` "discard"
       choice.target `shouldBe` Just (tshow $ toCardId card)
+
+  it "shows the card in a saved reveal choice, including a player-count override" do
+    tg <- testGame ["hercules"]
+    inGame tg do
+      let p = player1 tg
+      card <- encounterCard Schemes.breakinAndTakin
+      let choice = describeChoice p $ TargetLabel (CardIdRef $ toCardId card)
+            [Run [CardSpecific GameRef "revealEncounterCardWithPlayerCount" (toJSON (p, 1 :: Int, card))]]
+      choice.kind `shouldBe` "card"
+      choice.code `shouldBe` Just "01107"
+      choice.target `shouldBe` Just (tshow $ toCardId card)
+
+  it "shows a revealed attachment before its When Revealed gives it a host" do
+    tg <- testGame ["hercules"]
+    inGame tg do
+      let p = player1 tg
+      card <- encounterCard Hercules.hc59003
+      withGame_ $ questionL .~ mempty
+      pushAll [RevealEncounterCard p card]
+      runGame
+      getsGame gameFocusedCards `shouldReturn` []
+      view <- liftIO . publicGame =<< getGame
+      let shown = [code | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "focusedCards" o], Object c <- toList cards, Just (String code) <- [KeyMap.lookup "code" c]]
+      shown `shouldSatisfy` elem "59003"
+      let targetsSource = isTargetChoice $ AttachmentId $ unCardId $ toCardId card
+      (maybe False (any targetsSource . snd) <$> asked) `shouldReturn` True
 
   it "keeps a played event visible through each choice until its resolution finishes" do
     tg <- testGame ["luke-cage"]

@@ -608,7 +608,10 @@ gameView seesHand g = do
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g) <> map (cardView . PlayerCard) (gamePlayerVictoryDisplay g)
       , victoryCondition = scenario.scenarioVictoryCondition
       , collection = map cardView (gameCollection g)
-      , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
+      , focusedCards = map cardView $ L.nub $
+          gameFocusedCards g
+            <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid]
+            <> mapMaybe (cardInPlay g) (concatMap revealingSources $ HashMap.elems $ gameQuestion g)
       , resolvingEvents =
           [ cardView $ toCard (toAttrs event)
           | eid <- reverse $ fromMaybe [] (gameResolvingEvents g)
@@ -642,6 +645,14 @@ gameView seesHand g = do
               }
       }
  where
+  -- A newly revealed attachment may have no host yet, and therefore no board
+  -- location. Its resolution prompt must still show the physical source card.
+  revealingSources = \case
+    QuestionLabel "$label.resolveWhenRevealed" (Just target) _ -> [target]
+    QuestionLabel _ _ question -> revealingSources question
+    Read _ question -> revealingSources question
+    Searched _ question -> revealingSources question
+    _ -> []
   scenario = toAttrs (gameScenario g)
   villainName v = display . cdName . getCardDef <$> (HashMap.lookup v (gameVillains g) <|> HashMap.lookup v (g ^. removedEntitiesL . villainsL))
   competitiveView (playerViews :: [PlayerView]) c = CompetitionView
@@ -983,7 +994,10 @@ describeChoice asked = \case
   CardLabel code c -> withCode (Just code) (describeChoice asked c)
   Label "$label.revealDealtEncounterCard" _ -> withTarget (Just $ "dealt-" <> idText asked) $ plain "target" (Just "$label.revealDealtEncounterCard")
   Label l _ -> plain "label" (Just l)
-  TargetLabel t body -> withKind (fromMaybe "target" (doneTo t body)) (on "target" t)
+  TargetLabel t body ->
+    let selected = headMay [card | Run messages <- body, message <- concatMap flat messages, card <- cardsInMessage message, refId t == Just (idText $ toCardId card)]
+        kind = fromMaybe (if isJust selected then "card" else "target") (doneTo t body)
+     in withCode (toCardCode <$> selected) $ withKind kind (on "target" t)
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
     (on "ability" (refocus a.abilitySource))
@@ -1038,6 +1052,25 @@ describeChoice asked = \case
   flat = \case
     Msg.Simultaneously msgs -> concatMap flat msgs
     m -> [m]
+  -- Choices on cards outside the board still carry the physical card in what
+  -- selecting them does. Include its code so old saved questions can show it too.
+  cardsInMessage = \case
+    Msg.RevealEncounterCard _ card -> [EncounterCard card]
+    Msg.RevealEncounterCardFrom _ _ card -> [EncounterCard card]
+    Msg.RevealedEncounterCardWithoutWhenRevealed _ card -> [EncounterCard card]
+    Msg.RevealedEncounterCardWithoutWhenRevealedFrom _ _ card -> [EncounterCard card]
+    Msg.PutEncounterCardIntoPlay _ card -> [EncounterCard card]
+    Msg.DiscardedCard card -> [card]
+    Msg.IdentityMessage _ (Msg.AddToHand card) -> [PlayerCard card]
+    Msg.CardSpecific _ _ value -> cardsInPayload value
+    _ -> []
+  cardsInPayload value = case fromJSON @EncounterCard value of
+    Success card -> [EncounterCard card]
+    Error _ -> case fromJSON @PlayerCard value of
+      Success card -> [PlayerCard card]
+      Error _ -> case value of
+        Array values -> concatMap cardsInPayload (toList values)
+        _ -> []
   doneBy :: Msg.Message -> Maybe (Text, Target)
   doneBy = \case
     Msg.IdentityMessage _ (Msg.AddToHand card) -> Just ("addToHand", CardIdRef $ toCardId card)
