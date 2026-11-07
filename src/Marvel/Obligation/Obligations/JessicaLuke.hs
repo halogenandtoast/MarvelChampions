@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Obligation.Obligations.JessicaLuke where
 import Marvel.Prelude
+import Data.Aeson.KeyMap qualified as KeyMap
 import Control.Monad (replicateM_)
 import Data.Maybe (maybeToList)
 import Data.HashMap.Strict qualified as HashMap
@@ -36,7 +37,16 @@ import Marvel.Obligation.Types
 
 data JLObligation = JLObligation (Attrs Obligation) Natural Bool
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON)
+
+instance ToJSON JLObligation where
+  toJSON (JLObligation attrs counters exhausted) = case toJSON attrs of
+    Object fields -> Object $ KeyMap.insert "pheromoneCounters" (toJSON counters) $ KeyMap.insert "exhausted" (toJSON exhausted) fields
+    value -> value
+
+instance FromJSON JLObligation where
+  parseJSON value@(Array _) = genericParseJSON defaultOptions value
+  parseJSON value = withObject "JLObligation" (\fields ->
+    JLObligation <$> parseJSON value <*> fields .:? "pheromoneCounters" .!= 0 <*> fields .:? "exhausted" .!= False) value
 
 instance IsRef JLObligation where
   toRef (JLObligation a _ _) = toRef a

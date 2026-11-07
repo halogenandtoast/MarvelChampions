@@ -34,10 +34,15 @@ import Marvel.Obligation.Obligations
 import Marvel.Obligation.Types
 
 instance FromJSON Obligation where
-  parseJSON = withObject "Obligation" $ \o -> do
-    cardDef <- o .: "obligationCardDef"
-    withObligationCardCode (cdCardCode cardDef)
-      $ \(_ :: ObligationCard a) -> Obligation <$> parseJSON @a (Object o)
+  parseJSON value = do
+    -- Older multi-field obligations encoded their attrs as the first array item.
+    let attrs = case value of
+          Array fields -> fromMaybe value $ headMay $ toList fields
+          _ -> value
+    withObject "Obligation" (\o -> do
+      cardDef <- o .: "obligationCardDef"
+      withObligationCardCode (cdCardCode cardDef)
+        $ \(_ :: ObligationCard a) -> Obligation <$> parseJSON @a value) attrs
 
 withObligationCardCode
   :: CardCode -> (forall a . IsObligation a => ObligationCard a -> r) -> r

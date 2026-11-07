@@ -1,12 +1,15 @@
 module Marvel.JsonCompatibilitySpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson.Types (Parser, parseEither)
 import Data.UUID qualified as UUID
 import Marvel.Cost.Types qualified as Cost
 import Marvel.Game.Base qualified as Game
 import Marvel.Message.Identity qualified as Identity
 import Marvel.Modifier.Types qualified as Modifier
+import Marvel.Obligation.Obligations.JessicaLuke qualified as JL
+import Marvel.Obligation.Types qualified as Obligation
 import Marvel.Phase (Phase (..))
 import Marvel.Window.Types qualified as W
 import TestImport
@@ -22,6 +25,34 @@ compatible previousEncode previousDecode value = do
 
 spec :: Spec
 spec = do
+  describe "Jessica and Luke obligation saves" do
+    for_ [JL.jl61030, JL.jl61033a, JL.jl61033b, JL.jl61033c, JL.jl62028] $ \builder ->
+      it ("loads legacy arrays and round-trips object saves for " <> show (toCardCode builder)) do
+        let JL.JLObligation attrs _ _ = buildCard builder (ObligationId UUID.nil)
+            value = Obligation.Obligation $ JL.JLObligation attrs 2 True
+            legacy = toJSON [toJSON attrs, toJSON (2 :: Natural), Bool True]
+        fromJSON legacy `shouldBe` Success value
+        eitherDecode (encode value) `shouldBe` Right value
+        case toJSON value of
+          Object _ -> pure ()
+          _ -> expectationFailure "obligation should save as an attrs object"
+
+    it "loads a game with a legacy obligation saved as a boost entity" do
+      tg <- testGame ["jessica-jones"]
+      game <- inGame tg getGame
+      let oid = ObligationId UUID.nil
+          JL.JLObligation attrs _ _ = buildCard JL.jl61030 oid
+          obligation = Obligation.Obligation $ JL.JLObligation attrs 0 False
+          saved = game {gameBoostEntities = Game.defaultEntities {Game.entitiesObligations = HashMap.singleton oid obligation}}
+          legacy = toJSON [toJSON attrs, toJSON (0 :: Natural), Bool False]
+          oldBoosts = case toJSON (gameBoostEntities saved) of
+            Object fields -> Object $ KeyMap.insert "entitiesObligations" (toJSON $ HashMap.singleton oid legacy) fields
+            value -> value
+          oldSave = case toJSON saved of
+            Object fields -> Object $ KeyMap.insert "boostEntities" oldBoosts fields
+            value -> value
+      fromJSON oldSave `shouldBe` Success saved
+
   describe "generated JSON compatibility" do
     let ident = IdentityId UUID.nil
         cid = CardId UUID.nil
