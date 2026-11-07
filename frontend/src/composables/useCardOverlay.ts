@@ -134,10 +134,11 @@ export const useCardOverlay = () => (listen(), {
   teleportTarget: computed(() => anchor.value?.closest('dialog[open]') ?? 'body'),
   visible: computed(() => card.value !== null),
   canHover,
-  show: (shown: Preview, element: HTMLElement, rotated = false, touched = false) => {
+  show: (shown: Preview, element: HTMLElement, rotated?: boolean, touched = false) => {
+    const landscape = rotated ?? (!shown.back && useCards().landscape(shown.code))
     card.value = shown
-    sideways.value = rotated
-    aspectRatio.value = (!shown.back && useCards().card(shown.code)?.aspectRatio) || (rotated ? 1 / CARD_RATIO : CARD_RATIO)
+    sideways.value = landscape
+    aspectRatio.value = (!shown.back && useCards().card(shown.code)?.aspectRatio) || (landscape ? 1 / CARD_RATIO : CARD_RATIO)
     anchor.value = element
     pinned.value = touched
     swallowClick = touched && pressing
