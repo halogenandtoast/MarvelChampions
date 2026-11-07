@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Ally.Allies.JessicaLuke where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Control.Monad (replicateM_)
 import Data.List (find)
 import Data.Maybe (maybeToList)
@@ -41,7 +42,7 @@ newtype JLAlly = JLAlly (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance IsAlly JLAlly where
-  allyHasThwart (JLAlly a) = toCardCode a /= "62020"
+  allyHasThwart (JLAlly a) = Name.title (cdName (allyCardDef a)) /= "Hulk"
 
 jl61003 :: AllyCard JLAlly
 jl61003 = ally JLAlly Cards.jl61003 (Thw 2, 1) (Atk 2, 1) (HP 3)
@@ -81,32 +82,32 @@ jl62021 = ally JLAlly Cards.jl62021 (Thw 2, 1) (Atk 2, 1) (HP 3)
 
 instance HasModifiersFor JLAlly where
   getModifiersFor _ target (JLAlly a)
-    | target == toRef a = case toCardCode a of
-      "61038" -> do
+    | target == toRef a = case Name.title (cdName (allyCardDef a)) of
+      "Echo" -> do
         n <- heroDefense (allyController a)
         pure [EnemyAttackDamageReduction n]
-      "62002" -> do
+      "Jessica Jones" -> do
         n <- min 4 <$> toughCount (allyController a)
         pure [ThwartModifier n]
-      "62013" -> pure $ if allyTough a then [AttackModifier 2, ThwartModifier 2] else []
-      "62020" -> pure [AttackModifier $ allyCounters a]
+      "Misty Knight" -> pure $ if allyTough a then [AttackModifier 2, ThwartModifier 2] else []
+      "Hulk" -> pure [AttackModifier $ allyCounters a]
       _ -> pure []
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities JLAlly where
-  getAbilities (JLAlly a) = case toCardCode a of
-    "61003" -> [ability a 1 Action OwnsThis (ExhaustCost <> DealDamageThisCost 1) (runAbility a 1)]
-    "61015" -> [limitedWindowAbility a 1 W.EntersPlayThis Response OwnsThis NoCost (runAbility a 1)]
-    "61016" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.HeroThwarted W.After self, W.AllyThwarted W.After (AllyControlledBy self) AnyScheme]) Response OwnsThis NoCost (runAbility a 1)]
-    "61017" ->
+  getAbilities (JLAlly a) = case Name.title (cdName (allyCardDef a)) of
+    "Luke Cage" -> [ability a 1 Action OwnsThis (ExhaustCost <> DealDamageThisCost 1) (runAbility a 1)]
+    "Captain Marvel" -> [limitedWindowAbility a 1 W.EntersPlayThis Response OwnsThis NoCost (runAbility a 1)]
+    "Spider-Woman" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.HeroThwarted W.After self, W.AllyThwarted W.After (AllyControlledBy self) AnyScheme]) Response OwnsThis NoCost (runAbility a 1)]
+    "Squirrel Girl" ->
       [limitedWindowAbility a 1 (W.PlayedFromHand self $ CardIs Cards.jl61017) Response OwnsThis NoCost (runAbility a 1)
       , ability a 2 Action (OwnsThis <> SchemeExists ThwartableScheme) (ExactCountersCost 1) (runAbility a 2)]
-    "61025" -> [ability ref 1 Action
+    "Hellcat" -> [ability ref 1 Action
       (ExtendedCardExists (InHandOf self $ CardWithId cid) <> SelfMatches (IdentityWithTrait T.Defender)) NoCost (runAbility ref 1)]
-    "62012" -> [limitedWindowAbility a 1 (W.AllyDefendsAgainst W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt OwnsThis NoCost (runAbility a 1)]
-    "62014" -> [limitedWindowAbility a 1 (W.AllyDefeated W.When (NotAlly $ AllyWithId $ allyId a)) Interrupt OwnsThis (DiscardCost $ toTarget a) (runAbility a 1)]
-    "62020" -> [limitedWindowAbility a 1 (W.EnemyAttacked W.After VillainEnemy self) Response OwnsThis NoCost (runAbility a 1)]
-    "62021" -> [limitedWindowAbility a 1 W.EntersPlayThis Response (OwnsThis <> CharacterExists (CharacterWithId (IdentityCharacter $ allyController a) <> CharacterCanGainTough)) NoCost (runAbility a 1)]
+    "Iron Fist" -> [limitedWindowAbility a 1 (W.AllyDefendsAgainst W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt OwnsThis NoCost (runAbility a 1)]
+    "Valkyrie" -> [limitedWindowAbility a 1 (W.AllyDefeated W.When (NotAlly $ AllyWithId $ allyId a)) Interrupt OwnsThis (DiscardCost $ toTarget a) (runAbility a 1)]
+    "Hulk" -> [limitedWindowAbility a 1 (W.EnemyAttacked W.After VillainEnemy self) Response OwnsThis NoCost (runAbility a 1)]
+    "She-Hulk" -> [limitedWindowAbility a 1 W.EntersPlayThis Response (OwnsThis <> CharacterExists (CharacterWithId (IdentityCharacter $ allyController a) <> CharacterCanGainTough)) NoCost (runAbility a 1)]
     _ -> []
    where
     self = IdentityWithId $ allyController a
@@ -116,21 +117,21 @@ instance HasAbilities JLAlly where
 instance RunMessage JLAlly where
   runMessage msg e@(JLAlly a) = runQueueT $ case msg of
     RanAbility you (isTarget a -> True) 1 windows _ -> do
-      case toCardCode a of
-        "61003" -> giveStatus (allyId a) ToughStatus
-        "61015" -> discardFromDeck you 4 a
-        "61016" -> do
+      case Name.title (cdName (allyCardDef a)) of
+        "Luke Cage" -> giveStatus (allyId a) ToughStatus
+        "Captain Marvel" -> discardFromDeck you 4 a
+        "Spider-Woman" -> do
           let n = min 8 (allyCounters a + 1)
           when (allyCounters a < 8) $ placeCounters a 1
           chooseOne you
             [labeled "$label.spiderWomanRelease" (removeFromPlay a >> chooseDamage you a (toDamage n FromAbility) AnyEnemy), labeled "$label.done" (pure ())]
-        "61017" -> do
+        "Squirrel Girl" -> do
           hand <- projectMap PlayerIdentityHand unHand you
           placeCounters a (min 4 $ fromIntegral $ length hand)
-        "62012" -> do
+        "Iron Fist" -> do
           atk <- getModifiedAttack a
           for_ [enemy | W.AllyDefendedAgainst _ enemy <- windows] $ \enemy -> preventEnemyAttackDamage enemy atk
-        "62014" -> for_ [aid | W.DefeatedAlly aid _ <- windows] $ \aid -> do
+        "Valkyrie" -> for_ [aid | W.DefeatedAlly aid _ <- windows] $ \aid -> do
           damage <- characterStoredDamage (AllyCharacter aid)
           (base,_,_) <- getAllyPrintedStats aid
           modifiers <- getModifiers (AllyRef aid)
@@ -138,20 +139,20 @@ instance RunMessage JLAlly where
               amount = if damage + 1 > hp then damage + 1 - hp else 0
           cancelAllyDefeat aid
           heal aid amount
-        "62020" -> placeCounters a 1
-        "62021" -> becomeTough you
+        "Hulk" -> placeCounters a 1
+        "She-Hulk" -> becomeTough you
         _ -> pure ()
       pure e
-    RanAbility you (CardIdRef cid) 1 _ _ | toCardCode a == "61025", cid == CardId (unAllyId $ allyId a) -> do
+    RanAbility you (CardIdRef cid) 1 _ _ | Name.title (cdName (allyCardDef a)) == "Hellcat", cid == CardId (unAllyId $ allyId a) -> do
       hand <- projectMap PlayerIdentityHand unHand you
       for_ (find ((== cid) . pcCardId) hand) $ \card -> do
         putIntoPlay you card
         atEndOfPhase $ removeFromPlay (AllyRef $ allyId a)
       pure e
-    RanAbility you (isTarget a -> True) 2 _ _ | toCardCode a == "61017" -> do
+    RanAbility you (isTarget a -> True) 2 _ _ | Name.title (cdName (allyCardDef a)) == "Squirrel Girl" -> do
       removeThreat you a 1 ThwartableScheme
       pure e
-    WithDiscarded (isTarget a -> True) _ cards | toCardCode a == "61015" -> do
+    WithDiscarded (isTarget a -> True) _ cards | Name.title (cdName (allyCardDef a)) == "Captain Marvel" -> do
       let n = length [() | card <- onlyPlayerCards cards, (_,R.Energy) <- cdResources (getCardDef card)]
       let you = allyController a
       when (n > 0) $ removeThreat you a 2 ThwartableScheme

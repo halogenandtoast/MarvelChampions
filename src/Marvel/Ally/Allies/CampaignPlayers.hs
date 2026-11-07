@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Ally.Allies.CampaignPlayers where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.Maybe (maybeToList)
 import Marvel.Ability
 import Marvel.Card
@@ -78,27 +79,27 @@ newtype CampaignAlly = CampaignAlly (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities CampaignAlly where
-  getAbilities a@(CampaignAlly attrs) = case toCardCode attrs of
-    "56002" -> [limitedWindowAbility a 1 W.EntersPlayThis ForcedResponse OwnsThis NoCost $ runAbility a 1]
-    "56010" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When self AnyEnemy) Interrupt (OwnsThis <> AllyHasTwoAttackableEnemies (allyId attrs)) NoCost $ runAbility a 1]
-    "56019" -> [limitedWindowAbility a 1 W.EntersPlayThis Response OwnsThis NoCost $ runAbility a 1]
-    "56030" -> [limitedWindowAbility a 1 (W.PlayedFromHand you $ CardIs Cards.cw56030) Response OwnsThis NoCost $ runAbility a 1]
-    "56041" -> [limitedWindowAbility a 1 (W.EngagesMinion W.After you AnyMinion) Response OwnsThis NoCost $ runAbility a 1]
-    "56052" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.AllyAttacked W.When self AnyEnemy, W.AllyThwarted W.When self AnyScheme]) Interrupt OwnsThis (ExhaustAlliesMatchingCost (AllyWithTrait T.Avenger <> AllyControlledBy you <> NotAlly self) 1) $ runAbility a 1]
-    "60007" -> [limitedWindowAbility a 1 (W.AllyWouldTakeDamageOf W.When self FromConsequential) ForcedInterrupt (OwnsThis <> InHeroForm <> CharacterExists (IdentityCharacters $ IdentityIs Cards.fne60001a)) NoCost $ runAbility a 1]
-    "60019" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After self AnyScheme) Response (OwnsThis <> EnemyExists (EnemyWithUpgrade (UpgradeMatches []) <> EnemyCanBeConfused)) NoCost $ runAbility a 1]
-    "60020" -> [ability a 1 Action (OwnsThis <> CanFindPlayerCardForEntry "60021") (ExhaustCost <> MultiResourceCost [Just R.Energy,Just R.Energy]) $ runAbility a 1]
-    "60022" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When self enemy) Interrupt OwnsThis cost $ runAbility a 1
+  getAbilities a@(CampaignAlly attrs) = case Name.title (cdName (allyCardDef attrs)) of
+    "Moon Knight" -> [limitedWindowAbility a 1 W.EntersPlayThis ForcedResponse OwnsThis NoCost $ runAbility a 1]
+    "Two-Gun Kid" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When self AnyEnemy) Interrupt (OwnsThis <> AllyHasTwoAttackableEnemies (allyId attrs)) NoCost $ runAbility a 1]
+    "Yellow Jacket" -> [limitedWindowAbility a 1 W.EntersPlayThis Response OwnsThis NoCost $ runAbility a 1]
+    "Wiccan" -> [limitedWindowAbility a 1 (W.PlayedFromHand you $ CardIs Cards.cw56030) Response OwnsThis NoCost $ runAbility a 1]
+    "Patriot" -> [limitedWindowAbility a 1 (W.EngagesMinion W.After you AnyMinion) Response OwnsThis NoCost $ runAbility a 1]
+    "Iron Lad" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.AllyAttacked W.When self AnyEnemy, W.AllyThwarted W.When self AnyScheme]) Interrupt OwnsThis (ExhaustAlliesMatchingCost (AllyWithTrait T.Avenger <> AllyControlledBy you <> NotAlly self) 1) $ runAbility a 1]
+    "Elektra" -> [limitedWindowAbility a 1 (W.AllyWouldTakeDamageOf W.When self FromConsequential) ForcedInterrupt (OwnsThis <> InHeroForm <> CharacterExists (IdentityCharacters $ IdentityIs Cards.fne60001a)) NoCost $ runAbility a 1]
+    "Blindspot" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After self AnyScheme) Response (OwnsThis <> EnemyExists (EnemyWithUpgrade (UpgradeMatches []) <> EnemyCanBeConfused)) NoCost $ runAbility a 1]
+    "Cloak" -> [ability a 1 Action (OwnsThis <> CanFindPlayerCardForEntry "60021") (ExhaustCost <> MultiResourceCost [Just R.Energy,Just R.Energy]) $ runAbility a 1]
+    "Ghost Rider" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When self enemy) Interrupt OwnsThis cost $ runAbility a 1
       | (enemy,cost) <- [(MinionEnemy <> EnemyCanBeConfused,ResourceCost $ Just R.Energy),(VillainEnemy <> EnemyCanBeConfused,MultiResourceCost [Just R.Energy,Just R.Energy])]]
-    "60039" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.AllyAttacked W.After self AnyEnemy,W.AllyThwarted W.After self AnyScheme]) Response OwnsThis NoCost $ runAbility a 1]
+    "Daredevil" -> [limitedWindowAbility a 1 (W.WindowOneOf [W.AllyAttacked W.After self AnyEnemy,W.AllyThwarted W.After self AnyScheme]) Response OwnsThis NoCost $ runAbility a 1]
     _ -> []
    where
     self = AllyWithId $ allyId attrs
     you = IdentityWithId $ allyController attrs
 
 instance HasModifiersFor CampaignAlly where
-  getModifiersFor _ target (CampaignAlly attrs) = case toCardCode attrs of
-    "60021" -> do
+  getModifiersFor _ target (CampaignAlly attrs) = case Name.title (cdName (allyCardDef attrs)) of
+    "Dagger" -> do
       cloak <- selectAny $ AllyWithTitle "Cloak"
       cloaks <- selectList $ AllyWithTitle "Cloak"
       pure $ [ConsequentialDamageReduction 1 | target == toRef attrs && cloak]
@@ -108,8 +109,8 @@ instance HasModifiersFor CampaignAlly where
 instance RunMessage CampaignAlly where
   runMessage msg a@(CampaignAlly attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 windows payment -> do
-      case toCardCode attrs of
-        "56002" -> do
+      case Name.title (cdName (allyCardDef attrs)) of
+        "Moon Knight" -> do
           deck <- getEncounterDeck
           discard <- getEncounterDiscard
           let minions = filter (cardMatch $ CardWithType MinionType) (deck <> discard)
@@ -122,28 +123,28 @@ instance RunMessage CampaignAlly where
               giveStatus mid ConfusedStatus
               shuffleEncounterDeck
             | card <- minions]
-        "56010" -> do
+        "Two-Gun Kid" -> do
           enemies <- selectList $ AttackableByAlly $ allyId attrs
           chooseOne you [targeting (enemyRef first) (chooseOne you [targeting (enemyRef second) (resolveAllyAttackAgainstAll (allyId attrs) [first,second]) | second <- enemies, second /= first]) | first <- enemies, length enemies >= 2]
-        "56019" -> search you (SearchIdentityDeck you $ TopOfDeck 5) (CardWithType UpgradeType) SearchDrawOne ShuffleBackIn
-        "56030" -> searchOwned you attrs (HeroSpecificCard <> CardWithType EventType) True
-        "56041" -> giveStatus (allyId attrs) ToughStatus
-        "56052" -> for_ (paymentExhaustedAllies payment) $ \aid -> do
+        "Yellow Jacket" -> search you (SearchIdentityDeck you $ TopOfDeck 5) (CardWithType UpgradeType) SearchDrawOne ShuffleBackIn
+        "Wiccan" -> searchOwned you attrs (HeroSpecificCard <> CardWithType EventType) True
+        "Patriot" -> giveStatus (allyId attrs) ToughStatus
+        "Iron Lad" -> for_ (paymentExhaustedAllies payment) $ \aid -> do
           let thwarting = any (\case W.AllyThwart _ _ -> True; _ -> False) windows
           amount <- if thwarting then getCharacterThwart $ AllyCharacter aid else characterAttackValue $ AllyCharacter aid
           addToAllyBasicPower (allyId attrs) amount
-        "60007" -> do
+        "Elektra" -> do
           pending <- pendingCharacterDamage $ allyId attrs
           for_ pending $ \(source,damage) -> do
             cancelMatchingMessage $ \case AllyMessage aid (AllyDamaged _ d) -> aid == allyId attrs && damageSource d == FromConsequential; _ -> False
             daredevils <- selectList $ IdentityIs Cards.fne60001a
             traverse_ (\ident -> damageIdentity ident source damage) daredevils
-        "60019" -> chooseEnemyStatus you ConfusedStatus $ EnemyWithUpgrade (UpgradeMatches [])
-        "60020" -> do
+        "Blindspot" -> chooseEnemyStatus you ConfusedStatus $ EnemyWithUpgrade (UpgradeMatches [])
+        "Cloak" -> do
           found <- findPlayerCardsForEntry you "60021"
           unless (null found) $ chooseOrRunOne you [targeting card (putIntoPlay you card) | card <- found]
-        "60022" -> for_ [enemy | W.AllyAttack _ enemy <- windows] $ \enemy -> giveStatus enemy ConfusedStatus
-        "60039" -> nextEventReductionForRound you attrs 1
+        "Ghost Rider" -> for_ [enemy | W.AllyAttack _ enemy <- windows] $ \enemy -> giveStatus enemy ConfusedStatus
+        "Daredevil" -> nextEventReductionForRound you attrs 1
         _ -> pure ()
       pure a
     _ -> CampaignAlly <$> runMessage msg attrs

@@ -1,6 +1,7 @@
 module Marvel.Ally.Allies.TricksterTakeover where
 
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Entity
@@ -40,15 +41,15 @@ tt55066 = ally TTAlly Cards.tt55066 (Thw 3, 2) (Atk 1, 1) (HP 4)
 
 instance HasModifiersFor TTAlly where
   getModifiersFor _ target (TTAlly a) = pure $ if target == toRef a then
-    [NotCountedAgainstAllyLimit] <> (if toCardCode a == "55064" then [KeywordModifier Overkill, KeywordModifier Piercing] else []) else []
+    [NotCountedAgainstAllyLimit] <> (if Name.title (cdName (allyCardDef a)) == "Titania" then [KeywordModifier Overkill, KeywordModifier Piercing] else []) else []
 
 instance HasAbilities TTAlly where
-  getAbilities (TTAlly a) = case toCardCode a of
-    "55063" ->
+  getAbilities (TTAlly a) = case Name.title (cdName (allyCardDef a)) of
+    "Absorbing Man" ->
       [windowAbility a 1 (W.AllyAttacked W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt NoCost (runAbility a 1)
       ,windowAbility a 1 (W.AllyThwarted W.When (AllyWithId $ allyId a) AnyScheme) Interrupt NoCost (runAbility a 1)]
-    "55065" -> [windowAbility a 2 (W.AllyAttacked W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt NoCost (runAbility a 2)]
-    "55066" -> [windowAbility a 3 (W.AllyEntersPlay W.After $ AllyWithId $ allyId a) Response NoCost (runAbility a 3)]
+    "Whirlwind" -> [windowAbility a 2 (W.AllyAttacked W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt NoCost (runAbility a 2)]
+    "Zzzax" -> [windowAbility a 3 (W.AllyEntersPlay W.After $ AllyWithId $ allyId a) Response NoCost (runAbility a 3)]
     _ -> []
 
 instance RunMessage TTAlly where

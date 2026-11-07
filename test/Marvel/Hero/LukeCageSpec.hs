@@ -245,6 +245,27 @@ spec = describe "Luke Cage" do
       support <- testHead <$> supportsWith "62007"
       supportExhausted support `shouldBe` True
 
+  it "does not offer Fogwell's Gym when Luke is already ready" do
+    tg <- testGame ["luke-cage"]
+    inGame tg do
+      let p = player1 tg
+      asLuke p
+      gym <- putIntoPlay p "62007"
+      resolve [GiveStatus (IdentityRef p) ToughStatus]
+      start [RemoveStatus (IdentityRef p) ToughStatus]
+      choose "Unbreakable Skin" (\case UseAbility ab -> abilitySource ab == IdentityRef p && abilityIndex ab == 1; _ -> False)
+      offers (isAbilityOfCard gym) `shouldReturn` False
+
+  it "does not offer Fogwell's Gym for a ready Defender even when another Defender is exhausted" do
+    tg <- testGame ["luke-cage"]
+    inGame tg do
+      let p = player1 tg
+      gym <- putIntoPlay p "62007"
+      ally <- putIntoPlay p "62013"
+      resolve [IdentityMessage p ExhaustedIdentity]
+      start [RemoveStatus (AllyRef $ allyIdOf ally) ToughStatus]
+      offers (isAbilityOfCard gym) `shouldReturn` False
+
   it "Fogwell's Gym also readies a Defender ally that loses tough" do
     tg <- testGame ["luke-cage"]
     inGame tg do

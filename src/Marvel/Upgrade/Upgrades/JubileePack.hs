@@ -1,5 +1,6 @@
 module Marvel.Upgrade.Upgrades.JubileePack where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.List (nub)
 import Marvel.Ability hiding (Attack, Thwart)
 import Marvel.Ability qualified as A
@@ -32,7 +33,7 @@ jubilee47019 = upgrade (JubileeUpgrade . (usesL .~ 3) . (discardIfNoUsesL .~ Tru
 
 instance IsUpgrade JubileeUpgrade where
   upgradeTargets (JubileeUpgrade attrs)
-    | toCardCode attrs == "47013" = do
+    | Name.title (cdName (upgradeCardDef attrs)) == "Disguise" = do
       players <- selectList AnyIdentity
       allowed <- filterM (\p -> selectNone (UpgradeIs Cards.jubilee47013 <> UpgradeOnIdentity (IdentityWithId p))) players
       pure $ Just (map toTarget allowed)
@@ -41,35 +42,35 @@ instance IsUpgrade JubileeUpgrade where
 instance HasModifiersFor JubileeUpgrade where
   getModifiersFor _ (IdentityRef you) (JubileeUpgrade attrs) | you == upgradeController attrs = do
     jubilee <- identityMatches (IdentityWithTitle "Jubilee" <> HeroIdentity) you
-    pure $ if jubilee then case toCardCode attrs of
-      "47004" -> [ThwartModifier 1]
-      "47005" -> [AttackModifier 1]
+    pure $ if jubilee then case Name.title (cdName (upgradeCardDef attrs)) of
+      "Jubilee's Coat" -> [ThwartModifier 1]
+      "Jubilee's Sunglasses" -> [AttackModifier 1]
       _ -> []
     else []
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities JubileeUpgrade where
-  getAbilities a@(JubileeUpgrade attrs) = case toCardCode attrs of
-    "47004" -> [subtype A.Thwart $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Thwart) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
-    "47005" -> [subtype A.Attack $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Attack) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
-    "47013" -> [subtype A.Thwart $ ability a 1 Action (OwnsThis <> SchemeExists ThwartableScheme) (ExhaustCost <> ExhaustCharacterCost (IdentityCharacters You)) (runAbility a 1)]
-    "47019" -> [ability a 1 Action OwnsThis (ExhaustCost <> UseCost) (runAbility a 1)]
+  getAbilities a@(JubileeUpgrade attrs) = case Name.title (cdName (upgradeCardDef attrs)) of
+    "Jubilee's Coat" -> [subtype A.Thwart $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Thwart) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
+    "Jubilee's Sunglasses" -> [subtype A.Attack $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Attack) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
+    "Disguise" -> [subtype A.Thwart $ ability a 1 Action (OwnsThis <> SchemeExists ThwartableScheme) (ExhaustCost <> ExhaustCharacterCost (IdentityCharacters You)) (runAbility a 1)]
+    "Cell Phone" -> [ability a 1 Action OwnsThis (ExhaustCost <> UseCost) (runAbility a 1)]
     _ -> []
    where you = IdentityWithId $ upgradeController attrs
 
 instance RunMessage JubileeUpgrade where
   runMessage msg a@(JubileeUpgrade attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 windows _ -> do
-      case toCardCode attrs of
-        "47004" -> for_ [eid | W.EventPlayed _ eid _ <- windows] $ \eid -> do
+      case Name.title (cdName (upgradeCardDef attrs)) of
+        "Jubilee's Coat" -> for_ [eid | W.EventPlayed _ eid _ <- windows] $ \eid -> do
           n <- fromIntegral . length . nub <$> getEventPaidResources eid
           removeThreat you attrs n ThwartableScheme
-        "47005" -> for_ [eid | W.EventPlayed _ eid _ <- windows] $ \eid -> do
+        "Jubilee's Sunglasses" -> for_ [eid | W.EventPlayed _ eid _ <- windows] $ \eid -> do
           n <- fromIntegral . length . nub <$> getEventPaidResources eid
           enemies <- selectList AttackableEnemy
           chooseOne you [targeting (enemyRef enemy) $ dealDamage enemy attrs $ toDamage n $ FromPlayerAttack you | enemy <- enemies]
-        "47013" -> removeThreat you attrs 2 ThwartableScheme
-        "47019" -> do
+        "Disguise" -> removeThreat you attrs 2 ThwartableScheme
+        "Cell Phone" -> do
           players <- selectList AnyIdentity
           chooseOne you [targeting p $ cardSpecific attrs "cellPhonePlayer" p | p <- players]
         _ -> pure ()

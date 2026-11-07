@@ -1,6 +1,7 @@
 module Marvel.Ally.Allies.WonderHerculesPack where
 
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Marvel.Attack
 import Marvel.Card
 import Marvel.Cost
@@ -61,69 +62,69 @@ instance IsAlly WmHcAlly where
   toAllyAttrs (WmHcAlly (attrs `With` _)) = attrs
 
 instance HasModifiersFor WmHcAlly where
-  getModifiersFor _ target (WmHcAlly (attrs `With` deathcry)) | isTarget attrs target = case toCardCode attrs of
-    "58022" -> pure [KeywordModifier K.Piercing]
-    "59018" -> pure [AttackConsequentialDamageReduction 1 | deathcry]
-    "59019" -> do
+  getModifiersFor _ target (WmHcAlly (attrs `With` deathcry)) | isTarget attrs target = case Name.title (cdName (allyCardDef attrs)) of
+    "Swordsman" -> pure [KeywordModifier K.Piercing]
+    "Deathcry" -> pure [AttackConsequentialDamageReduction 1 | deathcry]
+    "Namora" -> do
       others <- selectList $ AllyControlledBy (IdentityWithId $ allyController attrs) <> NotAlly (AllyWithId $ allyId attrs)
       pure [HitPointModifier $ fromIntegral $ length others]
     _ -> pure []
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities WmHcAlly where
-  getAbilities a@(WmHcAlly (attrs `With` _)) = case toCardCode attrs of
-    "58012" -> [limitedWindowAbility a 1 (W.AllyWouldBeDefeatedByConsequentialDamage $ AllyWithId aid) Interrupt (OwnsThis <> AllyExists (AllyWithId aid <> AllyWithAnyUses)) UseCost $ runAbility a 1]
-    "58013" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After AnyAlly AnyScheme) Response OwnsThis UseCost $ runAbility a 1]
-    "58014" -> [limitedWindowAbility a 1 (W.PlayThis W.After) ForcedResponse OwnsThis NoCost $ runAbility a 1]
-    "58015" -> [limitedWindowAbility a 1 W.EntersPlayThis ForcedResponse OwnsThis NoCost $ runAbility a 1]
-    "58022" -> [limitedWindowAbility a 1 (W.BoostCardFlippedDuringUndefendedAttack W.After AnyEnemy) HeroResponse OwnsThis NoCost $ runAbility a 1]
-    "59008" -> [ability a 1 Action OwnsThis ExhaustCost $ runAbility a 1
+  getAbilities a@(WmHcAlly (attrs `With` _)) = case Name.title (cdName (allyCardDef attrs)) of
+    "Firebird" -> [limitedWindowAbility a 1 (W.AllyWouldBeDefeatedByConsequentialDamage $ AllyWithId aid) Interrupt (OwnsThis <> AllyExists (AllyWithId aid <> AllyWithAnyUses)) UseCost $ runAbility a 1]
+    "Hawkeye" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After AnyAlly AnyScheme) Response OwnsThis UseCost $ runAbility a 1]
+    "Scarlet Witch" -> [limitedWindowAbility a 1 (W.PlayThis W.After) ForcedResponse OwnsThis NoCost $ runAbility a 1]
+    "Sentry" -> [limitedWindowAbility a 1 W.EntersPlayThis ForcedResponse OwnsThis NoCost $ runAbility a 1]
+    "Swordsman" -> [limitedWindowAbility a 1 (W.BoostCardFlippedDuringUndefendedAttack W.After AnyEnemy) HeroResponse OwnsThis NoCost $ runAbility a 1]
+    "Amadeus Cho" -> [ability a 1 Action OwnsThis ExhaustCost $ runAbility a 1
                ,limitedWindowAbility a 2 (W.EnemyAttacksPlayerOrAlly W.When MinionEnemy $ IdentityWithId $ allyController attrs) ForcedInterrupt OwnsThis NoCost $ runAbility a 2]
-    "59018" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When (AllyWithId aid) AnyEnemy) HeroInterrupt OwnsThis (DamageCost 1) $ runAbility a 1]
-    "59020" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After (AllyWithId aid) AnyScheme) ForcedResponse OwnsThis NoCost $ runAbility a 1]
+    "Deathcry" -> [limitedWindowAbility a 1 (W.AllyAttacked W.When (AllyWithId aid) AnyEnemy) HeroInterrupt OwnsThis (DamageCost 1) $ runAbility a 1]
+    "Thor" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After (AllyWithId aid) AnyScheme) ForcedResponse OwnsThis NoCost $ runAbility a 1]
     _ -> []
    where aid = allyId attrs
 
 instance RunMessage WmHcAlly where
   runMessage msg a@(WmHcAlly (attrs `With` deathcry)) = runQueueT $ case msg of
-    AllyMessage aid (AllyPaidWith payment) | aid == allyId attrs && toCardCode attrs == "58012" -> pure $ WmHcAlly (attrs {allyCounters = if null $ overpaidResources payment then 0 else 1} `With` deathcry)
-    AllyMessage aid (AllyPaidWith _) | aid == allyId attrs && toCardCode attrs == "58013" -> pure $ WmHcAlly (attrs {allyCounters = 4} `With` deathcry)
+    AllyMessage aid (AllyPaidWith payment) | aid == allyId attrs && Name.title (cdName (allyCardDef attrs)) == "Firebird" -> pure $ WmHcAlly (attrs {allyCounters = if null $ overpaidResources payment then 0 else 1} `With` deathcry)
+    AllyMessage aid (AllyPaidWith _) | aid == allyId attrs && Name.title (cdName (allyCardDef attrs)) == "Hawkeye" -> pure $ WmHcAlly (attrs {allyCounters = 4} `With` deathcry)
     RanAbility you (isTarget attrs -> True) 1 windows _ -> do
-      case toCardCode attrs of
-        "58012" -> do
+      case Name.title (cdName (allyCardDef attrs)) of
+        "Firebird" -> do
           cancelMatchingMessage $ \case AllyMessage aid (AllyDamaged _ damage) -> aid == allyId attrs && damageSource damage == FromConsequential; _ -> False
           allyStep (allyId attrs) $ AllySetDamage 0
           pure a
-        "58013" -> do
+        "Hawkeye" -> do
           chooseDamage you attrs (toDamage 2 FromAbility) MinionEnemy
           pure a
-        "58014" -> do
+        "Scarlet Witch" -> do
           cards <- take 1 <$> getEncounterDeck
           for_ cards $ \card -> do
             discardCard card
             when (cardMatch (CardWithType TreacheryType) card) $ resolveEncounterWhenRevealed you card
           pure a
-        "58015" -> do
+        "Sentry" -> do
           cards <- filter (cardMatch $ CardWithType SideSchemeType) <$> getEncounterDeck
           if null cards then placeThreatOnEach attrs 6 MainScheme
           else chooseOne you [targeting card $ revealEncounterCard you card | card <- cards]
           shuffleEncounterDeck
           pure a
-        "58022" -> do
+        "Swordsman" -> do
           for_ [enemy | W.FlippedBoostCard _ enemy <- windows] $ \enemy -> do
             attack <- getEnemyAttack enemy
             for_ attack $ \at -> unless (attackDefended at) do
               enemyDefendedBy enemy $ AllyCharacter $ allyId attrs
               checkWindows [W.Window W.When $ W.AllyDefendedAgainst (allyId attrs) enemy]
           pure a
-        "59008" -> a <$ drawCards you 1
-        "59018" -> pure $ WmHcAlly (attrs `With` True)
-        "59020" -> a <$ discardUntilIntoPlay you (CardWithType MinionType)
+        "Amadeus Cho" -> a <$ drawCards you 1
+        "Deathcry" -> pure $ WmHcAlly (attrs `With` True)
+        "Thor" -> a <$ discardUntilIntoPlay you (CardWithType MinionType)
         _ -> pure a
-    RanAbility you (isTarget attrs -> True) 2 windows _ | toCardCode attrs == "59008" -> do
+    RanAbility you (isTarget attrs -> True) 2 windows _ | Name.title (cdName (allyCardDef attrs)) == "Amadeus Cho" -> do
       for_ [enemy | W.EnemyAttack enemy who <- windows, who == you] $ \enemy -> redirectEnemyAttackToAlly enemy you $ allyId attrs
       pure a
-    AllyMessage aid step | aid == allyId attrs && toCardCode attrs == "59018", (case step of AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; _ -> False) -> do
+    AllyMessage aid step | aid == allyId attrs && Name.title (cdName (allyCardDef attrs)) == "Deathcry", (case step of AllyAttackConsequential -> True; AllyAttackConsequentialAgainst _ -> True; _ -> False) -> do
       attrs' <- runMessage msg attrs
       cardSpecific attrs "clearDeathcry" ()
       pure $ WmHcAlly (attrs' `With` deathcry)

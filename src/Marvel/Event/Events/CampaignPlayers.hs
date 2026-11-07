@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Event.Events.CampaignPlayers where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.Maybe (maybeToList)
 import Marvel.Ability
 import Marvel.Card
@@ -114,83 +115,83 @@ instance IsEvent CampaignEvent
 instance RunMessage CampaignEvent where
   runMessage msg e@(CampaignEvent attrs) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ windows) | eid == eventId attrs -> do
-      case toCardCode attrs of
-        "56008" -> do
+      case Name.title (cdName (eventCardDef attrs)) of
+        "Tooth and Claw" -> do
           chooseDamage you attrs (toDamage 4 $ FromPlayerAttack you) AttackableEnemy
           cardSpecific attrs "toothSecond" you
-        "56009" -> do
+        "Feline Senses" -> do
           schemes <- filterM (canRemoveThreatFrom $ toSource attrs) =<< selectList ThwartableScheme
           chooseOne you [targeting (schemeTarget scheme) do
             removeThreatFrom scheme attrs 3
             cardSpecific attrs "threatRemovalDone" scheme
             | scheme <- schemes]
-        "56016" -> do
+        "Coup de Grâce" -> do
           minions <- selectList $ NotMinion $ MinionWithTrait T.Elite
           eligible <- filterM (\mid -> enemyMatches (EnemyWithUpgrade (UpgradeMatches [])) (EnemyMinionId mid)) minions
           chooseOne you [targeting mid (defeatMinionIgnoringWhenDefeated you attrs mid) | mid <- eligible]
-        "56017" -> do
+        "Savage Strike" -> do
           addToBasicPower you 6
           addKeywordToAttack you attrs K.Piercing
-        "56037" -> do
+        "Shapeshifter Strike" -> do
           chooseDamage you attrs (toDamage 5 $ FromPlayerAttack you) AttackableEnemy
           cardSpecific attrs "readyShape" you
-        "56038" -> do
+        "Armored Defense" -> do
           defense <- identityDefense you
           for_ (windowEnemies windows) $ \enemy -> do
             dealDamage enemy attrs (toDamage defense FromAbility)
             afterEnemyAttack enemy $ giveStatus you ToughStatus
-        "56039" -> do
+        "Impersonation" -> do
           schemes <- filterM (canRemoveThreatFrom $ toSource attrs) =<< selectList ThwartableScheme
           chooseOne you [targeting (schemeTarget scheme) do
             removeThreatFrom scheme attrs 4
             cardSpecific attrs "threatRemovalDone" scheme
             | scheme <- schemes]
-        "56040" -> searchOwned you attrs (CardWithTrait T.Shapeshift) True
-        "56047" -> for_ (windowEnemies windows) $ \enemy -> declareHeroDefenseWithoutExhausting you enemy 0
-        "56050" -> lastingModifiers attrs (IdentityEntity $ IdentityWithId you) [KeywordModifier $ K.Retaliate 1] False
-        "60008" -> do
+        "Shapeshifter" -> searchOwned you attrs (CardWithTrait T.Shapeshift) True
+        "\"I Can Do This All Day\"" -> for_ (windowEnemies windows) $ \enemy -> declareHeroDefenseWithoutExhausting you enemy 0
+        "Cuts Both Ways" -> lastingModifiers attrs (IdentityEntity $ IdentityWithId you) [KeywordModifier $ K.Retaliate 1] False
+        "Cross-Examination" -> do
           enemies <- selectList AttackableEnemy
           chooseOne you [targeting (enemyRef enemy) do
             n <- upgradesOnEnemy enemy
             chooseOne you [labeled (countLabel "dealDamageToAnEnemy" $ 3 + bonus) (dealDamage enemy attrs $ toDamage (3 + bonus) $ FromPlayerAttack you) | bonus <- [0 .. n]]
             | enemy <- enemies]
-        "60009" -> do
+        "Deposition" -> do
           chooseSense you attrs True
           cardSpecific attrs "depositionThwart" you
-        "60010" -> do
+        "Living Lie Detector" -> do
           schemes <- selectList ThwartableScheme
           chooseOne you [targeting (schemeTarget scheme) do
             n <- upgradesOnScheme scheme
             chooseOne you [labeled (countLabel "removeThreatFromAScheme" $ 2 + bonus) (removeThreatFrom scheme attrs $ 2 + bonus) | bonus <- [0 .. n]]
             | scheme <- schemes]
-        "60011" -> do
+        "Raising Hell" -> do
           aerial <- identityMatches (IdentityWithTrait T.Aerial) you
           enemies <- selectList AttackableEnemy
           damages <- for enemies $ \enemy -> do
             n <- upgradesOnEnemy enemy
             pure (enemy, toDamage (n * if aerial then 3 else 2) $ FromPlayerAttack you)
           dealDamagesToEach attrs damages
-        "60023" -> do
+        "Know Your Enemy" -> do
           removeThreat you attrs 1 ThwartableScheme
           cardSpecific attrs "knowEnemySecond" you
-        "60041" -> do
+        "Study the Tape" -> do
           players <- selectList AnyIdentity
           cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) players
           let eligible = filter (\card -> cardMatch (CardWithType EventType) card && (isJust (cdAspect $ getCardDef card) || toCardCode card `elem` ["60040a","60040b","60040c"])) cards
           chooseOne you [targeting card (removeFromGame card >> addToHand you card) | card <- eligible]
-        "60048" -> ready you
-        "60049" -> removeThreat you attrs 3 ThwartableScheme
-        "60050" -> do
+        "Army of One" -> ready you
+        "Get Their Attention" -> removeThreat you attrs 3 ThwartableScheme
+        "In Harm's Way" -> do
           defense <- identityDefense you
           chooseDamage you attrs (toDamage defense $ FromPlayerAttack you) AttackableEnemy
           cardSpecific attrs "harmThwart" (you, defense)
-        "60055" -> cardSpecific attrs "seeHear" (you, 2 :: Natural)
+        "See No Evil, Hear No Evil" -> cardSpecific attrs "seeHear" (you, 2 :: Natural)
         _ -> pure ()
       pure e
-    CheckWindows windows | toCardCode attrs `elem` ["56009","56039"] -> do
+    CheckWindows windows | Name.title (cdName (eventCardDef attrs)) `elem` ["Feline Senses","Impersonation"] -> do
       for_ [scheme | W.Window W.After (W.ThreatRemovedBy source scheme before removed) <- windows, source == toSource attrs, before > 0, removed == before] $ \scheme ->
         insteadOf (matchesRemovalDone scheme) $
-          cardSpecific attrs (if toCardCode attrs == "56009" then "felineStun" else "impersonationFlip") (eventController attrs)
+          cardSpecific attrs (if Name.title (cdName (eventCardDef attrs)) == "Feline Senses" then "felineStun" else "impersonationFlip") (eventController attrs)
       CampaignEvent <$> runMessage msg attrs
     CardSpecific (isTarget attrs -> True) "threatRemovalDone" _ -> pure e
     CardSpecific (isTarget attrs -> True) "toothSecond" (fromJSON -> Success you) -> e <$ chooseDamage you attrs (toDamage 4 $ FromPlayerAttack you) AttackableEnemy

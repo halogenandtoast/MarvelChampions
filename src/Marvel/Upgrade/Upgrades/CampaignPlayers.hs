@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Upgrade.Upgrades.CampaignPlayers where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.Maybe (maybeToList)
 import Marvel.Ability
 import Marvel.Ability.Types qualified as A
@@ -142,63 +143,63 @@ newtype CampaignUpgrade = CampaignUpgrade (Attrs Upgrade)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance IsUpgrade CampaignUpgrade where
-  upgradeTargets (CampaignUpgrade attrs) = case toCardCode attrs of
-    code | code `elem` ["60002","60003"] -> do
+  upgradeTargets (CampaignUpgrade attrs) = case Name.title (cdName (upgradeCardDef attrs)) of
+    code | code `elem` ["Acute Tactility","Enhanced Olfaction"] -> do
       enemies <- selectList AnyEnemy
       schemes <- selectList AnyScheme
       pure $ Just $ map enemyRef enemies <> map schemeTarget schemes
-    code | code `elem` ["60004","60005","60031"] -> Just . map enemyRef <$> selectList AnyEnemy
-    "60006" -> Just . map schemeTarget <$> selectList AnyScheme
-    "60026" -> Just . map enemyRef <$> selectList (MinionEnemy <> NotEnemy (EnemyWithUpgrade $ UpgradeIs Cards.fne60026))
+    code | code `elem` ["Heightened Hearing","Radar Sense","Dance with the Devil"] -> Just . map enemyRef <$> selectList AnyEnemy
+    "Superior Taste" -> Just . map schemeTarget <$> selectList AnyScheme
+    "Legal Trouble" -> Just . map enemyRef <$> selectList (MinionEnemy <> NotEnemy (EnemyWithUpgrade $ UpgradeIs Cards.fne60026))
     _ -> controlTargets attrs
 
 instance HasModifiersFor CampaignUpgrade where
   getModifiersFor _ target (CampaignUpgrade attrs) = do
     let you = upgradeController attrs
         own = target == IdentityRef you
-        code = toCardCode attrs
+        code = Name.title (cdName (upgradeCardDef attrs))
     hero <- identityMatches HeroIdentity you
     allies <- selectListCount $ AllyControlledBy $ IdentityWithId you
     pure $ case code of
-      "56013" | own -> [HitPointModifier 3] <> [AttackModifier 1 | hero]
-      "56032" | own && hero -> [ThwartModifier 1, AttackModifier 1, DefenseModifier 1, TraitModifier T.Aerial]
-      "56033" | own && hero -> [AttackModifier 2, DefenseModifier 1]
-      "56034" | own && hero -> [AttackModifier 1, DefenseModifier 2, KeywordModifier $ K.Retaliate 1]
-      "56035" | own && hero -> [ThwartModifier 2]
-      "56046" | own -> [HitPointModifier 3] <> [DefenseModifier 1 | hero]
-      "60017" | own && hero -> [AttackModifier 1]
-      "60026" | Just enemy <- upgradeAttachedEnemy attrs, target == enemyRef enemy || target == toRef enemy -> [SchemePenalty 2]
-      "60038" | own && hero -> [DefenseModifier 1]
-      "60052" | own && hero -> [DefenseModifier 1, UseDefenseForAttackAndThwart]
-      "60053" | own && hero && allies == 0 -> [DefenseModifier 1, KeywordModifier $ K.Retaliate 1]
+      "Aggressive Conditioning" | own -> [HitPointModifier 3] <> [AttackModifier 1 | hero]
+      "Winged Shape" | own && hero -> [ThwartModifier 1, AttackModifier 1, DefenseModifier 1, TraitModifier T.Aerial]
+      "Hulk Shape" | own && hero -> [AttackModifier 2, DefenseModifier 1]
+      "Armored Shape" | own && hero -> [AttackModifier 1, DefenseModifier 2, KeywordModifier $ K.Retaliate 1]
+      "Imitation Shape" | own && hero -> [ThwartModifier 2]
+      "Defensive Conditioning" | own -> [HitPointModifier 3] <> [DefenseModifier 1 | hero]
+      "Daredevil's Billy Club" | own && hero -> [AttackModifier 1]
+      "Legal Trouble" | Just enemy <- upgradeAttachedEnemy attrs, target == enemyRef enemy || target == toRef enemy -> [SchemePenalty 2]
+      "Innate Reflexes" | own && hero -> [DefenseModifier 1]
+      "The Best Offense..." | own && hero -> [DefenseModifier 1, UseDefenseForAttackAndThwart]
+      "Ronin" | own && hero && allies == 0 -> [DefenseModifier 1, KeywordModifier $ K.Retaliate 1]
       _ -> []
 
 instance HasAbilities CampaignUpgrade where
-  getAbilities u@(CampaignUpgrade attrs) = case toCardCode attrs of
-    "56004" -> [ability u 1 Resource (OwnsThis <> MinionExists (MinionEngagedWith you)) ExhaustCost $ runAbility u 1]
-    "56005" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When you) Interrupt OwnsThis ExhaustCost $ runAbility u 1]
-    "56006" -> [limitedWindowAbility u 1 (W.WouldTakeDamage you FromAnyDamageSource AnyValue) HeroInterrupt OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
-    "56007" -> [limitedWindowAbility u 1 (W.EnemyDefeated W.When (MinionEnemy <> EnemyWithUpgrade (UpgradeWithId $ upgradeId attrs)) AnyDamage) Interrupt OwnsThis NoCost $ runAbility u 1]
-    code | code `elem` ["56032","56033","56034","56035"] -> shapeResponse : [limitedWindowAbility u 2 (W.EnemyWouldAttack AnyEnemy you) ForcedInterrupt OwnsThis NoCost (runAbility u 2) | code == "56035"]
-    "56036" -> [ability u 1 Resource OwnsThis ExhaustCost $ runAbility u 1]
-    "56045" -> [limitedWindowAbility u 1 (W.HeroDefended W.After you AnyEnemy) Response OwnsThis (ResourceCost $ Just R.Energy) $ runAbility u 1]
-    "60002" -> [senseDefeat]
-    "60003" -> [senseDefeat]
-    "60004" -> [subtype A.Defense $ limitedWindowAbility u 1 (W.EnemyAttacked W.When attached AnyIdentity) HeroInterrupt OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
-    "60005" -> [subtype A.Attack $ limitedWindowAbility u 1 (W.IdentityAttacked W.After you attached) Response OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
-    "60006" -> [subtype A.Thwart $ limitedWindowAbility u 1 (W.ThreatRemovedByThwart W.After (SourceExtendsIdentity you) (maybe (NotScheme AnyScheme) SchemeWithId $ attachedScheme attrs)) Response OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
-    "60017" -> [ability u 1 HeroAction OwnsThis (ReturnUpgradeToHandCost $ UpgradeWithId $ upgradeId attrs) $ runAbility u 1]
-    "60018" -> [ability u 1 HeroAction OwnsThis (ExhaustCost <> DamageCharacterCost (CharacterWithId $ IdentityCharacter $ upgradeController attrs) 1) $ runAbility u 1]
-    "60027" -> [subtype A.Thwart $ limitedWindowAbility u 1 (W.PlaysCard W.After you AnyCard) Response OwnsThis NoCost $ runAbility u 1]
-    "60028" -> [limitedWindowAbility u 1 (W.SideSchemeExactlyDefeatedBy you) Response (OwnsThis <> EnemyExists EnemyCanBeStunned) ExhaustCost $ runAbility u 1]
-    "60030" -> [ability u 1 Action (OwnsThis <> ExtendedCardExists (InHandOf You $ BasicCardMatches contingencyAttachmentMatcher)) NoCost $ runAbility u 1 | null $ upgradeHeldCards attrs]
-    "60031" -> [subtype A.Attack $ ability u 1 HeroAction OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
-    "60043" -> [ability u 1 HeroResource (OwnsThis <> ForAnyPlayer <> PayingFor (CardWithType EventType)) ExhaustCost $ runAbility u 1]
-    "60044" -> [ability u 1 Action OwnsThis ExhaustCost $ runAbility u 1]
-    "60045" -> [subtype A.Attack $ limitedWindowAbility u 1 (W.PlaysEvent W.After you AnyCard) HeroResponse OwnsThis ExhaustCost $ runAbility u 1]
-    "60046" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After you $ CardMatchesAny [CardWithTrait T.Attack, CardWithTrait T.Defense, CardWithTrait T.Thwart]) HeroResponse OwnsThis NoCost $ runAbility u 1]
-    "60047" -> [ability u 1 HeroAction (OwnsThis <> HasEchoTuckedEvent) ExhaustCost $ runAbility u 1]
-    "60054" -> [limitedWindowAbility u 1 (W.EnemyAttacked W.When AnyEnemy you) HeroInterrupt (OwnsThis <> NotCriteria (AllyExists $ AllyControlledBy you)) ExhaustCost $ runAbility u 1]
+  getAbilities u@(CampaignUpgrade attrs) = case Name.title (cdName (upgradeCardDef attrs)) of
+    "Cat's Head Amulet" -> [ability u 1 Resource (OwnsThis <> MinionExists (MinionEngagedWith you)) ExhaustCost $ runAbility u 1]
+    "Sharp Claws" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When you) Interrupt OwnsThis ExhaustCost $ runAbility u 1]
+    "Cat-Like Reflexes" -> [limitedWindowAbility u 1 (W.WouldTakeDamage you FromAnyDamageSource AnyValue) HeroInterrupt OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
+    "Hunted" -> [limitedWindowAbility u 1 (W.EnemyDefeated W.When (MinionEnemy <> EnemyWithUpgrade (UpgradeWithId $ upgradeId attrs)) AnyDamage) Interrupt OwnsThis NoCost $ runAbility u 1]
+    code | code `elem` ["Winged Shape","Hulk Shape","Armored Shape","Imitation Shape"] -> shapeResponse : [limitedWindowAbility u 2 (W.EnemyWouldAttack AnyEnemy you) ForcedInterrupt OwnsThis NoCost (runAbility u 2) | code == "Imitation Shape"]
+    "Alien Physiology" -> [ability u 1 Resource OwnsThis ExhaustCost $ runAbility u 1]
+    "Excelsior" -> [limitedWindowAbility u 1 (W.HeroDefended W.After you AnyEnemy) Response OwnsThis (ResourceCost $ Just R.Energy) $ runAbility u 1]
+    "Acute Tactility" -> [senseDefeat]
+    "Enhanced Olfaction" -> [senseDefeat]
+    "Heightened Hearing" -> [subtype A.Defense $ limitedWindowAbility u 1 (W.EnemyAttacked W.When attached AnyIdentity) HeroInterrupt OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
+    "Radar Sense" -> [subtype A.Attack $ limitedWindowAbility u 1 (W.IdentityAttacked W.After you attached) Response OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
+    "Superior Taste" -> [subtype A.Thwart $ limitedWindowAbility u 1 (W.ThreatRemovedByThwart W.After (SourceExtendsIdentity you) (maybe (NotScheme AnyScheme) SchemeWithId $ attachedScheme attrs)) Response OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
+    "Daredevil's Billy Club" -> [ability u 1 HeroAction OwnsThis (ReturnUpgradeToHandCost $ UpgradeWithId $ upgradeId attrs) $ runAbility u 1]
+    "The Man Without Fear" -> [ability u 1 HeroAction OwnsThis (ExhaustCost <> DamageCharacterCost (CharacterWithId $ IdentityCharacter $ upgradeController attrs) 1) $ runAbility u 1]
+    "Move in Shadow" -> [subtype A.Thwart $ limitedWindowAbility u 1 (W.PlaysCard W.After you AnyCard) Response OwnsThis NoCost $ runAbility u 1]
+    "Stealth Training" -> [limitedWindowAbility u 1 (W.SideSchemeExactlyDefeatedBy you) Response (OwnsThis <> EnemyExists EnemyCanBeStunned) ExhaustCost $ runAbility u 1]
+    "Contingency Planning" -> [ability u 1 Action (OwnsThis <> ExtendedCardExists (InHandOf You $ BasicCardMatches contingencyAttachmentMatcher)) NoCost $ runAbility u 1 | null $ upgradeHeldCards attrs]
+    "Dance with the Devil" -> [subtype A.Attack $ ability u 1 HeroAction OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
+    "American Sign Language" -> [ability u 1 HeroResource (OwnsThis <> ForAnyPlayer <> PayingFor (CardWithType EventType)) ExhaustCost $ runAbility u 1]
+    "Choreography" -> [ability u 1 Action OwnsThis ExhaustCost $ runAbility u 1]
+    "Echo's Katana" -> [subtype A.Attack $ limitedWindowAbility u 1 (W.PlaysEvent W.After you AnyCard) HeroResponse OwnsThis ExhaustCost $ runAbility u 1]
+    "Improvisation" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After you $ CardMatchesAny [CardWithTrait T.Attack, CardWithTrait T.Defense, CardWithTrait T.Thwart]) HeroResponse OwnsThis NoCost $ runAbility u 1]
+    "Muscle Memory" -> [ability u 1 HeroAction (OwnsThis <> HasEchoTuckedEvent) ExhaustCost $ runAbility u 1]
+    "Stand Alone" -> [limitedWindowAbility u 1 (W.EnemyAttacked W.When AnyEnemy you) HeroInterrupt (OwnsThis <> NotCriteria (AllyExists $ AllyControlledBy you)) ExhaustCost $ runAbility u 1]
     _ -> []
    where
     you = IdentityWithId $ upgradeController attrs
@@ -209,7 +210,7 @@ instance HasAbilities CampaignUpgrade where
 
 instance RunMessage CampaignUpgrade where
   runMessage msg u@(CampaignUpgrade attrs) = runQueueT $ case msg of
-    UpgradeMessage uid (PlayedUpgrade target) | uid == upgradeId attrs, toCardCode attrs == "56007" -> do
+    UpgradeMessage uid (PlayedUpgrade target) | uid == upgradeId attrs, Name.title (cdName (upgradeCardDef attrs)) == "Hunted" -> do
       updated <- runMessage msg attrs
       for_ target $ \case
         MinionRef mid -> giveStatus mid StunnedStatus
@@ -217,65 +218,65 @@ instance RunMessage CampaignUpgrade where
         _ -> pure ()
       pure $ CampaignUpgrade updated
     RanAbility you (isTarget attrs -> True) n windows _ -> do
-      case toCardCode attrs of
-        "56004" -> do
+      case Name.title (cdName (upgradeCardDef attrs)) of
+        "Cat's Head Amulet" -> do
           count <- selectListCount $ MinionEngagedWith $ IdentityWithId you
           gainResources $ replicate (fromIntegral $ min 3 count) R.Physical
-        "56005" -> do
+        "Sharp Claws" -> do
           addToBasicPower you 1
           chooseOne you [labeled "$label.overkill" (addKeywordToAttack you attrs K.Overkill), labeled "$label.piercing" (addKeywordToAttack you attrs K.Piercing)]
-        "56006" -> do
+        "Cat-Like Reflexes" -> do
           reduceIdentityDamage you 3
           enemies <- selectList $ MinionEngagedWith $ IdentityWithId you
           chooseOne you $ labeled "$label.done" (pure ()) : [targeting mid (giveStatus mid ConfusedStatus) | mid <- enemies]
-        "56007" -> ready you
-        "56032" -> removeThreat you attrs 2 ThwartableScheme
-        "56033" -> chooseDamage you attrs (toDamage 2 FromAbility) AnyEnemy
-        "56034" -> heal you 2
-        "56035" -> if n == 1 then drawCards you 1 else for_ (windowEnemyAttacks windows) $ \enemy -> replacePendingAttackWithScheme enemy you
-        "56036" -> do
+        "Hunted" -> ready you
+        "Winged Shape" -> removeThreat you attrs 2 ThwartableScheme
+        "Hulk Shape" -> chooseDamage you attrs (toDamage 2 FromAbility) AnyEnemy
+        "Armored Shape" -> heal you 2
+        "Imitation Shape" -> if n == 1 then drawCards you 1 else for_ (windowEnemyAttacks windows) $ \enemy -> replacePendingAttackWithScheme enemy you
+        "Alien Physiology" -> do
           specific <- payingForIdentitySpecific you
           gainResources $ replicate (if specific then 2 else 1) R.Wild
-        "56045" -> chooseDamage you attrs (toDamage 2 FromAbility) AnyEnemy
-        "60002" -> ready you
-        "60003" -> nextCardReduction you attrs AnyCard 2
-        "60004" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> do
+        "Excelsior" -> chooseDamage you attrs (toDamage 2 FromAbility) AnyEnemy
+        "Acute Tactility" -> ready you
+        "Enhanced Olfaction" -> nextCardReduction you attrs AnyCard 2
+        "Heightened Hearing" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> do
           becomeDefender you enemy
           changeAttack enemy (-3)
-        "60005" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack you)
-        "60006" -> for_ (attachedScheme attrs) $ \scheme -> removeThreatFrom scheme attrs 2
-        "60017" -> chooseOne you
+        "Radar Sense" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack you)
+        "Superior Taste" -> for_ (attachedScheme attrs) $ \scheme -> removeThreatFrom scheme attrs 2
+        "Daredevil's Billy Club" -> chooseOne you
           [labeled "$label.dealDamage" (chooseDamage you attrs (toDamage 1 FromAbility) AnyEnemy)
           ,labeled "$label.gainAerial" (lastingModifiers attrs (IdentityEntity $ IdentityWithId you) [TraitModifier T.Aerial] True)]
-        "60018" -> chooseOne you
+        "The Man Without Fear" -> chooseOne you
           [labeled "$label.playSense" (chooseSense you attrs True), labeled "$label.ready" (ready you)]
-        "60027" -> removeThreat you attrs 1 ThwartableScheme
-        "60028" -> chooseEnemyStatus you StunnedStatus AnyEnemy
-        "60030" -> do
+        "Move in Shadow" -> removeThreat you attrs 1 ThwartableScheme
+        "Stealth Training" -> chooseEnemyStatus you StunnedStatus AnyEnemy
+        "Contingency Planning" -> do
           hand <- projectMap PlayerIdentityHand unHand you
           let allowed = filter canTuckUnderContingency hand
           chooseOne you [targeting card (holdFacedownCard attrs card) | card <- allowed]
-        "60031" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack you)
-        "60043" -> gainResources [R.Wild]
-        "60044" -> do
+        "Dance with the Devil" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack you)
+        "American Sign Language" -> gainResources [R.Wild]
+        "Choreography" -> do
           alter <- identityMatches AlterEgoIdentity you
           shuffleDiscardMatching you attrs (CardWithType EventType <> CardMatchesAny [CardWithAspect a | a <- [Aspect.Leadership,Aspect.Aggression,Aspect.Protection,Aspect.Justice,Aspect.Pool,Aspect.Neutral]]) alter
-        "60045" -> for_ [def | W.EventPlayed _ _ def <- windows] $ \printedDef -> do
+        "Echo's Katana" -> for_ [def | W.EventPlayed _ _ def <- windows] $ \printedDef -> do
           def <- resolvePlayerCardDef printedDef
           for_ (cdCost def) $ \cost -> chooseDamage you attrs (withPiercing $ toDamage (fromIntegral $ max 0 cost) $ FromPlayerAttack you) AttackableEnemy
-        "60046" -> for_ [def | W.EventPlayed _ _ def <- windows] $ \def -> do
+        "Improvisation" -> for_ [def | W.EventPlayed _ _ def <- windows] $ \def -> do
           when (T.Attack `member` cdTraits def) $ heal you 1
           when (T.Defense `member` cdTraits def) $ cardSpecific attrs "improvisationThwart" you
           when (T.Thwart `member` cdTraits def) $ cardSpecific attrs "improvisationDamage" you
-        "60047" -> do
+        "Muscle Memory" -> do
           cards <- tuckedPlayerCards you
           chooseOne you [targeting card (addTuckedPlayerCardToHand you card) | card <- cards]
-        "60054" -> ready you
+        "Stand Alone" -> ready you
         _ -> pure ()
       pure u
     CardSpecific (isTarget attrs -> True) "improvisationThwart" (fromJSON -> Success you) -> u <$ removeThreat you attrs 1 ThwartableScheme
     CardSpecific (isTarget attrs -> True) "improvisationDamage" (fromJSON -> Success you) -> u <$ chooseDamage you attrs (toDamage 1 FromAbility) AnyEnemy
-    CardSpecific (isTarget attrs -> True) "holdFacedownCard" _ | toCardCode attrs == "60030" -> do
+    CardSpecific (isTarget attrs -> True) "holdFacedownCard" _ | Name.title (cdName (upgradeCardDef attrs)) == "Contingency Planning" -> do
       updated <- runMessage msg attrs
       pure $ CampaignUpgrade updated {upgradeHeldCardsFacedown = False}
     _ -> CampaignUpgrade <$> runMessage msg attrs

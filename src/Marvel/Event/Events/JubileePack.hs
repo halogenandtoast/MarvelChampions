@@ -1,6 +1,7 @@
 module Marvel.Event.Events.JubileePack where
 
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.List (nub)
 import Marvel.Card
 import Marvel.Damage
@@ -42,36 +43,36 @@ instance RunMessage JubileeEvent where
     EventMessage eid (PlayedEvent you payment window) | eid == eventId attrs -> do
       resources <- nub <$> paymentResources payment
       let count = length resources
-      case toCardCode attrs of
-        "47006" -> cardSpecific attrs "blindingFlash" (count, [] :: [EnemyId])
-        code | code `elem` ["47007a", "47007b", "47007c"] -> do
+      case Name.title (cdName (eventCardDef attrs)) of
+        "Blinding Flash" -> cardSpecific attrs "blindingFlash" (count, [] :: [EnemyId])
+        "Firecracker" -> do
           enemies <- selectList AttackableEnemy
           chooseOne you [targeting (enemyRef enemy) do
             dealDamage enemy attrs (toDamage 4 $ FromPlayerAttack you)
             when (count == 2) $ stun enemy attrs
             | enemy <- enemies]
-        code | code `elem` ["47008a", "47008b", "47008c"] -> do
+        "Flash of Light" -> do
           removeThreat you attrs 3 ThwartableScheme
           when (count == 2) $ cardSpecific attrs "confuse" ()
-        "47009" -> cardSpecific attrs "grandeFinale" (count + 1)
-        "47014" -> do
+        "Grande Finale" -> cardSpecific attrs "grandeFinale" (count + 1)
+        "Waylay" -> do
           let cleared = case window of
                 Just (W.ThwartRemovedThreat _ _ before removed) -> before > 0 && removed >= before
                 Just (W.ThwartedAllThreat _ _) -> True
                 _ -> False
           enemies <- selectList AttackableEnemy
           chooseOne you [targeting (enemyRef enemy) (dealDamage enemy attrs $ toDamage (if cleared then 7 else 4) $ FromPlayerAttack you) | enemy <- enemies]
-        "47015" -> cardSpecific attrs "threeStepsAhead" count
-        "47021" -> do
+        "Three Steps Ahead" -> cardSpecific attrs "threeStepsAhead" count
+        "Multitalented" -> do
           when (Physical `elem` resources) $ cardSpecific attrs "multitalentedDamage" ()
           when (Mental `elem` resources) $ removeThreat you attrs 2 ThwartableScheme
           when (Energy `elem` resources) $ heal you 2
-        "47022" -> do
+        "Unlikely Duo" -> do
           enemies <- selectList EnemyCanBeConfused
           chooseOne you [targeting (enemyRef enemy) $ confuse enemy attrs | enemy <- enemies]
           cardSpecific attrs "unlikelyDuoDamage" ()
-        "47028" -> jubileeMutantMayhem you attrs payment
-        "47029" -> jubileeServeAndProtect attrs payment window
+        "Mutant Mayhem" -> jubileeMutantMayhem you attrs payment
+        "Serve and Protect" -> jubileeServeAndProtect attrs payment window
         _ -> pure ()
       pure e
     CardSpecific (isTarget attrs -> True) "confuse" _ -> do

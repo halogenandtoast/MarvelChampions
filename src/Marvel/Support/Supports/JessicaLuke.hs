@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Support.Supports.JessicaLuke where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Control.Monad (replicateM_)
 import Data.Maybe (maybeToList)
 import Data.HashMap.Strict qualified as HashMap
@@ -55,35 +56,35 @@ jl62019 = support JLSupport Cards.jl62019
 
 instance HasModifiersFor JLSupport where
   getModifiersFor _ target (JLSupport a)
-    | toCardCode a == "62019" = do
+    | Name.title (cdName (supportCardDef a)) == "Righteous Purpose" = do
       characters <- selectList (CharacterControlledBy $ IdentityWithId $ supportController a)
       pure [StatsAtOneRemainingHitPoint 2 | target `elem` map characterRef characters || target `elem` map toRef characters]
   getModifiersFor _ _ _ = pure []
 
 instance HasAbilities JLSupport where
-  getAbilities (JLSupport a) = case toCardCode a of
-    "61002" -> [limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response OwnsThis ExhaustCost (runAbility a 1)]
-    "61008" -> [ability a 1 AlterEgoAction (OwnsThis <> ExtendedCardExists (InDeckOf self $ BasicCardMatches $ CardWithType AllyType))
+  getAbilities (JLSupport a) = case Name.title (cdName (supportCardDef a)) of
+    "Alias Investigations" -> [limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response OwnsThis ExhaustCost (runAbility a 1)]
+    "Calling in Favors" -> [ability a 1 AlterEgoAction (OwnsThis <> ExtendedCardExists (InDeckOf self $ BasicCardMatches $ CardWithType AllyType))
       (ExhaustCost <> CountersFromSupportCost (SupportNamed "Alias Investigations" <> SupportControlledBy self) 2) (runAbility a 1)]
-    "62007" -> [limitedWindowAbility a 1 (W.CharacterDiscardsTough W.After $ CharacterWithTrait T.Defender) Response OwnsThis ExhaustCost (runAbility a 1)]
-    "62018" -> [ability a 1 Action (OwnsThis <> CharacterExists (AllyCharacters (AllyWithTrait T.Defender) <> CharacterCanGainTough)) (ExhaustCost <> UseCost) (runAbility a 1)]
+    "Fogwell's Gym" -> [limitedWindowAbility a 1 (W.CharacterDiscardsTough W.After $ CharacterWithTrait T.Defender <> CharacterCanBeReadied) Response OwnsThis ExhaustCost (runAbility a 1)]
+    "Defensive Formation" -> [ability a 1 Action (OwnsThis <> CharacterExists (AllyCharacters (AllyWithTrait T.Defender) <> CharacterCanGainTough)) (ExhaustCost <> UseCost) (runAbility a 1)]
     _ -> []
    where self = IdentityWithId $ supportController a
 
 instance RunMessage JLSupport where
   runMessage msg e@(JLSupport a) = runQueueT $ case msg of
     RanAbility you (isTarget a -> True) 1 windows _ -> do
-      case toCardCode a of
-        "61002" -> placeCounters a 2 >> cardSpecific a "finishInvestigation" you
-        "61008" -> do
+      case Name.title (cdName (supportCardDef a)) of
+        "Alias Investigations" -> placeCounters a 2 >> cardSpecific a "finishInvestigation" you
+        "Calling in Favors" -> do
           allCards <- selectList (InDeckOf (IdentityWithId you) $ BasicCardMatches $ CardWithType AllyType)
           cards <- filterM (canPlaySearchedCardWithReduction you 2) allCards
           chooseOne you [targeting c (playSearchedCardWithReduction you 2 c >> shuffleDeck you) | c <- cards]
-        "62007" -> for_ windows $ \case
+        "Fogwell's Gym" -> for_ windows $ \case
           W.IdentityDiscardedTough p -> ready p
           W.CharacterDiscardedTough character -> readyCharacter character
           _ -> pure ()
-        "62018" -> chooseFriendlyTough you (AllyCharacters $ AllyWithTrait T.Defender)
+        "Defensive Formation" -> chooseFriendlyTough you (AllyCharacters $ AllyWithTrait T.Defender)
         _ -> pure ()
       pure e
     CardSpecific (isTarget a -> True) "finishInvestigation" (fromJSON -> Success (you :: IdentityId)) -> do

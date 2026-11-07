@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports -Wno-unused-matches #-}
 module Marvel.Support.Supports.CampaignPlayers where
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Data.Maybe (maybeToList)
 import Marvel.Ability
 import Marvel.Card
@@ -71,17 +72,17 @@ newtype CampaignSupport = CampaignSupport (Attrs Support)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities CampaignSupport where
-  getAbilities s@(CampaignSupport attrs) = case toCardCode attrs of
-    "56003" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
-    "56012" -> [limitedWindowAbility s 1 (W.MinionEntersPlay W.After AnyMinion) Response OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
-    "56031" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
-    "56043" -> [limitedWindowAbility s 1 (W.IdentityChangedToForm W.After $ IdentityWithId $ supportController attrs) AlterEgoResponse OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
-    "60013" -> [ability s 1 AlterEgoAction (OwnsThis <> SchemeExists ThwartableScheme) ExhaustCost $ runAbility s 1]
-    "60014" -> [ability s 1 Action OwnsThis ExhaustCost $ runAbility s 1]
-    "60015" -> [limitedWindowAbility s 1 (W.SideSchemeDefeatedBy AnySideScheme $ SourceWithTrait T.Attorney) Response (OwnsThis <> EnemyExists EnemyCanBeConfused) NoCost $ runAbility s 1]
-    "60016" -> [limitedWindowAbility s 1 (W.UsesRecoveryAt W.After $ IdentityWithId $ supportController attrs) Response (OwnsThis <> AnyCriteria [CharacterExists (CharacterWithId (IdentityCharacter $ supportController attrs) <> CharacterWithStatus status) | status <- [minBound .. maxBound]]) NoCost $ runAbility s 1]
-    "60029" -> [label (if n == 1 then "$label.stickExhaust" else "$label.stickReady") $ limited (SharedPerWindow ("stick:" <> tshow (supportId attrs)) 1) $ limitedWindowAbility s n matcher Interrupt OwnsThis cost $ runAbility s n | (n,cost) <- [(1,ExhaustCost),(2,NoCost)]]
-    "60042" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
+  getAbilities s@(CampaignSupport attrs) = case Name.title (cdName (supportCardDef attrs)) of
+    "Precinct HQ" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
+    "Air Cover" -> [limitedWindowAbility s 1 (W.MinionEntersPlay W.After AnyMinion) Response OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
+    "Altman Residence" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
+    "Hidden Base" -> [limitedWindowAbility s 1 (W.IdentityChangedToForm W.After $ IdentityWithId $ supportController attrs) AlterEgoResponse OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
+    "Foggy Nelson" -> [ability s 1 AlterEgoAction (OwnsThis <> SchemeExists ThwartableScheme) ExhaustCost $ runAbility s 1]
+    "Karen Page" -> [ability s 1 Action OwnsThis ExhaustCost $ runAbility s 1]
+    "Nelson and Murdock" -> [limitedWindowAbility s 1 (W.SideSchemeDefeatedBy AnySideScheme $ SourceWithTrait T.Attorney) Response (OwnsThis <> EnemyExists EnemyCanBeConfused) NoCost $ runAbility s 1]
+    "Sister Maggie" -> [limitedWindowAbility s 1 (W.UsesRecoveryAt W.After $ IdentityWithId $ supportController attrs) Response (OwnsThis <> AnyCriteria [CharacterExists (CharacterWithId (IdentityCharacter $ supportController attrs) <> CharacterWithStatus status) | status <- [minBound .. maxBound]]) NoCost $ runAbility s 1]
+    "Stick" -> [label (if n == 1 then "$label.stickExhaust" else "$label.stickReady") $ limited (SharedPerWindow ("stick:" <> tshow (supportId attrs)) 1) $ limitedWindowAbility s n matcher Interrupt OwnsThis cost $ runAbility s n | (n,cost) <- [(1,ExhaustCost),(2,NoCost)]]
+    "The Rez" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
     _ -> []
    where
     matcher = W.WindowOneOf
@@ -92,30 +93,30 @@ instance HasAbilities CampaignSupport where
 instance RunMessage CampaignSupport where
   runMessage msg s@(CampaignSupport attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) n windows _ -> do
-      case toCardCode attrs of
-        "56003" -> do
+      case Name.title (cdName (supportCardDef attrs)) of
+        "Precinct HQ" -> do
           minions <- selectListCount $ MinionEngagedWith $ IdentityWithId you
           removeThreat you attrs (1 + minions) ThwartableScheme
-        "56012" -> for_ [mid | W.MinionEnteredPlay mid <- windows] $ \mid -> do
+        "Air Cover" -> for_ [mid | W.MinionEnteredPlay mid <- windows] $ \mid -> do
           deck <- projectMap PlayerIdentityDeck unDeck you
           discard <- projectMap PlayerIdentityDiscard unDiscard you
           let candidates = filter (cardMatch $ CardWithType UpgradeType <> CardWithTrait T.Tactic) (deck <> discard)
           playable <- filterM (fmap (maybe False (elem $ MinionRef mid)) . getPlayTargets you) candidates
           chooseOne you $ labeled "$label.done" (shuffleDeck you) : [targeting card (addToHand you card >> shuffleDeck you) | card <- playable]
-        "56031" -> do
+        "Altman Residence" -> do
           heal you 2
           shuffleDiscardMatching you attrs hulklingCard False
-        "56043" -> giveStatus you ToughStatus
-        "60013" -> removeThreat you attrs 2 ThwartableScheme
-        "60014" -> do
+        "Hidden Base" -> giveStatus you ToughStatus
+        "Foggy Nelson" -> removeThreat you attrs 2 ThwartableScheme
+        "Karen Page" -> do
           alter <- identityMatches AlterEgoIdentity you
           shuffleDiscardMatching you attrs daredevilCard False
           when alter $ drawCards you 1
-        "60015" -> for_ [source | W.DefeatedSideSchemeBy _ _ (Just source) <- windows] $ \source -> do
+        "Nelson and Murdock" -> for_ [source | W.DefeatedSideSchemeBy _ _ (Just source) <- windows] $ \source -> do
           def <- getsGame (`abilityCardDef` refocus source)
           when (maybe False (member T.Attorney . cdTraits) def) $ chooseEnemyStatus you ConfusedStatus AnyEnemy
-        "60016" -> chooseStatusRemoval you
-        "60029" -> do
+        "Sister Maggie" -> chooseStatusRemoval you
+        "Stick" -> do
           let identities = [p | w <- windows, p <- case w of W.MadeBasicAttack p -> [p]; W.IdentityThwart p _ -> [p]; W.MadeBasicThwart p -> [p]; W.MadeBasicDefense p _ -> [p]; W.UsedRecovery p -> [p]; _ -> []]
               allies = [a | w <- windows, a <- case w of W.AllyAttack a _ -> [a]; W.AllyThwart a _ -> [a]; _ -> []]
           if n == 1 then do
@@ -125,7 +126,7 @@ instance RunMessage CampaignSupport where
             traverse_ (\who -> stickPowerPenalty who attrs windows) identities
             traverse_ (`reduceAllyBasicPower` 1) allies
             ready $ supportId attrs
-        "60042" -> do
+        "The Rez" -> do
           cards <- tuckedPlayerCards you
           defs <- traverse (resolvePlayerCardDef . getCardDef) cards
           let amount = maximum (0 : [fromIntegral $ max 0 cost | def <- defs, Just cost <- [cdCost def]])
@@ -136,7 +137,7 @@ instance RunMessage CampaignSupport where
 
 instance HasModifiersFor CampaignSupport where
   getModifiersFor _ (IdentityRef you) (CampaignSupport attrs)
-    | toCardCode attrs == "60016", you == supportController attrs = do
+    | Name.title (cdName (supportCardDef attrs)) == "Sister Maggie", you == supportController attrs = do
         alter <- identityMatches AlterEgoIdentity you
         pure [RecoveryModifier 3 | alter]
   getModifiersFor _ _ _ = pure []

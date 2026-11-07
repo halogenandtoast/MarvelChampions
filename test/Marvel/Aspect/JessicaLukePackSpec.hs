@@ -1,6 +1,9 @@
 module Marvel.Aspect.JessicaLukePackSpec (spec) where
 
 import Marvel.Choice qualified as Choice
+import Marvel.Event.Events.JessicaLuke qualified as Events
+import Marvel.Event.Types qualified as Event
+import Marvel.Payment qualified as Payment
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Upgrade.Upgrades.JessicaLuke qualified as Upgrade
 import Marvel.Villain.Types qualified as Villain
@@ -192,12 +195,32 @@ spec = describe "Jessica Jones and Luke Cage aspect cards" do
     inGame tg do
       let p = player1 tg
       clearHand p
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity attrs) ->
+        PlayerIdentity attrs {playerIdentityDeck = Deck [], playerIdentityDiscard = Discard []}
       team <- putInDiscard p "62023"
-      allies <- stackDeck p ["62012", "01090"]
+      discardedAlly <- putInDiscard p "62012"
+      cards <- stackDeck p ["62012", "62024", "01090"]
       card <- putInHand p "62022"
       pay p card ["01088"]
+      discardBeforeTeam <- discardOf p
+      openQuestion >>= \case
+        Just (_, QuestionLabel "$label.dynamicDuoTeamUp" _ (Searched places _)) ->
+          [(label, map toCardId found) | (label, found) <- places] `shouldBe`
+            [(Just "$game.piles.deck", map toCardId cards), (Just "$game.piles.discard", map toCardId discardBeforeTeam)]
+        _ -> liftIO $ expectationFailure "expected a Team-Up search grouped by deck and discard"
+      offers (isTargetChoice discardedAlly) `shouldReturn` False
+      offers (isTargetChoice $ cards !! 2) `shouldReturn` False
       choose "team-up" (isTargetChoice team)
-      choose "Iron Fist" (isTargetChoice $ testHead allies)
+      discardBeforeAlly <- discardOf p
+      openQuestion >>= \case
+        Just (_, QuestionLabel "$label.dynamicDuoAlly" _ (Searched places _)) ->
+          [(label, map toCardId found) | (label, found) <- places] `shouldBe`
+            [(Just "$game.piles.deck", map toCardId cards), (Just "$game.piles.discard", map toCardId discardBeforeAlly)]
+        _ -> liftIO $ expectationFailure "expected a named ally search grouped by deck and discard"
+      offers (isTargetChoice $ cards !! 1) `shouldReturn` False
+      offers (isTargetChoice $ cards !! 2) `shouldReturn` False
+      offers (isTargetChoice discardedAlly) `shouldReturn` True
+      choose "Iron Fist" (isTargetChoice $ testHead cards)
       found <- map toCardCode <$> handOf p
       found `shouldSatisfy` elem "62023"
       found `shouldSatisfy` elem "62012"
@@ -334,26 +357,35 @@ spec = describe "Jessica Jones and Luke Cage aspect cards" do
       a <- allyIn "61016"
       allyCounters a `shouldBe` 1
 
-  it "Unbreakable Bond heals three damage distributed between its named characters" do
-    tg <- testGame ["jessica-jones"]
-    inGame tg do
-      let p = player1 tg
-      asHero p
-      luke <- putIntoPlay p "61003"
-      setDamage p 2
-      resolve [RemoveStatus (AllyRef $ allyIdOf luke) ToughStatus, AllyMessage (allyIdOf luke) $ AllyDamaged (toSource p) $ toDamage 1 FromAbility]
-      placeMainThreat 4
-      before <- mainSchemeThreatNow
-      card <- putInHand p "61027"
-      pay p card ["01088"]
-      chooseMainScheme
-      choose "heal Jessica" (isTargetChoice $ IdentityCharacter p)
-      choose "heal Jessica again" (isTargetChoice $ IdentityCharacter p)
-      choose "heal Luke" (isTargetChoice $ AllyCharacter $ allyIdOf luke)
-      damageOf p `shouldReturn` 0
-      a <- allyIn "61003"
-      allyDamage a `shouldBe` 0
-      mainSchemeThreatNow `shouldReturn` (before - 3)
+  for_ ["61027", "62024", "99999"] $ \code ->
+    it ("Unbreakable Bond " <> show code <> " removes threat and heals three damage distributed between its named characters") do
+      tg <- testGame ["jessica-jones"]
+      inGame tg do
+        let p = player1 tg
+        asHero p
+        luke <- putIntoPlay p "61003"
+        setDamage p 2
+        resolve [RemoveStatus (AllyRef $ allyIdOf luke) ToughStatus, AllyMessage (allyIdOf luke) $ AllyDamaged (toSource p) $ toDamage 1 FromAbility]
+        placeMainThreat 4
+        before <- mainSchemeThreatNow
+        if code == "99999" then do
+          -- A future printing keeps its title but has a code unknown to today's registry.
+          eid <- getRandom
+          let def = Cards.jl61027 {cdCardCode = code}
+              event = buildCard (reprintAs def Events.jl61027) (p, eid)
+          withGame_ $ entitiesL . eventsL . at eid ?~ Event.Event event
+          start [EventMessage eid (PlayedEvent p Payment.NoPayment Nothing)]
+        else do
+          card <- putInHand p code
+          pay p card ["01088"]
+        chooseMainScheme
+        choose "heal Jessica" (isTargetChoice $ IdentityCharacter p)
+        choose "heal Jessica again" (isTargetChoice $ IdentityCharacter p)
+        choose "heal Luke" (isTargetChoice $ AllyCharacter $ allyIdOf luke)
+        damageOf p `shouldReturn` 0
+        a <- allyIn "61003"
+        allyDamage a `shouldBe` 0
+        mainSchemeThreatNow `shouldReturn` (before - 3)
 
   it "Shakedown removes the exactly-defeated minion's base SCH as threat" do
     tg <- testGame ["jessica-jones"]

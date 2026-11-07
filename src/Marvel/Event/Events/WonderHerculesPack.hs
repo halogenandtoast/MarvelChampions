@@ -1,6 +1,7 @@
 module Marvel.Event.Events.WonderHerculesPack where
 
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Marvel.Card
 import Marvel.Effect.Types
 import Marvel.Damage
@@ -70,29 +71,29 @@ instance RunMessage WmHcEvent where
     EventMessage eid (PlayedEvent you payment window) | eid == eventId attrs -> do
       let excess = overpaidResources payment
           energy = fromIntegral $ length $ filter (== Energy) excess
-      case toCardCode attrs of
-        "58003" -> removeThreat you attrs (1 + 2 * min 2 energy) ThwartableScheme
-        "58004" -> chooseDamage you attrs (toDamage (3 + 2 * min 3 energy) $ FromPlayerAttack you) AttackableEnemy
-        "58005" -> do
+      case Name.title (cdName (eventCardDef attrs)) of
+        "Active Altruism" -> removeThreat you attrs (1 + 2 * min 2 energy) ThwartableScheme
+        "Ionic Blast" -> chooseDamage you attrs (toDamage (3 + 2 * min 3 energy) $ FromPlayerAttack you) AttackableEnemy
+        "Starstruck" -> do
           n <- characterAttackValue $ IdentityCharacter you
           enemies <- selectList AttackableEnemy
           chooseOne you [targeting (enemyRef enemy) do
             dealDamage enemy attrs (toDamage n $ FromPlayerAttack you)
             when (energy > 0) $ stun enemy attrs
             | enemy <- enemies]
-        "58016" -> for_ (paymentTarget payment) $ \case
+        "Battlefield Benevolence" -> for_ (paymentTarget payment) $ \case
           VillainRef vid -> confuse vid attrs
           MinionRef mid -> confuse mid attrs
           AttachmentRef aid -> confuse (EnemyAttachmentId aid) attrs
           _ -> pure ()
-        "58019" -> do
+        "Stronger Together" -> do
           n <- heroDefenseValue you
           for_ window $ \case
             W.AllyTakeDamage aid _ -> preventCharacterDamage aid n
             W.IdentityTakeDamage who _ -> preventCharacterDamage who n
             W.EnemyDamageWouldBeDealt enemy _ _ -> preventCharacterDamage (enemyCharacter enemy) n
             _ -> pure ()
-        "58020" -> for_ window $ \case
+        "Unified Strike" -> for_ window $ \case
           W.AllyAttack aid _ -> do
             n <- characterAttackValue $ IdentityCharacter you
             addToAllyBasicPower aid n
@@ -102,21 +103,21 @@ instance RunMessage WmHcEvent where
             addToAllyBasicPower aid n
             createEffect WM.wm58020 attrs $ AllyEntity $ AllyWithId aid
           _ -> pure ()
-        "58033" -> do
+        "Disarming Defense" -> do
           for_ window $ \case
             W.HeroDefends who _enemy | who == you -> do
               createEffect WM.wm58033 attrs $ IdentityEntity $ IdentityWithId you
             _ -> pure ()
-        "58018" -> cardSpecific attrs "everywhere" (paymentX payment, not $ null excess, [] :: [SchemeId])
-        "59009" -> chooseDamage you attrs (toDamage 5 $ FromPlayerAttack you) AttackableEnemy
-        "59010" -> do
+        "Everywhere All at Once" -> cardSpecific attrs "everywhere" (paymentX payment, not $ null excess, [] :: [SchemeId])
+        "The Gift of Battle" -> chooseDamage you attrs (toDamage 5 $ FromPlayerAttack you) AttackableEnemy
+        "Son of Zeus" -> do
           ready you
           n <- giftCount you
           when (n >= 1) $ cardSpecific attrs "readySignature" you
           when (n >= 2) $ giveStatus you ToughStatus
           when (n >= 3) $ drawCards you 1
-        "59011" -> removeThreat you attrs 4 ThwartableScheme
-        "59026" -> do
+        "Wisdom of Athena" -> removeThreat you attrs 4 ThwartableScheme
+        "Ancient Rivalry" -> do
           cards <- filter (cardMatch $ HeroSpecificCard <> CardWithType UpgradeType) <$> projectMap PlayerIdentityDiscard unDiscard you
           chooseOne you [targeting card (addToHand you card) | card <- cards]
           identities <- filterM (\p -> (||) <$> identityMatches (IdentityWithTitle "Hercules") p <*> identityMatches (IdentityWithTitle "Thor") p) =<< selectList AnyIdentity

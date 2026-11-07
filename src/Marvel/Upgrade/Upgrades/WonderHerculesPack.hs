@@ -1,6 +1,7 @@
 module Marvel.Upgrade.Upgrades.WonderHerculesPack where
 
 import Marvel.Prelude
+import Marvel.Name qualified as Name
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
@@ -91,16 +92,16 @@ newtype WmHcUpgrade = WmHcUpgrade (Attrs Upgrade `With` WmHcUpgradeMeta)
 
 instance IsUpgrade WmHcUpgrade where
   toUpgradeAttrs (WmHcUpgrade (attrs `With` _)) = attrs
-  upgradeTargets (WmHcUpgrade (attrs `With` _)) = case toCardCode attrs of
-    "58030" -> Just . map enemyRef <$> selectList (MinionEnemy <> NotEnemy (EnemyWithTrait T.Elite) <> NotEnemy (EnemyWithUpgrade $ UpgradeIs WM.wm58030))
-    "58032" -> do
+  upgradeTargets (WmHcUpgrade (attrs `With` _)) = case Name.title (cdName (upgradeCardDef attrs)) of
+    "Caught in the Crossfire" -> Just . map enemyRef <$> selectList (MinionEnemy <> NotEnemy (EnemyWithTrait T.Elite) <> NotEnemy (EnemyWithUpgrade $ UpgradeIs WM.wm58030))
+    "Coordinated Effort" -> do
       targets <- getCardsInPlayTargets
       valid <- filterM (\target -> do
         card <- getsGame (`cardInPlay` target)
         modifiers <- getModifiers target
         pure $ (case card of Just (EncounterCard _) -> True; _ -> False) && AllowsCostContributions `notElem` modifiers) targets
       pure $ Just valid
-    "59024" -> Just . map AllyRef <$> selectList (AnyAlly <> NotAlly (AllyWithUpgrade $ UpgradeIs HC.hc59024))
+    "\"Avenge Me!\"" -> Just . map AllyRef <$> selectList (AnyAlly <> NotAlly (AllyWithUpgrade $ UpgradeIs HC.hc59024))
     _ -> controlTargets attrs
 instance IsRef WmHcUpgrade where
   toRef = toRef . toUpgradeAttrs
@@ -108,46 +109,46 @@ instance IsRef WmHcUpgrade where
 instance HasModifiersFor WmHcUpgrade where
   getModifiersFor _ target (WmHcUpgrade (attrs `With` meta)) = do
     let you = upgradeController attrs
-    if toCardCode attrs == "58032" && upgradeAttachedCard attrs == Just target then pure [AllowsCostContributions]
-    else if target /= IdentityRef you then pure [] else case toCardCode attrs of
-      "58021" -> pure [HitPointModifier 3, ThwartModifier 1]
-      "59005" -> pure [HitPointModifier 2, KeywordModifier K.Steady]
-      "59006" -> pure [HitPointModifier 1, KeywordModifier $ K.Retaliate 1]
-      "59007" -> pure [HitPointModifier 1, BasicAttackKeyword K.Piercing]
-      "59016" -> pure [AttackModifier 1, ThwartModifier 1, DefenseModifier 1]
-      "59013" -> pure [KeywordModifier $ K.Retaliate $ gauntletRetaliate meta | gauntletRetaliate meta > 0]
+    if Name.title (cdName (upgradeCardDef attrs)) == "Coordinated Effort" && upgradeAttachedCard attrs == Just target then pure [AllowsCostContributions]
+    else if target /= IdentityRef you then pure [] else case Name.title (cdName (upgradeCardDef attrs)) of
+      "Heroic Conditioning" -> pure [HitPointModifier 3, ThwartModifier 1]
+      "Nemean Lion Skin" -> pure [HitPointModifier 2, KeywordModifier K.Steady]
+      "Shield of Perseus" -> pure [HitPointModifier 1, KeywordModifier $ K.Retaliate 1]
+      "Sword of Peleus" -> pure [HitPointModifier 1, BasicAttackKeyword K.Piercing]
+      "Lion of Olympus" -> pure [AttackModifier 1, ThwartModifier 1, DefenseModifier 1]
+      "Gauntlets of Hercules" -> pure [KeywordModifier $ K.Retaliate $ gauntletRetaliate meta | gauntletRetaliate meta > 0]
       _ -> pure []
 
 instance HasAbilities WmHcUpgrade where
-  getAbilities u@(WmHcUpgrade (attrs `With` meta)) = case toCardCode attrs of
-    "58002" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After You $ CardWithResource Energy) Response (OwnsThis <> PlayedEventInDiscard <> NotCriteria (UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (AtLeast $ Static 3))) NoCost $ runAbility u 1]
-    "58008" -> [ability u 1 HeroResource (OwnsThis <> PayingFor (CardWithType EventType)) ExhaustCost $ Pay (ResourcePayment Energy)
+  getAbilities u@(WmHcUpgrade (attrs `With` meta)) = case Name.title (cdName (upgradeCardDef attrs)) of
+    "Ionic Physiology" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After You $ CardWithResource Energy) Response (OwnsThis <> PlayedEventInDiscard <> NotCriteria (UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (AtLeast $ Static 3))) NoCost $ runAbility u 1]
+    "Jet Belt" -> [ability u 1 HeroResource (OwnsThis <> PayingFor (CardWithType EventType)) ExhaustCost $ Pay (ResourcePayment Energy)
                ,(ability u 2 HeroResource (OwnsThis <> UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (GreaterThan $ Static 0)) ExhaustCost $ runAbility u 2) {abilityChoices = [runAbility u 2, Pay $ ResourcePayment Energy]}]
-    "58009" -> [(ability u 1 Resource (OwnsThis <> PayingToOverpay <> maybe NoCriteria PayingForCardOtherThan (hollywoodUsedFor meta)) NoCost $ runAbility u 1) {abilityChoices = [runAbility u 1, Pay $ OverpaymentOnlyPayment Energy]}]
-    "58010" -> [limitedWindowAbility u 1 (W.IdentityChangedToForm W.After You) Response (OwnsThis <> AnyCriteria [UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (GreaterThan $ Static 0), NotCriteria (UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (AtLeast $ Static 3)) <> ExtendedCardExists (InDiscardOf You $ BasicCardMatches $ CardWithResource Energy <> CardMatchesAny [CardWithType EventType, CardWithType ResourceType])]) NoCost $ runAbility u 1]
-    "58011" -> [limitedWindowAbility u 1 (W.IdentityWouldBeDefeated You) ForcedInterrupt OwnsThis NoCost $ runAbility u 1]
-    code | code `elem` ["59005", "59006", "59007"] -> [limitedWindowAbility u 1 (W.PlayerCardEntersPlay W.After You $ CardIs $ getCardDef attrs) Response OwnsThis NoCost $ runAbility u 1]
-    "58030" -> [limitedWindowAbility u 1 (W.WindowOneOf [W.IdentityAttacked W.When AnyIdentity AnyEnemy, W.AllyAttacked W.When AnyAlly AnyEnemy]) Interrupt OwnsThis NoCost $ runAbility u 1]
-    "59013" -> [limitedWindowAbility u 1 (W.HeroDefended W.When You AnyEnemy) HeroInterrupt (OwnsThis <> HasEffectiveHerculesGift) ExhaustCost $ runAbility u 1]
-    "59014" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When You) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1]
-    "59015" -> [(limitedWindowAbility u 1 (W.EnemyAttacksPlayerOrAlly W.When VillainEnemy AnyIdentity) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1) {abilitySubType = Just Defense}]
-    "59017" -> [limitedWindowAbility u 1 (W.DealsExcessDamage You) HeroResponse (OwnsThis <> SelfMatches IdentityWithAnyDamage) ExhaustCost $ runAbility u 1]
-    "59024" -> [limitedWindowAbility u 1 (W.AllyDefeated W.When $ maybe AnyAlly AllyWithId $ upgradeAttachedAlly attrs) Interrupt OwnsThis NoCost $ runAbility u 1]
+    "Mr. Hollywood" -> [(ability u 1 Resource (OwnsThis <> PayingToOverpay <> maybe NoCriteria PayingForCardOtherThan (hollywoodUsedFor meta)) NoCost $ runAbility u 1) {abilityChoices = [runAbility u 1, Pay $ OverpaymentOnlyPayment Energy]}]
+    "Signature Sunglasses" -> [limitedWindowAbility u 1 (W.IdentityChangedToForm W.After You) Response (OwnsThis <> AnyCriteria [UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (GreaterThan $ Static 0), NotCriteria (UpgradeHeldCardsCount (UpgradeIs WM.wm58002) (AtLeast $ Static 3)) <> ExtendedCardExists (InDiscardOf You $ BasicCardMatches $ CardWithResource Energy <> CardMatchesAny [CardWithType EventType, CardWithType ResourceType])]) NoCost $ runAbility u 1]
+    "\"What Are You?\"" -> [limitedWindowAbility u 1 (W.IdentityWouldBeDefeated You) ForcedInterrupt OwnsThis NoCost $ runAbility u 1]
+    code | code `elem` ["Nemean Lion Skin", "Shield of Perseus", "Sword of Peleus"] -> [limitedWindowAbility u 1 (W.PlayerCardEntersPlay W.After You $ CardIs $ getCardDef attrs) Response OwnsThis NoCost $ runAbility u 1]
+    "Caught in the Crossfire" -> [limitedWindowAbility u 1 (W.WindowOneOf [W.IdentityAttacked W.When AnyIdentity AnyEnemy, W.AllyAttacked W.When AnyAlly AnyEnemy]) Interrupt OwnsThis NoCost $ runAbility u 1]
+    "Gauntlets of Hercules" -> [limitedWindowAbility u 1 (W.HeroDefended W.When You AnyEnemy) HeroInterrupt (OwnsThis <> HasEffectiveHerculesGift) ExhaustCost $ runAbility u 1]
+    "Golden Mace" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When You) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1]
+    "Herc's Helm" -> [(limitedWindowAbility u 1 (W.EnemyAttacksPlayerOrAlly W.When VillainEnemy AnyIdentity) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1) {abilitySubType = Just Defense}]
+    "Prince of Power" -> [limitedWindowAbility u 1 (W.DealsExcessDamage You) HeroResponse (OwnsThis <> SelfMatches IdentityWithAnyDamage) ExhaustCost $ runAbility u 1]
+    "\"Avenge Me!\"" -> [limitedWindowAbility u 1 (W.AllyDefeated W.When $ maybe AnyAlly AllyWithId $ upgradeAttachedAlly attrs) Interrupt OwnsThis NoCost $ runAbility u 1]
     _ -> []
 
 instance RunMessage WmHcUpgrade where
   runMessage msg u@(WmHcUpgrade (attrs `With` meta)) = runQueueT $ case msg of
-    UpgradeMessage uid (PlayedUpgrade target) | uid == upgradeId attrs && toCardCode attrs == "58032" -> do
+    UpgradeMessage uid (PlayedUpgrade target) | uid == upgradeId attrs && Name.title (cdName (upgradeCardDef attrs)) == "Coordinated Effort" -> do
       attrs' <- runMessage msg attrs
       pure $ WmHcUpgrade $ attrs' {upgradeAttachedCard = target} `With` meta
-    RanAbility _ (isTarget attrs -> True) 1 _ _ | toCardCode attrs == "58009" -> do
+    RanAbility _ (isTarget attrs -> True) 1 _ _ | Name.title (cdName (upgradeCardDef attrs)) == "Mr. Hollywood" -> do
       card <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
       pure $ WmHcUpgrade $ attrs `With` meta {hollywoodUsedFor = pcCardId <$> card}
     IdentityMessage _ (PlayedCard card _) | Just (pcCardId card) == hollywoodUsedFor meta -> pure $ WmHcUpgrade $ attrs `With` meta {hollywoodUsedFor = Nothing}
     AbortPayment acid -> do
       card <- getActiveCostCard acid
       if (pcCardId <$> card) == hollywoodUsedFor meta then pure $ WmHcUpgrade $ attrs `With` meta {hollywoodUsedFor = Nothing} else pure u
-    RanAbility you (isTarget attrs -> True) 1 windows _ | toCardCode attrs == "59013" -> do
+    RanAbility you (isTarget attrs -> True) 1 windows _ | Name.title (cdName (upgradeCardDef attrs)) == "Gauntlets of Hercules" -> do
       n <- giftCount you
       for_ [enemy | W.HeroDefends who enemy <- windows, who == you] $ \enemy ->
         afterMatching (\case
@@ -155,40 +156,40 @@ instance RunMessage WmHcUpgrade where
           MinionMessage mid MinionEndAttack -> enemy == EnemyMinionId mid
           _ -> False) (cardSpecific attrs "hcGauntletsEnded" ())
       pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = n}
-    CardSpecific (isTarget attrs -> True) "hcGauntletsEnded" _ | toCardCode attrs == "59013" -> pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = 0}
+    CardSpecific (isTarget attrs -> True) "hcGauntletsEnded" _ | Name.title (cdName (upgradeCardDef attrs)) == "Gauntlets of Hercules" -> pure $ WmHcUpgrade $ attrs `With` meta {gauntletRetaliate = 0}
     RanAbility you (isTarget attrs -> True) 1 windows _ -> do
-      case toCardCode attrs of
-        "58002" -> do
+      case Name.title (cdName (upgradeCardDef attrs)) of
+        "Ionic Physiology" -> do
           cards <- projectMap PlayerIdentityDiscard unDiscard you
           let ids = [CardId $ unEventId eid | W.EventPlayed who eid _ <- windows, who == you]
               eligible = [card | card <- cards, pcCardId card `elem` ids]
           host <- ionicCards you
           when (length host < 3) $ chooseOne you [targeting card (tuckIonicCard you card >> heal you 1) | card <- eligible]
-        "58009" -> pure ()
-        "58030" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs $ toDamage 1 FromAbility
-        "58010" -> do
+        "Mr. Hollywood" -> pure ()
+        "Caught in the Crossfire" -> for_ (upgradeAttachedEnemy attrs) $ \enemy -> dealDamage enemy attrs $ toDamage 1 FromAbility
+        "Signature Sunglasses" -> do
           tucked <- ionicCards you
           discard <- filter (\card -> hasPrintedEnergy card && cardMatch (CardMatchesAny [CardWithType EventType, CardWithType ResourceType]) card) <$> projectMap PlayerIdentityDiscard unDiscard you
           chooseOne you $ [targeting card (tuckIonicCard you card) | length tucked < 3, card <- discard]
             <> [targeting card (ionicPhysiologyFor you >>= traverse_ (\host -> releaseHeldCard host you card)) | card <- tucked]
-        "58011" -> do
+        "\"What Are You?\"" -> do
           cancelMatchingMessage $ \case IdentityMessage who IdentityDefeated -> who == you; _ -> False
           setHitPoints you 4
           changeToAlterEgo you
           cardSpecific attrs "whatAreYouTuck" you
-        code | code `elem` ["59005", "59006", "59007"] -> drawCards you 4
-        "59014" -> do
+        code | code `elem` ["Nemean Lion Skin", "Shield of Perseus", "Sword of Peleus"] -> drawCards you 4
+        "Golden Mace" -> do
           n <- giftCount you
           addToIdentityBasicPower you n
           createEffect HC.hc59014 attrs (IdentityEntity $ IdentityWithId you)
-        "59015" -> for_ ([enemy | W.EnemyAttack enemy _who <- windows] <> [enemy | W.EnemyAttackAlly enemy _ally _who <- windows]) $ \enemy -> preventEnemyAttackDamage enemy 1
-        "59017" -> for_ ([(source, n) | W.DefeatedMinion _ _ source n <- windows] <> [(source, n) | W.DefeatedVillain _ _ source n <- windows]) $ \(source, n) -> do
+        "Herc's Helm" -> for_ ([enemy | W.EnemyAttack enemy _who <- windows] <> [enemy | W.EnemyAttackAlly enemy _ally _who <- windows]) $ \enemy -> preventEnemyAttackDamage enemy 1
+        "Prince of Power" -> for_ ([(source, n) | W.DefeatedMinion _ _ source n <- windows] <> [(source, n) | W.DefeatedVillain _ _ source n <- windows]) $ \(source, n) -> do
           owner <- getHeroSourceController source
           when (owner == Just you) $ heal you n
-        "59024" -> drawCards you 2
+        "\"Avenge Me!\"" -> drawCards you 2
         _ -> pure ()
       pure u
-    RanAbility you (isTarget attrs -> True) 2 _ _ | toCardCode attrs == "58008" -> do
+    RanAbility you (isTarget attrs -> True) 2 _ _ | Name.title (cdName (upgradeCardDef attrs)) == "Jet Belt" -> do
       cards <- ionicCards you
       chooseOne you [targeting card $ ionicPhysiologyFor you >>= traverse_ (\host -> discardHeldPlayerCard you host card) | card <- cards]
       pure u
