@@ -16,6 +16,7 @@ import Marvel.Window.Types (Window)
 data IdentityMessage
   = BeginTurn
   | PlayerTurnOption
+  | RequestedAction
   | CheckIfPassed
   | ChooseOtherForm
   | -- | change to a hero form other than the one showing: Ant-Man's other size, or from

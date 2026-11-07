@@ -4,7 +4,7 @@
 // when it offers several choices, each named on a chip along its foot.
 import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
-import { useChoiceLabel, useChoices } from '../composables/useChoices'
+import { useChoiceLabel, useChoices, useKeyed } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
 import { parseInput } from '../i18n'
 import CardFace from './CardFace.vue'
@@ -68,6 +68,7 @@ const clearHover = () => {
 }
 onBeforeUnmount(clearHover)
 const label = useChoiceLabel()
+const keyed = useKeyed()
 const el = useTemplateRef<HTMLElement>('el')
 
 const landscape = computed(() => !props.back && cards.landscape(props.code))
@@ -95,15 +96,24 @@ const slotChoices = computed(() => {
 const chips = computed(() => {
   const seen = new Map<string, number>()
   return options.value.filter((option) => ![...slotChoices.value.values()].some((slot) => slot.index === option.index)).map((option) => {
-    const text = label(option, title.value)
+    const text = options.value.length > 1 && option.kind === 'ability' && option.label ? keyed(option.label) : label(option, title.value)
     const n = (seen.get(text) ?? 0) + 1
     seen.set(text, n)
     return { option, text: n > 1 ? `${text} ${n}` : text }
   })
 })
 // Replace crowded action stacks with one menu containing every action.
-const visibleChips = computed(() => chips.value.length > 3 ? [] : chips.value)
-const overflowChips = computed(() => chips.value.length > 3 ? chips.value : [])
+// Several effects of the same interrupt/response are one entry point; the
+// player picks the effect from the menu after opening that ability.
+const groupedReaction = computed(() => {
+  const first = options.value[0]
+  return options.value.length > 1 && first?.kind === 'ability' && /Response|Interrupt/.test(first.abilityType ?? '')
+    && options.value.every((option) => option.kind === 'ability' && option.abilityType === first.abilityType)
+      ? label({ ...first, label: null }, title.value)
+      : null
+})
+const visibleChips = computed(() => groupedReaction.value || chips.value.length > 3 ? [] : chips.value)
+const overflowChips = computed(() => groupedReaction.value || chips.value.length > 3 ? chips.value : [])
 const overflowOpen = ref(false)
 watch(options, () => (overflowOpen.value = false))
 const toggleOverflow = () => {
@@ -147,7 +157,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape, unfolded, source, 'generic-actions': chips.length && (counters || bombCounters) }"
+      :class="{ active, exhausted, landscape, unfolded, source, 'multiple-actions': chips.length > 1, 'generic-actions': chips.length && (counters || bombCounters) }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :aria-label="title"
@@ -184,7 +194,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
         <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)">{{ chip.text }}</button>
-        <button v-if="overflowChips.length" type="button" class="chip" :aria-label="$t('label.moreActions')" aria-haspopup="menu" :aria-expanded="overflowOpen" @click.stop="toggleOverflow">…</button>
+        <button v-if="overflowChips.length" type="button" class="chip" :aria-label="groupedReaction ?? $t('label.moreActions')" aria-haspopup="menu" :aria-expanded="overflowOpen" @click.stop="toggleOverflow">{{ groupedReaction ?? '…' }}</button>
       </div>
     </div>
     <ul v-if="attached.length" class="attached">
@@ -335,6 +345,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   z-index: 2;
 }
 .card.landscape .chips { bottom: 22%; inset-inline: 18%; }
+.card.multiple-actions:not(.landscape) .chips { top: 18%; bottom: auto; }
 /* Keep counters above the action area without changing the table's card spacing. */
 .card.generic-actions .token.counters { top: 20%; bottom: auto; }
 .card.generic-actions .token.bombs { top: 39%; bottom: auto; }
@@ -351,7 +362,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   font-weight: 700;
   line-height: 1.15;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;

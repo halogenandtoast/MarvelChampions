@@ -3321,6 +3321,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.SmokeMonitorSpec
       Marvel.Rules.SmokeSelectionSpec
       Marvel.Rules.SpiderHamMechanicsSpec
+      Marvel.Rules.StartingSpec
       Marvel.Rules.SteadyIdentitySpec
       Marvel.Rules.SteadyMinionSpec
       Marvel.Rules.SupportHeldEventsSpec

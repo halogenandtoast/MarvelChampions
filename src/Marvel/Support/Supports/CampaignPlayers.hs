@@ -80,7 +80,7 @@ instance HasAbilities CampaignSupport where
     "60014" -> [ability s 1 Action OwnsThis ExhaustCost $ runAbility s 1]
     "60015" -> [limitedWindowAbility s 1 (W.SideSchemeDefeatedBy AnySideScheme $ SourceWithTrait T.Attorney) Response (OwnsThis <> EnemyExists EnemyCanBeConfused) NoCost $ runAbility s 1]
     "60016" -> [limitedWindowAbility s 1 (W.UsesRecoveryAt W.After $ IdentityWithId $ supportController attrs) Response (OwnsThis <> AnyCriteria [CharacterExists (CharacterWithId (IdentityCharacter $ supportController attrs) <> CharacterWithStatus status) | status <- [minBound .. maxBound]]) NoCost $ runAbility s 1]
-    "60029" -> [limited (SharedPerWindow ("stick:" <> tshow (supportId attrs)) 1) $ limitedWindowAbility s n matcher Interrupt OwnsThis cost $ runAbility s n | (n,cost) <- [(1,ExhaustCost),(2,NoCost)]]
+    "60029" -> [label (if n == 1 then "$label.stickExhaust" else "$label.stickReady") $ limited (SharedPerWindow ("stick:" <> tshow (supportId attrs)) 1) $ limitedWindowAbility s n matcher Interrupt OwnsThis cost $ runAbility s n | (n,cost) <- [(1,ExhaustCost),(2,NoCost)]]
     "60042" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
     _ -> []
    where

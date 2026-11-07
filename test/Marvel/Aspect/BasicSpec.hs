@@ -1,6 +1,6 @@
 module Marvel.Aspect.BasicSpec (spec) where
 
-import Marvel.Ability.Types (AbilityType (Action, HeroAction))
+import Marvel.Ability.Types (AbilityType (Action, HeroAction, Basic))
 import Marvel.Villain.Types (villainStunned)
 import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
@@ -184,6 +184,71 @@ spec = describe "Basic" do
         offers (isAbilityOf (supportId mansion)) `shouldReturn` False
 
   describe "Helicarrier (01092)" do
+    it "lets another player use an Action by request, then resumes the active turn" do
+      tg <- testGame ["captain-marvel", "spider-man"]
+      let p = player1 tg
+          q = player2 tg
+      inGame tg do
+        clearHand p
+        clearHand q
+        _ <- putIntoPlay q "01092"
+        _ <- putInHand q "01093"
+        [heli] <- supportsWith "01092"
+        choose "ask for an action" (isLabel "$label.askAnotherPlayerToAct")
+        choose "ask Peter" (isTargetChoice q)
+        fmap fst <$> asked `shouldReturn` Just q
+        offers (== EndTurn) `shouldReturn` False
+        offers (\case
+          UseAbility a -> abilityType a == Basic || ChangeForm `elem` abilityChoices a
+          PlayCard _ _ -> True
+          _ -> False) `shouldReturn` False
+        choose "use Helicarrier" (isAbilityOf (supportId heli))
+        choose "help Captain Marvel" (isTargetChoice p)
+        fmap fst <$> asked `shouldReturn` Just p
+        offers (== EndTurn) `shouldReturn` True
+        offers (isLabel "$label.askAnotherPlayerToAct") `shouldReturn` False
+        haymaker <- putInHand p "01087"
+        power <- putInHand p "01079"
+        changeForm p
+        playWith haymaker [power]
+        villain <- getVillain
+        choose "the target" (isTargetChoice (toId villain))
+        villainDamageNow `shouldReturn` 3
+
+    it "allows a requested player to decline without ending either player's turn" do
+      tg <- testGame ["captain-marvel", "spider-man"]
+      let p = player1 tg
+          q = player2 tg
+      inGame tg do
+        clearHand q
+        _ <- putIntoPlay q "01092"
+        choose "ask for an action" (isLabel "$label.askAnotherPlayerToAct")
+        choose "ask Peter" (isTargetChoice q)
+        choose "decline" (isLabel "$label.done")
+        fmap fst <$> asked `shouldReturn` Just p
+        offers (== EndTurn) `shouldReturn` True
+        offers (isLabel "$label.askAnotherPlayerToAct") `shouldReturn` True
+
+    it "offers Action events on request even after that player's turn has ended" do
+      tg <- testGame ["spider-man", "captain-marvel"]
+      let p = player1 tg
+          q = player2 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        endTurn
+        fmap fst <$> asked `shouldReturn` Just q
+        haymaker <- putInHand p "01087"
+        strength <- putInHand p "01090"
+        choose "ask for an action" (isLabel "$label.askAnotherPlayerToAct")
+        choose "ask Spider-Man" (isTargetChoice p)
+        playWith haymaker [strength]
+        villain <- getVillain
+        choose "the target" (isTargetChoice (toId villain))
+        villainDamageNow `shouldReturn` 3
+        fmap fst <$> asked `shouldReturn` Just q
+        offers (== EndTurn) `shouldReturn` True
+
     it "exhausts to reduce the cost of the next card the player plays this phase by 1" do
       tg <- testGame ["spider-man"]
       let p = player1 tg

@@ -770,6 +770,20 @@ triggerable a = do
       blockedForm = abilityType a == AlterEgoAction && CannotTriggerAlterEgoActions `elem` modifiers
   pure $ not (blockedDiscard || blockedForm)
 
+-- Only triggered Actions can be requested, not basic powers, changing form,
+-- or playing a permanent from hand (RR "Player Turn").
+getRequestedActions ::
+  (MonadThrow m, MonadRandom m, HasQueue m, HasGame m, Projection m PlayerIdentity) => PlayerIdentity -> m [Choice]
+getRequestedActions player
+  | playerIdentityDefeated (toAttrs player) = pure []
+  | otherwise = filter eligible <$> getChoices player
+ where
+  eligible = \case
+    UseAbility a -> abilityType a `elem` [Action, HeroAction, AlterEgoAction]
+      && ChangeForm `notElem` abilityChoices a
+    PlayCard card _ -> cdCardType (getCardDef card) == EventType
+    _ -> False
+
 getObligations :: (MonadRandom m) => PlayerIdentity -> m [EncounterCard]
 getObligations attrs = case currentIdentity attrs of
   HeroSide _ -> error "Can not call via hero side"
@@ -862,7 +876,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     -- draw up to hand size, mulligan any of it, draw again, then the setup abilities
     DealStartingHand -> do
       let cards = filter (elem Starting . cdKeywords . getCardDef) (unDeck playerIdentityDeck)
-      unless (null cards) $ chooseOne playerIdentityId $
+      unless (null cards) $ chooseOneSearchedIn playerIdentityId "$label.chooseStartingCard" [("$game.piles.deck", PlayerCard <$> cards)] $
         [targeting card (addToHand playerIdentityId card) | card <- cards] <> [labeled "$label.done" (pure ())]
       cardSpecific pid "drawOpeningHand" ()
       pure pid
@@ -889,7 +903,20 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       finished <- getsGame (`competitiveBoardFinishedFor` playerIdentityId)
       if finished then unless playerIdentityPassed (identityStep playerIdentityId EndedTurn) else do
         choices <- getChoices pid
-        chooseOnePrompted playerIdentityId "$label.yourTurn" $ map pure (EndTurn : choices)
+        others <- filter (/= playerIdentityId) <$> getPlayers
+        available <- filterM (\other -> getIdentity other >>= fmap notNull . getRequestedActions) others
+        chooseOnePrompted playerIdentityId "$label.yourTurn" $
+          map pure (EndTurn : choices) <>
+            [ labeled "$label.askAnotherPlayerToAct" $
+                chooseOne playerIdentityId
+                  [targeting other (identityStep other RequestedAction) | other <- available]
+            | notNull available
+            ]
+      pure pid
+    RequestedAction -> do
+      choices <- getRequestedActions pid
+      chooseOnePrompted playerIdentityId "$label.requestedAction" $
+        map pure choices <> [labeled "$label.done" (pure ())]
       pure pid
     -- "when your turn ends" is answered before it does
     EndedTurn -> do

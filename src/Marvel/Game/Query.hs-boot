@@ -58,6 +58,7 @@ getsGame :: (HasGame m) => (Game -> a) -> m a
 getCampaign :: (HasGame m) => m (Maybe Campaign)
 offerable :: Game -> Choice -> Bool
 getIdentityCode :: (HasGame m) => IdentityId -> m CardCode
+getIdentity :: (HasCallStack, HasGame m) => IdentityId -> m PlayerIdentity
 getRemainingHitPoints :: (HasGame m) => IdentityId -> m (Natural, Natural, Natural)
 getUpgradeAttachedSchemes :: (HasGame m) => UpgradeId -> m [SchemeId]
 getCountersOnMainSchemes :: (HasGame m) => m Natural
