@@ -13,7 +13,7 @@ import { useChoices } from '../composables/useChoices'
 
 const area = useTemplateRef<HTMLElement>('area')
 const tableau = useTemplateRef<HTMLElement>('tableau')
-const scale = useFitToWidth(area, tableau)
+const { scale, width: tableauWidth } = useFitToWidth(area, tableau)
 
 const { player, minions = [], environments = [], active = false, compact = false, riverEnemyIds = [] } = defineProps<{
   riverEnemyIds?: string[]
@@ -61,7 +61,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 
 <template>
   <section ref="area" class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero }">
-    <div ref="tableau" class="player-tableau" :style="{ zoom: scale }">
+    <div ref="tableau" class="player-tableau" :style="{ zoom: scale, width: tableauWidth === undefined ? undefined : `${tableauWidth}px` }">
     <div class="identity-column">
       <div class="identity">
         <div class="body">
@@ -230,7 +230,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   overflow-x: auto;
 }
 .player-tableau { display: flex; align-items: flex-start; gap: 14px; width: max-content; }
-.player-tableau > .zone { flex-shrink: 0; }
+.player-tableau > .zone, .player-tableau > .zone.allies { flex: none; }
+.player-tableau > .zone.supports { margin-left: auto; }
 .player-tableau .cards { flex-wrap: nowrap; }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
@@ -281,7 +282,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .zone.allies { flex: 1 1 auto; }
 .ally { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }
 .ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }
-.side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; margin-left: auto; flex: none; align-self: stretch; }
+.side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; flex: none; align-self: stretch; }
 .piles { display: flex; gap: 10px; padding-top: 18px; }
 .dealt { position: relative; z-index: 1; margin-top: auto; }
 .compact { padding: 10px 12px; }

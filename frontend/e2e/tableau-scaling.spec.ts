@@ -16,7 +16,7 @@ test('the tableau fits and settles after cards are added, undone, restored, and 
     document.body.replaceChildren(host)
     createApp({ setup: () => () => h(PlayerArea, { player: {
       id: 'player', code: '62001b', name: 'Luke Cage', faces: ['62001a', '62001b'], form: 'alterEgo',
-      recover: 4, hitPoints: 10, damage: 0, handSize: 6, deckSize: 20, allyLimit: 0,
+      recover: 4, hitPoints: 10, damage: 0, handSize: 6, deckSize: 20, allyLimit: 0, dealtEncounterCards: 1,
       allies: [], supports: Array.from({ length: count.value }, (_, n) => ({ id: `support-${n}`, code: '62007', name: "Fogwell's Gym" })),
     } }) }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
     Object.assign(window, { resizeTableau: (cards: number, width: number) => { count.value = cards; host.style.width = `${width}px` } })
@@ -32,9 +32,20 @@ test('the tableau fits and settles after cards are added, undone, restored, and 
         const style = getComputedStyle(area)
         samples.push({ scale: tableau.style.zoom, width: tableau.getBoundingClientRect().width, available: area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) })
       }
-      return { scales: [...new Set(samples.slice(30).map(sample => sample.scale))], last: samples.at(-1)! }
+      const area = document.querySelector<HTMLElement>('.player-area')!
+      const style = getComputedStyle(area)
+      const piles = document.querySelector<HTMLElement>('.player-tableau > .side')!
+      const supports = document.querySelector<HTMLElement>('.player-tableau > .supports')!
+      return {
+        scales: [...new Set(samples.slice(30).map(sample => sample.scale))], last: samples.at(-1)!,
+        pilesRight: piles.getBoundingClientRect().right,
+        availableRight: area.getBoundingClientRect().right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight),
+        supportGap: piles.getBoundingClientRect().left - supports.getBoundingClientRect().right,
+      }
     })
     expect(result.scales).toHaveLength(1)
     expect(result.last.width).toBeLessThanOrEqual(result.last.available + 1)
+    expect(result.pilesRight).toBeCloseTo(result.availableRight, 0)
+    expect(result.supportGap).toBeCloseTo(14 * Number(result.last.scale), 0)
   }
 })
