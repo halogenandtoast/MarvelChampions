@@ -33,7 +33,10 @@ audacitySpent you = do
 
 -- | Determination: remove 1 threat from the main scheme.
 determinationSpent :: (ReverseQueue m) => IdentityId -> m ()
-determinationSpent you = heroResponse you [labeled (countLabel "removeThreatFromMainScheme" 1) (removeThreat you (IdentityRef you) 1 MainScheme)]
+determinationSpent you = do
+  let withThreat = MainScheme <> SchemeWithThreat (GreaterThan $ Static 0)
+  available <- selectAny withThreat
+  heroResponse you [labeled (countLabel "removeThreatFromMainScheme" 1) (removeThreat you (IdentityRef you) 1 withThreat) | available]
 
 -- | Innovation: heal 1 damage from an ally you control.
 innovationSpent :: (ReverseQueue m) => IdentityId -> m ()

@@ -328,6 +328,22 @@ spec = describe "The Mad Titan's Shadow aspect cards" do
         mainSchemeThreatNow `shouldReturn` (before - 2)
 
   describe "Determination (21052)" do
+    for_ [False, True] $ \sideScheme ->
+      it ("does not offer its response with an empty main scheme, side scheme present: " <> show sideScheme) do
+        tg <- testGame ["spider-man"]
+        let p = player1 tg
+        inGame tg do
+          asHero p
+          clearHand p
+          when sideScheme $ void $ revealNow p SideSchemes.bombScare
+          pass
+          threat <- mainSchemeThreatNow
+          sid <- mainSchemeIdNow
+          resolve [MainSchemeMessage sid $ MainSchemeThreatRemoved (toSource p) threat]
+          spendOnVest p "21052"
+          offers (isLabel $ countLabel "removeThreatFromMainScheme" 1) `shouldReturn` False
+          mainSchemeThreatNow `shouldReturn` 0
+
     it "after you spend it, removes 1 threat from the main scheme" do
       tg <- testGame ["spider-man"]
       let p = player1 tg
