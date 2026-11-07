@@ -22,7 +22,8 @@ const factionOptions = computed<FilterOption[]>(() =>
   FACTIONS.filter((f) => store.facets.factions.has(f)).map((value) => ({ value, label: t(`aspects.${value}`), count: store.facets.factions.get(value) })),
 )
 const packOptions = computed<FilterOption[]>(() => store.packs.map((p) => ({ value: p.code, label: p.name, count: store.facets.packs.get(p.code) ?? 0 })).filter((o) => o.count))
-const setOptions = computed<FilterOption[]>(() => store.facets.sets.map(([value, { name, count }]) => ({ value, label: name, count })))
+const setOptions = computed<FilterOption[]>(() => store.facets.sets.filter(([, set]) => set.type !== 'nemesis').map(([value, { name, count }]) => ({ value, label: name, count })))
+const nemesisOptions = computed<FilterOption[]>(() => store.facets.sets.filter(([, set]) => set.type === 'nemesis').map(([value, { name, count }]) => ({ value, label: name, count })))
 const traitOptions = computed<FilterOption[]>(() => store.facets.traits.map(([value, count]) => ({ value, label: value, count })))
 
 // `v-model.number` leaves an empty input as '', neither a bound nor none
@@ -78,6 +79,7 @@ const costMax = costBound('costMax')
 
     <FilterGroup :title="$t('browser.filters.pack')" :options="packOptions" :selected="store.filters.packs" searchable :max-visible="10" @toggle="store.toggle('packs', $event)" />
     <FilterGroup :title="$t('browser.filters.set')" :options="setOptions" :selected="store.filters.sets" searchable :max-visible="10" :open="false" @toggle="store.toggle('sets', $event)" />
+    <FilterGroup :title="$t('browser.filters.nemesisSets')" :options="nemesisOptions" :selected="store.filters.sets" searchable :max-visible="10" :open="false" @toggle="store.toggle('sets', $event)" />
     <FilterGroup :title="$t('browser.filters.traits')" :options="traitOptions" :selected="store.filters.traits" searchable :max-visible="10" :open="false" @toggle="store.toggle('traits', $event)" />
   </aside>
 </template>

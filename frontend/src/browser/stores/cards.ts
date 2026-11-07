@@ -77,11 +77,11 @@ export const useCardStore = defineStore('cards', () => {
       for (const v of values) if (v) m.set(v, (m.get(v) ?? 0) + 1)
       return m
     }
-    const sets = new Map<string, { name: string; count: number }>()
+    const sets = new Map<string, { name: string; count: number; type?: string }>()
     for (const c of cards.value) {
       if (!c.setCode || !c.setName) continue
       const seen = sets.get(c.setCode)
-      sets.set(c.setCode, { name: c.setName, count: (seen?.count ?? 0) + 1 })
+      sets.set(c.setCode, { name: c.setName, count: (seen?.count ?? 0) + 1, type: c.setType })
     }
     return {
       types: count(cards.value.map((c) => c.type)),

@@ -47,7 +47,7 @@ const visible = computed(() => {
 })
 
 const hiddenCount = computed(() => filtered.value.length - visible.value.length)
-const selectedCount = computed(() => selected.length)
+const selectedCount = computed(() => options.filter(option => selected.includes(option.value)).length)
 </script>
 
 <template>
