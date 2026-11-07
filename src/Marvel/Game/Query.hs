@@ -4450,7 +4450,11 @@ enemyDamageDealtWindows original = case enemyDamageMessage original of
 
 isEnemyDealtDamageWindow :: Message -> Bool
 isEnemyDealtDamageWindow message = case queuedMessage message of
-  CheckWindows windows -> any (\case W.Window W.After (W.EnemyWasDealtDamage _ _ _) -> True; _ -> False) windows
+  CheckWindows windows -> any (\case
+    W.Window W.After (W.EnemyWasDealtDamage _ _ _) -> True
+    W.Window W.After (W.EnemyTookDamageFrom _ _ _) -> True
+    W.Window W.After (W.EnemyAttacksAndDamages _ _ _) -> True
+    _ -> False) windows
   _ -> False
 
 getMinionDamageInPlay :: HasGame m => MinionId -> m Natural

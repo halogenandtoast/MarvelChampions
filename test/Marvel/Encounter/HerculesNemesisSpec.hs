@@ -3,6 +3,7 @@ module Marvel.Encounter.HerculesNemesisSpec (spec) where
 import Data.Aeson.KeyMap qualified as KM
 import Data.HashMap.Strict qualified as HM
 import Marvel.Hercules.Cards qualified as Cards
+import Marvel.CampaignPlayerTest (basicAttack)
 import Marvel.Hercules.Helpers
 import Marvel.Message.Lifted qualified as Lifted
 import Marvel.Trait qualified as T
@@ -109,6 +110,40 @@ spec = describe "Hercules nemesis and Labors" do
       choose "attack Hydra" (isTargetChoice hydra)
       pass
       getMinionDamageInPlay hydra >>= (\n -> n `shouldSatisfy` (> 0))
+
+  it "a lethal attack defeats Lernean Hydra before its damage response can heal it" do
+    tg <- testGame ["hercules"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      hydra <- addMinion you Cards.hc59037
+      resolve [MinionMessage hydra $ MinionDamaged GameRef $ toDamage 3 FromAbility]
+      choose "basic attack" (basicAttack you)
+      choose "attack Hydra" (isTargetChoice hydra)
+      pass
+      minionDamageOf hydra `shouldReturn` Nothing
+
+  it "Lernean Hydra still responds to a nonlethal attack" do
+    tg <- testGame ["hercules"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      hydra <- addMinion you Cards.hc59037
+      choose "basic attack" (basicAttack you)
+      choose "attack Hydra" (isTargetChoice hydra)
+      choose "Hydra's response" (\case UseAbility ab -> abilitySource ab == MinionRef hydra; _ -> False)
+      choose "heal Hydra" (isLabel "$label.heal2Damage")
+      pass
+      minionDamageOf hydra `shouldReturn` Just 1
+
+  it "simultaneous lethal damage also defeats Hydra before damage responses" do
+    tg <- testGame ["hercules"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      hydra <- addMinion you Cards.hc59037
+      Lifted.runQueueT (Lifted.capture $ Lifted.dealDamageToEach [hydra] you $ toDamage 6 $ FromPlayerAttack you) >>= resolve
+      minionDamageOf hydra `shouldReturn` Nothing
 
   it "nonattack ability damage cannot damage the Hydra Labor's host" do
     tg <- testGame ["hercules"]

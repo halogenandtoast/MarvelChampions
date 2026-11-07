@@ -412,8 +412,6 @@ runVillainMessage msg attrs = case msg of
           when (damageSource damage `elem` [FromAttack,FromOverkill]) $ for_ (sourceEnemy source) $ \attacker ->
             cardSpecific GameRef "recordEnemyAttackDamageTaken" (attacker,toEnemyId attrs,damageAmount damage)
           recordPlayerAttackDamage (toEnemyId attrs) source damage
-          attackDealtDamageTo source damage vid
-          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when
           ( not infinite && not held && subtractNatural
               (damageAmount damage)
@@ -428,6 +426,9 @@ runVillainMessage msg attrs = case msg of
             for_ hero \ident ->
               when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (EnemyVillainId vid) excess]
             villainStep vid (VillainDefeatPending $ Just (source, damage, excess))
+        when (damageAmount damage > 0) do
+          attackDealtDamageTo source damage vid
+          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         pure $
           attrs
             & toughL %~ (&& not (piercesTough dealt))

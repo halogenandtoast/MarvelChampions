@@ -103,8 +103,6 @@ runMinionMessage msg attrs = case msg of
           for_ (sourceEnemy source) $ \enemy -> when ((damageSource damage `elem` [FromAttack,FromOverkill])) $ cardSpecific (enemyRef enemy) "attackExcessDamage" excess
         when (damageAmount damage > 0) $ do
           recordPlayerAttackDamage (toEnemyId attrs) source damage
-          attackDealtDamageTo source damage (minionId attrs)
-          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         when (damageAmount damage + minionDamage attrs >= hitPoints && CannotBeDefeated `notElem` modifiers) do
           let excess = subtractNatural hitPoints (damageAmount damage + minionDamage attrs)
           -- "when your hero's attack deals excess damage, increase that amount"
@@ -112,6 +110,10 @@ runMinionMessage msg attrs = case msg of
           for_ hero \ident ->
             when (excess > 0) $ checkWindows [W.Window W.When $ W.ExcessDamageDealt ident (toEnemyId attrs) excess]
           minionStep (minionId attrs) (MinionDefeatedWithExcess source damage excess)
+        -- Damage responses follow defeat and departure (RR Damage, step 9).
+        when (damageAmount damage > 0) do
+          attackDealtDamageTo source damage (minionId attrs)
+          checkWindows [W.Window W.After $ W.EnemyTookDamageFrom (toEnemyId attrs) damage source]
         pure $ (attrs & damageL +~ damageAmount damage & toughL %~ (&& not (piercesTough damage))) {minionDamageThisPhase = minionDamageThisPhase attrs + damageAmount damage, minionAdditionalTough = if piercesTough damage then 0 else minionAdditionalTough attrs}
   MinionDefeatedWithExcess source damage overkill -> do
     baseScheme <- minionBaseScheme attrs
