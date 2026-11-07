@@ -662,7 +662,14 @@ hydraSoldierCaptainAmerica =
 -- | The nemesis minions named so on their cards, in nemesis sets with more than one
 -- minion.
 designatedNemesisMinions :: [CardDef]
-designatedNemesisMinions = [exodusMagneto, pyroIceman, Jubilee.jubilee47024, nc48027, trevorFitzroy, belasco, belladonna, baronZemo, thomasEdison, loki, taskmaster, theMagus]
+designatedNemesisMinions =
+  [ exodusMagneto, pyroIceman, Jubilee.jubilee47024, nc48027
+  , trevorFitzroy, belasco, belladonna, baronZemo, thomasEdison
+  , loki, taskmaster, theMagus, theViper, whiteQueenMutantGenesis
+  , topaz, butler, aosP50060, BlackPantherShuriPack.klawShuri
+  , FalconWinter.fw53030, FalconWinter.fw54028, CN.enc56024
+  , HC.hc59036, CN.enc60061, JL.jl62029
+  ]
 
 -- | Whether the card is its nemesis set's nemesis minion: the one the set names, or its
 -- only minion.

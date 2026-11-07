@@ -9,6 +9,7 @@ import Marvel.Modifier
 import Marvel.Status
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Phase
+import Marvel.Treachery.Cards qualified as Treacheries
 import TestImport
 
 isObligationAction :: Choice -> Bool
@@ -20,6 +21,17 @@ isObligationAction = \case
 
 spec :: Spec
 spec = describe "Jessica Jones and Luke Cage nemeses" do
+  it "Shadow of the Past reveals Cottonmouth and shuffles Asp and Sidewinder into the encounter deck" do
+    tg <- testGame ["luke-cage"]
+    inGame tg do
+      _ <- revealNow (player1 tg) Treacheries.shadowOfThePast
+      pass
+      getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameMinions) `shouldReturn` ["62029"]
+      getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameSideSchemes) `shouldReturn` ["62030"]
+      deck <- map toCardCode <$> scenarioEncounterDeckNow
+      deck `shouldSatisfy` elem "62032"
+      deck `shouldSatisfy` elem "62033"
+
   it "Work-Life Balance stays in play and adds a discard cost to changing form" do
     tg <- testGame ["jessica-jones"]
     inGame tg do

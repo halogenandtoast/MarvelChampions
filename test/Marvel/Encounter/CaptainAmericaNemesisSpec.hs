@@ -19,6 +19,16 @@ spec = describe "Captain America's nemesis set" do
     cards <- gatherEncounterSet CaptainAmericaNemesis :: IO [EncounterCard]
     sort (map (toCardCode @EncounterCard) cards) `shouldBe` ["03027", "03028", "03029", "03029", "03030" :: CardCode]
 
+  it "Shadow of the Past reveals Baron Zemo and shuffles both Hydra Soldiers into the deck" do
+    tg <- testGame ["captain-america"]
+    inGame tg do
+      _ <- revealNow (player1 tg) Treacheries.shadowOfThePast
+      pass
+      getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameMinions) `shouldReturn` ["03028"]
+      getsGame (map (toCardCode . getCardDef) . HashMap.elems . gameSideSchemes) `shouldReturn` ["03027"]
+      soldiers <- filter ((== "03029") . toCardCode) <$> scenarioEncounterDeckNow
+      length soldiers `shouldBe` 2
+
   describe "Hit Squad" do
     it "has each player discard the top encounter card and take 1 damage for each boost icon on it" do
       tg <- testGame ["captain-america", "spider-man"]

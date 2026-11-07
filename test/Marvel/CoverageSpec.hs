@@ -7,6 +7,8 @@ import Marvel.Attachment (allAttachments)
 import Marvel.Environment (allEnvironments)
 import Marvel.MainScheme (allMainSchemes)
 import Marvel.Minion (allMinions)
+import Marvel.Minion.Cards qualified as MinionDefs
+import Data.Text qualified as Text
 import Marvel.SideScheme (allSideSchemes)
 import Marvel.Treachery (allTreacheries)
 import Marvel.Villain (allVillains)
@@ -171,6 +173,27 @@ encounterImplemented c = case c.cardType of
 
 spec :: Spec
 spec = do
+  it "identifies every printed nemesis minion in every hero's nemesis set" do
+    json <- either error pure =<< eitherDecodeFileStrict' "frontend/public/data/cards.json"
+    entries <- either error pure $ flip parseEither json $ withObject "cards" \o -> do
+      cards <- o .: "cards"
+      fmap catMaybes $ for cards $ withObject "card" \c -> do
+        setType <- c .:? "setType"
+        typ <- c .: "type"
+        if setType == Just ("nemesis" :: Text) && typ == ("minion" :: Text) then do
+          code <- c .: "code"
+          set <- c .: "setCode"
+          text <- c .:? "text" .!= ""
+          pure $ Just (set :: Text, (code :: CardCode, "nemesis minion" `Text.isInfixOf` Text.toLower text))
+        else pure Nothing
+    let sets = HashMap.fromListWith (<>) [(set, [entry]) | (set, entry) <- entries]
+    for_ (HashMap.toList sets) \(set, cards) -> do
+      let designated = [code | (code, True) <- cards]
+          expected = if null designated then map fst cards else designated
+      actual <- fmap catMaybes $ for cards \(code, _) -> case HashMap.lookup code MinionDefs.allMinions of
+        Nothing -> expectationFailure ("missing nemesis minion " <> show code <> " in " <> Text.unpack set) >> pure Nothing
+        Just def -> pure $ if MinionDefs.isNemesisMinion def then Just code else Nothing
+      actual `shouldMatchList` expected
   describe "modular sets" $ for_ modularSets \set -> it (show set <> " has every card implemented") do
     cards <- setCards set
     length cards `shouldSatisfy` (> 0)

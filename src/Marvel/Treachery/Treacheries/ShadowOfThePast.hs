@@ -33,12 +33,7 @@ partitionNemesisSet ::
 partitionNemesisSet cards = (minions, sideSchemes, rest)
  where
   isType t = (== t) . cdCardType . ecCardDef
-  designated = Minions.designatedNemesisMinions
-  isNemesisMinion c =
-    isType MinionType c
-      && ( toCardCode c `elem` map toCardCode designated
-            || cdEncounterSet (ecCardDef c) `notElem` map cdEncounterSet designated
-         )
+  isNemesisMinion = Minions.isNemesisMinion . ecCardDef
   minions = filter isNemesisMinion cards
   sideSchemes = filter (isType SideSchemeType) cards
   rest = filter (\c -> not (isNemesisMinion c || isType SideSchemeType c)) cards
