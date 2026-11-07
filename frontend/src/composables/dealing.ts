@@ -4,6 +4,10 @@
 import { BACKS, useCards } from '../cards'
 import type { GameView } from '../server'
 import { searchCardIds } from './cardSearch'
+import { reactive } from 'vue'
+
+// The destination keeps its previous stack until the flying card has landed.
+export const dealtPileCounts = reactive(new Map<string, number>())
 
 const DEAL_MS = 520
 const STAGGER_MS = 90
@@ -151,6 +155,7 @@ const shown = (view: GameView) => {
   const searching = searchCardIds(view)
   add(view.focusedCards?.filter((card) => !searching.has(card.id)))
   add(view.boostCards)
+  add(view.resolvingEvents)
   if (view.activeCost) {
     add(view.activeCost.card ? [view.activeCost.card] : [])
     add(view.activeCost.spent)
@@ -175,6 +180,7 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   if (!before) return null
   const leaving: Move[] = []
   const arriving: Move[] = []
+  const dealtPiles = new Map<string, number>()
   const wasDiscarded = discardsOf(before)
   const isDiscarded = discardsOf(after)
   const owner = ownerOf(after)
@@ -215,6 +221,8 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
   for (const p of after.players ?? [])
     for (const id of p.dealtCardIds ?? []) {
       if (wasDealt.has(id)) continue
+      const pile = `dealt-${p.id}`
+      dealtPiles.set(pile, before.players?.find(player => player.id === p.id)?.dealtEncounterCards ?? 0)
       const dealt = ghostFor(id, 'deck-encounter', null, sources)
       dealt.faceDown = false
       leaving.push(dealt)
@@ -235,6 +243,7 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
     arriving.push(ghostFor(id, `card:${scheme}`, null, sources))
   }
   if (!leaving.length && !arriving.length) return null
+  for (const [pile, count] of dealtPiles) dealtPileCounts.set(pile, count)
 
   const rules: string[] = []
   // a card dealt to a player both leaves and arrives: it flies once, with the cards dealt
@@ -256,6 +265,7 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
       style.textContent += '\n' + discarding.flatMap((move, i) => rotateToDiscard(move, i * STAGGER_MS)).join('\n')
     },
     done: () => {
+      for (const pile of dealtPiles.keys()) dealtPileCounts.delete(pile)
       leaving.forEach((m) => m.ghost.remove())
       arriving.forEach((m) => m.ghost.remove())
       style.remove()

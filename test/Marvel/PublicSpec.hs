@@ -81,6 +81,39 @@ spec = describe "the game as the client sees it" do
       -- the player chosen is not what is damaged
       (describeChoice p1 (TargetLabel (IdentityRef p2) [Run damage])).kind `shouldBe` "target"
 
+  it "names a card choice that adds it to hand before continuing an effect" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      card <- putInHand p "01083"
+      other <- putInHand p "01084"
+      let body = [Run [IdentityMessage p (AddToHand card), IdentityMessage p ShuffleDeck]]
+          choice = describeChoice p (TargetLabel (CardIdRef $ toCardId card) body)
+      choice.kind `shouldBe` "addToHand"
+      choice.target `shouldBe` Just (tshow $ toCardId card)
+      (describeChoice p (TargetLabel (CardIdRef $ toCardId other) body)).kind `shouldBe` "target"
+
+  it "keeps a played event visible through each choice until its resolution finishes" do
+    tg <- testGame ["luke-cage"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      _ <- putIntoPlay p "62012"
+      card <- putInHand p "62023"
+      playWith card []
+      shownResolvingEvents `shouldReturn` ["62023"]
+      chooseVillain
+      shownResolvingEvents `shouldReturn` ["62023"]
+      choose "tough for Luke" (isTargetChoice $ IdentityCharacter p)
+      pass
+      shownResolvingEvents `shouldReturn` []
+
+shownResolvingEvents :: GameAppT [Text]
+shownResolvingEvents = do
+  view <- liftIO . publicGame =<< getGame
+  pure [code | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "resolvingEvents" o], Object card <- toList cards, Just (String code) <- [KeyMap.lookup "code" card]]
+
 shownAttacks :: Key -> GameAppT [Natural]
 shownAttacks field = do
   view <- liftIO . publicGame =<< getGame

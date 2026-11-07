@@ -8,6 +8,7 @@ import { useCards, type Back } from '../cards'
 import type { CardView } from '../server'
 import BoardCard from './BoardCard.vue'
 import CardFace from './CardFace.vue'
+import { dealtPileCounts } from '../composables/dealing'
 
 const { label, back = null, count = null, cards = null, pile = null } = defineProps<{
   label: string
@@ -24,7 +25,8 @@ const overlay = useCardOverlay()
 const faces = useCards()
 const { byTarget, choose } = useChoices()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
-const total = computed(() => count ?? cards?.length ?? 0)
+const total = computed(() => (pile ? dealtPileCounts.get(pile) : undefined) ?? count ?? cards?.length ?? 0)
+const emptyDealt = computed(() => pile?.startsWith('dealt-') && total.value === 0)
 const top = computed(() => cards?.[0] ?? null)
 // a choice about a card in it lights the pile, so the player knows to look
 const deckChoice = computed(() => pile ? byTarget.value.get(pile)?.[0] : undefined)
@@ -43,7 +45,7 @@ const close = () => dialog.value?.close()
 </script>
 
 <template>
-  <div class="pile" :class="{ empty: total === 0, active, openable: cards?.length, discard: !back && count === null }" :data-pile="pile ?? undefined">
+  <div class="pile" :class="{ empty: total === 0, 'empty-dealt': emptyDealt, active, openable: cards?.length, discard: !back && count === null }" :data-pile="pile ?? undefined" :inert="emptyDealt || undefined">
     <button
       type="button"
       class="stack"
@@ -75,6 +77,7 @@ const close = () => dialog.value?.close()
 
 <style scoped>
 .pile { --w: var(--card-width); display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
+.pile.empty-dealt { visibility: hidden; }
 .stack {
   position: relative;
   width: var(--w);

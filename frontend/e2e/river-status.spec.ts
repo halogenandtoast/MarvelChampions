@@ -79,3 +79,50 @@ for (const status of ['stunned', 'confused'] as const) {
     await expect(page.locator('.canceling-status')).toBeVisible()
   })
 }
+
+for (const reaction of ['Responses', 'Interrupts']) {
+  test(`${reaction} stay left and fit their content beside an attack, then fill an empty river`, async ({ page }) => {
+    await page.goto('/#/cards/01001a')
+    await page.evaluate(async (reaction) => {
+      const load = (path: string) => import(/* @vite-ignore */ path)
+      const { createApp, h, ref } = await load('/node_modules/.vite/deps/vue.js')
+      const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+      const { default: River } = await load('/src/components/River.vue')
+      const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+      const { messages } = await loadLocaleMessages('en')
+      const host = document.createElement('div')
+      host.style.setProperty('--card-width', '100px')
+      document.body.replaceChildren(host)
+      const alone = ref(false)
+      Object.assign(window, { showReactionAlone: () => { alone.value = true } })
+      createApp({ setup: () => () => h(River, {
+        cards: alone.value ? [] : [{ id: 'boost', code: '01186' }], elsewhere: new Set(),
+        label: alone.value ? null : 'Rhino attacks Spider-Man',
+        attacker: alone.value ? null : { id: 'villain', code: '01094', name: 'Rhino', attack: 3 },
+        reactionLabel: reaction,
+        reactionCards: [{ id: 'response', code: '01056', name: 'Avengers Mansion' }],
+        actions: [{ index: 7, kind: 'label', label: '$label.applyAttackDamage count=i:3' }],
+        onChoose: (index: number) => { host.dataset.chosen = String(index) },
+      }) }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+    }, reaction)
+    const responses = page.getByRole('region', { name: reaction, exact: true })
+    await expect(responses.locator('[data-card-id="response"]')).toBeVisible()
+    await expect(responses.locator('[data-card-id="villain"], [data-card-id="boost"]')).toHaveCount(0)
+    const attack = page.locator('.lane').filter({ hasText: 'Rhino attacks Spider-Man' })
+    await expect(attack.locator('[data-card-id="villain"]')).toBeVisible()
+    await expect(attack.locator('[data-card-id="boost"]')).toBeVisible()
+    await expect(attack.locator('[data-card-id="response"]')).toHaveCount(0)
+    await attack.locator('.river-actions button').click()
+    await expect(page.locator('.lane')).toHaveCount(2)
+    await expect(page.locator('.lane').first()).toHaveAttribute('aria-label', reaction)
+    const responseBox = (await responses.boundingBox())!
+    const attackBox = (await attack.boundingBox())!
+    expect(responseBox.x).toBeLessThan(attackBox.x)
+    expect(responseBox.width).toBeLessThan(attackBox.width)
+    await expect(page.locator('[data-chosen="7"]')).toHaveCount(1)
+    await page.evaluate(() => (window as any).showReactionAlone())
+    await expect(page.locator('.lane')).toHaveCount(1)
+    await expect(responses).not.toHaveClass(/compact/)
+    expect((await responses.boundingBox())!.width).toBeCloseTo((await page.locator('.river').boundingBox())!.width, 0)
+  })
+}

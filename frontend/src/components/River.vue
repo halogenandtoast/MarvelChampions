@@ -48,7 +48,7 @@ export interface RiverSchemer {
   boostCards?: number
 }
 
-const { cards, label = null, reaction = false, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+const { cards, revealedCards = [], resolvingEvents = [], label = null, reactionCards = [], reactionLabel = null, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
   activationKind?: 'attack' | 'scheme' | 'playerPhase' | 'villainPhase'
   schemer?: RiverSchemer | null
   activationBanner?: boolean
@@ -56,9 +56,12 @@ const { cards, label = null, reaction = false, activationAlert = null, activatio
   activationAlert?: string | null
   canceledEvent?: { code: string; statuses: readonly ('stunned' | 'confused')[] } | null
   cards: readonly RiverCard[]
+  resolvingEvents?: readonly RiverCard[]
+  revealedCards?: readonly RiverCard[]
   label?: string | null
   /** an interrupt or response window, highlighted like its available cards */
-  reaction?: boolean
+  reactionCards?: readonly RiverCard[]
+  reactionLabel?: string | null
   /** the enemy attacking, with its attack as modified now */
   attacker?: RiverAttacker | null
   /** the scheme threat would be placed on */
@@ -79,8 +82,9 @@ onBeforeUnmount(() => window.removeEventListener('marvel:cancel-animations', can
 watch(() => activationAlert, alert => { if (alert) skipAnimation.value = false })
 const enemy = computed(() => attacker ?? schemer)
 const enemyPower = computed(() => attacker ? attacker.attack : schemer?.scheme)
-const displayedCards = computed(() => cards.filter(card => card.id !== enemy.value?.id))
+const displayedCards = computed(() => cards.filter(card => card.id !== enemy.value?.id && !reactionCards.some(reaction => reaction.id === card.id)))
 const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.from + scheme.amount >= scheme.threshold)
+const hasMainLane = computed(() => !!(cards.length || label || enemy.value || scheme || canceledEvent || (!shared && !reactionLabel && !revealedCards.length && !resolvingEvents.length)))
 </script>
 
 <template>
@@ -88,7 +92,34 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
     <Transition name="activation" :css="!skipAnimation">
       <div v-if="activationAlert" class="activation-alert" :class="{ 'fight-banner': activationBanner, 'scheme-banner': activationKind === 'scheme' || activationKind === 'playerPhase' }" role="status"><span>{{ activationAlert }}</span></div>
     </Transition>
-    <div v-if="cards.length || label || canceledEvent || !shared" class="lane" :class="{ live: cards.length || label || canceledEvent, reaction, danger: advances }">
+    <section v-if="reactionLabel" class="lane live reaction" :class="{ compact: hasMainLane || shared || revealedCards.length || resolvingEvents.length }" :aria-label="reactionLabel">
+      <div class="what"><p>{{ reactionLabel }}</p></div>
+      <div class="cards">
+        <BoardCard v-for="card in reactionCards" :id="card.id" :key="card.id" :code="card.code ?? ''" :name="card.name || names.name(card.code)" :morph="false" />
+      </div>
+    </section>
+    <section v-if="resolvingEvents.length" class="lane live resolving" :class="{ compact: hasMainLane || shared || reactionLabel || revealedCards.length }" :aria-label="t('game.river.resolving')">
+      <div class="what"><p>{{ t('game.river.resolving') }}</p></div>
+      <div class="cards">
+        <BoardCard v-for="card in resolvingEvents" :id="card.id" :key="card.id" :code="card.code ?? ''" :name="card.name || names.name(card.code)" :morph="!elsewhere.has(card.id)" />
+      </div>
+    </section>
+    <section v-if="revealedCards.length" class="lane live revealed" :class="{ compact: hasMainLane || shared || reactionLabel || resolvingEvents.length }" :aria-label="t('game.river.revealed')">
+      <div class="what"><p>{{ t('game.river.revealed') }}</p></div>
+      <div class="cards">
+        <BoardCard
+          v-for="card in revealedCards"
+          :id="card.id"
+          :key="card.id"
+          :code="card.code ?? ''"
+          :name="card.name || names.name(card.code)"
+          :back="card.code ? null : 'encounter'"
+          flip-reveal
+          :morph="!elsewhere.has(card.id)"
+        />
+      </div>
+    </section>
+    <div v-if="hasMainLane" class="lane" :class="{ live: cards.length || label || enemy || canceledEvent, 'attack-lane': attacker, 'scheme-lane': !attacker && (schemer || scheme), danger: advances }">
       <div class="what">
         <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
         <p v-for="status in canceledEvent?.statuses ?? []" :key="status">{{ t(`game.river.${status}`) }}</p>
@@ -138,7 +169,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 </template>
 
 <style scoped>
-.river { position: relative; display: flex; gap: 12px; min-height: 0; min-width: 0; }
+.river { position: relative; display: flex; flex-wrap: wrap; gap: 12px; min-height: 0; min-width: 0; }
 .activation-alert { position: absolute; z-index: 5; inset: 0; display: grid; place-items: center; padding: 16px; border: 1px solid var(--amber); border-radius: 14px; background: var(--ink-2); color: var(--amber); font-family: var(--font-display); font-size: clamp(1.1rem, 2vw, 1.7rem); font-weight: 800; text-align: center; text-transform: uppercase; pointer-events: none; }
 .activation-enter-active, .activation-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
 .activation-enter-from { opacity: 0; transform: translateY(6px); }
@@ -159,7 +190,7 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
   grid-template-columns: minmax(110px, 0.3fr) minmax(0, 1fr);
   align-items: center;
   gap: 16px;
-  flex: 1 1 0;
+  flex: 1 1 360px;
   min-width: 0;
   padding: 6px 12px;
   border-radius: 14px;
@@ -179,6 +210,8 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 }
 .lane.reaction .what { align-self: center; justify-self: start; }
 .lane.reaction .what p { color: var(--interactive); }
+.lane.compact { flex: 0 1 auto; grid-template-columns: auto auto; }
+.lane.compact .what { max-width: 110px; }
 .what p {
   margin: 0;
   font-family: var(--font-display);
@@ -188,6 +221,13 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
   text-transform: uppercase;
   color: var(--amber);
 }
+.lane.attack-lane { --activation-color: var(--stat-atk); }
+.lane.scheme-lane { --activation-color: var(--stat-sch); }
+.lane.attack-lane, .lane.scheme-lane {
+  background: color-mix(in oklab, var(--activation-color) 10%, var(--ink-2));
+  border-color: color-mix(in oklab, var(--activation-color) 45%, var(--ink-2));
+}
+.lane.attack-lane .what p, .lane.scheme-lane .what p { color: color-mix(in oklab, var(--activation-color) 75%, white); }
 /* threat that would advance the scheme */
 .lane.danger {
   background: radial-gradient(ellipse at 50% 50%, rgb(220 50 50 / 0.2), transparent 70%), var(--ink-2);

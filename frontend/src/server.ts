@@ -357,6 +357,7 @@ export interface GameView {
   /** The Collection (Infiltrate the Museum): player and encounter cards, faceup, the first added first */
   collection?: CardView[]
   focusedCards: CardView[]
+  resolvingEvents?: CardView[]
   /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
   attack?: { attacker: string; target: string } | null
   scheming?: string[]

@@ -59,6 +59,7 @@
     "river": "In play now"
   },
   "river": {
+    "resolving": "Resolving",
     "stunned": "Stunned: attack canceled",
     "confused": "Confused: thwart canceled",
     "revealed": "Revealed",
@@ -151,6 +152,7 @@
     "heal": "Heal",
     "discard": "Discard",
     "returnToHand": "Return to hand",
+    "addToHand": "Add to hand",
     "player": "Choose",
     "target": "Choose",
     "label": "Choose"
@@ -247,6 +249,7 @@
     "heal": "Heal {card}",
     "discard": "Discard {card}",
     "returnToHand": "Return {card} to hand",
+    "addToHand": "Add {card} to hand",
     "player": "{card}",
     "target": "{card}",
     "label": "{card}"

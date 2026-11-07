@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // One player's side of the table: the identity on whichever face shows, the minions
 // engaged with them, their allies, supports and upgrades, and their deck and discard.
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
+import { useFitToWidth } from '../composables/useFitToWidth'
 import { useI18n } from 'vue-i18n'
 import type { EnvironmentView, MinionView, PlayerView, SupportView, UpgradeView } from '../server'
 import BoardCard from './BoardCard.vue'
@@ -9,6 +10,10 @@ import Meter from './Meter.vue'
 import Pile from './Pile.vue'
 import { useCards } from '../cards'
 import { useChoices } from '../composables/useChoices'
+
+const area = useTemplateRef<HTMLElement>('area')
+const tableau = useTemplateRef<HTMLElement>('tableau')
+const scale = useFitToWidth(area, tableau)
 
 const { player, minions = [], environments = [], active = false, compact = false, riverEnemyIds = [] } = defineProps<{
   riverEnemyIds?: string[]
@@ -55,7 +60,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 </script>
 
 <template>
-  <section class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero }">
+  <section ref="area" class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero }">
+    <div ref="tableau" class="player-tableau" :style="{ zoom: scale }">
     <div class="identity-column">
       <div class="identity">
         <div class="body">
@@ -205,15 +211,16 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
       <!-- encounter cards dealt face down, in the corner, above the hand -->
       <Pile v-if="player.dealtEncounterCards" class="dealt" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" :pile="`dealt-${player.id}`" />
     </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .player-area {
   --tone: var(--steel);
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 14px 16px;
   border-radius: 14px;
   background:
@@ -222,6 +229,9 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   border: 1px solid rgb(91 141 184 / 0.2);
   overflow-x: auto;
 }
+.player-tableau { display: flex; align-items: flex-start; gap: 14px; width: max-content; }
+.player-tableau > .zone { flex-shrink: 0; }
+.player-tableau .cards { flex-wrap: nowrap; }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
 .player-area.unfolded .identity-column { width: calc(var(--card-width) / var(--card-aspect) + 164px); }

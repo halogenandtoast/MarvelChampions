@@ -183,7 +183,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     <div
       ref="el"
       class="card"
-      :class="{ active, exhausted, landscape, unfolded, source, 'multiple-actions': chips.length > 1, 'generic-actions': chips.length && (counters || bombCounters) }"
+      :class="{ active, exhausted, landscape, unfolded, source, 'generic-actions': chips.length && (counters || bombCounters) }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :aria-label="title"
@@ -373,7 +373,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 /* what it can do, as chips over its foot */
 .chips {
   position: absolute;
-  inset: auto 3% 16% 3%;
+  inset: auto 3% 4% 3%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -381,7 +381,6 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   z-index: 2;
 }
 .card.landscape .chips { bottom: 22%; inset-inline: 18%; }
-.card.multiple-actions:not(.landscape) .chips { top: 18%; bottom: auto; }
 /* Keep counters above the action area without changing the table's card spacing. */
 .card.generic-actions .token.counters { top: 20%; bottom: auto; }
 .card.generic-actions .token.bombs { top: 39%; bottom: auto; }
