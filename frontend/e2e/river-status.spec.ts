@@ -1,5 +1,30 @@
 import { expect, test } from '@playwright/test'
 
+test('river announces activations without blocking clicks', async ({ page }) => {
+  await page.goto('/#/cards/01001a')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h, ref } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: River } = await load('/src/components/River.vue')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const alert = ref('Venom Goblin attacks Daredevil')
+    const host = document.createElement('div')
+    document.body.replaceChildren(host)
+    createApp({ setup: () => () => h(River, { cards: [], elsewhere: new Set(), activationAlert: alert.value }) })
+      .use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+    Object.assign(window, { riverAlert: alert })
+  })
+  const alert = page.getByRole('status')
+  await expect(alert).toHaveText('Venom Goblin attacks Daredevil')
+  expect(await alert.evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none')
+  for (const text of ['Venom Goblin schemes']) {
+    await page.evaluate(text => { (window as any).riverAlert.value = text }, text)
+    await expect(alert).toHaveText(text)
+  }
+})
+
 for (const status of ['stunned', 'confused'] as const) {
   test(`river explains an event canceled by ${status}`, async ({ page }) => {
     await page.goto('/#/cards/01001a')

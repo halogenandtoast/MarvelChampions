@@ -2,7 +2,7 @@
 // A card on the table: its scan, the tokens on it, its statuses, and what can be done
 // with it. A card the open question is about lights up; a click answers, or asks which
 // when it offers several choices, each named on a chip along its foot.
-import { computed, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoices, useKeyed } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
@@ -56,11 +56,15 @@ const props = withDefaults(
     faces?: string[]
     /** morph between zones as the game changes: off where the card may be drawn twice */
     morph?: boolean
+    /** turn from a facedown card to its face without moving its slot */
+    flipReveal?: boolean
   }>(),
   { morph: true, id: null, code: null, name: '', back: null, damage: 0, threat: null, counters: null, held: null, attached: () => [], flag: null, flagIcon: null },
 )
 
 const cards = useCards()
+const revealBack = ref<Back | null>(props.back)
+watch(() => props.back, back => { if (back) revealBack.value = back })
 const overlay = useCardOverlay()
 const { byTarget, choose, sourceId, assignedDamage, hoveredTarget } = useChoices()
 const clearHover = () => {
@@ -70,15 +74,37 @@ onBeforeUnmount(clearHover)
 const label = useChoiceLabel()
 const keyed = useKeyed()
 const el = useTemplateRef<HTMLElement>('el')
+const threatPulse = ref(0)
+const damagePulse = ref(0)
+let threatPulseTimer: ReturnType<typeof setTimeout> | undefined
+let damagePulseTimer: ReturnType<typeof setTimeout> | undefined
+watch(() => props.threat, (amount, previous) => {
+  if ((amount ?? 0) <= (previous ?? 0)) return
+  clearTimeout(threatPulseTimer)
+  threatPulse.value++
+  threatPulseTimer = setTimeout(() => { threatPulse.value = 0 }, 850)
+})
+watch(() => props.damage, (amount, previous) => {
+  if (amount <= previous) return
+  clearTimeout(damagePulseTimer)
+  damagePulse.value++
+  damagePulseTimer = setTimeout(() => { damagePulse.value = 0 }, 850)
+})
+onBeforeUnmount(() => { clearTimeout(threatPulseTimer); clearTimeout(damagePulseTimer) })
+const cancelThreatPulse = () => { clearTimeout(threatPulseTimer); clearTimeout(damagePulseTimer); threatPulse.value = 0; damagePulse.value = 0 }
+onMounted(() => window.addEventListener('marvel:cancel-animations', cancelThreatPulse))
+onBeforeUnmount(() => window.removeEventListener('marvel:cancel-animations', cancelThreatPulse))
 
 const landscape = computed(() => !props.back && cards.landscape(props.code))
 const unfolded = computed(() => props.faces?.length === 3 && props.code === props.faces[2])
 const title = computed(() => cards.name(props.code, props.name))
-const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : []))
+const revealStarted = computed(() => props.flipReveal && revealBack.value && !props.back)
+const options = computed(() => (props.id ? (byTarget.value.get(props.id) ?? []) : [])
+  .filter(option => !(revealStarted.value && option.label === '$label.revealBoostCards')))
 const displayedDamage = computed(() => props.damage + (props.id ? assignedDamage.value[props.id] ?? 0 : 0))
 const active = computed(() => options.value.length > 0)
 // the card the question is about: lifted, and ringed in amber
-const source = computed(() => !!props.id && sourceId.value === props.id)
+const source = computed(() => !!props.id && sourceId.value === props.id && !(revealStarted.value && byTarget.value.get(props.id)?.some(option => option.label === '$label.revealBoostCards')))
 const menuOpen = ref(false)
 watch(options, () => (menuOpen.value = false))
 const slotChoices = computed(() => {
@@ -171,7 +197,11 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       @contextmenu="lastPointer !== 'mouse' && $event.preventDefault()"
       @click="click"
     >
-      <FoldingIdentity v-if="code && faces?.length === 3" :faces="faces" :code="code" />
+      <div v-if="flipReveal && revealBack" class="reveal-flip" :class="{ revealed: !back }">
+        <CardFace :code="code" :name="name" eager class="reveal-front" :aria-hidden="!!back" />
+        <CardFace :back="revealBack" eager class="reveal-back" :aria-hidden="!back" />
+      </div>
+      <FoldingIdentity v-else-if="code && faces?.length === 3" :faces="faces" :code="code" />
       <!-- a two-sided identity turns over as it changes form -->
       <div v-else-if="code && faces?.length === 2" class="flip" :class="{ over: code === faces[1] }">
         <CardFace :code="faces[0]" eager />
@@ -187,8 +217,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
           <span v-if="occupiedSlots?.includes(index)" class="space-token" aria-hidden="true">●</span>
         </button>
       </div>
-      <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :aria-label="$t('game.threatOn', { count: threat })" />
-      <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :aria-label="$t('game.damageOn', { count: displayedDamage })" />
+      <TokenStack v-if="threat" class="token threat" kind="threat" :count="threat" :pulse="threatPulse" :aria-label="$t('game.threatOn', { count: threat })" />
+      <TokenStack v-if="displayedDamage > 0" class="token damage" kind="damage" :count="displayedDamage" :pulse="damagePulse" :aria-label="$t('game.damageOn', { count: displayedDamage })" />
       <TokenStack v-if="bombCounters" class="token bombs" kind="generic" :count="bombCounters" :aria-label="$t('game.bombsOn', { count: bombCounters })" />
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :aria-label="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
@@ -267,6 +297,12 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
 .card.unfolded.landscape { width: calc(2 * var(--w)); aspect-ratio: calc(2 * var(--card-aspect)); }
 .card :deep(.card-face) { border-radius: inherit; }
+.card:has(> .reveal-flip) { perspective: 900px; }
+.reveal-flip { position: absolute; inset: 0; border-radius: inherit; transform-style: preserve-3d; transition: transform 560ms cubic-bezier(0.4, 0, 0.2, 1); }
+.reveal-flip.revealed { transform: rotateY(180deg); }
+.reveal-flip > :deep(.card-face) { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.reveal-flip > :deep(.reveal-front) { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) { .reveal-flip { transition: none; } }
 /* Landscape scans vary slightly in proportion: let the image set the frame's
    height instead of cropping it or leaving space inside a fixed frame. */
 .card.landscape:not(.unfolded):has(> img.card-face) { aspect-ratio: auto; }

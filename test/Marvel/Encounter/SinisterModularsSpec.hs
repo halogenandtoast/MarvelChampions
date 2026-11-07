@@ -1,6 +1,8 @@
 module Marvel.Encounter.SinisterModularsSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Environment.Cards qualified as Environments
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Hero.GhostSpiderSpec (ghostSpider, asGhost)
@@ -70,6 +72,31 @@ spec = describe "Sinister Motives modular sets" do
         chooseIf (isTargetChoice second)
         attachmentPresent card `shouldReturn` False
         discardOf p >>= (`shouldSatisfy` \cards -> attack `elem` cards && second `elem` cards)
+
+    it "shows the discarded printed cost paid toward Advanced Glider's removal" do
+      tg <- ghostSpider
+      let p = player1 tg
+          progress = do
+            view <- liftIO . publicGame =<< getGame
+            case view of
+              Object root | Just (Object cost) <- KeyMap.lookup "activeCost" root ->
+                pure $ KeyMap.lookup "discardedCost" cost
+              _ -> error "expected an active payment"
+          expected n = Just $ object ["paid" .= (n :: Natural), "required" .= (3 :: Natural)]
+      inGame tg do
+        asGhost p
+        card <- revealAttachment p Attachments.smAdvancedGlider
+        first <- putInHand p "01087"
+        second <- putInHand p "01087"
+        _ <- putInHand p "01087"
+        choose "remove Advanced Glider" (isAbilityOf $ AttachmentRef $ attachmentOf card)
+        progress `shouldReturn` expected 0
+        choose "discard the first Haymaker" (isTargetChoice first)
+        progress `shouldReturn` expected 2
+        choose "discard the second Haymaker" (isTargetChoice second)
+        progress `shouldReturn` expected 4
+        choose "finish discarding" (isLabel "$label.done")
+        attachmentPresent card `shouldReturn` False
 
     it "Incendiary Bombs spends exactly one counter for two indirect damage after an attack" do
       tg <- ghostSpider

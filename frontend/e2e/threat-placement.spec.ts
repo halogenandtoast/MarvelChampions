@@ -1,0 +1,40 @@
+import { expect, test } from '@playwright/test'
+
+test('added threat briefly highlights its scheme without moving it', async ({ page }) => {
+  await page.goto('/#/cards/27117a')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h, ref } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: BoardCard } = await load('/src/components/BoardCard.vue')
+    const { withViewTransition } = await load('/src/composables/useViewTransition.ts')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const threat = ref(1)
+    const host = document.createElement('div')
+    host.style.setProperty('--card-width', '124px')
+    document.body.replaceChildren(host)
+    createApp({ setup: () => () => h(BoardCard, { id: 'threat-test', code: '27117a', threat: threat.value }) })
+      .use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+    Object.assign(window, { setThreat: (amount: number) => withViewTransition(() => { threat.value = amount }) })
+  })
+  const card = page.locator('[data-card-id="threat-test"]')
+  await expect(card).toHaveClass(/landscape/)
+  await card.evaluate(async el => {
+    getComputedStyle(el).width
+    await Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => undefined)))
+  })
+  await expect(card.locator('.token.threat.pulsing')).toHaveCount(0)
+  const before = (await card.boundingBox())!
+  await page.evaluate(() => (window as any).setThreat(3))
+  await expect(card.getByLabel('3 threat', { exact: true })).toBeVisible()
+  const pulse = card.locator('.token.threat.pulsing')
+  await expect(pulse).toBeVisible()
+  expect(await pulse.evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none')
+  expect(await pulse.evaluate(el => el.getAnimations({ subtree: true }).length)).toBeGreaterThan(0)
+  await expect(card.locator('.token.threat .pool-pulse')).toHaveCount(0)
+  expect((await card.boundingBox())!.width).toBeCloseTo(before.width, 1)
+  await expect(pulse).toHaveCount(0)
+  await page.evaluate(() => (window as any).setThreat(2))
+  await expect(pulse).toHaveCount(0)
+})

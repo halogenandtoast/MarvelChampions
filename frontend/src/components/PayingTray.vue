@@ -63,7 +63,8 @@ const declare = (index: number) => {
   closeMenu()
   emit('choose', index)
 }
-const covered = computed(() => !cost.anyAmount && !(cost.owed ?? []).length)
+const discardRemaining = computed(() => cost.discardedCost ? Math.max(0, cost.discardedCost.required - cost.discardedCost.paid) : 0)
+const covered = computed(() => !cost.anyAmount && !(cost.owed ?? []).length && discardRemaining.value === 0)
 const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ? { id: cost.source, ...things[cost.source] } : null))
 </script>
 
@@ -73,8 +74,9 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       <span class="eyebrow">{{ player ? $t('game.paying.by', { name: player }) : $t('game.paying.title') }}</span>
       <h2>{{ paying?.name ?? $t('game.paying.title') }}</h2>
       <p v-for="status in cost.canceledBy ?? []" :key="status" class="status-warning" role="status">{{ $t(`game.paying.${status}`) }}</p>
-      <span class="label">{{ $t('game.paying.paid') }}</span>
-      <p v-if="cost.paid.length" class="resources">
+      <span class="label">{{ $t(cost.discardedCost ? 'game.paying.discardedCost' : 'game.paying.paid') }}</span>
+      <p v-if="cost.discardedCost" class="resources">{{ cost.discardedCost.paid }} / {{ cost.discardedCost.required }}</p>
+      <p v-else-if="cost.paid.length" class="resources">
         <template v-for="(r, i) in cost.paid" :key="i">
           <span v-if="declaresFor(i).length" class="wild-resource">
             <button type="button" class="declarable" :aria-expanded="open === i" :title="$t('game.paying.declareWild')" aria-haspopup="menu" @click="toggleMenu(i, $event)">
@@ -88,6 +90,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       <p v-else class="none">{{ $t('game.paying.nothingYet') }}</p>
       <p v-if="cost.anyAmount" class="owed">{{ $t('game.paying.anyAmount') }}</p>
       <p v-else-if="covered" class="owed done">{{ $t('game.paying.covered') }}</p>
+      <p v-else-if="cost.discardedCost" class="owed">{{ $t('game.paying.discardedCostNeeds', { count: discardRemaining }) }}</p>
       <p v-else class="owed">
         {{ $t('game.paying.needs', { count: cost.owed.length }) }}
         <template v-for="(r, i) in cost.owed" :key="i">

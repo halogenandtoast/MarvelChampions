@@ -136,6 +136,7 @@ export interface PlayerView {
 }
 
 export interface VillainView extends CardView {
+  activationBoost?: number
   counters: number
   threat: number
   bombCounters?: number
@@ -184,6 +185,7 @@ export interface AreaView {
 }
 
 export interface MinionView extends CardView {
+  activationBoost?: number
   attachedToMinion?: string | null
   attachedToEnvironment?: string | null
   counters: number
@@ -262,6 +264,7 @@ export interface QuestionView {
 
 /** A card or ability being paid for, and the resources paid so far. */
 export interface ActiveCostView {
+  discardedCost?: { paid: number; required: number } | null
   canceledBy?: ('stunned' | 'confused')[]
   player: string
   /** the card being played */
@@ -356,6 +359,7 @@ export interface GameView {
   focusedCards: CardView[]
   /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
   attack?: { attacker: string; target: string } | null
+  scheming?: string[]
   /** threat that would be placed on a scheme, while its window is open */
   threat?: { scheme: string; amount: number; source: 'ThreatFromVillain' | 'ThreatFromMinion' | 'ThreatFromAbility' | 'ThreatFromAcceleration'; threshold?: number | null } | null
   /** boost cards: face down, without a code, until flipped */

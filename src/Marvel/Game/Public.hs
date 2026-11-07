@@ -118,6 +118,8 @@ data GameView = GameView
   , focusedCards :: [CardView]
   , attack :: Maybe AttackView
   -- ^ an enemy's attack, while it is made
+  , scheming :: [Text]
+  -- ^ enemies carrying out a scheme activation
   , threat :: Maybe ThreatView
   -- ^ threat that would be placed, while its window is open
   , boostCards :: [BoostView]
@@ -348,6 +350,7 @@ data VillainView = VillainView
   , damage :: Natural
   , scheme :: Natural
   , attack :: Natural
+  , activationBoost :: Natural
   , stunned :: Bool
   , confused :: Bool
   , tough :: Bool
@@ -380,6 +383,7 @@ data MinionView = MinionView
   , damage :: Natural
   , scheme :: Maybe Natural
   , attack :: Maybe Natural
+  , activationBoost :: Natural
   , stunned :: Bool
   , stunCards :: Natural
   , confuseCards :: Natural
@@ -476,8 +480,13 @@ data ActiveCostView = ActiveCostView
   , anyAmount :: Bool
   -- ^ an X cost, paid as far as the player likes
   , spent :: [CardView]
+  , discardedCost :: Maybe DiscardedCostView
   , canceledBy :: [Text]
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+data DiscardedCostView = DiscardedCostView {paid :: Natural, required :: Natural}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -531,6 +540,13 @@ gameView seesHand g = do
   activeCost <- for (headMay $ gameActiveCost g) \c -> do
     paid <- paymentResources c.activeCostPayment
     let usable = paid L.\\ [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
+        discards = [card | DiscardHandCardPayment card <- payments c.activeCostPayment]
+        discardedRequirements = \case
+          DiscardHandCardsWithTotalCost matcher required -> [(matcher, required)]
+          Costs costs -> concatMap discardedRequirements costs
+          _ -> []
+        requirements = discardedRequirements c.activeCostCost
+        discardedValue = sum [fromIntegral (max 0 $ fromMaybe 0 $ cdCost $ getCardDef card) | card <- discards, any (\(matcher, _) -> cardMatch matcher card) requirements]
     pure
       ActiveCostView
         { player = c.activeCostIdentityId
@@ -549,7 +565,8 @@ gameView seesHand g = do
                   in if null required then owedFor (costResources c.activeCostCost) usable
                      else map Just (foldl' (flip L.delete) required printed)
         , anyAmount = dynamic c.activeCostCost
-        , spent = map (cardView . PlayerCard) c.activeCostSpentCards
+        , spent = map cardView $ L.nub $ map PlayerCard c.activeCostSpentCards <> discards
+        , discardedCost = if null requirements then Nothing else Just $ DiscardedCostView discardedValue (sum $ map snd requirements)
         , canceledBy = case c.activeCostTarget of
             ForCard pc | cdCardType (getCardDef pc) == EventType ->
               let labels = cdAbilitySubTypes (getCardDef pc)
@@ -592,6 +609,8 @@ gameView seesHand g = do
       , collection = map cardView (gameCollection g)
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
+      , scheming = [idText $ toId v | v <- HashMap.elems (gameVillains g), let a = toAttrs v, isJust a.villainActivationPlayer, isNothing a.villainAttacking]
+          <> [idText $ toId m | m <- HashMap.elems (gameMinions g), let a = toAttrs m, isJust a.minionActivationPlayer, isNothing a.minionAttacking]
       , threat
       , boostCards =
           [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
@@ -828,6 +847,7 @@ gameView seesHand g = do
         , damage = if infinite then 0 else Villain.villainDamage v
         , scheme = sch
         , attack = maybe atk Attack.attackValue (Villain.villainAttackDetails v)
+        , activationBoost = a.villainBoost
         , stunned = a.villainStunned
         , confused = a.villainConfused
         , tough = a.villainTough
@@ -864,6 +884,7 @@ gameView seesHand g = do
         , damage = a.minionDamage
         , scheme = if a.minionSchemeAvailable then Just sch else Nothing
         , attack = if a.minionAttackAvailable then Just $ maybe atk Attack.attackValue (Minion.minionAttackDetails m) else Nothing
+        , activationBoost = a.minionBoost
         , stunCards = (if a.minionStunned then 1 else 0) + (if a.minionAdditionalStun then 1 else 0)
         , confuseCards = (if a.minionConfused then 1 else 0) + (if a.minionAdditionalConfuse then 1 else 0)
         , stunned = a.minionStunned
@@ -954,6 +975,7 @@ describeChoice asked = \case
   -- a card chosen for what choosing it does: the card itself is all there is to show
   CardLabel code (Run _) -> withCode (Just code) (plain "card" Nothing)
   CardLabel code c -> withCode (Just code) (describeChoice asked c)
+  Label "$label.revealDealtEncounterCard" _ -> withTarget (Just $ "dealt-" <> idText asked) $ plain "target" (Just "$label.revealDealtEncounterCard")
   Label l _ -> plain "label" (Just l)
   TargetLabel t body -> withKind (fromMaybe "target" (doneTo t body)) (on "target" t)
   EndTurn -> plain "endTurn" (Just "$label.endTurn")

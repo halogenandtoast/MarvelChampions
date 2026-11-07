@@ -3,6 +3,16 @@ import { nextTick } from 'vue'
 type StartViewTransition = (callback: () => void | Promise<void>) => {
   finished: Promise<void>
   updateCallbackDone: Promise<void>
+  skipTransition: () => void
+}
+let revision = 0
+const active = new Set<ReturnType<StartViewTransition>>()
+
+export const cancelViewTransitions = () => {
+  revision++
+  for (const transition of active) transition.skipTransition()
+  for (const animation of document.getAnimations()) animation.cancel()
+  window.dispatchEvent(new Event('marvel:cancel-animations'))
 }
 
 const supported = (): StartViewTransition | null => {
@@ -19,6 +29,7 @@ export const transitionsOn = () =>
   supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export const withViewTransition = async (apply: () => void | Promise<void>): Promise<void> => {
+  const startedAt = revision
   const start = supported()
   if (!start || !transitionsOn()) {
     await apply()
@@ -26,8 +37,11 @@ export const withViewTransition = async (apply: () => void | Promise<void>): Pro
     return
   }
   const transition = start(async () => {
+    if (startedAt !== revision) return
     await apply()
     await nextTick()
   })
-  await transition.finished.catch(() => undefined)
+  active.add(transition)
+  try { await transition.finished.catch(() => undefined) }
+  finally { active.delete(transition) }
 }

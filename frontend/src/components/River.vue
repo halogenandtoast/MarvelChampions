@@ -5,15 +5,18 @@ import { assetUrl } from '../assets'
 // face down and turned up, a card
 // being paid for (the default slot). Each is a lane, splitting the river between them; it
 // keeps its height when empty so the board never jumps.
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import TokenStack from './TokenStack.vue'
+import { useChoiceLabel } from '../composables/useChoices'
+import type { ChoiceView } from '../server'
 
 export interface RiverCard {
   id: string
+  boost?: boolean
   /** null while face down */
   code: string | null
   name?: string | null
@@ -37,8 +40,20 @@ export interface RiverAttacker {
   attack: number | null
   boostCards?: number
 }
+export interface RiverSchemer {
+  id: string
+  code: string
+  name: string
+  scheme: number | null
+  boostCards?: number
+}
 
-const { cards, label = null, reaction = false, attacker = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+const { cards, label = null, reaction = false, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+  activationKind?: 'attack' | 'scheme' | 'playerPhase' | 'villainPhase'
+  schemer?: RiverSchemer | null
+  activationBanner?: boolean
+  actions?: ChoiceView[]
+  activationAlert?: string | null
   canceledEvent?: { code: string; statuses: readonly ('stunned' | 'confused')[] } | null
   cards: readonly RiverCard[]
   label?: string | null
@@ -54,12 +69,25 @@ const { cards, label = null, reaction = false, attacker = null, scheme = null, c
   elsewhere: ReadonlySet<string>
 }>()
 const { t } = useI18n()
+const emit = defineEmits<{ choose: [index: number] }>()
+const choiceLabel = useChoiceLabel()
 const names = useCards()
+const skipAnimation = ref(false)
+const cancelAnimation = () => { skipAnimation.value = true }
+onMounted(() => window.addEventListener('marvel:cancel-animations', cancelAnimation))
+onBeforeUnmount(() => window.removeEventListener('marvel:cancel-animations', cancelAnimation))
+watch(() => activationAlert, alert => { if (alert) skipAnimation.value = false })
+const enemy = computed(() => attacker ?? schemer)
+const enemyPower = computed(() => attacker ? attacker.attack : schemer?.scheme)
+const displayedCards = computed(() => cards.filter(card => card.id !== enemy.value?.id))
 const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.from + scheme.amount >= scheme.threshold)
 </script>
 
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
+    <Transition name="activation" :css="!skipAnimation">
+      <div v-if="activationAlert" class="activation-alert" :class="{ 'fight-banner': activationBanner, 'scheme-banner': activationKind === 'scheme' || activationKind === 'playerPhase' }" role="status"><span>{{ activationAlert }}</span></div>
+    </Transition>
     <div v-if="cards.length || label || canceledEvent || !shared" class="lane" :class="{ live: cards.length || label || canceledEvent, reaction, danger: advances }">
       <div class="what">
         <p>{{ label ?? (cards.length ? t('game.river.revealed') : '') }}</p>
@@ -71,12 +99,17 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
           <BoardCard :code="canceledEvent.code" :morph="false" />
           <img v-for="status in canceledEvent.statuses" :key="status" class="canceled-status" :src="assetUrl(`/images/tokens/${status}.avif`)" :alt="t(`game.status.${status}`)" />
         </template>
-        <div v-if="attacker" class="attacker">
+        <div v-if="enemy" class="attacker">
           <dl class="stats">
-            <div class="stat-atk"><dt>{{ t('game.stats.atk') }}</dt><dd>{{ attacker.attack ?? '–' }}</dd></div>
-            <div v-if="attacker.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ attacker.boostCards }}</dd></div>
+            <div :class="attacker ? 'stat-atk' : 'stat-sch'"><dt>{{ t(attacker ? 'game.stats.atk' : 'game.stats.sch') }}</dt><dd>{{ enemyPower ?? '–' }}</dd></div>
+            <div v-if="enemy.boostCards"><dt>{{ t('game.stats.boost') }}</dt><dd>{{ enemy.boostCards }}</dd></div>
           </dl>
-          <BoardCard :id="attacker.id" :code="attacker.code" :name="attacker.name" :morph="false" />
+          <div class="enemy-card">
+            <BoardCard :id="enemy.id" :code="enemy.code" :name="enemy.name" :morph="false" />
+            <div v-if="actions.length" class="river-actions">
+              <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)">{{ choiceLabel(action) }}</button>
+            </div>
+          </div>
         </div>
         <div v-if="scheme" class="scheme">
           <div class="scheme-card">
@@ -86,14 +119,18 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
           <Meter :label="t('game.threat')" :value="scheme.from" :max="scheme.threshold" :adding="scheme.amount" tone="threat" />
         </div>
         <BoardCard
-          v-for="card in cards"
+          v-for="card in displayedCards"
           :id="card.id"
           :key="card.id"
           :code="card.code ?? ''"
           :name="card.name || names.name(card.code)"
           :back="card.code ? null : 'encounter'"
+          flip-reveal
           :morph="!elsewhere.has(card.id)"
         />
+      </div>
+      <div v-if="actions.length && !enemy" class="river-actions">
+        <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)">{{ choiceLabel(action) }}</button>
       </div>
     </div>
     <slot />
@@ -101,7 +138,21 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 </template>
 
 <style scoped>
-.river { display: flex; gap: 12px; min-height: 0; min-width: 0; }
+.river { position: relative; display: flex; gap: 12px; min-height: 0; min-width: 0; }
+.activation-alert { position: absolute; z-index: 5; inset: 0; display: grid; place-items: center; padding: 16px; border: 1px solid var(--amber); border-radius: 14px; background: var(--ink-2); color: var(--amber); font-family: var(--font-display); font-size: clamp(1.1rem, 2vw, 1.7rem); font-weight: 800; text-align: center; text-transform: uppercase; pointer-events: none; }
+.activation-enter-active, .activation-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
+.activation-enter-from { opacity: 0; transform: translateY(6px); }
+.activation-leave-to { opacity: 0; transform: translateY(-4px); }
+.fight-banner { overflow: hidden; border: 0; background: var(--banner-color, var(--stat-atk)); color: var(--ink-1); font-size: clamp(1.6rem, 3.5vw, 3.5rem); font-style: italic; letter-spacing: -0.025em; animation: fight-flood 2200ms both; }
+.scheme-banner { --banner-color: var(--stat-sch); }
+.fight-banner span { position: relative; z-index: 1; animation: fight-title 2200ms both; }
+.fight-banner::after { content: ''; position: absolute; inset: -50% -20%; background: repeating-linear-gradient(-55deg, transparent 0 50px, rgb(0 0 0 / 0.08) 50px 65px); animation: fight-streak 6600ms linear both; }
+.fight-banner.activation-enter-active, .fight-banner.activation-leave-active { transition: none; }
+@keyframes fight-flood { 0% { clip-path: inset(0 100% 0 0); transform: scaleY(0.25); } 18%, 76% { clip-path: inset(0); transform: scaleY(1); opacity: 1; } 100% { clip-path: inset(0); transform: scale(0.84); opacity: 0; } }
+@keyframes fight-title { 0% { transform: translateX(-12%) scale(1.6); opacity: 0; } 40% { transform: translateX(1%) scale(1.05); opacity: 1; } 52%, 76% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0; } }
+@keyframes fight-streak { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+@media (prefers-reduced-motion: reduce) { .fight-banner, .fight-banner span, .fight-banner::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .activation-enter-active, .activation-leave-active { transition: none; } .activation-enter-from, .activation-leave-to { transform: none; } }
 .canceled-status { width: var(--card-width); height: auto; border-radius: 8px; }
 .lane {
   display: grid;
@@ -172,5 +223,11 @@ const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.
 .stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--stat-label, var(--text-faint)); }
 .stats dd { margin: 0; font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; line-height: 1.05; color: var(--stat-fg, inherit); }
 /* ponytail: no scroll box, so a lit card's ring and glow show; a scroll box crops them. Add one back if a lane ever holds more cards than fit */
-.cards { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.cards { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.river-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+.enemy-card { display: flex; flex-direction: column; gap: 10px; width: var(--card-width); }
+.enemy-card .river-actions { justify-content: stretch; }
+.enemy-card .river-actions button { width: 100%; padding: 8px 6px; font-size: 0.8rem; }
+/* Keep a boost's frame identical while the back flips to its printed face. */
+.cards :deep(.card:not(.landscape):not(.unfolded)) { height: calc(var(--card-width) / var(--card-aspect)); }
 </style>

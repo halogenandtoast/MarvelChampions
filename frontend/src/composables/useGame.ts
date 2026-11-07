@@ -6,14 +6,14 @@ import type { GameData, GameView, ServerMessage } from '../server'
 import type { LogEntry } from '../gameLog'
 import { useCards } from '../cards'
 import type { RiverCard } from '../components/River.vue'
-import { dealFrom, intoRiver, notePiles, riffle } from './dealing'
-import { transitionsOn, withViewTransition } from './useViewTransition'
+import { cancelHeldRiverSources, dealFrom, holdRiverSource, intoRiver, notePiles, riffle } from './dealing'
+import { cancelViewTransitions, transitionsOn, withViewTransition } from './useViewTransition'
 
 // how long a card turned up in the river is left to be read, and how quickly it is cleared
 // for the next
 const HOLD_MS = 650
 const CLEAR_MS = 160
-const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms))
+class AnimationCancelled extends Error {}
 
 // entries are numbered from 1, so a page not reaching it has more before it
 const olderThan = (page: LogEntry[]) => (page[0]?.seq ?? 1) > 1
@@ -36,6 +36,9 @@ export const useGame = (gameId: string, spectate = false) => {
   // what the last state put in the river is over, cleared for what the server tells of next
   const riverCleared = ref(false)
   const canceledEvent = shallowRef<{ code: string; statuses: ('stunned' | 'confused')[] } | null>(null)
+  const activationAlert = ref<string | null>(null)
+  const activationBanner = ref(false)
+  const activationKind = ref<'attack' | 'scheme' | 'playerPhase' | 'villainPhase'>('attack')
   const cards = useCards()
   const hasOlder = ref(false)
   const queue: ServerMessage[] = []
@@ -43,11 +46,29 @@ export const useGame = (gameId: string, spectate = false) => {
   let socket: WebSocket | null = null
   let reconnect: number | undefined
   let socketUpdates = 0
+  let animationEpoch = 0
+  let animationController = new AbortController()
+  let undoing = false
+  const waitForAnimation = <T>(promise: Promise<T>): Promise<T> => {
+    const signal = animationController.signal
+    return new Promise((resolve, reject) => {
+      const abort = () => reject(new AnimationCancelled())
+      if (signal.aborted) { abort(); return }
+      signal.addEventListener('abort', abort, { once: true })
+      promise.then(value => { signal.removeEventListener('abort', abort); resolve(value) }, error => { signal.removeEventListener('abort', abort); reject(error) })
+    })
+  }
+  const sleep = (ms: number) => {
+    let timer: ReturnType<typeof setTimeout>
+    return waitForAnimation(new Promise<void>(resolve => { timer = setTimeout(resolve, ms) }))
+      .finally(() => clearTimeout(timer))
+  }
 
   // the pile each encounter card dealt to a player lies on, until it is revealed from it
   const dealtTo = new Map<string, string>()
 
-  const update = async (next: GameData) => {
+  const update = async (next: GameData, animate = true) => {
+    const epoch = animationEpoch
     notePiles()
     for (const p of next.game?.players ?? []) for (const id of p.dealtCardIds ?? []) dealtTo.set(id, `dealt-${p.id}`)
     if (next.log) {
@@ -56,21 +77,25 @@ export const useGame = (gameId: string, spectate = false) => {
     }
     // cards morph between zones, as a hand card going into play, or fly from and to piles
     const before = data.value?.game ?? null
-    const dealing = transitionsOn() && next.game ? dealFrom(before, next.game, cards.sources, new Map(river.value.map((c) => [c.id, c.code]))) : null
-    await withViewTransition(async () => {
+    const dealing = animate && transitionsOn() && next.game ? dealFrom(before, next.game, cards.sources, new Map(river.value.map((c) => [c.id, c.code]))) : null
+    const applyState = async () => {
+      if (epoch !== animationEpoch) return
       dealing?.lift()
       data.value = next
       river.value = []
       riverCleared.value = false
       canceledEvent.value = null
       await nextTick()
-      dealing?.land()
-    })
+      if (epoch === animationEpoch) dealing?.land()
+    }
+    if (animate) await withViewTransition(applyState)
+    else await applyState()
     dealing?.done()
   }
 
   // the river emptied, quickly, before the next card comes into it
   const clearRiver = async () => {
+    const epoch = animationEpoch
     const g = data.value?.game
     const held = canceledEvent.value || river.value.length || (!riverCleared.value && (g?.focusedCards?.length || g?.boostCards?.length || g?.attack))
     if (!held) return
@@ -79,25 +104,35 @@ export const useGame = (gameId: string, spectate = false) => {
     })
     document.head.append(quick)
     await withViewTransition(() => {
+      if (epoch !== animationEpoch) return
       river.value = []
       riverCleared.value = true
       canceledEvent.value = null
     })
     quick.remove()
   }
-  // a boost dealt after cards already turned up, as an attack after a scheme, starts afresh
-  const turnedUp = () =>
-    river.value.some((c) => c.code) || (!riverCleared.value && (data.value?.game?.boostCards ?? []).some((b) => b.code))
-
   // a card into the river: a boost off the encounter deck face down, or a card turned up
-  const toRiver = async (card: RiverCard, faceUp: boolean) => {
-    const moving = transitionsOn() ? intoRiver(card.id, faceUp, cards.sources, dealtTo.get(card.id)) : null
-    dealtTo.delete(card.id)
-    await withViewTransition(() => {
-      moving?.lift()
-      river.value = [...river.value.filter((c) => c.id !== card.id), card]
-    })
-    moving?.done()
+  const toRiver = async (card: RiverCard, faceUp: boolean, flipInPlace = false) => {
+    const epoch = animationEpoch
+    if (flipInPlace) {
+      river.value = [...river.value.filter(c => c.id !== card.id), card]
+      await nextTick()
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) await sleep(560)
+      await sleep(HOLD_MS)
+      return
+    }
+    const moving = transitionsOn() ? intoRiver(card.id, faceUp, cards.sources, dealtTo.get(card.id), card.code) : null
+    try {
+      if (moving) await waitForAnimation(moving.ready)
+      if (epoch !== animationEpoch) throw new AnimationCancelled()
+      dealtTo.delete(card.id)
+      await withViewTransition(() => {
+        if (epoch !== animationEpoch) return
+        moving?.lift()
+        river.value = [...river.value.filter((c) => c.id !== card.id), card]
+      })
+      if (epoch !== animationEpoch) throw new AnimationCancelled()
+    } finally { moving?.done() }
     if (faceUp && moving) await sleep(HOLD_MS)
   }
 
@@ -113,16 +148,37 @@ export const useGame = (gameId: string, spectate = false) => {
         return update(message.contents)
       case 'Logged':
         log.value = [...log.value, message.entry]
+        for (const part of message.entry.body) {
+          if (part.tag !== 'LogI18n') continue
+          const [key, params] = part.contents
+          if (key === 'log.phase.player' || key === 'log.phase.villain') {
+            activationBanner.value = true
+            activationKind.value = key === 'log.phase.player' ? 'playerPhase' : 'villainPhase'
+            activationAlert.value = t(key)
+            await nextTick()
+            await sleep(2200)
+            activationAlert.value = null
+            continue
+          }
+          const enemy = params.enemy
+          if (!['log.attacks', 'log.schemes'].includes(key) || enemy?.tag !== 'LogRefPart' || enemy.contents.kind !== 'RefVillain') continue
+          const player = params.player
+          activationBanner.value = true
+          activationKind.value = key === 'log.attacks' ? 'attack' : 'scheme'
+          activationAlert.value = t(key, { enemy: enemy.contents.name, player: player?.tag === 'LogRefPart' ? player.contents.name : '' })
+          await nextTick()
+          await sleep(2200)
+          activationAlert.value = null
+        }
         return
       case 'Shuffled':
         return transitionsOn() ? riffle(message.pile) : undefined
       case 'BoostDealt':
-        if (turnedUp()) await clearRiver()
-        return toRiver({ id: message.cardId, code: null }, false)
+        return toRiver({ id: message.cardId, code: null, boost: true }, false)
       case 'Revealing':
         // an encounter card revealed has the river to itself; a boost turns up beside its fellows
         if (!message.boost) await clearRiver()
-        return toRiver({ id: message.cardId, code: message.code }, true)
+        return toRiver({ id: message.cardId, code: message.code, boost: message.boost }, true, message.boost)
       default:
         return
     }
@@ -131,8 +187,12 @@ export const useGame = (gameId: string, spectate = false) => {
   const drain = async () => {
     if (draining) return
     draining = true
-    while (queue.length) await apply(queue.shift() as ServerMessage)
-    draining = false
+    try {
+      while (queue.length) {
+        try { await apply(queue.shift() as ServerMessage) }
+        catch (error) { if (!(error instanceof AnimationCancelled)) throw error }
+      }
+    } finally { draining = false }
   }
 
   const post = async (path: string, body: unknown = {}) => {
@@ -146,18 +206,42 @@ export const useGame = (gameId: string, spectate = false) => {
   }
 
   const refresh = async () => {
+    const epoch = animationEpoch
+    if (undoing) return
     const updatesAtStart = socketUpdates
     const response = await apiFetch(gamePath).catch(() => null)
     if (response?.ok) {
       const contents = (await response.json()) as GameData
       // A broadcast received during this request is newer than its snapshot.
       // Applying the snapshot afterwards can rewind a deal and replay it.
-      if (closed || socketUpdates !== updatesAtStart) return
+      if (closed || epoch !== animationEpoch || socketUpdates !== updatesAtStart) return
       queue.push({ tag: 'Update', contents })
       void drain()
     } else if (response) {
       error.value = (await response.text()) || response.statusText
     }
+  }
+
+  const undoImmediately = async (path: string) => {
+    if (undoing) return false
+    undoing = true
+    animationEpoch++
+    animationController.abort()
+    animationController = new AbortController()
+    queue.length = 0
+    activationAlert.value = null
+    river.value = []
+    riverCleared.value = true
+    canceledEvent.value = null
+    cancelHeldRiverSources()
+    cancelViewTransitions()
+    try {
+      const accepted = await post(path)
+      const response = await apiFetch(gamePath).catch(() => null)
+      if (response?.ok && !closed) await update(await response.json() as GameData, false)
+      cancelViewTransitions()
+      return accepted
+    } finally { undoing = false }
   }
 
   const connect = () => {
@@ -167,6 +251,7 @@ export const useGame = (gameId: string, spectate = false) => {
       void refresh()
     })
     socket.addEventListener('message', (event: MessageEvent<string>) => {
+      if (undoing) return
       try {
         const message = JSON.parse(event.data) as ServerMessage
         if (message.tag === 'Update') socketUpdates++
@@ -185,8 +270,10 @@ export const useGame = (gameId: string, spectate = false) => {
 
   onScopeDispose(() => {
     closed = true
+    animationController.abort()
     window.clearTimeout(reconnect)
     socket?.close()
+    cancelHeldRiverSources()
   })
 
   const game = computed<GameView | null>(() => data.value?.game ?? null)
@@ -202,6 +289,9 @@ export const useGame = (gameId: string, spectate = false) => {
     river: shallowReadonly(river),
     riverCleared: readonly(riverCleared),
     canceledEvent: readonly(canceledEvent),
+    activationAlert: readonly(activationAlert),
+    activationBanner: readonly(activationBanner),
+    activationKind: readonly(activationKind),
     hasOlder: readonly(hasOlder),
     loadOlder: async (before: number) => {
       const response = await apiFetch(`/api/games/${gameId}/log?before=${before}`).catch(() => null)
@@ -210,13 +300,24 @@ export const useGame = (gameId: string, spectate = false) => {
       log.value = [...older, ...log.value]
       hasOlder.value = olderThan(older)
     },
-    undo: (to?: 'phase' | 'round') => post(to ? `/undo?to=${to}` : '/undo'),
+    undo: (to?: 'phase' | 'round') => undoImmediately(to ? `/undo?to=${to}` : '/undo'),
     // back to just before a log entry
-    undoTo: (step: number) => post(`/undo?to=step&step=${step}`),
+    undoTo: (step: number) => undoImmediately(`/undo?to=step&step=${step}`),
     say: (text: string) => post('/chat', { text }),
     reset: () => post('/reset'),
     // answered as the seat it was asked of
-    answer: (questionVersion: number, choice: number, player: string) => post('', { choice, questionVersion, player }),
+    answer: async (questionVersion: number, choice: number, player: string) => {
+      const epoch = animationEpoch
+      const question = data.value?.game?.question[player]
+      const card = data.value?.game?.players.find(p => p.id === player)?.dealtCardIds?.[0]
+      const held = card && transitionsOn() && question?.prompt === '$label.revealDealtEncounterCard'
+        ? holdRiverSource(card, `dealt-${player}`, cards.sources) : null
+      await held?.ready
+      if (epoch !== animationEpoch) { held?.cancel(); return false }
+      const accepted = await post('', { choice, questionVersion, player })
+      if (!accepted) held?.cancel()
+      return accepted
+    },
     debug: (message: unknown) => post('/debug', message),
     join: (deck: DeckChoice, position?: number) => post('/join', { deck, position }),
     leave: () => post('/leave'),

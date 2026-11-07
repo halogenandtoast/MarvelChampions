@@ -55,6 +55,19 @@ removeOneTough attrs
   | minionAdditionalTough attrs > 0 = attrs {minionAdditionalTough = minionAdditionalTough attrs - 1}
   | otherwise = attrs & toughL .~ False
 
+flipMinionBoostCards :: ReverseQueue m => Attrs Minion -> m (Attrs Minion)
+flipMinionBoostCards attrs = do
+  for_ (minionBoostCards attrs) \card -> do
+    checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
+    ignored <- elem IgnoreBoostCards <$> getModifiers attrs
+    if ignored
+      then revealBoostCardWithoutAbility card (minionId attrs)
+      else do
+        revealBoostCard card (minionId attrs)
+        countActivationBoostIcons attrs [card]
+  unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
+  pure $ attrs & boostCardsL .~ []
+
 runMinionMessage ::
   (ReverseQueue m) => MinionMessage -> Attrs Minion -> m (Attrs Minion)
 runMinionMessage msg attrs = case msg of
@@ -281,7 +294,7 @@ runMinionMessage msg attrs = case msg of
         let refreshed = withAttackBase (base + toInteger (minionBoost attrs)) actual
         attack' <- undefendedIfDefenderGone refreshed
         attackedYou (attackEnemy attack') (attackCharacter attack')
-        wasAttacked attack'
+        confirmEnemyAttack attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
   MinionDealtBoost card -> do
     checkWindows [W.Window W.After $ W.FacedownBoostGiven (EnemyMinionId $ minionId attrs) card]
@@ -289,16 +302,11 @@ runMinionMessage msg attrs = case msg of
   -- each boost card is turned faceup in turn, and its icons added; one it is given as
   -- they are ("give this enemy another boost card") is turned up after them
   MinionFlipBoostCards -> do
-    for_ (minionBoostCards attrs) \card -> do
-      checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
-      ignored <- elem IgnoreBoostCards <$> getModifiers attrs
-      if ignored
-        then revealBoostCardWithoutAbility card (minionId attrs)
-        else do
-          revealBoostCard card (minionId attrs)
-          countActivationBoostIcons attrs [card]
-    unless (null $ minionBoostCards attrs) $ minionStep (minionId attrs) MinionFlipBoostCards
-    pure $ attrs & boostCardsL .~ []
+    for_ (headMay $ minionBoostCards attrs) $ \card -> do
+      you <- getYou
+      chooseOnePromptedAbout you "$label.revealBoostCards" card
+        [targeting card $ cardSpecific attrs "flipBoostCards" ()]
+    pure attrs
   MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n
  where
   isVillainous = elem Villainous <$> getModifiedKeywords attrs
@@ -317,6 +325,7 @@ runMinionMessage msg attrs = case msg of
 instance RunMessage (Attrs Minion) where
   runMessage msg attrs = runQueueT do
     updated <- case msg of
+      CardSpecific target "flipBoostCards" _ | isTarget attrs target -> flipMinionBoostCards attrs
       PlaceCounters (isTarget attrs -> True) n -> pure attrs {minionCounters=minionCounters attrs+n}
       RemoveCounters (isTarget attrs -> True) n -> pure attrs {minionCounters=subtractNatural n $ minionCounters attrs}
       CardSpecific target "schemeReplacesAttack" (fromJSON -> Success flag) | isTarget attrs target -> pure attrs {minionSchemeReplacesAttack = flag}

@@ -19,7 +19,7 @@ import Marvel.Deck (unDeck)
 
 import Marvel.Hand (unHand)
 
-import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard, PlayerIdentityLastDefense, PlayerIdentityTuckedEncounterCards, PlayerIdentityWeatherDeck))
+import Marvel.Identity.Types (PlayerIdentity, Field (PlayerIdentityHand, PlayerIdentityDeck, PlayerIdentityDiscard, PlayerIdentityLastDefense, PlayerIdentityTuckedEncounterCards, PlayerIdentityWeatherDeck, PlayerIdentityDamageReduction))
 
 import Marvel.Projection
 
@@ -28,7 +28,7 @@ import Marvel.Ability.Types qualified as Ability
 import Marvel.I18n (ikeyWith, intVar)
 import Marvel.ActiveCost.Types
 import Marvel.Area as X (Area (..), AreaId (..), DeckKey (..), Pile (..))
-import Marvel.Attack (Attack (..), sourceEnemy)
+import Marvel.Attack (Attack (..), sourceEnemy, attackDamageDealt)
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind)
 import Marvel.Card.Def (CardDef (..), CardMatcher, HasCardDef (..), CardType (UpgradeType, EventType))
 import Marvel.Card.Id (CardId (..), HasCardId (..))
@@ -47,7 +47,7 @@ import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Modifier.Types
     ( Modifier(RemovedThreatPlacedOnMinion, CannotLeavePlay, AttacksAgainstGainKeyword, AttacksAgainstLoseKeyword, EnemyAttacksAdditionalCost, AttackAdditionalCostPaid,
-               ThwartWithAttack, KeywordModifier, AdditionalReadyCost,
+               ThwartWithAttack, KeywordModifier, AdditionalReadyCost, AttackDamageReduction,
                CannotChangeEnergyForm, CannotChangeMassForm,
                AttacksCannotBeDefended, OnlyIdentityCanDefend,
                PlayersChooseTheVillain, CannotBeDefeated, CannotBeDiscarded) )
@@ -967,6 +967,18 @@ undefendedIfDefenderGone a = case attackCharacter a of
     here <- notNull <$> selectList (AllyWithId ally)
     pure $ if here then a else a {attackDefended = False, attackCharacter = fromMaybe (attackCharacter a) (attackTarget a)}
   _ -> pure a
+
+-- | Let the player review the resolved boosts before applying an enemy attack.
+confirmEnemyAttack :: ReverseQueue m => Attack -> m ()
+confirmEnemyAttack a = do
+  you <- getYou
+  reduction <- case attackCharacter a of
+    IdentityCharacter ident -> project PlayerIdentityDamageReduction ident
+    AllyCharacter ally -> sum . mapMaybe (\case AttackDamageReduction n -> Just n; _ -> Nothing) <$> getModifiers (AllyRef ally)
+    _ -> pure 0
+  let amount = subtractNatural reduction (attackDamageDealt a)
+  chooseOnePromptedAbout you "$label.resolveEnemyAttack" (enemyRef $ attackEnemy a)
+    [labeled (countLabel "applyAttackDamage" amount) $ wasAttacked a]
 
 wasAttacked :: (ReverseQueue m) => Attack -> m ()
 wasAttacked original = do

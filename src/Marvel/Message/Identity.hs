@@ -78,6 +78,7 @@ data IdentityMessage
   | EncounterCardInDiscard EncounterCard
   | MoveIdentityBoostCardsToVillain VillainId
   | RevealEncounterCards
+  | RevealNextEncounterCard
   | IdentityWasAttacked Attack
   | IdentityDamaged Source Damage
   | IdentityDefended Natural

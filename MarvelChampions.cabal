@@ -3261,6 +3261,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.AreasSpec
       Marvel.Rules.AssaultSpec
       Marvel.Rules.AttachedControlSpec
+      Marvel.Rules.BoostRevealClickSpec
       Marvel.Rules.CampaignSpec
       Marvel.Rules.CancelActivationSpec
       Marvel.Rules.ChosenHandCardCostSpec
@@ -3281,6 +3282,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.DefenseSpec
       Marvel.Rules.DividedSpec
       Marvel.Rules.EliminationSpec
+      Marvel.Rules.EncounterDeckClickSpec
       Marvel.Rules.EncounterDeckSpec
       Marvel.Rules.EncounterPlayerDeckSpec
       Marvel.Rules.EngagementWindowSpec

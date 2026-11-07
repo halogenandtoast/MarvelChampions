@@ -339,6 +339,21 @@ getModifiedKeywords attrs = do
   applyModifier (KeywordModifier k) = (k :)
   applyModifier _ = id
 
+flipVillainBoostCards :: ReverseQueue m => Attrs Villain -> m (Attrs Villain)
+flipVillainBoostCards attrs = do
+  for_ (reverse $ villainBoostCards attrs) \card -> do
+    checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
+    ignored <- elem IgnoreBoostCards <$> getModifiers attrs
+    if ignored
+      then revealBoostCardWithoutAbility card vid
+      else do
+        revealBoostCard card vid
+        countActivationBoostIcons attrs [card]
+  villainStep vid VillainCheckAdditionalBoosts
+  pure $ attrs & (boostCardsL .~ mempty)
+ where
+  vid = villainId attrs
+
 runVillainMessage :: (ReverseQueue m) => VillainMessage -> Attrs Villain -> m (Attrs Villain)
 runVillainMessage msg attrs = case msg of
   VillainAdvanced -> do
@@ -545,7 +560,7 @@ runVillainMessage msg attrs = case msg of
               attackRanged = Ranged `elem` current}
         attack' <- undefendedIfDefenderGone refreshed
         attackedYou (attackEnemy attack') (attackCharacter attack')
-        wasAttacked attack'
+        confirmEnemyAttack attack'
         pure $ attrs & boostL .~ 0 & attackingL ?~ attack'
   VillainDealtBoost c -> do
     checkWindows [W.Window W.After $ W.FacedownBoostGiven (EnemyVillainId $ villainId attrs) c]
@@ -557,16 +572,11 @@ runVillainMessage msg attrs = case msg of
   -- each boost card is turned face up in turn, and its icons counted and added, which
   -- an interrupt to its turning face up may cancel
   VillainFlipBoostCards -> do
-    for_ (villainBoostCards attrs) \card -> do
-      checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
-      ignored <- elem IgnoreBoostCards <$> getModifiers attrs
-      if ignored
-        then revealBoostCardWithoutAbility card vid
-        else do
-          revealBoostCard card vid
-          countActivationBoostIcons attrs [card]
-    villainStep vid VillainCheckAdditionalBoosts
-    pure $ attrs & (boostCardsL .~ mempty)
+    for_ (headMay $ reverse $ villainBoostCards attrs) $ \card -> do
+      you <- getYou
+      chooseOnePromptedAbout you "$label.revealBoostCards" card
+        [targeting card $ cardSpecific attrs "flipBoostCards" ()]
+    pure attrs
   VillainActivationBonus n -> pure $ attrs & boostL +~ n
   VillainAddBoost n ->
     pure $
@@ -633,6 +643,7 @@ runVillainMessage msg attrs = case msg of
 
 instance RunMessage (Attrs Villain) where
   runMessage msg attrs = runQueueT $ case msg of
+    CardSpecific target "flipBoostCards" _ | isTarget attrs target -> flipVillainBoostCards attrs
     CardSpecific target "recordPendingSchemeThreat" (fromJSON -> Success scheme) | isTarget attrs target -> attrs <$ recordPendingVillainSchemeThreat (villainId attrs) scheme
     CardSpecific target "villainSchemeResultOn" (fromJSON -> Success (scheme,n)) | isTarget attrs target -> do
       checkWindows $ [W.Window W.After $ W.VillainSchemeResolved (villainId attrs) n]

@@ -13,9 +13,11 @@ import Meter from './Meter.vue'
 import Pile from './Pile.vue'
 import GameIcon from '../browser/components/GameIcon.vue'
 import TokenStack from './TokenStack.vue'
+import { useChoices } from '../composables/useChoices'
 
-const { game, area = null } = defineProps<{ game: GameView; area?: AreaView | null }>()
+const { game, area = null, riverEnemyIds = [] } = defineProps<{ game: GameView; area?: AreaView | null; riverEnemyIds?: string[] }>()
 const { t, te } = useI18n()
+const { assignedDamage } = useChoices()
 const cards = useCards()
 const { modularName } = useScenarios(ref([]))
 
@@ -118,10 +120,11 @@ const escalation = (scheme: SchemeView) => {
           :tough="villain.tough"
           :bomb-counters="villain.bombCounters"
         />
+        <Pile v-if="villain.boostCards && !riverEnemyIds.includes(villain.id)" class="boost-pile" :label="t('game.boost')" back="encounter" :count="villain.boostCards" />
       </div>
       <!-- infinite hit points (Escape the Museum): a full bar, ∞ -->
       <Meter v-if="villain.infiniteHitPoints" :label="t('game.hp')" :value="1" :max="1" text="∞" tone="villain" />
-      <Meter v-else :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :max="villain.hitPoints" tone="villain" />
+      <Meter v-else :label="t('game.hp')" :value="Math.max(0, villain.hitPoints - villain.damage)" :subtracting="assignedDamage[villain.id] ?? 0" :max="villain.hitPoints" tone="villain" />
     </div>
     <!-- what is attached to the villain, as cards beside it -->
     <template v-for="villain in villains" :key="`${villain.id}-attached`">
@@ -219,6 +222,8 @@ const escalation = (scheme: SchemeView) => {
 .active-flag { position: absolute; z-index: 1; top: -8px; right: 0; padding: 1px 7px; border-radius: 999px; background: #b8323a; color: #fff; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 /* its stats pinned to the card's left */
 .body { display: flex; gap: 6px; align-items: flex-start; }
+.boost-pile { --card-width: var(--attached-width); }
+.villain:has(.boost-pile) > :deep(.meter) { align-self: flex-start; margin-left: 50px; }
 /* its health under the card alone */
 .villain > :deep(.meter) { width: var(--card-width); align-self: flex-end; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; width: 44px; flex: none; }
@@ -231,7 +236,10 @@ const escalation = (scheme: SchemeView) => {
 .escalation .icons { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--crimson-bright); }
 .escalation { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.7rem; color: var(--text-faint); --token-size: 20px; }
 .scheme-markers { display: flex; align-items: center; justify-content: center; height: 30px; }
-.glider-marker { --token-size: 30px; }
+.glider-marker { --token-size: 30px; view-transition-name: glider-counter; }
+:global(::view-transition-group(glider-counter)) { animation-duration: 520ms; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); z-index: 3; }
+:global(::view-transition-old(glider-counter)) { animation: none; opacity: 0; }
+:global(::view-transition-new(glider-counter)) { animation: none; mix-blend-mode: normal; }
 .side-schemes { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; flex: 0 1 auto; min-width: 0; }
 
 .environments { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-inline: auto; min-width: 0; }

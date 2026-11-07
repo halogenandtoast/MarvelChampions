@@ -59,6 +59,7 @@ export const useChoiceLabel = () => {
   // `cardName` names what it is about: on its own card a chip says only what it does,
   // elsewhere a button says what to
   return (choice: ChoiceView, cardName = '', named = false): string => {
+    if (choice.label === '$label.revealBoostCards') return keyed('$label.revealBoostCard')
     if (choice.label && choice.kind !== 'ability') return keyed(choice.label)
     if (choice.kind === 'ability') {
       const type = choice.abilityType ? (te(`game.abilityTypes.${choice.abilityType}`) ? t(`game.abilityTypes.${choice.abilityType}`) : choice.abilityType) : t('game.choices.ability')

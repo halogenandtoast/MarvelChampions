@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useServerText } from '../i18n'
+import { parseInput, useServerText } from '../i18n'
 import { currentUser } from '../auth'
 import { exportGame, fetchScenarios } from '../api'
 import { useGame } from '../composables/useGame'
@@ -22,7 +22,7 @@ import Lobby from '../components/Lobby.vue'
 import PlayerArea from '../components/PlayerArea.vue'
 import PayingTray from '../components/PayingTray.vue'
 import QuestionZone from '../components/QuestionZone.vue'
-import River, { type RiverAttacker, type RiverCard, type RiverScheme } from '../components/River.vue'
+import River, { type RiverAttacker, type RiverCard, type RiverScheme, type RiverSchemer } from '../components/River.vue'
 import SeatTabs from '../components/SeatTabs.vue'
 import SetupBar from '../components/SetupBar.vue'
 import StoryReading from '../components/StoryReading.vue'
@@ -36,7 +36,7 @@ const { t } = useI18n()
 const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
-const { error, game, data, log, river, riverCleared, canceledEvent, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
+const { error, game, data, log, river, riverCleared, canceledEvent, activationAlert, activationBanner, activationKind, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
   useGame(gameId, spectate)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
@@ -63,7 +63,12 @@ const answering = computed(() => {
   return yours.find((id) => id === viewing.value) ?? yours[0] ?? null
 })
 const question = computed(() => (answering.value ? (game.value?.question[answering.value] ?? null) : null))
-const choices = computed<ChoiceView[]>(() => question.value?.choices ?? [])
+const choices = computed<ChoiceView[]>(() => {
+  const options = question.value?.choices ?? []
+  if (question.value?.prompt !== '$label.revealBoostCards') return options
+  const first = game.value?.boostCards?.find(card => !card.code)?.id
+  return first ? options.map(choice => choice.label === '$label.revealBoostCards' ? { ...choice, target: first } : choice) : options
+})
 const waitingOn = computed(() => (answering.value ? null : (asked.value.map((id) => playerName.value[id]).find(Boolean) ?? null)))
 
 // the seat shown: yours at first, then whoever of yours is asked
@@ -115,13 +120,30 @@ const showArea = (id: number) => {
 // what is happening now: cards revealed, boost cards dealt and turned up, and those the
 // server has told of before the state that follows
 const searchIds = computed(() => game.value ? searchCardIds(game.value) : new Set<string>())
+const boostOrder = ref<string[]>([])
+watch(() => [...new Set([
+  ...(game.value?.boostCards ?? []).filter(card => card.code).map(card => card.id),
+  ...(game.value?.boostCards ?? []).filter(card => !card.code).map(card => card.id),
+  ...river.value.filter(card => card.boost).map(card => card.id),
+])], ids => {
+  boostOrder.value = [...boostOrder.value.filter(id => ids.includes(id)), ...ids.filter(id => !boostOrder.value.includes(id))]
+}, { immediate: true })
 const riverCards = computed<RiverCard[]>(() => {
   const cards = new Map<string, RiverCard>()
   if (!riverCleared.value) {
     for (const c of game.value?.focusedCards ?? []) if (!searchIds.value.has(c.id)) cards.set(c.id, c)
-    for (const b of game.value?.boostCards ?? []) cards.set(b.id, b)
+    for (const b of game.value?.boostCards ?? []) if (b.code) cards.set(b.id, b)
   }
   for (const c of river.value) cards.set(c.id, { ...cards.get(c.id), ...c })
+  for (const id of game.value?.scheming ?? []) {
+    const enemy = [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find(enemy => enemy.id === id)
+    if (enemy) cards.set(id, { id, code: enemy.code, name: enemy.name })
+  }
+  if (['$label.resolveEnemyAttack', '$label.resolveEnemyScheme'].includes(question.value?.prompt ?? '') && question.value?.source) {
+    const id = question.value.source
+    const enemy = things.value[id]
+    if (enemy && id !== attacker.value?.id) cards.set(id, { id, ...enemy })
+  }
   // Keep the source of an offered response or interrupt visible, including upgrades attached
   // to schemes. Its choice is answered on the card in the river.
   for (const choice of choices.value) {
@@ -129,7 +151,24 @@ const riverCards = computed<RiverCard[]>(() => {
     const card = things.value[choice.target]
     if (card) cards.set(choice.target, { id: choice.target, ...card })
   }
-  return [...cards.values()]
+  if (Object.values(game.value?.question ?? {}).some(q => q?.prompt === '$label.revealBoostCards')) {
+    for (const enemy of [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])]) {
+      if (enemy.boostCards) cards.set(enemy.id, { id: enemy.id, code: enemy.code, name: enemy.name })
+    }
+  }
+  if (!riverCleared.value && (attacker.value || [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].some(enemy => cards.has(enemy.id)))) {
+    for (const boost of game.value?.boostCards ?? []) if (!boost.code && !cards.has(boost.id)) cards.set(boost.id, boost)
+  }
+  const rank = (card: RiverCard) => {
+    const index = boostOrder.value.indexOf(card.id)
+    return index < 0 ? -1 : index
+  }
+  return [...cards.values()].sort((a, b) => rank(a) - rank(b))
+})
+const riverEnemyIds = computed(() => {
+  const ids = new Set(riverCards.value.map(card => card.id))
+  if (attacker.value) ids.add(attacker.value.id)
+  return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].filter(enemy => ids.has(enemy.id)).map(enemy => enemy.id)
 })
 // a card in the river may be on the table or in hand too, as a revealed minion is
 const elsewhere = computed(() => {
@@ -144,12 +183,28 @@ const attacker = computed<RiverAttacker | null>(() => {
   if (!id || riverCleared.value) return null
   return [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find((e) => e.id === id) ?? null
 })
+const schemer = computed<RiverSchemer | null>(() => {
+  if (attacker.value) return null
+  const pending = Object.values(game.value?.question ?? {}).find(q => q?.prompt === '$label.resolveEnemyScheme')
+  const id = pending?.source ?? game.value?.scheming?.[0]
+  const enemy = [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find(enemy => enemy.id === id)
+    ?? (Object.values(game.value?.question ?? {}).some(q => q?.prompt === '$label.revealBoostCards')
+      ? [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find(enemy => enemy.boostCards > 0) : null)
+  if (!enemy) return null
+  const label = pending?.choices.find(choice => choice.label?.startsWith('$label.placeActivationThreat '))?.label
+  const amount = label ? parseInput(label).params.count : null
+  return { ...enemy, scheme: typeof amount === 'number' ? amount : enemy.scheme === null ? null : enemy.scheme + (enemy.activationBoost ?? 0) }
+})
 const riverLabel = computed(() => {
   if (choices.value.some((choice) => choice.kind === 'ability' && choice.abilityType?.includes('Interrupt'))) return t('game.river.interrupts')
   if (choices.value.some((choice) => choice.kind === 'ability' && choice.abilityType?.includes('Response'))) return t('game.river.responses')
   if (riverCleared.value) return null
   const attack = game.value?.attack
   if (attack) return t('game.river.attacks', { attacker: things.value[attack.attacker]?.name ?? '', target: things.value[attack.target]?.name ?? '' })
+  if (question.value?.prompt === '$label.resolveEnemyScheme' && question.value.source) return t('game.river.schemes', { enemy: things.value[question.value.source]?.name ?? '' })
+  const schemer = [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find(enemy => game.value?.scheming?.includes(enemy.id)
+    || (Object.values(game.value?.question ?? {}).some(q => q?.prompt === '$label.revealBoostCards') && enemy.boostCards > 0))
+  if (schemer) return t('game.river.schemes', { enemy: schemer.name })
   const threat = game.value?.threat
   if (!threat || !riverScheme.value) return null
   if (threat.source === 'ThreatFromAcceleration') return t('game.river.placeThreat')
@@ -186,6 +241,7 @@ const onBoard = computed(() => {
   add(g.collection ?? [])
   add(riverCards.value)
   for (const p of shownSeats.value) {
+    ids.add(`dealt-${p.id}`)
     ids.add(p.id)
     add(p.allies)
     p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
@@ -258,7 +314,8 @@ const things = computed(() => {
 })
 const boardChoices = computed(() => choices.value.filter((c) => c.target && onBoard.value.has(c.target)))
 // a player's choice is also a button, named for the player, as the first player is chosen
-const buttons = computed(() => choices.value.filter((c) => c.kind !== 'declareWild' && (!c.target || !onBoard.value.has(c.target) || c.kind === 'player')))
+const riverActions = computed(() => choices.value.filter(c => /^\$label\.(applyAttackDamage|placeActivationThreat)\b/.test(c.label ?? '')))
+const buttons = computed(() => choices.value.filter((c) => !riverActions.value.includes(c) && c.kind !== 'declareWild' && (!c.target || !onBoard.value.has(c.target) || c.kind === 'player')))
 // a wild paid is declared as a type on its icon in the paying tray
 const declares = computed(() => choices.value.filter((c) => c.kind === 'declareWild'))
 
@@ -273,7 +330,9 @@ const picking = computed(() => Object.entries(game.value?.question ?? {}).find((
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
 
-provideChoices(() => boardChoices.value, choose, () => question.value?.source ?? null, () => question.value?.assignedDamage ?? {})
+provideChoices(() => boardChoices.value, choose, () => question.value?.prompt === '$label.revealBoostCards'
+  ? choices.value.find(choice => choice.label === '$label.revealBoostCards')?.target ?? null
+  : question.value?.source ?? null, () => question.value?.assignedDamage ?? {})
 
 const filingBug = ref(false)
 const debugging = ref(false)
@@ -383,11 +442,11 @@ const resetGame = () => restartDialog.value?.open()
         <template v-if="game">
           <div class="half villain-half">
             <AreaTabs :labels="game.competition ? Object.fromEntries(game.competition.teams.map((team) => [team.area, t(`civilWar.${team.team.toLowerCase()}`)])) : undefined" v-if="splitAreas" :areas="orderedAreas" :numbers="Object.fromEntries(areas.map((a, n) => [a.id, n + 1]))" :shown="shownArea?.id ?? null" :own="ownArea" :lit="litAreas" :names="playerName" @show="showArea" />
-            <VillainArea :game="game" :area="shownArea" />
+            <VillainArea :game="game" :area="shownArea" :river-enemy-ids="riverEnemyIds" />
             <MissionArea v-if="game.mission" :mission="game.mission" />
           </div>
 
-          <River class="river" :cards="riverCards" :reaction="choices.some(choice => choice.kind === 'ability' && /Response|Interrupt/.test(choice.abilityType ?? ''))" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :actions="riverActions" @choose="choose" :activation-alert="activationAlert" :activation-banner="activationBanner" :activation-kind="activationKind" :cards="riverCards" :reaction="choices.some(choice => choice.kind === 'ability' && /Response|Interrupt/.test(choice.abilityType ?? ''))" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :schemer="schemer" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" :declares="declares" @choose="choose" />
           </River>
 
@@ -405,6 +464,7 @@ const resetGame = () => restartDialog.value?.open()
                 @all="allSeats = !allSeats"
               />
               <PlayerArea
+                :river-enemy-ids="riverEnemyIds"
                 v-for="seat in shownSeats"
                 :key="seat.id"
                 :player="seat"

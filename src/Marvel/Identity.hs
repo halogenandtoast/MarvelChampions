@@ -1318,6 +1318,12 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     -- one at a time in the order dealt, a card dealt meanwhile (by surge) joining them
     RevealEncounterCards -> case playerIdentityEncounterCards of
       [] -> pure pid
+      _ -> do
+        chooseOnePrompted playerIdentityId "$label.revealDealtEncounterCard"
+          [labeled "$label.revealDealtEncounterCard" $ identityStep playerIdentityId RevealNextEncounterCard]
+        pure pid
+    RevealNextEncounterCard -> case playerIdentityEncounterCards of
+      [] -> pure pid
       ec : rest -> do
         revealEncounterCard playerIdentityId ec
         identityStep playerIdentityId RevealEncounterCards

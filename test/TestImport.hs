@@ -384,7 +384,7 @@ keepCards =
     Just (ident, QuestionLabel "$label.discardToHandSize" _ _) -> answerQuestion ident 0 >> keepCards
     _ -> pure ()
 
--- | Decline responses and defending until something else is asked.
+-- | Decline responses and defending, and reveal dealt encounters, until something else is asked.
 pass :: GameAppT ()
 pass =
   pressWhenRevealed >> asked >>= \case
@@ -393,7 +393,7 @@ pass =
  where
   passIndex cs = fmap fst $ headMay $ filter (passing . snd) $ zip [0 ..] cs
   passing = \case
-    Label l _ -> l `elem` ["$label.noResponse", "$label.noDefender", "$label.declineToDefend", "$label.doneDiscarding"]
+    Label l _ -> l `elem` ["$label.noResponse", "$label.noDefender", "$label.declineToDefend", "$label.doneDiscarding", "$label.revealDealtEncounterCard"]
     _ -> False
 
 -- | Put cards on top of a player's deck, first given on top.
@@ -508,7 +508,7 @@ pressMainSchemeSetup = openQuestion >>= \case
 pressWhenRevealed :: GameAppT ()
 pressWhenRevealed = openQuestion >>= \case
   Just (ident, QuestionLabel label _ _)
-    | label `elem` ["$label.resolveWhenRevealed", "$label.resolveWhenDefeated", "$label.resolveSpecial"] ->
+    | label `elem` ["$label.resolveWhenRevealed", "$label.resolveWhenDefeated", "$label.resolveSpecial", "$label.revealBoostCards", "$label.resolveEnemyAttack", "$label.resolveEnemyScheme"] ->
         answerQuestion ident 0 >> pressWhenRevealed
   _ -> pure ()
 

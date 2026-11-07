@@ -25,7 +25,8 @@ interface Move {
   from?: DOMRect
 }
 
-const onScreen = (id: string) => document.querySelector(`[data-card-id="${CSS.escape(id)}"]`) !== null
+const heldRiverSources = new Map<string, Move>()
+const onScreen = (id: string) => heldRiverSources.has(id) || document.querySelector(`[data-card-id="${CSS.escape(id)}"]`) !== null
 const pileAt = (pile: string) => document.querySelector<HTMLElement>(`[data-pile="${pile}"] .stack`)
 
 // where each pile last was, for a card leaving one that is gone once it is empty, as the
@@ -68,7 +69,7 @@ const lay = ({ pile, ghost }: Move) => {
   const rect = pile.startsWith('card:') ? cardAt(pile.slice(5)) : (pileAt(pile)?.getBoundingClientRect() ?? lastSeen.get(pile))
   if (!rect) return false
   const { left, top, width, height } = rect
-  Object.assign(ghost.style, { position: 'fixed', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, margin: '0', pointerEvents: 'none' })
+  Object.assign(ghost.style, { position: 'fixed', left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`, margin: '0', pointerEvents: 'none', zIndex: '1000' })
   const image = ghost.querySelector('img')
   if (image) Object.assign(image.style, { width: `${height}px`, height: `${width}px` })
   document.body.append(ghost)
@@ -255,6 +256,7 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
       style.textContent += '\n' + discarding.flatMap((move, i) => rotateToDiscard(move, i * STAGGER_MS)).join('\n')
     },
     done: () => {
+      leaving.forEach((m) => m.ghost.remove())
       arriving.forEach((m) => m.ghost.remove())
       style.remove()
     },
@@ -263,19 +265,54 @@ export const dealFrom = (before: GameView | null, after: GameView, sources: Sour
 
 /** A card coming into the river: off a pile (the encounter deck, or the cards dealt a
  * player), or turned up where it lies. */
-export const intoRiver = (id: string, faceUp: boolean, sources: Sources, from = 'deck-encounter') => {
+/** Keep the clicked card visible even if the next server state removes its pile. */
+export const holdRiverSource = (id: string, from: string, sources: Sources) => {
+  const previous = heldRiverSources.get(id)
+  if (previous) return { ready: Promise.resolve(), cancel: () => { previous.ghost.remove(); heldRiverSources.delete(id) } }
+  const move = ghostFor(id, from, null, sources)
+  move.ghost.dataset.riverSource = id
+  move.ghost.style.viewTransitionName = 'none'
+  if (!lay(move)) return null
+  heldRiverSources.set(id, move)
+  return {
+    ready: (move.ghost as HTMLImageElement).decode().catch(() => undefined),
+    cancel: () => { move.ghost.remove(); heldRiverSources.delete(id) },
+  }
+}
+
+export const cancelHeldRiverSources = () => {
+  for (const move of heldRiverSources.values()) move.ghost.remove()
+  heldRiverSources.clear()
+}
+
+export const intoRiver = (id: string, faceUp: boolean, sources: Sources, from = 'deck-encounter', revealedCode: string | null = null) => {
   const name = morphName(id)
   const rules = faceUp ? turnRules(name, 0) : []
-  let ghost: Move | null = null
-  if (!onScreen(id)) {
+  let ghost: Move | null = heldRiverSources.get(id) ?? null
+  heldRiverSources.delete(id)
+  if (ghost) {
+    ghost.ghost.style.viewTransitionName = name
+    rules.push(...flyRules(name, 0))
+  } else if (!onScreen(id)) {
     ghost = ghostFor(id, from, null, sources)
     if (!lay(ghost)) ghost = null
     rules.push(...flyRules(name, 0))
   }
   const style = styled(rules)
+  // Both snapshots need decoded pixels before the transition starts. A freshly
+  // inserted image can otherwise produce an empty source or destination frame.
+  const images: HTMLImageElement[] = ghost
+    ? ghost.ghost instanceof HTMLImageElement ? [ghost.ghost] : [...ghost.ghost.querySelectorAll('img')]
+    : []
+  if (faceUp && revealedCode) {
+    const face = new Image()
+    face.src = sources(revealedCode)[0] ?? ''
+    images.push(face)
+  }
   return {
+    ready: Promise.all(images.map(image => image.decode().catch(() => undefined))),
     lift: () => ghost?.ghost.remove(),
-    done: () => style.remove(),
+    done: () => { ghost?.ghost.remove(); style.remove() },
   }
 }
 

@@ -8,8 +8,10 @@ import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
 import { useCards } from '../cards'
+import { useChoices } from '../composables/useChoices'
 
-const { player, minions = [], environments = [], active = false, compact = false } = defineProps<{
+const { player, minions = [], environments = [], active = false, compact = false, riverEnemyIds = [] } = defineProps<{
+  riverEnemyIds?: string[]
   player: PlayerView
   minions?: MinionView[]
   /** the environments in their play area (Ebony Maw's Spells) */
@@ -20,6 +22,7 @@ const { player, minions = [], environments = [], active = false, compact = false
   compact?: boolean
 }>()
 const { t } = useI18n()
+const { assignedDamage } = useChoices()
 
 const openAllySlots = computed(() => Math.max(0, (player.allyLimit ?? 0) - (player.allies?.length ?? 0)))
 const hero = computed(() => player.form === 'hero')
@@ -77,7 +80,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             :counters="player.counters || null"
           />
         </div>
-        <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :max="player.hitPoints" />
+        <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :subtracting="assignedDamage[player.id] ?? 0" :max="player.hitPoints" />
       </div>
       <!-- what this player is asked sits beneath them, at the foot of the area -->
       <div v-if="$slots.default" class="asked"><slot /></div>
@@ -108,8 +111,9 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
               :bomb-counters="minion.bombCounters"
               :attached="minionAttached(minion)"
             />
+            <Pile v-if="minion.boostCards && !riverEnemyIds.includes(minion.id)" class="boost-pile" :label="t('game.boost')" back="encounter" :count="minion.boostCards" />
           </div>
-          <Meter :label="t('game.hp')" :value="Math.max(0, minion.hitPoints - minion.damage)" :max="minion.hitPoints" tone="villain" />
+          <Meter :label="t('game.hp')" :value="Math.max(0, minion.hitPoints - minion.damage)" :subtracting="assignedDamage[minion.id] ?? 0" :max="minion.hitPoints" tone="villain" />
         </div>
       </div>
     </div>
@@ -151,7 +155,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             :tough="ally.tough"
             :attached="[...(ally.upgrades ?? []), ...(ally.attachments ?? []), ...facedown(ally)]"
           />
-          <Meter :label="t('game.hp')" :value="Math.max(0, ally.hitPoints - ally.damage)" :max="ally.hitPoints" />
+          <Meter :label="t('game.hp')" :value="Math.max(0, ally.hitPoints - ally.damage)" :subtracting="assignedDamage[ally.id] ?? 0" :max="ally.hitPoints" />
         </div>
         <!-- a free slot for each ally still allowed -->
         <span v-for="n in openAllySlots" :key="`slot-${n}`" class="ally-slot" />
@@ -261,6 +265,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   border: 1px solid rgb(184 50 58 / 0.25);
 }
 .minion { display: flex; flex-direction: column; gap: 6px; }
+.minion .boost-pile { --card-width: calc(var(--attached-width, 100px)); }
+.minion:has(.boost-pile) > :deep(.meter) { align-self: flex-start; margin-left: 50px; }
 .zone.engaged .zone-label { color: #e48b91; }
 .zone.allies { flex: 1 1 auto; }
 .ally { display: flex; flex-direction: column; gap: 6px; width: var(--card-width); }

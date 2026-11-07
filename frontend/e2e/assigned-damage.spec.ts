@@ -1,0 +1,28 @@
+import { expect, test } from '@playwright/test'
+
+test('health previews assigned damage and keeps the same value when confirmed', async ({ page }) => {
+  await page.goto('/#/cards/27136')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h, reactive } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: Meter } = await load('/src/components/Meter.vue')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const health = reactive({ value: 5, subtracting: 2 })
+    const host = document.createElement('div')
+    document.body.replaceChildren(host)
+    createApp({ setup: () => () => h(Meter, { ...health, label: 'Health', max: 10 }) })
+      .use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+    Object.assign(window, { assignedHealth: health })
+  })
+  const meter = page.getByRole('meter')
+  await expect(meter).toHaveAttribute('aria-valuenow', '3')
+  await expect(meter).toHaveAttribute('aria-valuetext', '3 health after 2 assigned damage')
+  await expect(meter.locator('.fill')).toHaveAttribute('style', 'width: 30%;')
+  await expect(meter.locator('.assigned')).toHaveAttribute('style', 'left: 30%; width: 20%;')
+  await page.evaluate(() => { Object.assign((window as any).assignedHealth, { value: 3, subtracting: 0 }) })
+  await expect(meter).toHaveAttribute('aria-valuenow', '3')
+  await expect(meter.locator('.assigned')).toHaveCount(0)
+  await expect(meter).toHaveText('3/10')
+})

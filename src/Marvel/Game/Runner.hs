@@ -764,13 +764,19 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   MinionMessage mid (MinionEngagedIdentity _) -> pure g {gameAosBackup = filter ((/=mid) . snd) g.gameAosBackup}
   CardSpecific GameRef key (fromJSON -> Success (source,from :: W.ThreatSource,scheme,n :: Natural))
     | key `elem` ["placeThreatBy","placeReportingThreatBy","placeVillainThreatBy"] -> do
-      actor <- threatSourceCharacter source
-      when (n > 0) $ for_ actor $ \character -> checkWindows [W.Window W.Would $ W.CharacterPlacingThreat character scheme n]
-      let continuation = case key of
+      let resolvePlacement = do
+            actor <- threatSourceCharacter source
+            when (n > 0) $ for_ actor $ \character -> checkWindows [W.Window W.Would $ W.CharacterPlacingThreat character scheme n]
+            cardSpecific GameRef continuation (source,from,scheme,n)
+          continuation = case key of
             "placeReportingThreatBy" -> "placeReportingThreatAfterCharacterWindow"
             "placeVillainThreatBy" -> "placeVillainThreatAfterCharacterWindow"
             _ -> "placeThreatAfterCharacterWindow"
-      cardSpecific GameRef continuation (source,from,scheme,n)
+      if from `elem` [W.ThreatFromVillain, W.ThreatFromMinion] then do
+        you <- getYou
+        chooseOnePromptedAbout you "$label.resolveEnemyScheme" source
+          [labeled (countLabel "placeActivationThreat" n) resolvePlacement]
+      else resolvePlacement
       pure g
   CardSpecific GameRef "placeReportingThreatAfterCharacterWindow" (fromJSON -> Success (source,_ :: W.ThreatSource,scheme,n)) ->
     g <$ placeThreatOnReportingAfterCharacterWindow source scheme n

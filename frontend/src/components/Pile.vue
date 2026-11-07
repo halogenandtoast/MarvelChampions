@@ -22,13 +22,19 @@ const { label, back = null, count = null, cards = null, pile = null } = definePr
 
 const overlay = useCardOverlay()
 const faces = useCards()
-const { byTarget } = useChoices()
+const { byTarget, choose } = useChoices()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const total = computed(() => count ?? cards?.length ?? 0)
 const top = computed(() => cards?.[0] ?? null)
 // a choice about a card in it lights the pile, so the player knows to look
-const active = computed(() => (cards ?? []).some((c) => byTarget.value.has(c.id)))
+const deckChoice = computed(() => pile ? byTarget.value.get(pile)?.[0] : undefined)
+const active = computed(() => !!deckChoice.value || (cards ?? []).some((c) => byTarget.value.has(c.id)))
 const open = () => {
+  if (deckChoice.value) {
+    overlay.hide()
+    choose(deckChoice.value.index)
+    return
+  }
   if (!cards?.length) return
   overlay.hide()
   dialog.value?.showModal()
@@ -41,7 +47,7 @@ const close = () => dialog.value?.close()
     <button
       type="button"
       class="stack"
-      :disabled="!cards?.length"
+      :disabled="!cards?.length && !deckChoice"
       :aria-label="label"
       @click="open"
       @pointerenter="$event.pointerType === 'mouse' && top && overlay.show({ code: top.code, name: top.name }, $event.currentTarget as HTMLElement)"
@@ -81,6 +87,7 @@ const close = () => dialog.value?.close()
   cursor: default;
 }
 .pile.openable .stack { cursor: pointer; }
+.pile.active .stack { cursor: pointer; }
 /* a discard pile is faded, out of the way, until looked at or chosen from; a face-up deck (the Invocation deck) is not */
 .pile.discard .stack { opacity: 0.55; transition: opacity 0.15s ease; }
 .pile.discard .stack:hover, .pile.discard.active .stack { opacity: 1; }
