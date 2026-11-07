@@ -31,8 +31,9 @@ spec = describe "Angel signature events" do
         card <- putInHand p "42003"
         pay p card 2
         chooseMainScheme
-        mainSchemeThreatNow `shouldReturn` before - 3
+        mainSchemeThreatNow `shouldReturn` before
         chooseVillain
+        mainSchemeThreatNow `shouldReturn` before - 3
         villainConfused . toAttrs <$> getVillain `shouldReturn` True
         villainDamageNow `shouldReturn` 0
 

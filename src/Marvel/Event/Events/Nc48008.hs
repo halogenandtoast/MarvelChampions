@@ -46,7 +46,6 @@ instance RunMessage Nc48008 where
   runMessage msg a@(Nc48008 attrs) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you payment _) | eid == eventId attrs -> do
       for_ [enemy | DiscardedUpgradeFromEnemyPayment enemy _ <- payments payment] $ \enemy -> do
-        dealDamage enemy attrs (toDamage 8 $ FromPlayerAttack you)
-        giveStatus enemy StunnedStatus
+        dealDamageAnd enemy attrs (toDamage 8 $ FromPlayerAttack you) (giveStatus enemy StunnedStatus)
       pure a
     _ -> Nc48008 <$> runMessage msg attrs

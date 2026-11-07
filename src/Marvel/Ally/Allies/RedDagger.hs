@@ -11,6 +11,7 @@ import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage
+import Marvel.Query
 import Marvel.Matchers hiding (ExhaustedAlly)
 import Marvel.Window qualified as W
 
@@ -37,7 +38,9 @@ instance HasAbilities RedDagger where
 instance RunMessage RedDagger where
   runMessage msg a@(RedDagger attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      insteadOf (== RemoveFromPlay (toTarget a)) (returnToHand a)
-      chooseDamage ident a (toDamage 2 FromAbility) AnyEnemy
+      insteadOf (== RemoveFromPlay (toTarget a)) (pure ())
+      enemies <- selectList DamageableEnemy
+      if null enemies then returnToHand a else chooseOne ident
+        [targeting (enemyRef enemy) $ dealDamageAnd enemy a (toDamage 2 FromAbility) (returnToHand a) | enemy <- enemies]
       pure a
     _ -> RedDagger <$> runMessage msg attrs

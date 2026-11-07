@@ -36,7 +36,6 @@ newtype PsiFlailStrike = PsiFlailStrike (Attrs Event)
 instance RunMessage PsiFlailStrike where
   runMessage msg e@(PsiFlailStrike a) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ (Just (W.HeroDefends _ enemy))) | eid == eventId a -> do
-      dealDamage enemy a (toDamage 3 $ FromPlayerAttack you)
-      stun enemy a
+      dealDamageAnd enemy a (toDamage 3 $ FromPlayerAttack you) (stun enemy a)
       pure e
     _ -> PsiFlailStrike <$> runMessage msg a

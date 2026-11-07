@@ -183,8 +183,18 @@ instance RunMessage CampaignEvent where
         "Get Their Attention" -> removeThreat you attrs 3 ThwartableScheme
         "In Harm's Way" -> do
           defense <- identityDefense you
-          chooseDamage you attrs (toDamage defense $ FromPlayerAttack you) AttackableEnemy
-          cardSpecific attrs "harmThwart" (you, defense)
+          enemies <- filterM (canSourceDamageEnemy $ toSource attrs) =<< selectList (AttackableEnemy <> DamageableEnemy)
+          schemeMatcher <- mainSchemeMatcherForSource you (toSource attrs) SchemeYouCanThwart
+          schemes <- filterM (canRemoveThreatFrom $ toSource attrs) =<< selectList schemeMatcher
+          let damage = toDamage defense $ FromPlayerAttack you
+              withScheme enemy = case schemes of
+                [] -> dealDamage enemy attrs damage
+                _ -> chooseOne you [targeting (schemeRef scheme) $
+                  dealDamageAnd enemy attrs damage (thwartSchemeAs you scheme attrs defense)
+                  | scheme <- schemes]
+          if null enemies
+            then removeThreat you attrs defense ThwartableScheme
+            else chooseOne you [targeting (enemyRef enemy) (withScheme enemy) | enemy <- enemies]
         "See No Evil, Hear No Evil" -> cardSpecific attrs "seeHear" (you, 2 :: Natural)
         _ -> pure ()
       pure e
@@ -203,6 +213,7 @@ instance RunMessage CampaignEvent where
     CardSpecific (isTarget attrs -> True) "impersonationFlip" (fromJSON -> Success you) -> e <$ chooseOne you [labeled "$label.changeToB" (changeToAlterEgo you), labeled "$label.done" (pure ())]
     CardSpecific (isTarget attrs -> True) "depositionThwart" (fromJSON -> Success you) -> e <$ removeThreat you attrs 2 ThwartableScheme
     CardSpecific (isTarget attrs -> True) "knowEnemySecond" (fromJSON -> Success you) -> e <$ removeThreat you attrs 1 ThwartableScheme
+    -- Complete games saved during the former sequential resolution.
     CardSpecific (isTarget attrs -> True) "harmThwart" (fromJSON -> Success (you,n)) -> e <$ removeThreat you attrs n ThwartableScheme
     CardSpecific (isTarget attrs -> True) "seeHear" (fromJSON -> Success (you,n :: Natural)) -> do
       when (n > 0) $ chooseOne you

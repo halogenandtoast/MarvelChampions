@@ -650,7 +650,7 @@ spec = describe "Jessica Jones and Luke Cage aspect cards" do
       Villain.villainTough . toAttrs <$> getVillain `shouldReturn` True
       JL.toughCount p `shouldReturn` 0
 
-  it "Power Man and Iron Fist chooses a tough recipient after its damage resolves" do
+  it "Power Man and Iron Fist chooses both targets before its damage resolves" do
     tg <- testGame ["luke-cage"]
     inGame tg do
       let p = player1 tg
@@ -661,6 +661,6 @@ spec = describe "Jessica Jones and Luke Cage aspect cards" do
       playWith card []
       choose "defeat Hydra Bomber" (isTargetChoice $ EnemyMinionId mid)
       offered <- offers (isTargetChoice $ MinionCharacter mid)
-      offered `shouldBe` False
+      offered `shouldBe` True
       choose "give Luke tough" (isTargetChoice $ IdentityCharacter p)
       JL.toughCount p `shouldReturn` 1

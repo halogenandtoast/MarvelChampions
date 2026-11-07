@@ -47,7 +47,6 @@ instance RunMessage Nc48032 where
     EventMessage eid (PlayedEvent you payment _) | eid == eventId attrs -> do
       let characters = [character | ExhaustedCharacterPayment character <- payments payment]
       n <- sum <$> traverse currentThwart characters
-      thwartDivided you attrs n ThwartableScheme
-      dealDividedDamage you attrs (toDamage n $ FromPlayerAttack you) AttackableEnemy
+      dealDividedDamageAndThwart you attrs (toDamage n $ FromPlayerAttack you) ThwartableScheme AttackableEnemy
       pure a
     _ -> Nc48032 <$> runMessage msg attrs

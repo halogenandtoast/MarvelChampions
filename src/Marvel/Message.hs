@@ -665,6 +665,9 @@ data Message
   | -- | indirect damage "among players": the group divides it among the friendly
     -- characters in play, the first player deciding (RR Indirect Damage)
     AssignIndirectDamageAmongPlayers Source Natural [(CharacterId, Natural)]
+  | -- | Allocate both halves of one damage-and-thwart effect before applying either.
+    DivideDamageAndThreat IdentityId Source Damage SchemeMatcher EnemyMatcher
+  | AssignDividedDamageAndThreat IdentityId Source Damage Natural SchemeMatcher EnemyMatcher [(SchemeId, Natural)] [(EnemyId, Natural)]
   | -- | damage the player has still to divide among the enemies matching (the damage
     -- carrying how much is left), and the shares assigned so far
     AssignDividedDamage IdentityId Source Damage EnemyMatcher [(EnemyId, Natural)]

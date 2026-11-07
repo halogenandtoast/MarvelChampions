@@ -2,6 +2,8 @@ module Marvel.Aspect.FearNoEvilPlayerSpec (spec) where
 
 import Marvel.CampaignPlayerTest
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Hp (HP (..))
+import Marvel.Villain.Types qualified as V
 import Marvel.Status
 import TestImport
 
@@ -264,6 +266,28 @@ spec = describe "Fear No Evil player cards" do
       pass
       villainDamageNow `shouldReturn` 2
       mainSchemeThreatNow `shouldReturn` before - 2
+
+  it "In Harm's Way chooses its scheme before damage advances Rhino" do
+    tg <- testGame ["echo"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      placeMainThreat 6
+      before <- mainSchemeThreatNow
+      vid <- villainIdNow
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(V.Villain villain) ->
+        V.Villain $ V.overVillainAttrs (\attrs -> attrs {V.villainHp = HP 1}) villain
+      _ <- paying p "60050" ["01088","01090"]
+      chooseVillain
+      sides <- getsGame gameSideSchemes
+      sides `shouldSatisfy` null
+      chooseMainScheme
+      pass
+      mainSchemeThreatNow `shouldReturn` before - 2
+      choose "Rhino II reveals its side scheme" isAnyAbility
+      pass
+      sidesAfter <- getsGame gameSideSchemes
+      sidesAfter `shouldSatisfy` (not . null)
 
   it "Cloak contributes an acceleration icon until Dagger is in play" do
     tg <- testGame ["daredevil"]

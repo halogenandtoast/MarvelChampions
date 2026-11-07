@@ -2548,6 +2548,62 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
       & areasL . each %~ (\area -> area {areaSideSchemes = filter (`notElem` map toId schemes) (areaSideSchemes area)})
   -- divided damage (Giant Wasp, Wasp Sting): a point at a time among the enemies
   -- matching, then each share dealt at once; an attack's attacks each enemy dealt one
+  DivideDamageAndThreat ident source damage schemes enemies -> do
+    modifiers <- getModifiers source
+    let bonus = if ThreatRemovalBonusInTotal `elem` modifiers
+          then sum [n | ThreatRemovedModifier n <- modifiers] else 0
+    push $ AssignDividedDamageAndThreat ident source damage (damageAmount damage + bonus) schemes enemies [] []
+    pure g
+  AssignDividedDamageAndThreat ident source damage remaining schemeMatcher enemyMatcher removed dealt -> do
+    let given scheme = sum [n | (target,n) <- removed, target == scheme]
+        next damage' remaining' removed' dealt' = push $
+          AssignDividedDamageAndThreat ident source damage' remaining' schemeMatcher enemyMatcher removed' dealt'
+    if remaining > 0 then do
+      sourceModifiers <- getModifiers source
+      labeledThwart <- elem Ability.Thwart <$> sourceAbilitySubTypes source
+      rawPatrolled <- isPatrolled ident
+      forbidden <- elem CannotThwartSideSchemes <$> getModifiers (IdentityRef ident)
+      let patrolled = rawPatrolled && IgnoresPatrol `notElem` sourceModifiers
+          allowed scheme = do
+            removable <- canRemoveThreatFrom source scheme
+            permitted <- case scheme of
+              SchemeMainSchemeId sid -> do
+                restricted <- isRestrictedMainScheme sid
+                pure $ not (restricted && patrolled && labeledThwart)
+              SchemeSideSchemeId _ -> pure $ not (forbidden && labeledThwart)
+            pure $ removable && permitted
+      schemes <- filterM allowed =<< selectList (schemeMatcher <> if labeledThwart then SchemeWithoutThwartPrevention else AnyScheme)
+      open <- forMaybeM schemes $ \scheme -> do
+        threat <- selectCount SchemeThreat (SchemeWithId scheme)
+        let room = subtractNatural (given scheme) threat
+        pure $ guard (room > 0) $> (scheme, room)
+      case open of
+        [] -> next damage 0 removed dealt
+        [(scheme,room)] -> next damage (remaining - min remaining room) ((scheme,min remaining room) : removed) dealt
+        _ -> chooseOnePrompted ident "$label.assignDividedThreat"
+          [targeting (schemeRef scheme) (next damage (remaining - 1) ((scheme,1) : removed) dealt) | (scheme,_) <- open]
+    else do
+      enemies <- selectList (DamageableEnemy <> enemyMatcher)
+      let n = damageAmount damage
+          assign enemy amount = next damage {damageAmount = n - amount} 0 removed ((enemy,amount) : dealt)
+      case enemies of
+        _ | n == 0 || null enemies -> do
+          -- Keep damage's attack windows, but put the already chosen threat removals
+          -- in its simultaneous group, before damage can reveal another target.
+          damages <- traverse (\(enemy,amount) -> capture $ resolveAs ident $
+            DamageEnemy (enemyRef enemy) source damage {damageAmount = amount})
+            (HashMap.toList $ HashMap.fromListWith (+) dealt)
+          thwarts <- concat <$> traverse (\(scheme,amount) -> capture $ resolveAs ident $
+            ThwartScheme (schemeRef scheme) source amount)
+            (HashMap.toList $ HashMap.fromListWith (+) removed)
+          let messages = simultaneousDamage damages
+              combine (Simultaneously group) = Simultaneously (thwarts <> group)
+              combine message = message
+          if null damages then push $ Simultaneously thwarts else pushAll $ map combine messages
+        [enemy] -> assign enemy n
+        _ -> chooseOnePrompted ident "$label.assignDividedDamage"
+          [targeting (enemyRef enemy) (assign enemy 1) | enemy <- enemies]
+    pure g
   AssignDividedDamage ident source damage matcher assigned -> do
     enemies <- selectList (DamageableEnemy <> matcher)
     let n = damageAmount damage

@@ -451,6 +451,10 @@ dealIndirectDamageAmongPlayers source n = push $ AssignIndirectDamageAmongPlayer
 dealDividedDamage :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> EnemyMatcher -> m ()
 dealDividedDamage you source damage matcher = push $ AssignDividedDamage you (toSource source) damage matcher []
 
+-- | Choose both divided allocations before resolving their damage and thwart as one effect.
+dealDividedDamageAndThwart :: (ReverseQueue m, IsRef source) => IdentityId -> source -> Damage -> SchemeMatcher -> EnemyMatcher -> m ()
+dealDividedDamageAndThwart you source damage schemes enemies = push $ DivideDamageAndThreat you (toSource source) damage schemes enemies
+
 -- | The indirect damage left to assign, and what has been.
 indirectDamageAssigned :: (ReverseQueue m) => IdentityId -> Source -> Damage -> [(CharacterId, Natural)] -> m ()
 indirectDamageAssigned ident source n = push . AssignIndirectDamage ident source n
@@ -474,6 +478,12 @@ thwartEachAs :: (ReverseQueue m, IsScheme scheme, IsRef source) => IdentityId ->
 thwartEachAs you source removed = do
   msgs <- concat <$> traverse (\(scheme, n) -> capture $ thwartSchemeAs you scheme source n) removed
   unless (null msgs) $ push (Simultaneously msgs)
+
+-- | Choose targets first, then remove threat and apply the accompanying effect together.
+thwartSchemeAnd :: (ReverseQueue m, IsScheme scheme, IsRef source) => IdentityId -> scheme -> source -> Natural -> m () -> m ()
+thwartSchemeAnd you scheme source n body = do
+  messages <- capture $ thwartSchemeAs you scheme source n >> body
+  unless (null messages) $ push (Simultaneously messages)
 
 -- | A hero's or ally's basic thwart of the scheme.
 basicThwartOf :: (ReverseQueue m, IsScheme scheme, IsRef source) => scheme -> source -> Natural -> m ()

@@ -8,7 +8,7 @@ import Marvel.Damage
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
-import Marvel.Game.Source ()
+import Marvel.Game.Source
 import Marvel.Id ()
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -34,8 +34,15 @@ instance RunMessage AdaptivePlumage where
     EventMessage eid (PlayedEvent you _ _) | eid == eventId attrs -> do
       angel <- identityMatches (IdentityWithTitle "Angel") you
       if angel then do
-        removeThreat you attrs 3 SchemeYouCanThwart
-        cardSpecific attrs "confuse" you
+        schemes <- filterM (canRemoveThreatFrom $ toSource attrs) =<< selectList SchemeYouCanThwart
+        enemies <- selectList EnemyCanBeConfused
+        let withEnemy scheme = case enemies of
+              [] -> thwartSchemeAs you scheme attrs 3
+              _ -> chooseOne you [targeting (enemyRef enemy) $
+                thwartSchemeAnd you scheme attrs 3 (confuse enemy attrs) | enemy <- enemies]
+        if null schemes then
+          chooseOne you [targeting (enemyRef enemy) (confuse enemy attrs) | enemy <- enemies]
+        else chooseOne you [targeting (schemeRef scheme) (withEnemy scheme) | scheme <- schemes]
       else do
         enemies <- selectList AttackableEnemy
         chooseOne you [targeting (enemyRef enemy) $ dealDamageAnd enemy attrs (toDamage 4 $ FromPlayerAttack you) (stun enemy attrs) | enemy <- enemies]

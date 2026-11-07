@@ -154,8 +154,16 @@ instance RunMessage JLEvent where
             [labeled "$label.noMatchingCardsFound" (shuffleDeck you) | null teamCards]
               <> [targeting card (addToHand you card >> cardSpecific a "duoAlly" (you, cdTeamUp $ getCardDef card)) | card <- teamCards]
         "Power Man and Iron Fist" -> do
-          chooseDamage you a (toDamage 2 $ FromPlayerAttack you) AttackableEnemy
-          cardSpecific a "powerManTough" you
+          enemies <- filterM (canSourceDamageEnemy $ toSource a) =<< selectList (AttackableEnemy <> DamageableEnemy)
+          characters <- selectList CharacterCanGainTough
+          let tough = chooseOne you [targeting (characterRef character) (giveStatus character ToughStatus) | character <- characters]
+              withTough enemy = case characters of
+                [] -> dealDamage enemy a (toDamage 2 $ FromPlayerAttack you)
+                _ -> chooseOne you [targeting (characterRef character) $
+                  dealDamageAnd enemy a (toDamage 2 $ FromPlayerAttack you) (giveStatus character ToughStatus)
+                  | character <- characters]
+          if null enemies then tough else
+            chooseOne you [targeting (enemyRef enemy) (withTough enemy) | enemy <- enemies]
         "Size Advantage" -> do
           giant <- identityMatches (IdentityWithTrait T.Giant) you
           yours <- getCharacterRemainingHitPoints (IdentityCharacter you)

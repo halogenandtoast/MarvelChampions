@@ -264,6 +264,7 @@ spec = describe "Nightcrawler pack" do
       whenM (offers $ isTargetChoice $ allyIdOf caliban) $ choose "exhaust X-Force" (isTargetChoice $ allyIdOf caliban)
       whenM (offers $ isTargetChoice p) $ choose "exhaust X-Men" (isTargetChoice p)
       replicateM_ 3 chooseMainScheme
+      mainSchemeThreatNow `shouldReturn` before
       replicateM_ 3 chooseVillain
       pass
       mainSchemeThreatNow `shouldReturn` before - 3

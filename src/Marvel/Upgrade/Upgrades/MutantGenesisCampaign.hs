@@ -112,15 +112,17 @@ instance RunMessage MutantGenesisRoleUpgrade where
           preventEnemyAttackDamage enemy 3
           dealDamage enemy attrs (toDamage 3 $ FromPlayerAttack you)
         "32179" -> do
-          chooseDamage you attrs (toDamage 6 $ FromPlayerAttack you) AttackableEnemy
-          ready you
+          enemies <- selectList AttackableEnemy
+          if null enemies then ready you else chooseOne you
+            [targeting (enemyRef enemy) $ dealDamageAnd enemy attrs (toDamage 6 $ FromPlayerAttack you) (ready you) | enemy <- enemies]
         "32180" -> giveStatus you ToughStatus
         "32182" -> healDivided you attrs 3 (CharacterControlledBy $ IdentityWithId you) >> drawCards you 1
         "32192" -> healDivided you attrs 3 (CharacterControlledBy $ IdentityWithId you) >> drawCards you 1
         "32183" -> createEffect (getCardDef attrs) attrs (AllyEntity AnyAlly)
         "32184" -> do
-          chooseDamage you attrs (toDamage 6 $ FromPlayerAttack you) AttackableEnemy
-          readyAllies you
+          enemies <- selectList AttackableEnemy
+          if null enemies then readyAllies you else chooseOne you
+            [targeting (enemyRef enemy) $ dealDamageAnd enemy attrs (toDamage 6 $ FromPlayerAttack you) (readyAllies you) | enemy <- enemies]
         "32185" -> do
           allies <- selectList AnyAlly
           unless (null allies) $ chooseOne you [targeting ally (ready ally >> heal ally 2) | ally <- allies]
