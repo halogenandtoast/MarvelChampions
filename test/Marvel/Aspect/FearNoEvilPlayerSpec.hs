@@ -388,6 +388,17 @@ spec = describe "Fear No Evil player cards" do
       isExhaustedNow p `shouldReturn` False
       damageOf p `shouldReturn` 2
 
+  it "Stand Alone is not offered when the hero is already ready" do
+    tg <- testGame ["echo"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      alone <- putIntoPlay p "60054"
+      isExhaustedNow p `shouldReturn` False
+      vid <- villainIdNow
+      start [VillainMessage vid $ VillainAttacksWithoutBoost p]
+      offers (cardAbility alone) `shouldReturn` False
+
   it "Stand Alone cannot trigger while an ally is controlled" do
     tg <- testGame ["echo"]
     inGame tg do

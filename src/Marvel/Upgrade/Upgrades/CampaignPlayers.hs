@@ -199,7 +199,7 @@ instance HasAbilities CampaignUpgrade where
     "Echo's Katana" -> [subtype A.Attack $ limitedWindowAbility u 1 (W.PlaysEvent W.After you AnyCard) HeroResponse OwnsThis ExhaustCost $ runAbility u 1]
     "Improvisation" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After you $ CardMatchesAny [CardWithTrait T.Attack, CardWithTrait T.Defense, CardWithTrait T.Thwart]) HeroResponse OwnsThis NoCost $ runAbility u 1]
     "Muscle Memory" -> [ability u 1 HeroAction (OwnsThis <> HasEchoTuckedEvent) ExhaustCost $ runAbility u 1]
-    "Stand Alone" -> [limitedWindowAbility u 1 (W.EnemyAttacked W.When AnyEnemy you) HeroInterrupt (OwnsThis <> NotCriteria (AllyExists $ AllyControlledBy you)) ExhaustCost $ runAbility u 1]
+    "Stand Alone" -> [limitedWindowAbility u 1 (W.EnemyAttacked W.When AnyEnemy you) HeroInterrupt (OwnsThis <> SelfMatches IdentityCanReady <> NotCriteria (AllyExists $ AllyControlledBy you)) ExhaustCost $ runAbility u 1]
     _ -> []
    where
     you = IdentityWithId $ upgradeController attrs
