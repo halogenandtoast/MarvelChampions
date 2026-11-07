@@ -109,7 +109,8 @@ instance RunMessage CampaignSupport where
         "60013" -> removeThreat you attrs 2 ThwartableScheme
         "60014" -> do
           alter <- identityMatches AlterEgoIdentity you
-          shuffleDiscardMatching you attrs daredevilCard alter
+          shuffleDiscardMatching you attrs daredevilCard False
+          when alter $ drawCards you 1
         "60015" -> for_ [source | W.DefeatedSideSchemeBy _ _ (Just source) <- windows] $ \source -> do
           def <- getsGame (`abilityCardDef` refocus source)
           when (maybe False (member T.Attorney . cdTraits) def) $ chooseEnemyStatus you ConfusedStatus AnyEnemy

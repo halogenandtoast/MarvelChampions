@@ -217,6 +217,18 @@ spec = describe "Daredevil" do
       (length <$> handOf p) `shouldReturn` before + 1
       discardCodes p >>= (`shouldSatisfy` notElem "60008")
 
+  it "Karen Page draws in alter-ego form even without a Daredevil card to shuffle" do
+    tg <- testGame ["daredevil"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      karen <- paying p "60014" ["01090"]
+      before <- length <$> handOf p
+      choose "Karen Page" (cardAbility karen)
+      choose "no Daredevil card to shuffle" (isLabel "$label.done")
+      pass
+      (length <$> handOf p) `shouldReturn` before + 1
+
   it "Sister Maggie increases Matt's recovery by three" do
     tg <- testGame ["daredevil"]
     inGame tg do
