@@ -5,6 +5,7 @@ import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Message.Deck
 import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
 import System.Environment (lookupEnv)
 import TestImport
@@ -108,6 +109,22 @@ spec = describe "the game as the client sees it" do
       choose "tough for Luke" (isTargetChoice $ IdentityCharacter p)
       pass
       shownResolvingEvents `shouldReturn` []
+
+  it "shows both full searched piles when a deck-and-discard search finds no matching cards" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) ->
+        PlayerIdentity a {playerIdentityDeck = Deck [], playerIdentityDiscard = Discard []}
+      deck <- stackDeck p ["01088"]
+      discard <- putInDiscard p "01089"
+      runNow [IdentityMessage p $ Search (SearchIdentityDeckAndDiscardPile p) (CardWithType AllyType) SearchDrawOne ShuffleBackIn]
+      openQuestion >>= \case
+        Just (_, QuestionLabel "$label.searchDeckAndDiscard" _ (Searched places _)) ->
+          [(place, map toCardId cards) | (place, cards) <- places] `shouldBe`
+            [(Just "$game.piles.deck", map toCardId deck), (Just "$game.piles.discard", [toCardId discard])]
+        _ -> liftIO $ expectationFailure "expected both complete searched piles"
+      offers (isLabel "$label.noMatchingCardsFound") `shouldReturn` True
 
 shownResolvingEvents :: GameAppT [Text]
 shownResolvingEvents = do

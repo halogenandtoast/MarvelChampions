@@ -64,7 +64,7 @@ instance HasModifiersFor JLSupport where
 instance HasAbilities JLSupport where
   getAbilities (JLSupport a) = case Name.title (cdName (supportCardDef a)) of
     "Alias Investigations" -> [limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response OwnsThis ExhaustCost (runAbility a 1)]
-    "Calling in Favors" -> [ability a 1 AlterEgoAction (OwnsThis <> ExtendedCardExists (InDeckOf self $ BasicCardMatches $ CardWithType AllyType))
+    "Calling in Favors" -> [ability a 1 AlterEgoAction (OwnsThis <> ExtendedCardExists (InDeckOf self $ BasicCardMatches AnyCard))
       (ExhaustCost <> CountersFromSupportCost (SupportNamed "Alias Investigations" <> SupportControlledBy self) 2) (runAbility a 1)]
     "Fogwell's Gym" -> [limitedWindowAbility a 1 (W.CharacterDiscardsTough W.After $ CharacterWithTrait T.Defender <> CharacterCanBeReadied) Response OwnsThis ExhaustCost (runAbility a 1)]
     "Defensive Formation" -> [ability a 1 Action (OwnsThis <> CharacterExists (AllyCharacters (AllyWithTrait T.Defender) <> CharacterCanGainTough)) (ExhaustCost <> UseCost) (runAbility a 1)]
@@ -77,9 +77,11 @@ instance RunMessage JLSupport where
       case Name.title (cdName (supportCardDef a)) of
         "Alias Investigations" -> placeCounters a 2 >> cardSpecific a "finishInvestigation" you
         "Calling in Favors" -> do
-          allCards <- selectList (InDeckOf (IdentityWithId you) $ BasicCardMatches $ CardWithType AllyType)
-          cards <- filterM (canPlaySearchedCardWithReduction you 2) allCards
-          chooseOne you [targeting c (playSearchedCardWithReduction you 2 c >> shuffleDeck you) | c <- cards]
+          deck <- selectList (InDeckOf (IdentityWithId you) $ BasicCardMatches AnyCard)
+          cards <- filterM (canPlaySearchedCardWithReduction you 2) $ filter ((== AllyType) . cdCardType . getCardDef) deck
+          chooseOneSearchedIn you "$label.callingInFavorsSearch" [("$game.piles.deck", PlayerCard <$> deck)] $
+            [labeled "$label.noMatchingCardsFound" (shuffleDeck you) | null cards]
+              <> [targeting c (playSearchedCardWithReduction you 2 c >> shuffleDeck you) | c <- cards]
         "Fogwell's Gym" -> for_ windows $ \case
           W.IdentityDiscardedTough p -> ready p
           W.CharacterDiscardedTough character -> readyCharacter character
@@ -91,7 +93,7 @@ instance RunMessage JLSupport where
       n <- getCountersOn a
       withTheVillainIfAny you $ \villain -> do
         targets <- filterM (fmap (<= n) . getEnemyRemainingHitPoints . EnemyVillainId) (maybeToList villain)
-        chooseOne you $ [targeting v $ do
+        unless (null targets) $ chooseOne you $ [targeting v $ do
           hp <- getEnemyRemainingHitPoints (EnemyVillainId v)
           removeCounters a hp
           defeatVillain v | v <- targets] <> [labeled "$label.done" $ pure ()]

@@ -225,6 +225,28 @@ spec = describe "Jessica Jones and Luke Cage aspect cards" do
       found `shouldSatisfy` elem "62023"
       found `shouldSatisfy` elem "62012"
 
+  for_ [False, True] $ \hasTeam ->
+    it ("Dynamic Duo shows both searched piles without a matching " <> if hasTeam then "ally" else "Team-Up") do
+      tg <- testGame ["luke-cage"]
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) ->
+          PlayerIdentity a {playerIdentityDeck = Deck [], playerIdentityDiscard = Discard []}
+        team <- putInDiscard p (if hasTeam then "62023" else "01090")
+        _ <- stackDeck p ["01089"]
+        card <- putInHand p "62022"
+        pay p card ["01088"]
+        when hasTeam $ choose "Team-Up" (isTargetChoice team)
+        deck <- unDeck . playerIdentityDeck <$> playerAttrs p
+        discard <- discardOf p
+        openQuestion >>= \case
+          Just (_, QuestionLabel _ _ (Searched places _)) ->
+            [(place, map toCardId cards) | (place, cards) <- places] `shouldBe`
+              [(Just "$game.piles.deck", map toCardId deck), (Just "$game.piles.discard", map toCardId discard)]
+          _ -> liftIO $ expectationFailure "expected the complete deck and discard"
+        choose "finish the unsuccessful search" (isLabel "$label.noMatchingCardsFound")
+
   it "Power Man and Iron Fist deals two damage and gives a character tough" do
     tg <- testGame ["luke-cage"]
     inGame tg do

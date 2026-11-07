@@ -358,9 +358,29 @@ spec = describe "Jessica Jones" do
       choose "Second Chance" (isTargetChoice $ SchemeSideSchemeId sid)
       choose "skip shuffle" (isLabel "$label.done")
       choose "Alias Investigations" (\case UseAbility ab -> abilitySource ab == SupportRef (supportId alias); _ -> False)
-      choose "keep investigating" (isLabel "$label.done")
+      offers (isLabel "$label.done") `shouldReturn` False
       pass
       JL.evidenceCount p `shouldReturn` 2
+
+  it "Alias Investigations still offers the optional defeat when evidence reaches the villain's remaining hit points" do
+    tg <- testGame ["jessica-jones"]
+    inGame tg do
+      let p = player1 tg
+      asJessica p
+      alias <- testHead <$> supportsWith "61002"
+      vid <- villainIdNow
+      remaining <- getEnemyRemainingHitPoints (EnemyVillainId vid)
+      resolve [PlaceCounters (SupportRef $ supportId alias) (remaining - 2)]
+      scheme <- putIntoPlay p "61028"
+      let sid = SideSchemeId $ unCardId $ pcCardId scheme
+      choose "basic thwart" (isHeroThwart p)
+      choose "Second Chance" (isTargetChoice $ SchemeSideSchemeId sid)
+      choose "skip shuffle" (isLabel "$label.done")
+      choose "Alias Investigations" (\case UseAbility ab -> abilitySource ab == SupportRef (supportId alias); _ -> False)
+      offers (isTargetChoice vid) `shouldReturn` True
+      offers (isLabel "$label.done") `shouldReturn` True
+      choose "keep investigating" (isLabel "$label.done")
+      JL.evidenceCount p `shouldReturn` remaining
 
   it "Calling in Favors spends two evidence and reduces the searched ally's cost by two" do
     tg <- testGame ["jessica-jones"]
@@ -378,6 +398,27 @@ spec = describe "Jessica Jones" do
       a <- allyIn "61003"
       allyTough a `shouldBe` True
       JL.evidenceCount p `shouldReturn` 0
+
+  it "Calling in Favors shows the whole deck even when no allies can be played" do
+    tg <- testGame ["jessica-jones"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      alias <- testHead <$> supportsWith "61002"
+      favors <- putIntoPlay p "61008"
+      resolve [PlaceCounters (SupportRef $ supportId alias) 2]
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck []}
+      cards <- stackDeck p ["01088", "01089"]
+      choose "Calling in Favors" (isAbilityOfCard favors)
+      openQuestion >>= \case
+        Just (_, QuestionLabel "$label.callingInFavorsSearch" _ (Searched places _)) ->
+          [(place, map toCardId shown) | (place, shown) <- places] `shouldBe` [(Just "$game.piles.deck", map toCardId cards)]
+        _ -> liftIO $ expectationFailure "expected the full searched deck"
+      offers (isLabel "$label.noMatchingCardsFound") `shouldReturn` True
+      choose "finish the unsuccessful search" (isLabel "$label.noMatchingCardsFound")
+      JL.evidenceCount p `shouldReturn` 0
+      deck <- unDeck . playerIdentityDeck <$> playerAttrs p
+      map toCardId deck `shouldMatchList` map toCardId cards
 
   it "Circumstantial Evidence adds evidence after an enemy is defeated" do
     tg <- testGame ["jessica-jones"]

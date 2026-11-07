@@ -1492,9 +1492,11 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     -- the cards stay where they are while searched; the deck is shuffled after
     Search (SearchIdentityDeckAndDiscardPile iid) cardMatcher searchOption ShuffleBackIn
       | iid == playerIdentityId -> do
-          let found = filter (cardMatch cardMatcher) (unDeck playerIdentityDeck <> unDiscard playerIdentityDiscard)
-          focusing (PlayerCard <$> found) $
-            chooseOne playerIdentityId $
+          let deck = unDeck playerIdentityDeck
+              discard = unDiscard playerIdentityDiscard
+              found = filter (cardMatch cardMatcher) (deck <> discard)
+          chooseOneSearchedIn playerIdentityId "$label.searchDeckAndDiscard"
+            [("$game.piles.deck", PlayerCard <$> deck), ("$game.piles.discard", PlayerCard <$> discard)] $
               [labeled "$label.noMatchingCardsFound" (pure ()) | null found]
                 <> [targeting c (case searchOption of SearchDrawOne -> addToHand playerIdentityId c; SearchTarget target -> searchFoundCards target [PlayerCard c]) | c <- found]
           shuffleDeck playerIdentityId

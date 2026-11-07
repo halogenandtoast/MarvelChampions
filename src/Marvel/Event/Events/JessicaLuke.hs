@@ -149,10 +149,10 @@ instance RunMessage JLEvent where
           deck <- selectList (InDeckOf (IdentityWithId you) $ BasicCardMatches AnyCard)
           discard <- selectList (InDiscardOf (IdentityWithId you) $ BasicCardMatches AnyCard)
           let teamCards = filter (isJust . cdTeamUp . getCardDef) (deck <> discard)
-          when (null teamCards) $ shuffleDeck you
-          unless (null teamCards) $ chooseOneSearchedIn you "$label.dynamicDuoTeamUp"
-            [("$game.piles.deck", PlayerCard <$> deck), ("$game.piles.discard", PlayerCard <$> discard)]
-            [targeting card (addToHand you card >> cardSpecific a "duoAlly" (you, cdTeamUp $ getCardDef card)) | card <- teamCards]
+          chooseOneSearchedIn you "$label.dynamicDuoTeamUp"
+            [("$game.piles.deck", PlayerCard <$> deck), ("$game.piles.discard", PlayerCard <$> discard)] $
+            [labeled "$label.noMatchingCardsFound" (shuffleDeck you) | null teamCards]
+              <> [targeting card (addToHand you card >> cardSpecific a "duoAlly" (you, cdTeamUp $ getCardDef card)) | card <- teamCards]
         "Power Man and Iron Fist" -> do
           chooseDamage you a (toDamage 2 $ FromPlayerAttack you) AttackableEnemy
           cardSpecific a "powerManTough" you
@@ -203,10 +203,10 @@ instance RunMessage JLEvent where
             fromDeck = filter matches deck
             fromDiscard = filter matches discard
             eligible = fromDeck <> fromDiscard
-        unless (null eligible) $ chooseOneSearchedIn you "$label.dynamicDuoAlly"
-          [("$game.piles.deck", PlayerCard <$> deck), ("$game.piles.discard", PlayerCard <$> discard)]
-          [targeting card (addToHand you card >> shuffleDeck you) | card <- eligible]
-        when (null eligible) $ shuffleDeck you
+        chooseOneSearchedIn you "$label.dynamicDuoAlly"
+          [("$game.piles.deck", PlayerCard <$> deck), ("$game.piles.discard", PlayerCard <$> discard)] $
+          [labeled "$label.noMatchingCardsFound" (shuffleDeck you) | null eligible]
+            <> [targeting card (addToHand you card >> shuffleDeck you) | card <- eligible]
       pure e
     CardSpecific (isTarget a -> True) "healBond" (fromJSON -> Success (you :: IdentityId,n :: Natural)) -> do
       when (n > 0) $ do
