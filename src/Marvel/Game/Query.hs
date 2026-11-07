@@ -1028,9 +1028,10 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
   -- a card with a "When Revealed" waits for the player to resolve it, so each player
   -- sees what is happening; then incite, its threat first, then the rest of the card (a
   -- treachery's after the window as it is revealed, which may cancel it)
-  let revealing t = do
-        when (resolveWhenRevealed && hasWhenRevealed (toCardCode card)) $ askToResolveWhenRevealed ident t
+  let revealingIf hasEffect t = do
+        when (resolveWhenRevealed && hasEffect && hasWhenRevealed (toCardCode card)) $ askToResolveWhenRevealed ident t
         whenRevealed (incite card)
+      revealing = revealingIf True
   -- surge is resolved after the rest of the card; treacheries surge as they resolve
   let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (whenRevealed $ surge ident)
   result <- case cdCardType (getCardDef card) of
@@ -1061,7 +1062,8 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
     MinionType | Just minion <- lookup (MinionId $ unCardId $ ecCardId card) (gameMinions g) -> do
       -- Finding and revealing an existing minion is not a new entry (RR Find).
       unless (getMinionEngagedIdentity minion == ident) $ engageMinion (toId minion) ident
-      revealing (toTarget minion)
+      hasEffect <- case minion of Minion.Minion m -> Minion.minionWhenRevealedHasEffect m
+      revealingIf hasEffect (toTarget minion)
       focusing [toCard minion] $ whenRevealed $ minionStep (toId minion) (RevealMinion ident)
       modifiers <- getModifiers minion
       when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
@@ -1073,7 +1075,8 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       -- card keeps it out
       focusing [toCard minion] $ checkWindows [W.Window When $ W.MinionEnteredPlay $ toId minion]
       rest <- capture do
-        revealing (toTarget minion)
+        hasEffect <- case minion of Minion.Minion m -> Minion.minionWhenRevealedHasEffect m
+        revealingIf hasEffect (toTarget minion)
         cardSpecific (MinionRef $ toId minion) "applyToughness" ()
         focusing [toCard minion] $ whenRevealed $ minionStep (toId minion) (RevealMinion ident)
         engageMinion (toId minion) ident

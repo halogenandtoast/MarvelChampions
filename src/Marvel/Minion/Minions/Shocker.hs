@@ -12,8 +12,11 @@ shocker :: MinionCard Shocker
 shocker = minion Shocker Cards.shocker (Sch 1) (Atk 2) (HP 3)
 
 newtype Shocker = Shocker (Attrs Minion)
-  deriving anyclass (IsMinion, HasModifiersFor, HasAbilities)
+  deriving anyclass (HasModifiersFor, HasAbilities)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
+
+instance IsMinion Shocker where
+  minionWhenRevealedHasEffect _ = selectAny HeroIdentity
 
 instance RunMessage Shocker where
   runMessage msg e@(Shocker attrs) = runQueueT $ case msg of

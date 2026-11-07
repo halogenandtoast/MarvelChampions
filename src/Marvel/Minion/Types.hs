@@ -62,6 +62,10 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, RunMes
   minionBaseHitPoints = pure . unHp . minionHitPoints . toMinionAttrs
   minionAccelerationTokens :: a -> Natural
   minionAccelerationTokens _ = 0
+  -- Whether pausing to acknowledge this minion's reveal would show an effect.
+  -- The reveal itself still resolves when this is false.
+  minionWhenRevealedHasEffect :: HasGame m => a -> m Bool
+  minionWhenRevealedHasEffect _ = pure True
   overMinionAttrs :: (Attrs Minion -> Attrs Minion) -> a -> a
   default overMinionAttrs :: (Coercible a (Attrs Minion)) => (Attrs Minion -> Attrs Minion) -> a -> a
   overMinionAttrs = coerce
