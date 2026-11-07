@@ -52,6 +52,7 @@ import Marvel.Id (
   CharacterId,
   EnemyId,
   EnvironmentId,
+  EventId,
   IdentityId,
   MinionId,
   SideSchemeId,
@@ -176,6 +177,8 @@ data Game = Game
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
   , gameActivePlayer :: IdentityId
   , gamePayingForAbility :: Maybe (CardCode, Natural)
+  , gameResolvingEvents :: Maybe [EventId]
+  -- ^ Nothing only in legacy saves; restored from their pending completion messages.
   , gameResolvingAbilitySubTypes :: [(Source, [Ability.AbilitySubType], Bool)]
   -- ^ Active labeled ability scopes, innermost first; the flag marks a begun thwart.
   , gameYou :: Maybe IdentityId

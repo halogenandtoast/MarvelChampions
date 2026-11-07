@@ -395,7 +395,10 @@ publish gid row seatOrder said = do
 
 -- | The game, nothing while it waits for players.
 storedGame :: MarvelGame -> Handler (Maybe Game)
-storedGame row = if awaitingPlayers row then pure Nothing else Just <$> decodeOrFail "game" row.marvelGameCurrentData
+storedGame row = if awaitingPlayers row then pure Nothing else do
+  g <- decodeOrFail "game" row.marvelGameCurrentData
+  queue <- decodeOrFail "queue" row.marvelGameCurrentQueue
+  pure $ Just $ restoreResolvingEvents g queue
 
 tableFor :: MarvelGameId -> MarvelGame -> Handler Table
 tableFor gid row = do
@@ -1363,7 +1366,9 @@ postUndoR gid = do
   let undone = take (stepsToUndo target (map entityVal steps)) steps
   for_ (lastMay undone) \(Entity _ oldest) -> do
     previous <- foldM undoStep row.marvelGameCurrentData undone
-    g <- decodeOrFail "game" previous
+    oldGame <- decodeOrFail "game" previous
+    queue <- decodeOrFail "queue" oldest.marvelStepQueue
+    let g = restoreResolvingEvents oldGame queue
     now <- liftIO getCurrentTime
     let step = row.marvelGameStep - length undone
     (row', entries) <- runDB do

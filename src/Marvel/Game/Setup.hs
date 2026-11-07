@@ -196,6 +196,7 @@ newGame player scenario =
     , gameUsedAbilities = mempty
     , gameActivePlayer = toId player
     , gamePayingForAbility = Nothing
+    , gameResolvingEvents = Just []
     , gameResolvingAbilitySubTypes = []
     , gameYou = Nothing
     , gameScenario = scenario

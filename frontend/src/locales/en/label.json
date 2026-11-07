@@ -80,6 +80,7 @@
   "discardAnAlly": "Discard an ally: you are over your ally limit",
   "discardARestrictedCard": "Discard a restricted card: you control more than you may",
   "discardAnyCards": "Discard any cards you do not want",
+  "discardTuckedEvent": "Discard a tucked event: you can keep up to 3",
   "discardToHandSize": "Discard down to your hand size",
   "doneDiscarding": "Done discarding",
   "endTurn": "End turn",

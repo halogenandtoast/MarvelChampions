@@ -609,21 +609,10 @@ gameView seesHand g = do
       , victoryCondition = scenario.scenarioVictoryCondition
       , collection = map cardView (gameCollection g)
       , focusedCards = map cardView (gameFocusedCards g <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid])
-      -- Event entities remain available for later responses after their physical
-      -- cards have left resolution. Those cards belong to their destination zone.
       , resolvingEvents =
-          [ cardView card
-          | event <- HashMap.elems (gameEvents g)
-          , let card = toCard (toAttrs event)
-          , toCardId card `notElem`
-              ( [ toCardId c
-                | player <- HashMap.elems (gamePlayers g)
-                , let a = toAttrs player
-                , c <- unHand a.playerIdentityHand <> unDeck a.playerIdentityDeck <> unDiscard a.playerIdentityDiscard
-                ]
-                <> map toCardId (gameCollection g)
-                <> map toCardId (gamePlayerVictoryDisplay g)
-              )
+          [ cardView $ toCard (toAttrs event)
+          | eid <- reverse $ fromMaybe [] (gameResolvingEvents g)
+          , Just event <- [lookup eid (gameEvents g)]
           ]
       , attack = headMay $ mapMaybe attackView (map Villain.villainAttackDetails (HashMap.elems (gameVillains g)) <> map Minion.minionAttackDetails (HashMap.elems (gameMinions g)))
       , scheming = [idText $ toId v | v <- HashMap.elems (gameVillains g), let a = toAttrs v, isJust a.villainActivationPlayer, isNothing a.villainAttacking]
@@ -1067,6 +1056,7 @@ describeChoice asked = \case
     Msg.MainSchemeMessage m (Msg.MainSchemeThreatRemoved _ _) -> Just ("thwartScheme", MainSchemeRef m)
     Msg.SideSchemeMessage m (Msg.SideSchemeThwarted _ _) -> Just ("thwartScheme", SideSchemeRef m)
     Msg.SideSchemeMessage m (Msg.SideSchemeThreatRemoved _ _) -> Just ("thwartScheme", SideSchemeRef m)
+    Msg.DiscardedCard card -> Just ("discard", CardIdRef $ toCardId card)
     Msg.RemoveFromPlay t' -> Just ("discard", t')
     Msg.ReturnToHand t' -> Just ("returnToHand", t')
     _ -> Nothing

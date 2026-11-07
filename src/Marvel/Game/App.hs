@@ -5,9 +5,9 @@ import Data.IORef (atomicModifyIORef', newIORef, readIORef)
 import Data.Tuple (swap)
 import Marvel.Debug (DebugLogger, HasDebugLogger (..))
 import Marvel.Frontend (Frontend (..), FrontendMessage)
-import Marvel.Game.Base (Game)
+import Marvel.Game.Base (Game (..))
 import Marvel.Game.Class (HasGame (..), HasGameRef (..), MonadGame)
-import Marvel.Message (Message)
+import Marvel.Message (Message (..), EventMessage (..))
 import Marvel.Prelude
 import Marvel.Queue (HasQueue (..))
 import System.Random (
@@ -71,7 +71,7 @@ clients through the function given.
 -}
 newGameApp :: (MonadIO m) => Game -> [Message] -> StdGen -> (FrontendMessage -> IO ()) -> m GameApp
 newGameApp g msgs gen frontend = liftIO do
-  gameRef <- newIORef g
+  gameRef <- newIORef $ restoreResolvingEvents g msgs
   queueRef <- newIORef msgs
   genRef <- newIORef gen
   pure $ GameApp gameRef queueRef Nothing genRef frontend
@@ -82,3 +82,14 @@ currentState app = (,,) <$> readIORef (appGame app) <*> readIORef (appQueue app)
 
 runGameApp :: (MonadIO m) => GameApp -> GameAppT a -> m a
 runGameApp gameApp = liftIO . flip runReaderT gameApp . unGameAppT
+
+-- | Old saves retained event entities after resolution. Their queued completion
+-- messages identify the events still resolving, regardless of physical card zone.
+restoreResolvingEvents :: Game -> [Message] -> Game
+restoreResolvingEvents g messages = case gameResolvingEvents g of
+  Just _ -> g
+  Nothing -> g {gameResolvingEvents = Just $ concatMap pending messages}
+ where
+  pending (EventMessage eid ResolvedEvent) = [eid]
+  pending (Simultaneously messages') = concatMap pending messages'
+  pending _ = []

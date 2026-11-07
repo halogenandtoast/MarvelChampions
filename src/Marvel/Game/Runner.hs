@@ -308,6 +308,8 @@ runPreGameMessage msg g = runQueueT $ case msg of
 
 runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = runQueueT $ case msg of
+  EventMessage eid ResolvedEvent ->
+    pure g {gameResolvingEvents = Just $ filter (/= eid) $ fromMaybe [] gameResolvingEvents}
   CardSpecific GameRef "resolveKeywordRetaliate" (fromJSON -> Success (enemy,attacker)) -> do
     amount <- retaliationAmount enemy
     when (amount > 0) $ retaliate (characterRef enemy) attacker amount
@@ -2216,7 +2218,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     played W.After
     reserved <- echoReservedReplay you
     when (maybe False ((== card) . fst) reserved) $ cardSpecific you "fneReplayFinished" ()
-    pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
+    pure $ g {gameResolvingEvents = Just $ toId event : filter (/= toId event) (fromMaybe [] gameResolvingEvents)}
+      & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutCardIntoPlay ident card payment mWindow wasPlayed -> do
     let mission = scenarioMission (toAttrs $ g.gameScenario)
         entersMission = wasPlayed && maybe False (\m -> not (missionFinished m) && missionPendingAlly m == Just (pcCardId card)) mission
@@ -2297,7 +2300,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         played After
         reserved <- echoReservedReplay ident
         when (maybe False ((== card) . fst) reserved) $ cardSpecific ident "fneReplayFinished" ()
-        pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
+        pure $ g {gameResolvingEvents = Just $ toId event : filter (/= toId event) (fromMaybe [] gameResolvingEvents)}
+          & (entitiesL . eventsL %~ insertMap (toId event) event)
       _ -> error "Unhandled"
     when (cdCardType (getCardDef card) `elem` [AllyType, SupportType, UpgradeType, PlayerSideSchemeType]) $ do
       checkWindows [W.Window After $ W.PlayerCardEnteredPlay entryController card]
@@ -2383,7 +2387,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     let event = createEvent ident card
     eventStep (toId event) (PlayedEvent ident NoPayment Nothing)
     eventStep (toId event) ResolvedEvent
-    pure $ g & (entitiesL . eventsL %~ insertMap (toId event) event)
+    pure $ g {gameResolvingEvents = Just $ toId event : filter (/= toId event) (fromMaybe [] gameResolvingEvents)}
+      & (entitiesL . eventsL %~ insertMap (toId event) event)
   PutBoostIntoPlay (MinionRef mid) _ | HashMap.member mid (gameMinions g) -> pure g
   PutBoostIntoPlay target ident -> case target of
     MinionRef minionId ->

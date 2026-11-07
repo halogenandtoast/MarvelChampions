@@ -94,6 +94,15 @@ spec = describe "the game as the client sees it" do
       choice.target `shouldBe` Just (tshow $ toCardId card)
       (describeChoice p (TargetLabel (CardIdRef $ toCardId other) body)).kind `shouldBe` "target"
 
+  it "names a tucked card choice by its discard action" do
+    tg <- testGame ["echo"]
+    inGame tg do
+      let p = player1 tg
+      card <- putInHand p "60048"
+      let choice = describeChoice p (TargetLabel (CardIdRef $ toCardId card) [Run [CardSpecific (IdentityRef p) "fneReleaseTuckedCard" (toJSON card), DiscardedCard (PlayerCard card)]])
+      choice.kind `shouldBe` "discard"
+      choice.target `shouldBe` Just (tshow $ toCardId card)
+
   it "keeps a played event visible through each choice until its resolution finishes" do
     tg <- testGame ["luke-cage"]
     inGame tg do
@@ -109,6 +118,44 @@ spec = describe "the game as the client sees it" do
       choose "tough for Luke" (isTargetChoice $ IdentityCharacter p)
       pass
       shownResolvingEvents `shouldReturn` []
+
+  it "does not show a resolved event when its card leaves the discard pile" do
+    tg <- testGame ["echo"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      resolve [IdentityMessage p ExhaustedIdentity]
+      card <- putInHand p "60048"
+      resource <- putInHand p "01090"
+      playWith card [resource]
+      pass
+      shownResolvingEvents `shouldReturn` []
+      resolve [RemoveFromGame (CardIdRef $ toCardId card)]
+      getsGame (not . null . gameEvents) `shouldReturn` True
+      shownResolvingEvents `shouldReturn` []
+
+  it "restores active events from legacy completion messages without reviving completed events" do
+    tg <- testGame ["luke-cage"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      _ <- putIntoPlay p "62012"
+      card <- putInHand p "62023"
+      playWith card []
+      game <- getGame
+      queue <- liftIO . readIORef =<< getQueue
+      let legacy = case toJSON game of
+            Object o -> Object $ KeyMap.delete "resolvingEvents" o
+            value -> value
+      case fromJSON legacy of
+        Error err -> liftIO $ expectationFailure err
+        Success old -> do
+          gameResolvingEvents old `shouldBe` Nothing
+          gameResolvingEvents (restoreResolvingEvents old queue) `shouldBe` gameResolvingEvents game
+          gameResolvingEvents (restoreResolvingEvents old []) `shouldBe` Just []
+      fromJSON (toJSON game) `shouldBe` Success game
 
   it "shows both full searched piles when a deck-and-discard search finds no matching cards" do
     tg <- testGame ["spider-man"]

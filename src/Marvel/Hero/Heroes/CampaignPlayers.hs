@@ -108,7 +108,7 @@ instance RunMessage CampaignHero where
           pure h {campaignEchoCards = filter ((/= pcCardId card) . pcCardId) cards <> [card]}
     CardSpecific (IdentityRef you) "fneTrimTucked" _
       | you == heroIdentityId attrs, toCardCode attrs == "60037a" -> do
-          when (length cards > 3) $ chooseOne you [targeting card (discardTuckedPlayerCard you card >> cardSpecific you "fneTrimTucked" ()) | card <- cards]
+          when (length cards > 3) $ chooseOnePrompted you "$label.discardTuckedEvent" [targeting card (discardTuckedPlayerCard you card >> cardSpecific you "fneTrimTucked" ()) | card <- cards]
           pure h
     CardSpecific (IdentityRef you) "fneReleaseTuckedCard" (fromJSON -> Success card)
       | you == heroIdentityId attrs -> pure h {campaignEchoCards = filter ((/= pcCardId card) . pcCardId) cards}

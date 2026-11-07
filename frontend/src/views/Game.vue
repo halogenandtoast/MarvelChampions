@@ -283,6 +283,7 @@ const things = computed(() => {
     map[p.id] = { code: p.code, name: p.name }
     add(p.hand)
     add(p.discard)
+    add(p.tuckedPlayerCards)
     add(p.allies)
     p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
     add(p.supports)
