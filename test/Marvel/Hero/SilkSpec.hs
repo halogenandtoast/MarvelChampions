@@ -95,6 +95,28 @@ spec = describe "Silk" do
       pass
       L.tuckedEncounterCards p `shouldReturn` [before]
 
+  it "Albert Moon does not offer healing at full health with tucked cards" do
+    tg <- testGame ["silk"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      albert <- putIntoPlay p "52006"
+      tuck p
+      choose "Albert Moon" (isAbilityOfCard albert)
+      offers (isLabel "$label.heal") `shouldReturn` False
+      offers (isLabel "$label.silkTuckTop") `shouldReturn` True
+
+  it "Albert Moon does not offer zero healing without tucked cards" do
+    tg <- testGame ["silk"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      albert <- putIntoPlay p "52006"
+      setDamage p 2
+      choose "Albert Moon" (isAbilityOfCard albert)
+      offers (isLabel "$label.heal") `shouldReturn` False
+      offers (isLabel "$label.silkTuckTop") `shouldReturn` True
+
   it "Albert Moon heals one damage per tucked card" do
     tg <- testGame ["silk"]
     inGame tg do

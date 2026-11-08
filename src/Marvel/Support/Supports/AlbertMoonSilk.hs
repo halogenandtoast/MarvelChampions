@@ -2,7 +2,7 @@ module Marvel.Support.Supports.AlbertMoonSilk where
 import Marvel.Prelude
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Matchers ()
+import Marvel.Matchers
 import Marvel.Question (runAbility)
 import Marvel.Window qualified as W ()
 import Marvel.Trait qualified as T ()
@@ -30,7 +30,10 @@ instance RunMessage AlbertMoonSilk where
   runMessage msg u@(AlbertMoonSilk attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       cards <- tuckedEncounterCards you
-      chooseOne you [labeled "$label.silkTuckTop" (tuckTopEncounterCard you), labeled "$label.heal" (heal you $ fromIntegral $ length cards)]
+      canHeal <- identityMatches (IdentityWithAnyDamage <> IdentityCanBeHealed) you
+      chooseOne you $
+        [labeled "$label.silkTuckTop" (tuckTopEncounterCard you)]
+        <> [labeled "$label.heal" (heal you $ fromIntegral $ length cards) | canHeal && notNull cards]
       pure u
     _ -> AlbertMoonSilk <$> runMessage msg attrs
 
