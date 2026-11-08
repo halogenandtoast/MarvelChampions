@@ -46,6 +46,7 @@
     "alterEgo": "Alter-ego"
   },
   "status": {
+    "inactive": "{status} (inactive)",
     "stunned": "Stunned",
     "confused": "Confused",
     "tough": "Tough"

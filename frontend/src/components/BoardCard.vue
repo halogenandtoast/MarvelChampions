@@ -14,6 +14,7 @@ import FoldingIdentity from './FoldingIdentity.vue'
 import GameIcon from '../browser/components/GameIcon.vue'
 import ChoiceMenu from './ChoiceMenu.vue'
 import StatusTokens from './StatusTokens.vue'
+import { statusCards, inactiveStatusCards } from '../statusCards'
 import TokenStack from './TokenStack.vue'
 
 export interface Attached {
@@ -156,9 +157,9 @@ const toggleOverflow = () => {
 }
 
 // the card previewed, with its status cards beside it; an attached card shows only itself
-const statuses = computed(() => (['stunned', 'confused', 'tough'] as const).filter((s) => props[s]))
+const statuses = computed(() => statusCards(props))
 const preview = (element: HTMLElement, touched = false, code = props.code, back = props.back) =>
-  overlay.show({ code, name: title.value, back, statuses: code === props.code ? statuses.value : [] }, element, !back && cards.landscape(code), touched)
+  overlay.show({ code, name: title.value, back, statuses: code === props.code ? statuses.value : [], inactiveStatuses: code === props.code ? inactiveStatusCards(props) : [] }, element, !back && cards.landscape(code), touched)
 
 let lastPointer = 'mouse'
 let pressTimer: ReturnType<typeof setTimeout> | undefined

@@ -9,6 +9,7 @@ export interface Preview {
   back?: Back | null
   /** stunned, confused, tough: shown beside the card */
   statuses?: readonly string[]
+  inactiveStatuses?: readonly string[]
 }
 
 const OVERLAY_WIDTH = 320
