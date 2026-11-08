@@ -54,6 +54,9 @@ const props = withDefaults(
     flag?: string | null
     /** a game icon drawn before the flag's label */
     flagIcon?: string | null
+    /** Public boost information from a facedown card beneath this card. */
+    tuckedBoostIcons?: number | null
+    tuckedBoostStar?: boolean | null
     /** an identity's sides, A then B then C: three fold out, as Ant-Man's */
     faces?: string[]
     /** morph between zones as the game changes: off where the card may be drawn twice */
@@ -218,6 +221,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       </div>
       <CardFace v-else :code="code" :back="back" :name="name" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
+      <span v-if="tuckedBoostIcons != null" class="boost-badge" role="img" :aria-label="$t(tuckedBoostStar ? 'game.tuckedBoostIconsWithStar' : 'game.tuckedBoostIcons', { count: tuckedBoostIcons })">
+        <span aria-hidden="true" class="boost-badge-content"><GameIcon name="boost" /> <span>{{ tuckedBoostIcons }}</span><GameIcon v-if="tuckedBoostStar" name="star" /></span>
+      </span>
       <StatusTokens class="statuses" :stun-cards="stunCards" :confuse-cards="confuseCards" :stunned="stunned" :confused="confused" :tough="tough" :tough-cards="toughCards" />
       <div v-if="resourceSlots?.length" class="metagame-board" :class="{ 'three-columns': resourceSlots.length === 9 }" :aria-label="$t('game.metagameBoard')">
         <button v-for="(resource, index) in resourceSlots" :key="index" type="button" class="metagame-space" :class="{ occupied: occupiedSlots?.includes(index) }" :disabled="!slotChoices.has(index)" :aria-label="$t(occupiedSlots?.includes(index) ? 'game.occupiedResourceSpace' : 'game.emptyResourceSpace', { resource, space: index + 1 })" @click.stop="slotChoices.get(index) && choose(slotChoices.get(index)!.index)">
@@ -348,6 +354,24 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   text-transform: uppercase;
   box-shadow: 0 2px 6px var(--shadow);
 }
+.boost-badge {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  translate: -50% 0;
+  padding: 0.2em 0.45em;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.35em;
+  background: var(--ink-2);
+  color: var(--text);
+  box-shadow: 0 2px 5px var(--shadow);
+  font-size: max(12px, 12cqi);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+}
+.boost-badge-content { display: flex; align-items: center; gap: 0.25em; white-space: nowrap; }
 .statuses { position: absolute; top: 4%; left: 4%; }
 .metagame-board { position: absolute; top: 9%; left: 12%; right: 12%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 4px; border-radius: 5px; background: var(--ink-2); border: 1px solid var(--line-strong); }
 .metagame-board.three-columns { grid-template-columns: repeat(3, 1fr); }
