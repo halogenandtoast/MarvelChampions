@@ -75,7 +75,7 @@ provideChoiceHandler(index => {
       @pointerenter="$event.pointerType === 'mouse' && top && overlay.show({ code: top.code, name: top.name }, $event.currentTarget as HTMLElement)"
       @pointerleave="overlay.hide()"
     >
-      <CardFace v-if="back" :back="back" />
+      <CardFace v-if="back && !top" :back="back" />
       <!-- a landscape card turned to lie in the pile, as it would on the table -->
       <span v-else-if="top && faces.landscape(top.code)" class="turned"><CardFace :code="top.code" :name="top.name" /></span>
       <CardFace v-else-if="top" :code="top.code" :name="top.name" />
