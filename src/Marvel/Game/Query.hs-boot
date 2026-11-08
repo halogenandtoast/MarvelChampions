@@ -324,6 +324,7 @@ getCharacterThwart :: (HasGame m) => CharacterId -> m Natural
 getUpgradeAttachedEnemy :: (HasGame m) => UpgradeId -> m (Maybe EnemyId)
 getMinionEngagedPlayer :: (HasGame m) => MinionId -> m (Maybe IdentityId)
 getAllyControllerId :: (HasGame m) => AllyId -> m (Maybe IdentityId)
+getUsableBasicAttackOrThwartAbilities :: (HasGame m, HasQueue m) => IdentityId -> m [Ability]
 getAbilitiesForMatching :: (HasGame m) => IdentityId -> (Ability -> m Bool) -> m [Ability]
 getCharacterThwartAgainstScheme :: (HasGame m) => CharacterId -> SchemeId -> m Natural
 getAllyPrintedStats :: (HasGame m) => AllyId -> m (Natural, Natural, Natural)

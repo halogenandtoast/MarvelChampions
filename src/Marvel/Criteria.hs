@@ -91,10 +91,12 @@ data Criteria
   | -- | another card remains playable after this card exhausts the identity
     CardPlayAfterExhaustingHasTarget Natural
   | PlayCardWithReductionHasTarget CardMatcher Natural
+  | PlayCardSharingIdentityTraitWithReductionHasTarget Natural
   | CanPlayAttackEventWithClaws
   | ControlsCardsWithTrait Trait Natural
   | CanCancelRevealedEncounterCard
   | CanCancelRevealedTreachery
+  | BasicAttackOrThwartAvailable IdentityMatcher
   | CanResolvePrintedHeroAbilities
   | PendingDamageAtLeast Natural
   | HasOtherSchemeForThreatMovement

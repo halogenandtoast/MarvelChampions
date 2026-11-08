@@ -538,6 +538,45 @@ spec = describe "Ant-Man" do
         damageOf p `shouldReturn` 3
 
   describe "Team-Building Exercise (12024)" do
+    for_ ["12024", "30022", "46021"] $ \code ->
+      it (show code <> " is unavailable with no card to play") do
+        tg <- antMan
+        let p = player1 tg
+        inGame tg do
+          inForm p C
+          team <- putIntoPlay p code
+          offers (isAbilityOfCard team) `shouldReturn` False
+
+    it "is unavailable when no card shares a trait with the hero" do
+      tg <- antMan
+      let p = player1 tg
+      inGame tg do
+        inForm p C
+        team <- putIntoPlay p "12024"
+        _ <- putInHand p "01093"
+        _ <- putInHand p "01088"
+        offers (isAbilityOfCard team) `shouldReturn` False
+
+    it "is unavailable when the matching card is unaffordable even with its reduction" do
+      tg <- antMan
+      let p = player1 tg
+      inGame tg do
+        inForm p C
+        team <- putIntoPlay p "12024"
+        _ <- putInHand p "12003"
+        offers (isAbilityOfCard team) `shouldReturn` False
+
+    it "is unavailable when the matching unique ally is already in play" do
+      tg <- antMan
+      let p = player1 tg
+      inGame tg do
+        inForm p C
+        team <- putIntoPlay p "12024"
+        _ <- putIntoPlay p "12002"
+        _ <- putInHand p "12002"
+        _ <- putInHand p "01088"
+        offers (isAbilityOfCard team) `shouldReturn` False
+
     it "plays a card sharing a trait with the hero for 1 less" do
       tg <- antMan
       let p = player1 tg

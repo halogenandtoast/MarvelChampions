@@ -256,11 +256,15 @@ passesCriteria x a =
     VictoryDisplayHasSideScheme -> (> 0) <$> sideSchemesInVictoryDisplay
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget _ -> pure False
+    PlayCardSharingIdentityTraitWithReductionHasTarget amount -> do
+      traits <- getCharacterTraits (IdentityCharacter x)
+      notNull <$> playableCardsWithReductionAfterExhausting x (toTarget source) (CardMatchesAny $ map CardWithTrait $ toList traits) amount
     PlayCardWithReductionHasTarget matcher amount ->
       notNull <$> playableCardsWithReductionAfterExhausting x (toTarget source) matcher amount
     ControlsCardsWithTrait trait n -> (>= n) <$> countControlledCardsWithTrait x trait
     CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
+    BasicAttackOrThwartAvailable matcher -> selectList matcher >>= anyM (fmap notNull . getUsableBasicAttackOrThwartAbilities)
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers x
     PendingDamageAtLeast n -> pendingDamageAtLeast x n
     HasOtherSchemeForThreatMovement -> hasOtherSchemeForThreatMovement
@@ -364,9 +368,11 @@ passesCardCriteria ident card = go
     CollectionHasCards -> notNull <$> getCollection
     CardPlayAfterExhaustingHasTarget n -> hasCardToPlayWithReductionAfterExhausting ident card n
     PlayCardWithReductionHasTarget _ _ -> pure False
+    PlayCardSharingIdentityTraitWithReductionHasTarget _ -> pure False
     ControlsCardsWithTrait trait n -> (>= n) <$> countControlledCardsWithTrait ident trait
     CanCancelRevealedEncounterCard -> canCancelRevealedEncounterCard
     CanCancelRevealedTreachery -> canCancelRevealedTreachery
+    BasicAttackOrThwartAvailable matcher -> selectList matcher >>= anyM (fmap notNull . getUsableBasicAttackOrThwartAbilities)
     CanResolvePrintedHeroAbilities -> notElem CannotTriggerPrintedHeroAbilities <$> getModifiers ident
     PendingDamageAtLeast n -> pendingDamageAtLeast ident n
     HasOtherSchemeForThreatMovement -> hasOtherSchemeForThreatMovement

@@ -2123,6 +2123,16 @@ cannotTakeDamageFrom target source = do
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]
 getAbilitiesFor ident = getAbilitiesForMatching ident (const $ pure True)
 
+-- Preview the complete basic-power rules in an isolated game, including costs.
+-- Cell Phone uses the same candidates for initiation and its subsequent choices.
+getUsableBasicAttackOrThwartAbilities :: (HasGame m, HasQueue m) => IdentityId -> m [Ability]
+getUsableBasicAttackOrThwartAbilities you = do
+  snapshot <- getGame
+  app <- newApp snapshot []
+  runGameApp app $ asYou you do
+    abilities <- getAbilitiesForMatching you $ \ab -> pure $ abilityType ab == Basic && abilityIndex ab `elem` [300, 301]
+    filterM (\ab -> (&&) <$> passesCriteria you ab <*> passesCanAffordCost you ab) abilities
+
 -- Filter large candidate sets with pure or cheap checks first. Blanking scans
 -- modifiers, and affordability may search payment combinations, so callers should
 -- reject irrelevant ability types/windows before asking for that expensive work.

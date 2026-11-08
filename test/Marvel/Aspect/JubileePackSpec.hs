@@ -4,6 +4,11 @@ import Control.Monad (replicateM_)
 import Marvel.Jubilee.Cards qualified as Cards
 import Marvel.Matchers
 import Marvel.Query
+import Marvel.Message qualified as Msg
+import Marvel.Cost.Types (Cost (ResourceCost))
+import Marvel.Effect.Types qualified as Effect
+import Marvel.Effect.Lasting (Lasting (..))
+import Marvel.Modifier (Modifier (..))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Status ()
 
@@ -213,6 +218,73 @@ spec = describe "Jubilee pack" do
       choose "Synch boosts REC" (abilityOn (allyIdOf synchInPlay) 1)
       pass
       damageOf p `shouldReturn` 1
+
+  it "Cell Phone is unavailable when the only character is exhausted" do
+    tg <- testGame ["jubilee"]
+    inGame tg do
+      let p = player1 tg
+      asJubilee p
+      phone <- putIntoPlay p "47019"
+      runNow [IdentityMessage p Msg.ExhaustedIdentity]
+      offers (isAbilityOfCard phone) `shouldReturn` False
+      uses <- upgradesWith "47019"
+      map upgradeUses uses `shouldBe` [3]
+
+  it "Cell Phone is unavailable in alter-ego form without a usable ally" do
+    tg <- testGame ["jubilee"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      phone <- putIntoPlay p "47019"
+      offers (isAbilityOfCard phone) `shouldReturn` False
+
+  it "Cell Phone respects additional basic attack costs when thwarting is forbidden" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      asJubilee p
+      phone <- putIntoPlay p "47019"
+      eid <- getRandom
+      withGame_ $ entitiesL . effectsL . at eid ?~ Effect.Effect (Lasting Effect.EffectAttrs
+        { Effect.effectId = eid
+        , Effect.effectCardCode = "47019"
+        , Effect.effectSource = GameRef
+        , Effect.effectMatcher = IdentityEntity (IdentityWithId p)
+        , Effect.effectModifiers = [CannotThwart, BasicAttackAdditionalCost (ResourceCost Nothing)]
+        , Effect.effectEnds = Nothing
+        })
+      offers (isAbilityOfCard phone) `shouldReturn` False
+      _ <- putInHand p "01088"
+      offers (isAbilityOfCard phone) `shouldReturn` True
+
+  it "Cell Phone can use a ready ally while its controller is exhausted" do
+    tg <- testGame ["jubilee"]
+    inGame tg do
+      let p = player1 tg
+      asJubilee p
+      phone <- putIntoPlay p "47019"
+      chamber <- putIntoPlay p "47011"
+      runNow [IdentityMessage p Msg.ExhaustedIdentity]
+      choose "use Cell Phone" (isAbilityOfCard phone)
+      choose "choose yourself" (isTargetChoice p)
+      offers (isTargetChoice p) `shouldReturn` False
+      choose "choose Chamber" (isTargetChoice $ allyIdOf chamber)
+      choose "Chamber attacks" (abilityOn (allyIdOf chamber) 301)
+      chooseVillain
+      pass
+      villainDamageNow `shouldReturn` 3
+
+  it "Cell Phone offers only players with a usable basic attack or thwart" do
+    tg <- testGame ["jubilee", "spider-man"]
+    inGame tg do
+      let p = player1 tg
+          other = player2 tg
+      asJubilee p
+      phone <- putIntoPlay p "47019"
+      choose "use Cell Phone" (isAbilityOfCard phone)
+      offers (isTargetChoice other) `shouldReturn` False
+      -- With only one eligible player and character, those choices resolve automatically.
+      offers (isHeroAttack p) `shouldReturn` True
 
   it "Cell Phone spends a charge and grants one ATK for a basic attack" do
     tg <- testGame ["jubilee"]

@@ -14,6 +14,8 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Effect.Types
 import Marvel.Entity
+import Marvel.Id (CharacterId (IdentityCharacter))
+import Marvel.Game.Source (getCharacterTraits)
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -33,7 +35,7 @@ newtype TeamBuildingExercise = TeamBuildingExercise (Attrs Support)
 -- | Hero Action: Exhaust Team-Building Exercise → play a card from your hand that shares
 -- a trait with your hero, reducing its resource cost by 1.
 instance HasAbilities TeamBuildingExercise where
-  getAbilities a = [ability a 1 HeroAction OwnsThis ExhaustCost $ runAbility a 1]
+  getAbilities a = [ability a 1 HeroAction (OwnsThis <> PlayCardSharingIdentityTraitWithReductionHasTarget 1) ExhaustCost $ runAbility a 1]
 
 -- | The reduction is an effect on the player, gone once they play a card; which cards
 -- may be played is asked once it is there, so a card it makes affordable is offered.
@@ -44,7 +46,7 @@ instance RunMessage TeamBuildingExercise where
       cardSpecific attrs "play" you
       pure s
     CardSpecific (isTarget attrs -> True) "play" (fromJSON -> Success you) -> do
-      traits <- filterM (\t -> identityMatches (HeroIdentity <> IdentityWithTrait t) you) [minBound .. maxBound]
+      traits <- toList <$> getCharacterTraits (IdentityCharacter you)
       cards <-
         selectList $
           PlayableFromHandOf (IdentityWithId you) $

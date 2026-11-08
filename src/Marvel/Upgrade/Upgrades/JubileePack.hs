@@ -54,7 +54,7 @@ instance HasAbilities JubileeUpgrade where
     "Jubilee's Coat" -> [subtype A.Thwart $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Thwart) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
     "Jubilee's Sunglasses" -> [subtype A.Attack $ limitedWindowAbility a 1 (W.PlaysEvent W.After you $ CardWithTrait T.Attack) HeroResponse OwnsThis ExhaustCost (runAbility a 1)]
     "Disguise" -> [subtype A.Thwart $ ability a 1 Action (OwnsThis <> SchemeExists ThwartableScheme) (ExhaustCost <> ExhaustCharacterCost (IdentityCharacters You)) (runAbility a 1)]
-    "Cell Phone" -> [ability a 1 Action OwnsThis (ExhaustCost <> UseCost) (runAbility a 1)]
+    "Cell Phone" -> [ability a 1 Action (OwnsThis <> BasicAttackOrThwartAvailable AnyIdentity) (ExhaustCost <> UseCost) (runAbility a 1)]
     _ -> []
    where you = IdentityWithId $ upgradeController attrs
 
@@ -71,7 +71,7 @@ instance RunMessage JubileeUpgrade where
           chooseOne you [targeting (enemyRef enemy) $ dealDamage enemy attrs $ toDamage n $ FromPlayerAttack you | enemy <- enemies]
         "Disguise" -> removeThreat you attrs 2 ThwartableScheme
         "Cell Phone" -> do
-          players <- selectList AnyIdentity
+          players <- selectList AnyIdentity >>= filterM (fmap notNull . getUsableBasicAttackOrThwartAbilities)
           chooseOne you [targeting p $ cardSpecific attrs "cellPhonePlayer" p | p <- players]
         _ -> pure ()
       pure a
@@ -83,8 +83,7 @@ instance RunMessage JubileeUpgrade where
 -- Use the ordinary basic ability, including its exhaustion and status rules.
 jubileeCellPhonePower :: ReverseQueue m => Attrs Upgrade -> IdentityId -> m ()
 jubileeCellPhonePower attrs you = do
-  abilities <- getAbilitiesForMatching you $ \ab -> pure $ abilityType ab == Basic && abilityIndex ab `elem` [300, 301]
-  valid <- filterM (\ab -> (&&) <$> passesCriteria you ab <*> canAffordCost you (abilitySource ab) (abilityCost ab)) abilities
+  valid <- getUsableBasicAttackOrThwartAbilities you
   chooseOne you [targeting source do
     createEffect Cards.jubilee47019 attrs (SourceEntity source)
     chooseOne you [pure $ UseAbility ab | ab <- valid, abilitySource ab == source]
