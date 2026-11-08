@@ -3,7 +3,7 @@ import Marvel.Prelude
 import Marvel.Id
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Matchers ()
+import Marvel.Matchers
 import Marvel.Question (runAbility)
 import Marvel.Window qualified as W ()
 import Marvel.Trait qualified as T ()
@@ -46,4 +46,4 @@ instance RunMessage DrSinclairSilk where
     _ -> DrSinclairSilk <$> runMessage msg attrs
 
 instance HasAbilities DrSinclairSilk where
-  getAbilities u@(DrSinclairSilk _attrs) = [ability u 1 AlterEgoAction ForAnyPlayer (ExhaustCost <> ResourceCost (Just Mental)) (runAbility u 1)]
+  getAbilities u@(DrSinclairSilk _attrs) = [ability u 1 AlterEgoAction (ForAnyPlayer <> AnyCriteria [SelfMatches recoveryHealableIdentity, CharacterExists (IdentityCharacters You <> CharacterOneOf [CharacterWithStatus status | status <- [StunnedStatus, ConfusedStatus, ToughStatus]])]) (ExhaustCost <> ResourceCost (Just Mental)) (runAbility u 1)]

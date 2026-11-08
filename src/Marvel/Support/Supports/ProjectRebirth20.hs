@@ -10,10 +10,9 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.Identity.Types (Field (..))
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Projection
+import Marvel.Matchers
 import Marvel.Question
 import Marvel.Ref
 import Marvel.Support.Cards qualified as Cards
@@ -36,7 +35,7 @@ instance HasAbilities ProjectRebirth20 where
 instance RunMessage ProjectRebirth20 where
   runMessage msg s@(ProjectRebirth20 attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      damaged <- projectP PlayerIdentityDamage (> 0) ident
+      damaged <- identityMatches healableIdentity ident
       chooseOne ident $
         labeled (countLabel "drawCards" 1) (drawCards ident 1)
           : [labeled (countLabel "healYourIdentity" 3) (heal ident 3) | damaged]

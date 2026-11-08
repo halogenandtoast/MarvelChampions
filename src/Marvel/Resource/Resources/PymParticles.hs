@@ -11,7 +11,7 @@ import Marvel.Trait
 -- Giant hero form or draw 1 card if you are in Tiny hero form.
 pymParticlesSpent :: (ReverseQueue m) => IdentityId -> m ()
 pymParticlesSpent you = do
-  giant <- identityMatches (HeroIdentity <> IdentityWithTrait Giant) you
+  giant <- identityMatches (HeroIdentity <> IdentityWithTrait Giant <> healableIdentity) you
   tiny <- identityMatches (HeroIdentity <> IdentityWithTrait Tiny) you
   when (giant || tiny) $
     chooseOne you $

@@ -39,7 +39,7 @@ instance HasModifiersFor Pulsar where
 -- | Hero Response: After you change to this form, heal 1 damage from Spectrum.
 instance HasAbilities Pulsar where
   getAbilities (Pulsar a) =
-    [ limitedWindowAbility a 1 (EnergyFormChangedTo After (UpgradeWithId $ upgradeId a)) HeroResponse OwnsThis NoCost $
+    [ limitedWindowAbility a 1 (EnergyFormChangedTo After (UpgradeWithId $ upgradeId a)) HeroResponse (OwnsThis <> SelfMatches healableIdentity) NoCost $
         runAbility a 1
     ]
 

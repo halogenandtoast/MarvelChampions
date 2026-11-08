@@ -75,14 +75,14 @@ instance HasAbilities CampaignSupport where
   getAbilities s@(CampaignSupport attrs) = case Name.title (cdName (supportCardDef attrs)) of
     "Precinct HQ" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
     "Air Cover" -> [limitedWindowAbility s 1 (W.MinionEntersPlay W.After AnyMinion) Response OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
-    "Altman Residence" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
+    "Altman Residence" -> [ability s 1 AlterEgoAction (OwnsThis <> AnyCriteria [SelfMatches healableIdentity, ExtendedCardExists (InDiscardOf You $ BasicCardMatches hulklingCard)]) ExhaustCost $ runAbility s 1]
     "Hidden Base" -> [limitedWindowAbility s 1 (W.IdentityChangedToForm W.After $ IdentityWithId $ supportController attrs) AlterEgoResponse OwnsThis (ExhaustCost <> UseCost) $ runAbility s 1]
     "Foggy Nelson" -> [ability s 1 AlterEgoAction (OwnsThis <> SchemeExists ThwartableScheme) ExhaustCost $ runAbility s 1]
     "Karen Page" -> [ability s 1 Action OwnsThis ExhaustCost $ runAbility s 1]
     "Nelson and Murdock" -> [limitedWindowAbility s 1 (W.SideSchemeDefeatedBy AnySideScheme $ SourceWithTrait T.Attorney) Response (OwnsThis <> EnemyExists EnemyCanBeConfused) NoCost $ runAbility s 1]
     "Sister Maggie" -> [limitedWindowAbility s 1 (W.UsesRecoveryAt W.After $ IdentityWithId $ supportController attrs) Response (OwnsThis <> AnyCriteria [CharacterExists (CharacterWithId (IdentityCharacter $ supportController attrs) <> CharacterWithStatus status) | status <- [minBound .. maxBound]]) NoCost $ runAbility s 1]
     "Stick" -> [label (if n == 1 then "$label.stickExhaust" else "$label.stickReady") $ limited (SharedPerWindow ("stick:" <> tshow (supportId attrs)) 1) $ limitedWindowAbility s n matcher Interrupt OwnsThis cost $ runAbility s n | (n,cost) <- [(1,ExhaustCost),(2,NoCost)]]
-    "The Rez" -> [ability s 1 AlterEgoAction OwnsThis ExhaustCost $ runAbility s 1]
+    "The Rez" -> [ability s 1 AlterEgoAction (OwnsThis <> SelfMatches healableIdentity <> TuckedPlayerCardExists (CardWithPrintedCostAtLeast 1)) ExhaustCost $ runAbility s 1]
     _ -> []
    where
     matcher = W.WindowOneOf

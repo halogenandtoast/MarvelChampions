@@ -248,7 +248,8 @@ spec = describe "Hulk pack" do
       let p = player1 tg
       inGame tg do
         _ <- asHulk p []
-        _ <- putIntoPlay p "10011"
+        ally <- putIntoPlay p "10011"
+        resolve [AllyMessage (allyIdOf ally) ExhaustedAlly]
         presence <- putInHand p "10030"
         _ <- putInHand p "01089"
         offers (isPlay presence) `shouldReturn` True

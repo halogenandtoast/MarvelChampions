@@ -10,7 +10,7 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Id
+import Marvel.Matchers
 import Marvel.Invocation
 
 wong :: AllyCard Wong
@@ -21,15 +21,14 @@ newtype Wong = Wong (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, IsRef)
 
 instance HasAbilities Wong where
-  getAbilities (Wong a) =
-    [ ability a 1 Action OwnsThis ExhaustCost $
-        ChooseOneLabelChoice
-          [ ((countLabel "healYourIdentity" 1), Heal (IdentityCharacter you) 1)
-          , ("$label.discardTopInvocation", Run [invocation you DiscardTopInvocation])
-          ]
-    ]
-   where
-    you = allyController a
+  getAbilities a = [ability a 1 Action OwnsThis ExhaustCost (runAbility a 1)]
 
 instance RunMessage Wong where
-  runMessage msg (Wong a) = Wong <$> runMessage msg a
+  runMessage msg w@(Wong attrs) = runQueueT $ case msg of
+    RanAbility you (isTarget attrs -> True) 1 _ _ -> do
+      canHeal <- identityMatches healableIdentity you
+      chooseOne you $
+        [labeled (countLabel "healYourIdentity" 1) (heal you 1) | canHeal]
+        <> [labeled "$label.discardTopInvocation" (invoke you DiscardTopInvocation)]
+      pure w
+    _ -> Wong <$> runMessage msg attrs

@@ -26,7 +26,7 @@ instance IsEvent GameTime where
     allies <- selectList $ AllyWithUpgrade $ UpgradeWithTrait Trait.Training
     eligible <- filterM (\aid -> (||)
       <$> characterMatches CharacterCanBeReadied (AllyCharacter aid)
-      <*> characterMatches CharacterWithAnyDamage (AllyCharacter aid)) allies
+      <*> characterMatches healableCharacter (AllyCharacter aid)) allies
     pure $ Just $ map toTarget eligible
 
 instance RunMessage GameTime where

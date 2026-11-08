@@ -22,7 +22,7 @@ newtype OrorosGarden = OrorosGarden (Attrs Support)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities OrorosGarden where
-  getAbilities a = [ability a 1 AlterEgoAction (OwnsThis <> SelfMatches IdentityWithAnyDamage) ExhaustCost (runAbility a 1)]
+  getAbilities a = [ability a 1 AlterEgoAction (OwnsThis <> SelfMatches healableIdentity) ExhaustCost (runAbility a 1)]
 
 instance RunMessage OrorosGarden where
   runMessage msg a@(OrorosGarden attrs) = runQueueT $ case msg of

@@ -37,7 +37,7 @@ newtype KittysRoom = KittysRoom (Attrs Support)
 
 instance HasAbilities KittysRoom where
   getAbilities (KittysRoom a) =
-    [ability a 1 AlterEgoAction (OwnsThis <> AnyCriteria [UpgradeExists (UpgradeIs Upgrades.phased <> UpgradeControlledBy (IdentityWithId $ supportController a)), SelfMatches IdentityWithAnyDamage]) ExhaustCost (runAbility a 1)]
+    [ability a 1 AlterEgoAction (OwnsThis <> AnyCriteria [UpgradeExists (UpgradeIs Upgrades.phased <> UpgradeControlledBy (IdentityWithId $ supportController a)), SelfMatches healableIdentity]) ExhaustCost (runAbility a 1)]
 
 instance RunMessage KittysRoom where
   runMessage msg e@(KittysRoom attrs) = runQueueT $ case msg of

@@ -4,6 +4,7 @@ module Marvel.Event.Events.InspiringPresence (
 ) where
 
 import Marvel.Prelude
+import Marvel.Id (CharacterId (..))
 
 import Marvel.Card.Code
 import Marvel.Entity
@@ -27,7 +28,7 @@ instance RunMessage InspiringPresence where
   runMessage msg e@(InspiringPresence attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        allies <- selectList AnyAlly
+        allies <- filterM (\aid -> characterMatches (CharacterOneOf [healableCharacter, CharacterCanBeReadied]) (AllyCharacter aid)) =<< selectList AnyAlly
         chooseOne identityId
           [ targeting ally do
               heal ally 1

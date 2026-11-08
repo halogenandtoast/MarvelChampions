@@ -29,16 +29,20 @@ newtype TheNightNurse = TheNightNurse (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
+nightNurseTarget :: CharacterMatcher
+nightNurseTarget = IdentityCharacters HeroIdentity <> CharacterOneOf
+  (healableCharacter : [CharacterWithStatus status | status <- [minBound .. maxBound]])
+
 instance HasAbilities TheNightNurse where
   getAbilities a =
-    [ability a 1 Action OwnsThis (ExhaustCost <> UseCost) $ runAbility a 1]
+    [ability a 1 Action (OwnsThis <> CharacterExists nightNurseTarget) (ExhaustCost <> UseCost) $ runAbility a 1]
 
 -- | Heal 1 damage from a hero and discard 1 status card from it, of whichever type
 -- (FAQ: a tough status card too).
 instance RunMessage TheNightNurse where
   runMessage msg s@(TheNightNurse attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> do
-      heroes <- selectList HeroIdentity
+      heroes <- filterM (characterMatches nightNurseTarget . IdentityCharacter) =<< selectList HeroIdentity
       chooseOnePrompted ident "$label.chooseHeroToHeal"
         [ targeting hero do
           heal hero 1

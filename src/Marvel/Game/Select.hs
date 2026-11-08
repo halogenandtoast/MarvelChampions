@@ -6,6 +6,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.List (find)
 import Marvel.Ability
+import Marvel.AlterEgo.Runner (getModifiedRecovery)
 import Marvel.Ability qualified as Ability
 import Marvel.Ally.Types (
   Attrs (allyUpgrades),
@@ -105,6 +106,9 @@ gameSelectIdentity m = do
       modifiers <- getModifiers player
       pure $ isExhausted player && CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers
     ConfusedIdentity -> identityIsConfused
+    IdentityWithRecovery amount -> \player -> case currentIdentity player of
+      AlterEgoSide ae -> gameValueMatches amount =<< getModifiedRecovery (toAttrs ae)
+      _ -> pure False
     IdentityCanBeHealed -> fmap (notElem CannotBeHealedByPlayerCards) . getModifiers
     IdentityWithoutToughStatus -> pure . not . playerIdentityTough . toAttrs
     StunnedIdentity -> identityIsStunned
@@ -332,6 +336,7 @@ gameSelectAlly m = do
     AllyThatWouldBeDiscardedByDefeat -> \ally -> do
       allowed <- matchFilter AllyThatCanLeavePlay ally
       pure $ allowed && not (any (\case Victory _ -> True; _ -> False) $ cdKeywords $ getCardDef ally)
+    AllyCanBeHealed -> fmap (notElem CannotBeHealedByPlayerCards) . getModifiers
     AllyCanReady -> \ally -> do
       modifiers <- getModifiers ally
       pure $ CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers

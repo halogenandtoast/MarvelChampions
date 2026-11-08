@@ -10,10 +10,9 @@ import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
 import Marvel.Id
-import Marvel.Matchers ()
 import Marvel.Message.Lifted
 import Marvel.Modifier
-import Marvel.Query ()
+import Marvel.Game.Source (getCurrentWindows)
 import Marvel.Ref
 import Marvel.Window qualified as W
 
@@ -21,8 +20,17 @@ momentOfTriumph :: EventCard MomentOfTriumph
 momentOfTriumph = event MomentOfTriumph Cards.momentOfTriumph
 
 newtype MomentOfTriumph = MomentOfTriumph (Attrs Event)
-  deriving anyclass (IsEvent, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
+
+instance IsEvent MomentOfTriumph where
+  eventTargets _ = do
+    windows <- getCurrentWindows
+    let excess = \case
+          W.DefeatedMinion _ _ _ n -> n > 0
+          W.DefeatedVillain _ _ _ n -> n > 0
+          _ -> False
+    pure $ if any (excess . W.windowType) windows then Nothing else Just []
 
 -- | Hero Response: After you attack and defeat an enemy, heal 1 damage from your hero for
 -- each point of excess damage dealt to that enemy by that attack.

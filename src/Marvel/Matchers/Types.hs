@@ -43,6 +43,7 @@ data IdentityMatcher
   | ConfusedIdentity
   | StunnedIdentity
   | IdentityCanBeHealed
+  | IdentityWithRecovery GameValueMatcher
   | IdentityWithoutToughStatus
   | IdentityWithTitle Text
   | -- | the player playing as this identity, whichever face is up
@@ -113,6 +114,7 @@ data AllyMatcher
   | AllyWithAttackAtLeast Natural
   | -- | allowed to be readied by a player-card effect (exhaustion checked separately)
     AllyCanReady
+  | AllyCanBeHealed
   | AllyThatCanLeavePlay
   | AllyThatWouldBeDiscardedByDefeat
   | -- | its title or its subtitle the name: a named character (RR Team-Up)

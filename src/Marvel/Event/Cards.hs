@@ -832,7 +832,7 @@ emergency = (basicEvent "01085" "Emergency" 0 Interrupt [Thwart] [Energy])
 
 firstAid :: CardDef
 firstAid = deckLimited 3 $ reprintedAs ["12019", "22023"] (basicEvent "01086" "First Aid" 1 Action [] [Mental])
-  { cdCriteria = CharacterExists CharacterWithAnyDamage
+  { cdCriteria = CharacterExists healableCharacter
   }
 
 haymaker :: CardDef
@@ -989,7 +989,7 @@ toTheRescue =
 inspiringPresence :: CardDef
 inspiringPresence =
   (event "10030" "Inspiring Presence" 1 HeroAction [] [Mental] Leadership)
-    { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> AllyExists AnyAlly
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> CharacterExists (AllyCharacters AnyAlly <> CharacterOneOf [healableCharacter, CharacterCanBeReadied])
     }
 
 covertOps :: CardDef
@@ -1061,7 +1061,7 @@ teamwork = reprintedAs ["59021"] $
     }
 
 secondWind :: CardDef
-secondWind = event "06033" "Second Wind" 3 Action [] [Mental] Protection
+secondWind = (event "06033" "Second Wind" 3 Action [] [Mental] Protection) {cdCriteria = CharacterExists (IdentityCharacters healableIdentity)}
 
 astralProjection :: CardDef
 astralProjection =
@@ -1203,7 +1203,8 @@ pheromones :: CardDef
 pheromones = event "04036" "Pheromones" 2 HeroAction [Superpower] [Physical] Leadership
 
 contaminantImmunity :: CardDef
-contaminantImmunity = event "04037" "Contaminant Immunity" 2 HeroAction [Superpower] [Energy] Protection
+contaminantImmunity = (event "04037" "Contaminant Immunity" 2 HeroAction [Superpower] [Energy] Protection)
+  {cdCriteria = AnyCriteria [SelfMatches healableIdentity, CharacterExists (IdentityCharacters You <> CharacterCanGainTough)]}
 
 inconspicuous :: CardDef
 inconspicuous =
@@ -1281,7 +1282,8 @@ teamUp a b = inPlay a <> inPlay b
 momentOfTriumph :: CardDef
 momentOfTriumph = reprintedAs ["43017"] $
   (event "12030" "Moment of Triumph" 0 HeroResponse [] [Energy] Aggression)
-    { cdResponseWindow = Just (EnemyDefeated After AnyEnemy (AttackFromPlayer You))
+    { cdCriteria = SelfMatches healableIdentity
+    , cdResponseWindow = Just (EnemyDefeated After AnyEnemy (AttackFromPlayer You))
     }
 
 layDownTheLaw :: CardDef
@@ -1417,7 +1419,7 @@ orderAndChaos = deckLimited 1 $ teamUpNames "Quicksilver" "Scarlet Witch" $ repr
 unitedWeStand :: CardDef
 unitedWeStand =
   (event "14031" "United We Stand" 0 HeroAction [] [Physical] Leadership)
-    { cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    { cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> CharacterExists (CharacterControlledBy AnyIdentity <> healableCharacter)
     }
 
 beatEmUp :: CardDef
@@ -1509,7 +1511,7 @@ baitAndSwitch = reprintedAs ["32015", "27013"] $
 recuperation :: CardDef
 recuperation =
   reprintedAs ["46022"] ((basicEvent "15031" "Recuperation" 2 AlterEgoAction [] [Physical])
-    { cdCriteria = SelfMatches IdentityWithAnyDamage
+    { cdCriteria = SelfMatches recoveryHealableIdentity
     })
 
 -- Star-Lord
@@ -2335,7 +2337,7 @@ youngLove :: CardDef
 youngLove = (basicEvent "27019" "Young Love" 1 AlterEgoAction [] [Wild])
     { cdDeckLimit = Just 1
     , cdTeamUp = Just ("Gwen Stacy", "Miles Morales")
-    , cdCriteria = AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Gwen Stacy")), AllyExists (AllyNamedAs "Gwen Stacy")] <> AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Miles Morales")), AllyExists (AllyNamedAs "Miles Morales")]
+    , cdCriteria = AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Gwen Stacy")), AllyExists (AllyNamedAs "Gwen Stacy")] <> AnyCriteria [CharacterExists (IdentityCharacters (IdentityWithTitle "Miles Morales")), AllyExists (AllyNamedAs "Miles Morales")] <> AnyCriteria [CharacterExists (healableCharacter <> CharacterOneOf [IdentityCharacters (IdentityWithTitle name), AllyCharacters (AllyNamedAs name)]) | name <- ["Gwen Stacy", "Miles Morales"]]
     , cdAlternateCardCodes = ["27050"]
     }
 
@@ -4021,7 +4023,7 @@ breakTime = DpCard.CardDef
   , cdAbilitySubTypes = []
   , cdUnique = False
   , cdAspect = Just DpAspect.Pool
-  , cdCriteria = DpCriteria.NoCriteria
+  , cdCriteria = DpCriteria.CharacterExists (DpMatch.IdentityCharacters healableIdentity)
   , cdResources = [(DpCard.PrintedResource, DpResource.Energy)]
   , cdBoostIcons = []
   , cdEncounterSet = Nothing
@@ -4659,7 +4661,7 @@ nobleSacrifice = CardDef
   , cdAbilitySubTypes = []
   , cdUnique = False
   , cdAspect = Just MgAspect.Leadership
-  , cdCriteria = MgCriteria.NoCriteria
+  , cdCriteria = MgCriteria.AnyCriteria [MgCriteria.SelfMatches healableIdentity, MgCriteria.CharacterExists (MgMatch.IdentityCharacters MgMatch.You <> MgMatch.CharacterCanGainTough)]
   , cdResources = [(MgCard.PrintedResource, MgResource.Mental)]
   , cdBoostIcons = []
   , cdEncounterSet = Nothing
@@ -4949,7 +4951,7 @@ nc48016 = CardDef
   , cdAbilitySubTypes = []
   , cdUnique = False
   , cdAspect = Just NcAspect.Protection
-  , cdCriteria = NcCriteria.NoCriteria
+  , cdCriteria = NcCriteria.AnyCriteria [NcCriteria.SelfMatches healableIdentity, NcCriteria.CharacterExists (NcMatch.IdentityCharacters NcMatch.You <> NcMatch.CharacterCanGainTough)]
   , cdResources = [(PrintedResource, NcResource.Mental)]
   , cdBoostIcons = []
   , cdEncounterSet = Nothing

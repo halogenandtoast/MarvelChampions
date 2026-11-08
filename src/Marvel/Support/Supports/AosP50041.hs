@@ -41,6 +41,9 @@ instance HasAbilities AosP50041 where
 instance RunMessage AosP50041 where
   runMessage msg card@(AosP50041 attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      chooseOne you [labeled "$label.heal" (heal you 2),labeled "$label.addThreat" (placeSuitThreat you 1)]
+      canHeal <- identityMatches healableIdentity you
+      chooseOne you $
+        [labeled "$label.heal" (heal you 2) | canHeal]
+        <> [labeled "$label.addThreat" (placeSuitThreat you 1)]
       pure card
     _ -> AosP50041 <$> runMessage msg attrs

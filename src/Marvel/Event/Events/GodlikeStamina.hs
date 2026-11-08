@@ -22,7 +22,7 @@ newtype GodlikeStamina = GodlikeStamina (Attrs Event)
 instance IsEvent GodlikeStamina where
   eventTargets (GodlikeStamina attrs) = do
     let you = eventController attrs
-    damaged <- identityMatches IdentityWithAnyDamage you
+    damaged <- identityMatches healableIdentity you
     statuses <- selectList $ IdentityCharacters (IdentityWithId you) <> CharacterWithStatus StunnedStatus
     confused <- identityMatches ConfusedIdentity you
     tough <- not <$> identityMatches IdentityWithoutToughStatus you

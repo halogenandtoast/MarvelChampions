@@ -10,7 +10,6 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
-import Marvel.GameValue
 import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -37,7 +36,7 @@ instance HasAbilities CrewQuarters where
     ]
 
 damagedAlterEgo :: IdentityMatcher
-damagedAlterEgo = AlterEgoIdentity <> IdentityWithDamage (GreaterThan (Static 0))
+damagedAlterEgo = AlterEgoIdentity <> healableIdentity
 
 instance RunMessage CrewQuarters where
   runMessage msg s@(CrewQuarters attrs) = runQueueT $ case msg of

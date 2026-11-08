@@ -7,7 +7,6 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage ()
 import Marvel.Entity
-import Marvel.GameValue
 import Marvel.Hand ()
 import Marvel.Id ()
 import Marvel.Matchers
@@ -38,7 +37,7 @@ instance RunMessage WhiteHotRoom where
   runMessage msg e@(WhiteHotRoom a) = runQueueT $ case msg of
     RanAbility you (isTarget a -> True) 1 _ _ -> do
       force <- selectAny (UpgradeNamed "Phoenix Force" <> upgradeControlledBy you)
-      hurt <- identityMatches (IdentityWithDamage $ GreaterThan $ Static 0) you
+      hurt <- identityMatches healableIdentity you
       chooseOne you $ [labeled "$label.phoenixPowerOne" (addPhoenixPower you 1) | force]
         <> [labeled "$label.phoenixHealTwo" (heal you 2) | hurt]
       pure e

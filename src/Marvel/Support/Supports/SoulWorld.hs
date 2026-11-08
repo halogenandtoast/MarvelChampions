@@ -34,7 +34,7 @@ newtype SoulWorld = SoulWorld (Attrs Support)
 instance HasAbilities SoulWorld where
   getAbilities a@(SoulWorld attrs) =
     [ limitedWindowAbility a 1 (W.PlayerDeckResets W.After (IdentityWithId $ supportController attrs)) Response OwnsThis NoCost (runAbility a 1)
-    , ability a 2 AlterEgoAction (OwnsThis <> SelfMatches IdentityWithAnyDamage) (ExhaustCost <> UseCost) (runAbility a 2)
+    , ability a 2 AlterEgoAction (OwnsThis <> SelfMatches healableIdentity) (ExhaustCost <> UseCost) (runAbility a 2)
     ]
 
 instance RunMessage SoulWorld where

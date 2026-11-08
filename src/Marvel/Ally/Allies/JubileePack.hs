@@ -5,7 +5,6 @@ import Marvel.Ability
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Id
 import Marvel.Jubilee.Cards qualified as Cards
 import Marvel.Keyword
 import Marvel.Matchers
@@ -43,7 +42,7 @@ instance HasModifiersFor JubileeAlly where
 instance HasAbilities JubileeAlly where
   getAbilities (JubileeAlly (attrs `With` _)) = case Name.title (cdName (allyCardDef attrs)) of
     "Wolverine" -> [limitedWindowAbility attrs 1 (W.IdentityChangedToForm W.After controller) Response
-      (OwnsThis <> SelfMatches AlterEgoIdentity <> CharacterExists (CharacterWithId (AllyCharacter $ allyId attrs) <> CharacterWithAnyDamage)) NoCost (runAbility attrs 1)]
+      (OwnsThis <> SelfMatches AlterEgoIdentity <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter)) NoCost (runAbility attrs 1)]
     "Husk" -> [limitedWindowAbility attrs 1
       (W.WindowOneOf [W.AllyAttacked W.When self AnyEnemy, W.AllyThwarted W.When self AnyScheme])
       Interrupt OwnsThis (UpToResourcesCost 3) (runAbility attrs 1)]

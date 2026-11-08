@@ -35,7 +35,7 @@ instance IsEvent Reboot where
     chars <- selectList (CharacterWithTrait Trait.Android <> CharacterControlledBy AnyIdentity)
     eligible <- filterM (\character -> (||)
       <$> characterMatches CharacterCanBeReadied character
-      <*> characterMatches CharacterWithAnyDamage character) chars
+      <*> characterMatches healableCharacter character) chars
     pure $ Just (map characterRef eligible)
 
 instance RunMessage Reboot where

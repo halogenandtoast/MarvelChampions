@@ -31,17 +31,19 @@ instance HasAbilities VibraniumSuit where
 instance RunMessage VibraniumSuit where
   runMessage msg u@(VibraniumSuit attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget attrs -> True) 1 _ _ -> attackGuard ident u do
-      modifiers <- getModifiers attrs
-      sustainedDamage <-
-        selectCount
-          SustainedDamage
-          (IdentityWithId $ upgradeController attrs)
-      let
-        dmg =
-          min sustainedDamage $
-            if LastSpecial `elem` modifiers then 2 else 1
-      chooseDamage (upgradeController attrs) attrs (toDamage dmg $ FromPlayerAttack ident) $
-        AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger)
-      heal (upgradeController attrs) dmg
+      canHeal <- identityMatches healableIdentity (upgradeController attrs)
+      when canHeal $ do
+        modifiers <- getModifiers attrs
+        sustainedDamage <-
+          selectCount
+            SustainedDamage
+            (IdentityWithId $ upgradeController attrs)
+        let
+          dmg =
+            min sustainedDamage $
+              if LastSpecial `elem` modifiers then 2 else 1
+        chooseDamage (upgradeController attrs) attrs (toDamage dmg $ FromPlayerAttack ident) $
+          AttackableBy (IdentityWithId ident) <> NotEnemy (EnemyIs Cards.killmonger)
+        heal (upgradeController attrs) dmg
       pure u
     _ -> VibraniumSuit <$> runMessage msg attrs

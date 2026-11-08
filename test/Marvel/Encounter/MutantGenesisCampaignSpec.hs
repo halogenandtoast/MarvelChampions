@@ -138,7 +138,9 @@ spec = describe "Mutant Genesis campaign" do
           pass
           clearHand p
           role <- putIntoPlay p code
-          when (code == "32185") $ void $ putIntoPlay p "01002"
+          when (code == "32185") $ do
+            cat <- putIntoPlay p "01002"
+            resolve [AllyMessage (allyIdOf cat) ExhaustedAlly]
           when (code == "32190") $ do
             scheme <- mainSchemeIdNow
             resolve [MainSchemeMessage scheme (MainSchemePlaceThreat 5)]

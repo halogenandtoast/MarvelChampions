@@ -27,7 +27,7 @@ newtype DaredevilSpdr = DaredevilSpdr (Attrs Ally)
 instance HasAbilities DaredevilSpdr where
   getAbilities a@(DaredevilSpdr attrs) =
     [ limitedWindowAbility a 1 (W.AllyDefendsAgainst W.After (AllyWithId $ allyId attrs) (EnemyCanTakeDamageFrom $ toSource attrs))
-        Response OwnsThis NoCost (runAbility a 1)
+        Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter)) NoCost (runAbility a 1)
     | allyDamage attrs > 0 ]
 
 instance RunMessage DaredevilSpdr where

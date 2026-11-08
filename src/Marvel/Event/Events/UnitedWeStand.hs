@@ -35,7 +35,7 @@ instance RunMessage UnitedWeStand where
       cardSpecific attrs "heal" (you, min 3 stage, [] :: [CharacterId])
       pure e
     CardSpecific (isTarget attrs -> True) "heal" (fromJSON -> Success (you, n :: Natural, healed :: [CharacterId])) -> do
-      characters <- filter (`notElem` healed) <$> selectList (CharacterControlledBy AnyIdentity <> CharacterWithAnyDamage)
+      characters <- filter (`notElem` healed) <$> selectList (CharacterControlledBy AnyIdentity <> healableCharacter)
       when (n > 0 && notNull characters) $
         chooseOnePrompted you (countLabel "healAFriendlyCharacter" 1) $
           labeled "$label.done" (pure ())

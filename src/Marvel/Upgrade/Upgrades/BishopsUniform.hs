@@ -31,7 +31,7 @@ newtype BishopsUniform = BishopsUniform (Attrs Upgrade)
 instance HasAbilities BishopsUniform where
   getAbilities a@(BishopsUniform attrs) =
     [limitedWindowAbility a 1 (W.ResolvesAbility W.After (IdentityWithId $ upgradeController attrs) (CardIs Heroes.bishopHero))
-      Response (OwnsThis <> SelfMatches IdentityWithAnyDamage <> ExtendedCardExists (InHandOf You $ BasicCardMatches $ CardWithType ResourceType)) ExhaustCost (runAbility a 1)]
+      Response (OwnsThis <> SelfMatches healableIdentity <> ExtendedCardExists (InHandOf You $ BasicCardMatches $ CardWithType ResourceType)) ExhaustCost (runAbility a 1)]
 
 instance RunMessage BishopsUniform where
   runMessage msg a@(BishopsUniform attrs) = runQueueT $ case msg of

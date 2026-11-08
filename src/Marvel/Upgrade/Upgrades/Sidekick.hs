@@ -28,7 +28,7 @@ newtype Sidekick = Sidekick (Attrs Upgrade)
 instance HasAbilities Sidekick where
   getAbilities a@(Sidekick attrs) =
     [limitedWindowAbility a 1 (W.UsesRecovery $ IdentityWithId $ upgradeController attrs)
-      Response OwnsThis NoCost (runAbility a 1) | isJust (upgradeAttachedAlly attrs)]
+      Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId aid) <> healableCharacter)) NoCost (runAbility a 1) | Just aid <- [upgradeAttachedAlly attrs]]
 instance IsUpgrade Sidekick where
   upgradeTargets (Sidekick attrs) = do
     allies <- selectList (AllyControlledBy $ IdentityWithId $ upgradeController attrs)

@@ -22,7 +22,7 @@ newtype Mantis = Mantis (Attrs Ally)
 -- | "Action: Exhaust Mantis and deal 1 damage to her → heal 3 damage from an identity."
 instance HasAbilities Mantis where
   getAbilities a =
-    [ ability a 1 Action OwnsThis (ExhaustCost <> DamageThisCost 1) $
+    [ ability a 1 Action (OwnsThis <> CharacterExists (IdentityCharacters healableIdentity)) (ExhaustCost <> DamageThisCost 1) $
         ChooseHeal 3 (IdentityCharacters AnyIdentity)
     ]
 

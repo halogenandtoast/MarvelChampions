@@ -39,7 +39,7 @@ newtype ScottLang = ScottLang (Attrs AlterEgo)
 instance HasAbilities ScottLang where
   getAbilities a@(ScottLang attrs) =
     [ label "Time to Unwind" $
-        limitedWindowAbility a 1 (W.IdentityChangedToForm W.After $ IdentityWithId $ alterEgoIdentityId attrs) Response IsSelf NoCost $
+        limitedWindowAbility a 1 (W.IdentityChangedToForm W.After $ IdentityWithId $ alterEgoIdentityId attrs) Response (IsSelf <> SelfMatches healableIdentity) NoCost $
           Heal (IdentityCharacter $ alterEgoIdentityId attrs) 1
     ]
 

@@ -60,7 +60,7 @@ instance RunMessage AdamWarlockHero where
         Just Justice -> removeThreat you attrs 2 ThwartableScheme
         -- any player's ally (R22)
         Just Protection -> do
-          allies <- selectList (AllyWithDamage $ GreaterThan $ Static 0)
+          allies <- filterM (\aid -> characterMatches healableCharacter (AllyCharacter aid)) =<< selectList (AllyWithDamage $ GreaterThan $ Static 0)
           chooseOne you [targeting (AllyRef ally) (heal ally 1) | ally <- allies]
         Just Leadership -> do
           heroes <- selectList HeroIdentity

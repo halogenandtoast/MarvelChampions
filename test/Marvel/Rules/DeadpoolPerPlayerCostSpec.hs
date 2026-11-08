@@ -78,6 +78,7 @@ spec = describe "Deadpool per-player printed costs" do
     inGame tg do
       let you = player1 tg
       clearHand you
+      setDamage (player2 tg) 1
       card <- putInHand you "44046"
       reduceCost you
       identity <- getPlayer you

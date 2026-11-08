@@ -30,7 +30,7 @@ instance RunMessage SecondWind where
       PlayedEvent identityId payment _ -> do
         mental <- paidWith Mental payment
         let n = if mental then 5 else 4
-        identities <- selectList AnyIdentity
+        identities <- selectList healableIdentity
         chooseOne identityId [targeting p $ heal p n | p <- identities]
         pure e
       _ -> SecondWind <$> runMessage msg attrs

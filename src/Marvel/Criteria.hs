@@ -22,6 +22,7 @@ data Criteria
     CanResolveSettingSpecial
   | NemesisMinionOutOfPlay
   | HasTuckedEncounterCard
+  | TuckedPlayerCardExists CardMatcher
   | NoCriteria
   | InHeroForm
   | InAlterEgoForm

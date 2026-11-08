@@ -27,7 +27,7 @@ instance HasAbilities RonnieWilliams where
 instance RunMessage RonnieWilliams where
   runMessage msg e@(RonnieWilliams attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      damaged <- identityMatches IdentityWithAnyDamage you
+      damaged <- identityMatches healableIdentity you
       chooseOne you $
         [labeled "$label.ronnieHeal" (heal you 2) | damaged]
         <> [labeled "$label.ronnieProgress" (placeCounters you 1)]

@@ -172,7 +172,7 @@ canAffordCost identityId source cost = do
         pure $ damaged && CannotBeHealedByPlayerCards `notElem` mods) enemies
     HealCost n ->
       member identityId
-        <$> select (IdentityWithDamage $ AtLeast $ Static $ fromIntegral n)
+        <$> select (IdentityWithDamage (AtLeast $ Static $ fromIntegral n) <> IdentityCanBeHealed)
     DealDamageThisCost _ -> case source of
       AllyRef aid -> selectAny (AllyWithId aid)
       _ -> pure False

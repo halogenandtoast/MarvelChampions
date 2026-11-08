@@ -1,6 +1,7 @@
 module Marvel.Event.Events.SideBySide where
 
 import Marvel.Prelude
+import Marvel.Id (CharacterId (..))
 import Marvel.Game.Source ()
 import Marvel.Matchers
 import Marvel.Payment
@@ -29,11 +30,12 @@ instance RunMessage SideBySide where
     EventMessage eid (PlayedEvent you payment _) | eid == eventId attrs -> do
       let sidekicks = [aid | ReadiedAllyPayment aid <- payments payment]
       ready you
-      chooseOne you
-        [labeled "$label.sideBySideHeal" $ do
+      canHeal <- anyM (characterMatches healableCharacter) (IdentityCharacter you : map AllyCharacter sidekicks)
+      chooseOne you $
+        [labeled "$label.sideBySideHeal" (do
           heal you 1
-          for_ sidekicks $ \aid -> heal aid 1
-        , labeled "$label.sideBySideBoost" $ do
+          for_ sidekicks $ \aid -> heal aid 1) | canHeal]
+        <> [labeled "$label.sideBySideBoost" $ do
           createEffect Cards.leadFromTheFront attrs (IdentityEntity $ IdentityWithId you)
           for_ sidekicks $ \aid -> createEffect Cards.leadFromTheFront attrs (AllyEntity $ AllyWithId aid)
         ]

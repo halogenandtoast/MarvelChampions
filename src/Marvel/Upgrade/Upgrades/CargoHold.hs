@@ -36,7 +36,7 @@ instance HasAbilities CargoHold where
     [ability a 1 HeroAction (OwnsThis <> CharacterExists damagedFriend) ExhaustCost (runAbility a 1)]
 
 damagedFriend :: CharacterMatcher
-damagedFriend = CharacterControlledBy AnyIdentity <> CharacterWithAnyDamage
+damagedFriend = CharacterControlledBy AnyIdentity <> healableCharacter
 
 instance RunMessage CargoHold where
   runMessage msg u@(CargoHold attrs) = runQueueT $ case msg of

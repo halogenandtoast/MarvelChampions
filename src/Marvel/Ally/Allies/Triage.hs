@@ -25,12 +25,12 @@ newtype Triage = Triage (Attrs Ally)
 
 instance HasAbilities Triage where
   getAbilities a = [limitedWindowAbility a 1 W.EntersPlayThis Response
-    (OwnsThis <> CharacterExists (CharacterWithTrait Trait.XMen <> CharacterWithAnyDamage)) NoCost (runAbility a 1)]
+    (OwnsThis <> CharacterExists (CharacterWithTrait Trait.XMen <> healableCharacter)) NoCost (runAbility a 1)]
 
 instance RunMessage Triage where
   runMessage msg a@(Triage attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      characters <- selectList (CharacterWithTrait Trait.XMen <> CharacterWithAnyDamage)
+      characters <- selectList (CharacterWithTrait Trait.XMen <> healableCharacter)
       chooseOne you [targeting (characterRef character) (heal character 2) | character <- characters]
       pure a
     _ -> Triage <$> runMessage msg attrs

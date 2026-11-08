@@ -23,7 +23,7 @@ newtype BasicSpell = BasicSpell (Attrs Event)
 instance RunMessage BasicSpell where
   runMessage msg e@(BasicSpell attrs) = runQueueT $ case msg of
     EventMessage eid (PlayedEvent you _ _) | eid == eventId attrs -> do
-      hurt <- selectList IdentityWithAnyDamage
+      hurt <- selectList healableIdentity
       schemes <- selectList ThwartableScheme
       enemies <- selectList DamageableEnemy
       chooseOne you $

@@ -73,7 +73,7 @@ instance HasModifiersFor WmHcAlly where
 
 instance HasAbilities WmHcAlly where
   getAbilities a@(WmHcAlly (attrs `With` _)) = case Name.title (cdName (allyCardDef attrs)) of
-    "Firebird" -> [limitedWindowAbility a 1 (W.AllyWouldBeDefeatedByConsequentialDamage $ AllyWithId aid) Interrupt (OwnsThis <> AllyExists (AllyWithId aid <> AllyWithAnyUses)) UseCost $ runAbility a 1]
+    "Firebird" -> [limitedWindowAbility a 1 (W.AllyWouldBeDefeatedByConsequentialDamage $ AllyWithId aid) Interrupt (OwnsThis <> AllyExists (AllyWithId aid <> AllyWithAnyUses <> AllyCanBeHealed)) UseCost $ runAbility a 1]
     "Hawkeye" -> [limitedWindowAbility a 1 (W.AllyThwarted W.After AnyAlly AnyScheme) Response OwnsThis UseCost $ runAbility a 1]
     "Scarlet Witch" -> [limitedWindowAbility a 1 (W.PlayThis W.After) ForcedResponse OwnsThis NoCost $ runAbility a 1]
     "Sentry" -> [limitedWindowAbility a 1 W.EntersPlayThis ForcedResponse OwnsThis NoCost $ runAbility a 1]

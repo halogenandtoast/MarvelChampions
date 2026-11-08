@@ -25,7 +25,6 @@ import Marvel.Entity
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Ref
-import Marvel.GameValue
 import Marvel.Stats ()
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
@@ -49,7 +48,7 @@ instance RunMessage LuckBeaLady where
         Mental -> cardSpecific attrs "thwart" ()
         Physical -> cardSpecific attrs "damage" ()
         Wild -> do
-          hurt <- selectList (CharacterWithDamage $ AtLeast $ Static 1)
+          hurt <- selectList healableCharacter
           schemes <- selectList ThwartableScheme
           enemies <- selectList DamageableEnemy
           chooseOne (eventController attrs) $
@@ -58,7 +57,7 @@ instance RunMessage LuckBeaLady where
             <> [labeled "$label.dominoDamage" (cardSpecific attrs "damage" ()) | notNull enemies]
       pure a
     CardSpecific (isTarget attrs -> True) "heal" _ -> do
-      hurt <- selectList (CharacterWithDamage $ AtLeast $ Static 1)
+      hurt <- selectList healableCharacter
       chooseOne (eventController attrs) [targeting (characterRef c) (heal c 2) | c <- hurt]
       pure a
     CardSpecific (isTarget attrs -> True) "thwart" _ -> a <$ removeThreat (eventController attrs) attrs 2 ThwartableScheme

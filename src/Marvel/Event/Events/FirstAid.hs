@@ -26,7 +26,7 @@ instance RunMessage FirstAid where
   runMessage msg e@(FirstAid attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent identityId _ _ -> do
-        characters <- selectList CharacterWithAnyDamage
+        characters <- selectList healableCharacter
         chooseOne identityId [targeting c $ heal c 2 | c <- characters]
         pure e
       _ -> FirstAid <$> runMessage msg attrs

@@ -32,9 +32,9 @@ instance HasAbilities MedTeam where
         a
         1
         Action
-        (OwnsThis <> CharacterExists CharacterWithAnyDamage)
+        (OwnsThis <> CharacterExists healableCharacter)
         (ExhaustCost <> UseCost)
-        (ChooseHeal 2 CharacterWithAnyDamage)
+        (ChooseHeal 2 healableCharacter)
     ]
 
 instance RunMessage MedTeam where

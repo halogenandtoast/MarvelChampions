@@ -32,7 +32,7 @@ newtype AntMansHelmet = AntMansHelmet (Attrs Upgrade)
 -- Hero Response: After you change to Tiny hero form, draw 1 card.
 instance HasAbilities AntMansHelmet where
   getAbilities (AntMansHelmet a) =
-    [ limitedWindowAbility a 1 (changesTo Giant) HeroResponse OwnsThis NoCost $
+    [ limitedWindowAbility a 1 (changesTo Giant) HeroResponse (OwnsThis <> SelfMatches healableIdentity) NoCost $
         Heal (IdentityCharacter you) 2
     , limitedWindowAbility a 2 (changesTo Tiny) HeroResponse OwnsThis NoCost $ runAbility a 2
     ]

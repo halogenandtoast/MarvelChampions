@@ -132,7 +132,7 @@ instance HasAbilities WmHcUpgrade where
     "Gauntlets of Hercules" -> [limitedWindowAbility u 1 (W.HeroDefended W.When You AnyEnemy) HeroInterrupt (OwnsThis <> HasEffectiveHerculesGift) ExhaustCost $ runAbility u 1]
     "Golden Mace" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When You) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1]
     "Herc's Helm" -> [(limitedWindowAbility u 1 (W.EnemyAttacksPlayerOrAlly W.When VillainEnemy AnyIdentity) HeroInterrupt OwnsThis ExhaustCost $ runAbility u 1) {abilitySubType = Just Defense}]
-    "Prince of Power" -> [limitedWindowAbility u 1 (W.DealsExcessDamage You) HeroResponse (OwnsThis <> SelfMatches IdentityWithAnyDamage) ExhaustCost $ runAbility u 1]
+    "Prince of Power" -> [limitedWindowAbility u 1 (W.DealsExcessDamage You) HeroResponse (OwnsThis <> SelfMatches healableIdentity) ExhaustCost $ runAbility u 1]
     "\"Avenge Me!\"" -> [limitedWindowAbility u 1 (W.AllyDefeated W.When $ maybe AnyAlly AllyWithId $ upgradeAttachedAlly attrs) Interrupt OwnsThis NoCost $ runAbility u 1]
     _ -> []
 

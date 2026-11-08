@@ -10,7 +10,6 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Resource
@@ -30,7 +29,7 @@ instance HasAbilities Warlock where
         a
         1
         Action
-        (OwnsThis <> AllyExists (AllyWithDamage (GreaterThan $ Static 0) <> AllyWithId (allyId attrs)))
+        (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter))
         (ResourceCost (Just Mental))
         $ Heal (AllyCharacter $ allyId attrs) 2
     ]

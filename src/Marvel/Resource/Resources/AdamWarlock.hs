@@ -41,11 +41,11 @@ determinationSpent you = do
 -- | Innovation: heal 1 damage from an ally you control.
 innovationSpent :: (ReverseQueue m) => IdentityId -> m ()
 innovationSpent you = do
-  allies <- selectList (AllyControlledBy (IdentityWithId you) <> AllyWithDamage (GreaterThan (Static 0)))
+  allies <- filterM (\aid -> characterMatches healableCharacter (AllyCharacter aid)) =<< selectList (AllyControlledBy (IdentityWithId you))
   heroResponse you [targeting (AllyRef a) (heal a 1) | a <- allies]
 
 -- | Preservation: heal 1 damage from your hero.
 preservationSpent :: (ReverseQueue m) => IdentityId -> m ()
 preservationSpent you = do
-  damaged <- identityMatches IdentityWithAnyDamage you
+  damaged <- identityMatches healableIdentity you
   heroResponse you [labeled (countLabel "healYourIdentity" 1) (heal (IdentityCharacter you) 1) | damaged]

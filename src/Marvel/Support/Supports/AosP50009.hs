@@ -36,16 +36,17 @@ newtype AosP50009 = AosP50009 (Attrs Support)
 
 instance HasAbilities AosP50009 where
   getAbilities (AosP50009 attrs) =
-    [ability attrs 1 Action (OwnsThis) (ExhaustCost <> UseCost) (runAbility attrs 1)]
+    [ability attrs 1 Action (OwnsThis <> AnyCriteria [EnemyExists DamageableEnemy, SchemeExists ThwartableScheme, CharacterExists (IdentityCharacters healableIdentity)]) (ExhaustCost <> UseCost) (runAbility attrs 1)]
 
 instance RunMessage AosP50009 where
   runMessage msg card@(AosP50009 attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      chooseOne you
-        [ labeled "$label.dealDamage" (chooseDamage you attrs (toDamage 5 FromAbility) DamageableEnemy)
-        , labeled "$label.removeThreat" (removeThreat you attrs 4 ThwartableScheme)
-        , labeled "$label.heal" do
-            players <- selectList IdentityCanBeHealed
-            chooseOne you [targeting p (heal p 3) | p <- players]]
+      enemies <- selectList DamageableEnemy
+      schemes <- selectList ThwartableScheme
+      players <- selectList healableIdentity
+      chooseOne you $
+        [labeled "$label.dealDamage" (chooseDamage you attrs (toDamage 5 FromAbility) DamageableEnemy) | notNull enemies]
+        <> [labeled "$label.removeThreat" (removeThreat you attrs 4 ThwartableScheme) | notNull schemes]
+        <> [labeled "$label.heal" (chooseOne you [targeting p (heal p 3) | p <- players]) | notNull players]
       pure card
     _ -> AosP50009 <$> runMessage msg attrs

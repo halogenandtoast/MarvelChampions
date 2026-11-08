@@ -10,7 +10,6 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Window
@@ -31,7 +30,7 @@ instance HasAbilities GrootAlly where
         1
         (AllyDefends $ AllyWithId $ allyId attrs)
         Response
-        (OwnsThis <> AllyExists (AllyWithDamage (GreaterThan $ Static 0) <> AllyWithId (allyId attrs)))
+        (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter))
         NoCost
         $ Heal (AllyCharacter $ allyId attrs) 2
     ]

@@ -14,7 +14,7 @@ import Marvel.GameValue ()
 import Marvel.Hand ()
 import Marvel.Id ()
 import Marvel.Keyword ()
-import Marvel.Matchers ()
+import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Payment ()
@@ -40,7 +40,7 @@ newtype AsteroidM = AsteroidM (Attrs Support)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities AsteroidM where
-  getAbilities a = [ability a 1 AlterEgoAction OwnsThis ExhaustCost (runAbility a 1)]
+  getAbilities a = [ability a 1 AlterEgoAction (OwnsThis <> AnyCriteria [SelfMatches healableIdentity, ExtendedCardExists (InDiscardOf You $ BasicCardMatches $ CardWithTrait T.Magnetic)]) ExhaustCost (runAbility a 1)]
 
 instance RunMessage AsteroidM where
   runMessage msg e@(AsteroidM attrs) = runQueueT $ case msg of

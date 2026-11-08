@@ -347,6 +347,7 @@ characterAttackDamageAllowed :: (HasGame m) => Target -> Damage -> m Bool
 herculesCanRevealLaborFor :: (HasGame m) => IdentityId -> m Bool
 herculesHasGiftFor :: (HasGame m) => IdentityId -> m Bool
 canPlayTopSenseFor :: (HasGame m, HasQueue m) => IdentityId -> m Bool
+hasTuckedPlayerCardFor :: HasGame m => IdentityId -> CardMatcher -> m Bool
 hasEchoTuckedEventFor :: (HasGame m) => IdentityId -> m Bool
 canAffordEchoReplayFor :: (HasGame m, HasQueue m) => Bool -> IdentityId -> PlayerCard -> m Bool
 getEffectiveHerculesGiftCount :: (HasGame m) => IdentityId -> m Natural

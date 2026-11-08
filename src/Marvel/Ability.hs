@@ -150,6 +150,7 @@ passesCriteria x a =
       member x <$> select (IdentityWithId x <> identityMatcher)
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay x
     HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards x
+    TuckedPlayerCardExists matcher -> hasTuckedPlayerCardFor x matcher
     FriendlyLeaderExists code -> friendlyLeaderExists x code
     NoCriteria -> pure True
     Never -> pure False
@@ -270,6 +271,7 @@ passesCardCriteria ident card = go
     OwnsThis -> error "Irrelevant"
     NemesisMinionOutOfPlay -> notNull <$> getNemesisMinionsOutOfPlay ident
     HasTuckedEncounterCard -> notNull <$> project PlayerIdentityTuckedEncounterCards ident
+    TuckedPlayerCardExists matcher -> hasTuckedPlayerCardFor ident matcher
     FriendlyLeaderExists code -> friendlyLeaderExists ident code
     NoCriteria -> pure True
     Never -> pure False

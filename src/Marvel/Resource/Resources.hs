@@ -35,7 +35,7 @@ afterSpent recipient you spent card
   | getCardDef card `sameCard` Cards.preservation = preservationSpent you
   | Just trait <- cdCanPayForOthersWithTrait (getCardDef card) = do
       civilian <- identityMatches (IdentityWithTrait trait) you
-      damaged <- identityMatches IdentityWithAnyDamage recipient
+      damaged <- identityMatches healableIdentity recipient
       when (civilian && damaged) $ chooseOne you
         [ labeled "$label.everydayHeroHeal" (heal recipient 1)
         , labeled "$label.noResponse" (pure ())

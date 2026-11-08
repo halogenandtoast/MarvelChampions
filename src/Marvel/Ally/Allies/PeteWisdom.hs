@@ -35,7 +35,7 @@ newtype PeteWisdom = PeteWisdom (Attrs Ally)
 
 instance HasAbilities PeteWisdom where
   getAbilities (PeteWisdom a) =
-    [limitedWindowAbility a 1 (W.TreacheryResolvedBy $ IdentityWithId $ allyController a) Response OwnsThis NoCost (runAbility a 1) | allyDamage a > 0]
+    [limitedWindowAbility a 1 (W.TreacheryResolvedBy $ IdentityWithId $ allyController a) Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId a) <> healableCharacter)) NoCost (runAbility a 1) | allyDamage a > 0]
 
 instance RunMessage PeteWisdom where
   runMessage msg e@(PeteWisdom a) = runQueueT $ case msg of

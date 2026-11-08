@@ -12,6 +12,7 @@ import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
+import Marvel.Matchers
 import Marvel.Entity
 import Marvel.Message.Lifted
 import Marvel.Modifier
@@ -45,7 +46,7 @@ instance HasModifiersFor NornStone where
 instance HasAbilities NornStone where
   getAbilities (NornStone a)
     | isSetupSide a = [ability a 1 HeroAction OwnsThis NoCost (runAbility a 1)]
-    | otherwise = [ability a 2 AlterEgoAction OwnsThis ExhaustCost (runAbility a 2)]
+    | otherwise = [ability a 2 AlterEgoAction (OwnsThis <> SelfMatches healableIdentity) ExhaustCost (runAbility a 2)]
 
 -- | Flipped in place, the same card and type: exhausted or not, it stays as it is (RR
 -- Flip).

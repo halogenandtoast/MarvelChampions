@@ -39,7 +39,7 @@ newtype Fw54032 = Fw54032 (Attrs Ally)
 
 instance HasAbilities Fw54032 where
   getAbilities a@(Fw54032 attrs) =
-    [limitedWindowAbility a 1 (W.ResolvesAbility W.After (IdentityWithId $ allyController attrs) $ CardWithTrait T.Preparation <> CardWithPrintedCostAtLeast 1) Response (OwnsThis) (NoCost) (runAbility a 1) | allyDamage attrs > 0]
+    [limitedWindowAbility a 1 (W.ResolvesAbility W.After (IdentityWithId $ allyController attrs) $ CardWithTrait T.Preparation <> CardWithPrintedCostAtLeast 1) Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter)) NoCost (runAbility a 1) | allyDamage attrs > 0]
 
 instance RunMessage Fw54032 where
   runMessage msg a@(Fw54032 attrs) = runQueueT $ case msg of

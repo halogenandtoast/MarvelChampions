@@ -30,7 +30,7 @@ instance HasModifiersFor MutantGenesisCampaignMagneto where
 instance HasAbilities MutantGenesisCampaignMagneto where
   getAbilities a@(MutantGenesisCampaignMagneto attrs) =
     [limitedWindowAbility a 1 (W.EnemyDefeated W.After (MinionEnemy <> EnemyWithTrait Sentinel) (AttackFromAlly $ AllyWithId $ allyId attrs))
-      Response OwnsThis NoCost (runAbility a 1)]
+      Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter)) NoCost (runAbility a 1)]
 
 instance RunMessage MutantGenesisCampaignMagneto where
   runMessage msg a@(MutantGenesisCampaignMagneto attrs) = runQueueT $ case msg of

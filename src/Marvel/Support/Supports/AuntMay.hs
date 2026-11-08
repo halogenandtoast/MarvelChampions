@@ -25,7 +25,7 @@ instance HasAbilities AuntMay where
         a
         1
         AlterEgoAction
-        (OwnsThis <> SelfMatches IdentityWithAnyDamage)
+        (OwnsThis <> SelfMatches healableIdentity)
         ExhaustCost
         $ Heal (IdentityCharacter $ supportController a) 4
     ]

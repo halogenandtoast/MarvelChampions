@@ -39,7 +39,7 @@ instance IsUpgrade SuppressingFire where
 instance HasAbilities SuppressingFire where
   getAbilities a@(SuppressingFire attrs) = case upgradeAttachedEnemy attrs of
     Just enemy -> [limitedWindowAbility a 1 (W.EnemyDefeated W.When (EnemyWithId enemy) $ AttackFromPlayer $ IdentityWithId $ upgradeController attrs)
-      HeroInterrupt OwnsThis NoCost (runAbility a 1)]
+      HeroInterrupt (OwnsThis <> SelfMatches healableIdentity) NoCost (runAbility a 1)]
     Nothing -> []
 instance RunMessage SuppressingFire where
   runMessage msg a@(SuppressingFire attrs) = runQueueT $ case msg of

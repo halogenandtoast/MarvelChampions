@@ -3147,6 +3147,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.X23NemesisSpec
       Marvel.Encounter.ZolaSpec
       Marvel.Encounter.ZzzaxSpec
+      Marvel.HealingSpec
       Marvel.Hero.AdamWarlockSpec
       Marvel.Hero.AngelSignatureSpec
       Marvel.Hero.AngelSpec

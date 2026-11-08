@@ -10,7 +10,6 @@ import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Entity
 import Marvel.Game.Source
-import Marvel.GameValue
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -57,7 +56,7 @@ instance HasAbilities LeaderRewardUpgrade where
     "56131" -> [ability a 3 HeroAction ForAnyPlayer (MultiResourceCost [Just Energy,Just Mental]) (runAbility a 3)
       | isJust (upgradeAttachedEnemy a)]
     "56135" -> [windowAbility a 1 (W.AttachmentCountersPlaced W.After $ AttachmentWithId channel) Response NoCost (runAbility a 1)
-      & \ability -> ability {abilityCriteria = FriendlyLeaderExists (Just "56092") <> AllyExists (AllyMatches [AllyWithId ally,AllyWithDamage $ GreaterThan $ Static 0])}
+      & \ability -> ability {abilityCriteria = FriendlyLeaderExists (Just "56092") <> CharacterExists (AllyCharacters (AllyWithId ally) <> healableCharacter)}
       | Just channel <- [energy],Just ally <- [upgradeAttachedAlly a]]
     "56213" -> [windowAbility a 2 (W.EnemyAttackedAnyTarget W.After $ EnemyWithId enemy) ForcedResponse NoCost (runAbility a 2)
       | Just enemy <- [upgradeAttachedEnemy a]]

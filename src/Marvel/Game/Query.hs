@@ -4571,6 +4571,9 @@ canPlayTopSenseFor you = do
 hasEchoTuckedEventFor :: HasGame m => IdentityId -> m Bool
 hasEchoTuckedEventFor you = notNull <$> CampaignPlayerHelpers.tuckedPlayerCards you
 
+hasTuckedPlayerCardFor :: HasGame m => IdentityId -> CardMatcher -> m Bool
+hasTuckedPlayerCardFor you matcher = any (cardMatch matcher) <$> CampaignPlayerHelpers.tuckedPlayerCards you
+
 -- Generic attachments leave only after their host actually leaves play.
 cleanUpGenericUpgrades :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Game -> m Game
 cleanUpGenericUpgrades g = runQueueT do

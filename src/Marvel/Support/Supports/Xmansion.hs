@@ -39,13 +39,13 @@ newtype Xmansion = Xmansion (Attrs Support)
 
 instance HasAbilities Xmansion where
   getAbilities (Xmansion a) =
-    [ability a 1 AlterEgoAction (ForAnyPlayer <> AnyCriteria [OwnsThis, SelfMatches (IdentityWithTrait Trait.Mutant)] <> AnyCriteria [CharacterExists (CharacterWithAnyDamage <> CharacterWithTrait Trait.XMen), CharacterExists (CharacterWithAnyDamage <> CharacterWithTrait Trait.Mutant)]) ExhaustCost (runAbility a 1)]
+    [ability a 1 AlterEgoAction (ForAnyPlayer <> AnyCriteria [OwnsThis, SelfMatches (IdentityWithTrait Trait.Mutant)] <> AnyCriteria [CharacterExists (healableCharacter <> CharacterWithTrait Trait.XMen), CharacterExists (healableCharacter <> CharacterWithTrait Trait.Mutant)]) ExhaustCost (runAbility a 1)]
 
 instance RunMessage Xmansion where
   runMessage msg e@(Xmansion attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      mutants <- selectList (CharacterWithAnyDamage <> CharacterWithTrait Trait.Mutant)
-      xmen <- selectList (CharacterWithAnyDamage <> CharacterWithTrait Trait.XMen)
+      mutants <- selectList (healableCharacter <> CharacterWithTrait Trait.Mutant)
+      xmen <- selectList (healableCharacter <> CharacterWithTrait Trait.XMen)
       let characters = nub (mutants <> xmen)
       chooseOne you [targeting (characterRef character) (heal character 1) | character <- characters]
       pure e

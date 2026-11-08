@@ -4,7 +4,6 @@ import Marvel.Prelude
 import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.GameValue
 import Marvel.Matchers
 import Marvel.Payment
 import Marvel.Question
@@ -28,7 +27,7 @@ newtype Malcolm = Malcolm (Attrs Ally)
 instance HasAbilities Malcolm where
   getAbilities a@(Malcolm attrs) =
     [limitedAbility a 1 (PerPhase 1) Action
-      (OwnsThis <> AnyCriteria [AllyExists (AllyWithId (allyId attrs) <> ExhaustedAlly <> AllyCanReady), AllyExists (AllyWithId (allyId attrs) <> AllyWithDamage (GreaterThan $ Static 0))])
+      (OwnsThis <> AnyCriteria [AllyExists (AllyWithId (allyId attrs) <> ExhaustedAlly <> AllyCanReady), CharacterExists (AllyCharacters (AllyWithId $ allyId attrs) <> healableCharacter)])
       (DiscardMatchingHandCardCost $ CardWithType ResourceType <> if allyExhausted attrs then AnyCard else CardWithResource Physical) (runAbility a 1)]
 
 instance RunMessage Malcolm where

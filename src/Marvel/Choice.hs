@@ -10,7 +10,7 @@ import Marvel.Cost (getAbilityCost, canAffordCost)
 import Marvel.Cost.Types (Cost (NoCost))
 import Marvel.Damage
 import Marvel.Exception
-import Marvel.Matchers (identityMatches)
+import Marvel.Matchers (identityMatches, healableCharacter)
 import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Keyword (Keyword (Guard, Patrol, Overkill, Piercing, Ranged))
@@ -344,7 +344,7 @@ resolveChoice ident = \case
     schemes <- selectList schemeMatcher
     pure [CardSpecific GameRef "placeThreatBy" $ toJSON (source,W.ThreatFromAbility,scheme,n) | scheme <- schemes]
   ChooseHeal n characterMatcher -> do
-    characters <- selectList characterMatcher
+    characters <- if n == 0 then pure [] else selectList (characterMatcher <> healableCharacter)
     let f character = Heal character n
     pure [Ask ident $ ChooseOne [TargetLabel (characterRef x) [f x] | x <- characters] | notNull characters]
   ChooseDamage source damage enemyMatcher -> do

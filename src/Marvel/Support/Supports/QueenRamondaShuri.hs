@@ -34,7 +34,7 @@ newtype QueenRamondaShuri = QueenRamondaShuri (Attrs Support)
 instance RunMessage QueenRamondaShuri where
   runMessage msg u@(QueenRamondaShuri attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      players <- selectList (AlterEgoIdentity <> IdentityWithTrait T.Wakanda <> IdentityWithAnyDamage)
+      players <- selectList (AlterEgoIdentity <> IdentityWithTrait T.Wakanda <> recoveryHealableIdentity)
       chooseOne you [targeting player (cardSpecific attrs "heal" player) | player <- players]
       pure u
     CardSpecific (isTarget attrs -> True) "heal" (fromJSON -> Success (you :: IdentityId)) -> do
@@ -47,4 +47,4 @@ instance RunMessage QueenRamondaShuri where
     _ -> QueenRamondaShuri <$> runMessage msg attrs
 
 instance HasAbilities QueenRamondaShuri where
-  getAbilities u@(QueenRamondaShuri _attrs) = [ability u 1 AlterEgoAction (OwnsThis <> CharacterExists (IdentityCharacters (AlterEgoIdentity <> IdentityWithTrait T.Wakanda) <> CharacterCanBeHealed)) ExhaustCost (runAbility u 1)]
+  getAbilities u@(QueenRamondaShuri _attrs) = [ability u 1 AlterEgoAction (OwnsThis <> CharacterExists (IdentityCharacters (AlterEgoIdentity <> IdentityWithTrait T.Wakanda <> recoveryHealableIdentity))) ExhaustCost (runAbility u 1)]

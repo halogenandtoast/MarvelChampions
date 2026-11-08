@@ -11,7 +11,7 @@ import Marvel.Criteria
 import Marvel.Damage
 import Marvel.Effect.Types qualified as E
 import Marvel.Entity
-import Marvel.Id ()
+import Marvel.Id (CharacterId (AllyCharacter))
 import Marvel.Keyword
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -124,8 +124,8 @@ instance RunMessage MutantGenesisRoleUpgrade where
           if null enemies then readyAllies you else chooseOne you
             [targeting (enemyRef enemy) $ dealDamageAnd enemy attrs (toDamage 6 $ FromPlayerAttack you) (readyAllies you) | enemy <- enemies]
         "32185" -> do
-          allies <- selectList AnyAlly
-          unless (null allies) $ chooseOne you [targeting ally (ready ally >> heal ally 2) | ally <- allies]
+          allies <- selectList (AllyCharacters AnyAlly <> CharacterOneOf [healableCharacter, CharacterCanBeReadied])
+          unless (null allies) $ chooseOne you [targeting ally (ready ally >> heal ally 2) | AllyCharacter ally <- allies]
         "32187" -> removeThreatDivided you attrs 3 AnyScheme >> chooseConfuse you
         "32191" -> removeThreatDivided you attrs 3 AnyScheme >> chooseConfuse you
         "32188" -> thwartDivided you attrs 5 ThwartableScheme >> giveStatus you ToughStatus

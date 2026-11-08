@@ -105,7 +105,7 @@ instance HasAbilities JLAlly where
     "Hellcat" -> [ability ref 1 Action
       (ExtendedCardExists (InHandOf self $ CardWithId cid) <> SelfMatches (IdentityWithTrait T.Defender)) NoCost (runAbility ref 1)]
     "Iron Fist" -> [limitedWindowAbility a 1 (W.AllyDefendsAgainst W.When (AllyWithId $ allyId a) AnyEnemy) Interrupt OwnsThis NoCost (runAbility a 1)]
-    "Valkyrie" -> [limitedWindowAbility a 1 (W.AllyDefeated W.When (NotAlly $ AllyWithId $ allyId a)) Interrupt OwnsThis (DiscardCost $ toTarget a) (runAbility a 1)]
+    "Valkyrie" -> [limitedWindowAbility a 1 (W.AllyDefeated W.When (NotAlly (AllyWithId $ allyId a) <> AllyCanBeHealed)) Interrupt OwnsThis (DiscardCost $ toTarget a) (runAbility a 1)]
     "Hulk" -> [limitedWindowAbility a 1 (W.EnemyAttacked W.After VillainEnemy self) Response OwnsThis NoCost (runAbility a 1)]
     "She-Hulk" -> [limitedWindowAbility a 1 W.EntersPlayThis Response (OwnsThis <> CharacterExists (CharacterWithId (IdentityCharacter $ allyController a) <> CharacterCanGainTough)) NoCost (runAbility a 1)]
     _ -> []

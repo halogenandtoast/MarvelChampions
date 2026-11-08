@@ -31,7 +31,7 @@ instance HasAbilities AdvancedSuit where
     [limitedWindowAbility a 1
       (W.WindowOneOf [W.MinionDefeatedBy W.After AnyMinion (SourceIs $ AllyRef aid),
         W.SideSchemeDefeatedBy AnySideScheme (SourceIs $ AllyRef aid)])
-      Response OwnsThis (DiscardHandCardsCost 1 $ Just 1) (runAbility a 1)
+      Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId aid) <> healableCharacter)) (DiscardHandCardsCost 1 $ Just 1) (runAbility a 1)
     | Just aid <- [upgradeAttachedAlly attrs]]
 instance IsUpgrade AdvancedSuit where
   upgradeTargets _ = do

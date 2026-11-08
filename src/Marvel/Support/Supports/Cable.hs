@@ -27,7 +27,6 @@ import Marvel.Message.Lifted
 import Marvel.Support.Cards qualified as Cards
 import Marvel.Support.Types
 import Marvel.Stats ()
-import Marvel.GameValue
 import Marvel.Hand ()
 
 cable40007 :: SupportCard Cable40007
@@ -77,7 +76,7 @@ instance RunMessage Cable40021 where
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       enemies <- selectList DamageableEnemy
       schemes <- selectList ThwartableScheme
-      fantomex <- selectList (AllyWithTitle "Fantomex" <> AllyWithDamage (GreaterThan $ Static 0))
+      fantomex <- selectList (AllyCharacters (AllyWithTitle "Fantomex") <> healableCharacter)
       chooseOne you $
         [targeting (schemeRef sid) $ thwartSchemeAs you sid attrs 1 | sid <- schemes]
         <> [targeting (enemyRef enemy) $ dealDamage enemy attrs (toDamage 1 FromAbility) | enemy <- enemies]

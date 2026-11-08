@@ -33,7 +33,7 @@ instance HasAbilities NextEvolutionCampaignSupport where
 instance RunMessage NextEvolutionCampaignSupport where
   runMessage msg e@(NextEvolutionCampaignSupport a) = runQueueT $ case msg of
     RanAbility you (isTarget a -> True) 1 _ _ -> do
-      canHeal <- selectAny (IdentityWithId you <> IdentityCanBeHealed)
+      canHeal <- selectAny (IdentityWithId you <> healableIdentity)
       chooseOne you $
         [labeled "$label.neSafehouseHeal" (heal you 2) | canHeal]
           <> [labeled "$label.neSafehouseDraw" (drawCards you 1)]

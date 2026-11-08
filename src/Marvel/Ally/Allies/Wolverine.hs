@@ -7,7 +7,6 @@ import Marvel.Game.Source ()
 import Marvel.Hand ()
 import Marvel.Stats
 import Marvel.Status ()
-import Marvel.Id
 import Marvel.Ability
 import Marvel.Card
 import Marvel.Cost
@@ -37,7 +36,7 @@ newtype Wolverine = Wolverine (Attrs Ally)
 
 instance HasAbilities Wolverine where
   getAbilities (Wolverine a) =
-    [limitedWindowAbility a 1 (W.TurnBegins $ IdentityWithId $ allyController a) Response (OwnsThis <> CharacterExists (CharacterWithId (AllyCharacter $ allyId a) <> CharacterWithAnyDamage)) NoCost (runAbility a 1)]
+    [limitedWindowAbility a 1 (W.TurnBegins $ IdentityWithId $ allyController a) Response (OwnsThis <> CharacterExists (AllyCharacters (AllyWithId $ allyId a) <> healableCharacter)) NoCost (runAbility a 1)]
 
 instance HasModifiersFor Wolverine where
   getModifiersFor _ (AllyRef aid) (Wolverine a) = pure [KeywordModifier Piercing | aid == allyId a]

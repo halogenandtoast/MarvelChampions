@@ -20,6 +20,16 @@ import Marvel.Id
 import Marvel.Matchers.Types
 import Marvel.Ref (Ref (AllyRef, EventRef, IdentityRef), Source, refocus)
 
+-- Healing needs damage to remove as well as permission to remove it.
+healableIdentity :: IdentityMatcher
+healableIdentity = IdentityWithAnyDamage <> IdentityCanBeHealed
+
+recoveryHealableIdentity :: IdentityMatcher
+recoveryHealableIdentity = healableIdentity <> IdentityWithRecovery (GreaterThan $ Static 0)
+
+healableCharacter :: CharacterMatcher
+healableCharacter = CharacterWithAnyDamage <> CharacterCanBeHealed
+
 -- Explicit references can reach a named card across the table. Broad matchers
 -- such as "an enemy" or "a player" remain local in competitive games.
 matchingArea :: HasGame m => Bool -> ReaderT Game m a -> m a
