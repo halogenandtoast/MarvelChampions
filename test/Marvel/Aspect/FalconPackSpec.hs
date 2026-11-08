@@ -40,6 +40,38 @@ spec = describe "Falcon pack" do
       _ <- putIntoPlay p "01083"
       getModifiers p >>= (`shouldSatisfy` notElem (AllyLimitModifier 1))
 
+  it "Captain America finds his unowned set-aside Shield and adds it to hand" do
+    tg <- testGame ["falcon"]
+    inGame tg do
+      let p = player1 tg
+      asFalcon p
+      captain <- putIntoPlay p "53023"
+      strength <- putInHand p "01090"
+      choose "Captain America" (isAbilityOfCard captain)
+      payWith [strength]
+      pass
+      shields <- filter ((== "53034") . toCardCode) <$> handOf p
+      length shields `shouldBe` 1
+      map pcOwner shields `shouldBe` [Just p]
+      getSetAsidePlayerCards >>= (`shouldSatisfy` all ((/= "53034") . toCardCode))
+      villainDamageNow `shouldReturn` 0
+
+  it "Captain America returns his Shield from play and deals four damage" do
+    tg <- testGame ["falcon"]
+    inGame tg do
+      let p = player1 tg
+      asFalcon p
+      captain <- putIntoPlay p "53023"
+      _ <- putIntoPlay p "53034"
+      strength <- putInHand p "01090"
+      choose "Captain America" (isAbilityOfCard captain)
+      payWith [strength]
+      chooseVillain
+      pass
+      map toCardCode <$> handOf p >>= (`shouldSatisfy` elem "53034")
+      upgradesWith "53034" >>= (`shouldSatisfy` null)
+      villainDamageNow `shouldReturn` 4
+
   it "the Captain America shield grants defense and retaliate to its controller" do
     tg <- testGame ["falcon"]
     inGame tg do

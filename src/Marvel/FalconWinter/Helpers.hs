@@ -73,7 +73,9 @@ giveTough character = giveStatus character ToughStatus
 -- "Find" includes eligible areas in the game, never cards removed from the game.
 findPlayerCardToHand :: (ReverseQueue m, IsRef source) => IdentityId -> source -> CardDef -> Natural -> m ()
 findPlayerCardToHand you source def damage = do
-  found <- findOwnedPlayerCard you (toCardCode def)
+  owned <- findOwnedPlayerCard you (toCardCode def)
+  aside <- getSetAsidePlayerCards
+  let found = owned <|> headMay [card | card <- aside, sameCard (getCardDef card) def, isNothing (pcOwner card)]
   for_ found $ \card -> do
     let uid = UpgradeId $ unCardId $ pcCardId card
     wasInPlay <- selectAny $ UpgradeWithId uid
@@ -85,7 +87,8 @@ findPlayerCardToHand you source def damage = do
           chooseDamage you source (toDamage damage FromAbility) AnyEnemy
       else do
         removeFromGame (CardIdRef $ pcCardId card)
-        addToHand (fromMaybe you $ pcOwner card) card
+        let owner = fromMaybe you $ pcOwner card
+        addToHand owner card {pcOwner = Just owner, pcController = Just owner}
 
 findAndActivateMinion :: (ReverseQueue m, IsRef source) => IdentityId -> source -> CardDef -> m ()
 findAndActivateMinion you source def = do
