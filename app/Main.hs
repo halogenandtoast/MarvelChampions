@@ -38,6 +38,7 @@ import Marvel.Entity (toAttrs,toId)
 import Marvel.Frontend (FrontendMessage (..))
 import Marvel.Game
 import Marvel.Game.Public (publicGameFor)
+import Marvel.Game.Refresh (refreshTurnQuestions)
 import Marvel.Game.Run (answerQuestion, runDebug, runGame)
 import Marvel.I18n (ikey, ikeyWith, textVar)
 import Marvel.Id (IdentityId)
@@ -367,7 +368,8 @@ readGen =
 -- is stored.
 loadGame :: MarvelGame -> Handler (GameApp, IORef [FrontendMessage])
 loadGame row = do
-  g <- decodeOrFail "game" row.marvelGameCurrentData
+  stored <- decodeOrFail "game" row.marvelGameCurrentData
+  g <- liftIO $ refreshTurnQuestions stored
   queue <- decodeOrFail "queue" row.marvelGameCurrentQueue
   gen <- readGen row.marvelGameRandomGen
   liftIO $ appFor g queue gen
@@ -861,7 +863,7 @@ advance gid row prepare = do
       MarvelStep
         { marvelStepGameId = gid
         , marvelStepStep = step
-        , marvelStepPatchDown = toJSON $ Diff.diff (toJSON after) (toJSON before)
+        , marvelStepPatchDown = toJSON $ Diff.diff (toJSON after) row.marvelGameCurrentData
         , marvelStepQueue = toJSON queue
         , marvelStepRandomGen = showGen gen
         , marvelStepRound = gameRound before

@@ -1174,6 +1174,7 @@ library
       Marvel.Game.Class
       Marvel.Game.Public
       Marvel.Game.Query
+      Marvel.Game.Refresh
       Marvel.Game.Run
       Marvel.Game.Runner
       Marvel.Game.Select

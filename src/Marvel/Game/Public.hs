@@ -45,6 +45,7 @@ import Marvel.Hand
 import Marvel.EncounterSet qualified as EncounterSet
 import Marvel.Entity
 import Marvel.Game
+import Marvel.Game.Refresh (refreshTurnQuestions)
 import Marvel.GameValue (fromGameValue)
 import Marvel.Hero.Heroes.DoctorStrange (InvocationDeck (..), invocationDeckOf)
 import Marvel.Hero.Runner qualified as Hero
@@ -520,7 +521,8 @@ publicGame = publicGameFor (const True)
 
 -- | The game as someone sees it who may only look at the hands of the players given.
 publicGameFor :: (IdentityId -> Bool) -> Game -> IO Value
-publicGameFor seesHand g = do
+publicGameFor seesHand stored = do
+  g <- refreshTurnQuestions stored
   app <- newApp g []
   toJSON <$> runGameApp app (gameView seesHand g)
 

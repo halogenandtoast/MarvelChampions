@@ -10,6 +10,9 @@ import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Hercules.Cards qualified as Hercules
+import Marvel.Ability (ability, AbilityType (HeroAction))
+import Marvel.Criteria (Criteria (OwnsThis))
+import Marvel.Game.Refresh (refreshTurnQuestions)
 import Marvel.ActiveCost.Types (ActiveCost (..), ActiveCostTarget (ForTreachery))
 import Marvel.Cost.Types (Cost (..))
 import Marvel.Message.Deck
@@ -73,6 +76,29 @@ spec = describe "the game as the client sees it" do
     case view of
       Object _ -> pure ()
       _ -> expectationFailure "the view is not an object"
+
+  it "refreshes a saved turn without reviving Team-Building Exercise's old action" do
+    tg <- testGame ["iceman"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      clearHand p
+      team <- putIntoPlay p "12024"
+      let stale = ability (supportIdOf team) 1 HeroAction OwnsThis ExhaustCost (Run [])
+      withGame_ $ questionL .~ fromList [(p, QuestionLabel "$label.yourTurn" Nothing $ ChooseOne [EndTurn, UseAbility stale])]
+      saved <- getGame
+      refreshed <- liftIO $ refreshTurnQuestions saved
+      liftIO $ gameQuestion refreshed `shouldNotBe` gameQuestion saved
+      refreshed {gameQuestion = gameQuestion saved} `shouldBe` saved
+      getGame `shouldReturn` saved
+      -- The view and the engine answering its indices must see the same new menu.
+      view <- liftIO $ publicGame saved
+      let offered = [target | Object o <- [view], Just (Object questions) <- [KeyMap.lookup "question" o], Object question <- KeyMap.elems questions,
+            Just (Array choices) <- [KeyMap.lookup "choices" question], Object choice <- toList choices, Just target <- [KeyMap.lookup "target" choice]]
+      liftIO $ offered `shouldNotContain` [toJSON $ tshow $ supportIdOf team]
+      let responding = saved {gameQuestion = fromList [(p, QuestionLabel "$label.respond" Nothing $ ChooseOne [UseAbility stale])]}
+      liftIO (refreshTurnQuestions responding) `shouldReturn` responding
 
   it "says what a cost still needs once resources are paid" $ id @(IO ()) do
     owedFor [Just Physical, Nothing, Nothing] [] `shouldBe` [Just Physical, Nothing, Nothing]
