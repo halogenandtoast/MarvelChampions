@@ -106,6 +106,31 @@ spec = describe "the game as the client sees it" do
               _ -> Nothing
         surplus `shouldBe` Just (toJSON expected)
 
+  it "reports matching and distinct resource requirements using the payment rules" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+          cases :: [(Cost, [Resource], Text, Bool, [Int])]
+          cases =
+            [ (SameResourcesCost 2, [Physical, Mental], "same", False, [])
+            , (SameResourcesCost 2, [Physical, Physical], "same", True, [])
+            , (SameResourcesCost 2, [Physical, Wild], "same", True, [])
+            , (SameResourcesCost 2, [Physical, Mental, Energy, Energy], "same", True, [0, 1])
+            , (DifferentResourcesCost 2, [Physical, Physical], "different", False, [])
+            , (DifferentResourcesCost 2, [Physical, Mental], "different", True, [])
+            , (DifferentResourcesCost 2, [Physical, Wild], "different", True, [])
+            , (DifferentResourcesCost 2, [Physical, Physical, Mental], "different", True, [1])
+            ]
+      for_ cases $ \(cost, resources, kind, met, surplus) -> do
+        ident <- getRandom
+        withGame_ $ activeCostL .~ [ActiveCost ident p ForTreachery cost (mconcat $ map ResourcePayment resources) Nothing [] Nothing]
+        view <- liftIO . publicGame =<< getGame
+        case view of
+          Object o | Just (Object active) <- KeyMap.lookup "activeCost" o -> do
+            KeyMap.lookup "resourceRequirements" active `shouldBe` Just (toJSON [object ["kind" .= kind, "count" .= (2 :: Int), "met" .= met]])
+            KeyMap.lookup "overpaidResources" active `shouldBe` Just (toJSON surplus)
+          _ -> fail "expected the active payment view"
+
   it "reports the remaining card picks through searched and prompted questions" do
     tg <- testGame ["spider-man"]
     inGame tg do

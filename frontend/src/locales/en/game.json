@@ -267,6 +267,8 @@
     "nothingYet": "Nothing yet",
     "needs": "Needs {count} more",
     "covered": "Cost covered",
+    "sameResources": "Requires {count} resources of the same type",
+    "differentResources": "Requires {count} different resource types",
     "overpaid": "Overpaid",
     "overpaidBy": "Overpaid by {count} resource | Overpaid by {count} resources",
     "anyAmount": "Pay as much as you like",

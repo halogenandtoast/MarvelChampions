@@ -65,7 +65,8 @@ const declare = (index: number) => {
 }
 const discardRemaining = computed(() => cost.discardedCost ? Math.max(0, cost.discardedCost.required - cost.discardedCost.paid) : 0)
 const overpaid = computed(() => new Set(cost.anyAmount ? [] : cost.overpaidResources ?? []))
-const covered = computed(() => !cost.anyAmount && !(cost.owed ?? []).length && discardRemaining.value === 0)
+const unmetRequirements = computed(() => (cost.resourceRequirements ?? []).filter(requirement => !requirement.met))
+const covered = computed(() => !cost.anyAmount && !(cost.owed ?? []).length && discardRemaining.value === 0 && !unmetRequirements.value.length)
 const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ? { id: cost.source, ...things[cost.source] } : null))
 </script>
 
@@ -93,13 +94,14 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       <p v-if="cost.anyAmount" class="owed">{{ $t('game.paying.anyAmount') }}</p>
       <p v-else-if="covered" class="owed done"><span class="status-symbol" aria-hidden="true">✓</span> <span>{{ $t('game.paying.covered') }}</span></p>
       <p v-else-if="cost.discardedCost" class="owed">{{ $t('game.paying.discardedCostNeeds', { count: discardRemaining }) }}</p>
-      <p v-else class="owed">
+      <p v-else-if="cost.owed.length" class="owed">
         {{ $t('game.paying.needs', { count: cost.owed.length }) }}
         <template v-for="(r, i) in cost.owed" :key="i">
           <GameIcon v-if="r" class="due" :name="r.toLowerCase()" :label="$t(`game.resources.${r.toLowerCase()}`)" />
           <span v-else class="due any" :title="$t('game.paying.anyResource')" />
         </template>
       </p>
+      <p v-for="requirement in unmetRequirements" :key="requirement.kind" class="owed" role="status">{{ $t(`game.paying.${requirement.kind}Resources`, { count: requirement.count }) }}</p>
       <p v-if="overpaid.size" class="overpaid" role="status" :aria-label="$t('game.paying.overpaidBy', { count: overpaid.size })"><span class="status-symbol" aria-hidden="true">*</span> <span aria-hidden="true">{{ $t('game.paying.overpaid') }}</span></p>
     </header>
     <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" :morph="!elsewhere.has(paying.id)" />

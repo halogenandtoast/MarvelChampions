@@ -22,9 +22,10 @@ import Data.Text qualified as Text
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
+import Marvel.ActiveCost (actualResourceAllocations)
 import Marvel.Payment ()
 import Data.List qualified as L
-import Marvel.Cost.Types (Cost (..), costResources, printedResourceRequirements)
+import Marvel.Cost.Types (Cost (..), costResources, printedResourceRequirements, sameResourcesNeeded, differentResourcesNeeded, coversSameType, coversDifferentTypes)
 import Marvel.Resource.Types (Resource (..))
 import Marvel.Ally.Types (Ally)
 import Marvel.Area
@@ -483,12 +484,17 @@ data ActiveCostView = ActiveCostView
   -- ^ Indices of generated resources the fixed resource cost cannot use.
   , owed :: [Maybe Resource]
   -- ^ what the paid resources do not yet cover: a resource of that kind, or any
+  , resourceRequirements :: [ResourceRequirementView]
   , anyAmount :: Bool
   -- ^ an X cost, paid as far as the player likes
   , spent :: [CardView]
   , discardedCost :: Maybe DiscardedCostView
   , canceledBy :: [Text]
   }
+  deriving stock (Show, Generic)
+  deriving anyclass (ToJSON)
+
+data ResourceRequirementView = ResourceRequirementView {kind :: Text, count :: Natural, met :: Bool}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -559,6 +565,9 @@ gameView seesHand g = do
         printed = if null receipts then concatMap (printedResources . getCardDef) c.activeCostSpentCards else concat receipts
         remainingResources = if null requiredResources then owedFor (costResources c.activeCostCost) usable
           else map Just (foldl' (flip L.delete) requiredResources printed)
+        typeRequirements = [ResourceRequirementView kind n (satisfied n usable)
+          | (kind, n, satisfied) <- [("same", sameResourcesNeeded c.activeCostCost, coversSameType), ("different", differentResourcesNeeded c.activeCostCost, coversDifferentTypes)]
+          , n > 0]
         discardedValue = sum [fromIntegral (max 0 $ fromMaybe 0 $ cdCost $ getCardDef card) | card <- discards, any (\(matcher, _) -> cardMatch matcher card) requirements]
     pure
       ActiveCostView
@@ -573,8 +582,14 @@ gameView seesHand g = do
         , paid
         , wilds = [i | (i, True) <- zip [0 ..] (concatMap wildOrNot (payments c.activeCostPayment))]
         , owed = remainingResources
+        , resourceRequirements = typeRequirements
         , overpaidResources = if dynamic c.activeCostCost then [] else
-            overpaidResourceIndices (null requiredResources) (costResources c.activeCostCost) paid [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
+            let reserved = [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
+             in if null typeRequirements
+                  then overpaidResourceIndices (null requiredResources) (costResources c.activeCostCost) paid reserved
+                  else case headMay (actualResourceAllocations c.activeCostCost usable) of
+                    Just allocation -> overpaidResourceIndices True (map Just allocation) paid reserved
+                    Nothing -> []
         , anyAmount = dynamic c.activeCostCost
         , spent = map cardView $ L.nub $ map PlayerCard c.activeCostSpentCards <> discards
         , discardedCost = if null requirements then Nothing else Just $ DiscardedCostView discardedValue (sum $ map snd requirements)

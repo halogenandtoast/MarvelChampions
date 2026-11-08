@@ -280,6 +280,8 @@ export interface ActiveCostView {
   wilds?: number[]
   /** what the paid resources do not yet cover: a resource of that kind, or null for any */
   owed: (string | null)[]
+  /** Additional requirements on the types of resources paid. */
+  resourceRequirements?: { kind: 'same' | 'different'; count: number; met: boolean }[]
   /** an X cost, paid as far as the player likes */
   anyAmount: boolean
   spent: CardView[]
