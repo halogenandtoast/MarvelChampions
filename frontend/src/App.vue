@@ -13,7 +13,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <NavBar />
+  <NavBar :class="{ 'game-navigation': route.path.startsWith('/games/') }" />
   <RouterView :key="$route.path" />
   <!-- whose the game and its content are, on every page -->
   <i18n-t keypath="footer.notice" tag="footer" scope="global">
@@ -39,5 +39,8 @@ footer {
 footer a { color: inherit; pointer-events: auto; }
 @media (width < 800px) and (orientation: portrait) {
   footer { display: none; }
+}
+@media (max-width: 760px) {
+  :global(#nav.game-navigation) { display: none; }
 }
 </style>

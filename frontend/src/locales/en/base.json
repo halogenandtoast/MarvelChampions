@@ -12,6 +12,7 @@
     "loading": "Loading…"
   },
   "nav": {
+    "mainMenu": "Main menu",
     "home": "Games",
     "cards": "Cards",
     "decks": "Decks",

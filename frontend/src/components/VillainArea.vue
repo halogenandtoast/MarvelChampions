@@ -246,4 +246,12 @@ const escalation = (scheme: SchemeView) => {
 .schemes { display: flex; gap: 18px; align-items: flex-start; margin-left: auto; min-width: 0; }
 /* several decks wrap onto rows of their own, not over the schemes */
 .encounter-piles { display: flex; flex-wrap: wrap; gap: 14px; flex: 0 1 auto; min-width: 0; padding-top: 4px; }
+@media (max-width: 760px) {
+  .villain-area { padding: 12px; gap: 16px 12px; }
+  .schemes { flex-wrap: wrap; margin-left: 0; gap: 16px 12px; }
+  .encounter-piles { flex-basis: 100%; }
+  .stats dt { font-size: 0.65rem; }
+  .stats dd { font-size: 1.4rem; }
+  .escalation { font-size: 0.8rem; color: var(--text-muted); }
+}
 </style>

@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { currentUser, signOut } from '../auth'
 import GameMenu from './GameMenu.vue'
 
+defineProps<{ compact?: boolean }>()
 const router = useRouter()
 
 const leave = async () => {
@@ -12,7 +13,7 @@ const leave = async () => {
 </script>
 
 <template>
-  <header id="nav">
+  <header v-if="!compact" id="nav">
     <nav class="main-links">
       <RouterLink to="/" class="home-link">
         <img src="/icon.svg" alt="" class="logo" />
@@ -41,6 +42,28 @@ const leave = async () => {
       </template>
     </div>
   </header>
+  <GameMenu v-else class="site-menu">
+    <img src="/icon.svg" alt="" class="logo" />
+    <span class="visually-hidden">{{ $t('nav.mainMenu') }}</span>
+    <template #items>
+      <RouterLink to="/">{{ $t('nav.home') }}</RouterLink>
+      <RouterLink to="/cards">{{ $t('nav.cards') }}</RouterLink>
+      <RouterLink v-if="currentUser" to="/decks">{{ $t('nav.decks') }}</RouterLink>
+      <RouterLink to="/watch">{{ $t('nav.watch') }}</RouterLink>
+      <RouterLink to="/about">{{ $t('nav.about') }}</RouterLink>
+      <RouterLink v-if="currentUser?.admin" to="/admin">{{ $t('nav.admin') }}</RouterLink>
+      <template v-if="currentUser">
+        <span class="account-name">{{ currentUser.username }}</span>
+        <RouterLink v-if="currentUser.guest" to="/sign-up">{{ $t('auth.keepYourGames') }}</RouterLink>
+        <RouterLink to="/settings">{{ $t('settings.title') }}</RouterLink>
+        <button type="button" @click="leave">{{ $t('auth.signOut') }}</button>
+      </template>
+      <template v-else>
+        <RouterLink to="/sign-in">{{ $t('auth.signIn') }}</RouterLink>
+        <RouterLink to="/sign-up">{{ $t('auth.signUp') }}</RouterLink>
+      </template>
+    </template>
+  </GameMenu>
 </template>
 
 <style scoped>
@@ -111,4 +134,10 @@ const leave = async () => {
   .home-link, .nav-link { padding: 0 9px; }
   .user-links { padding: 0 8px; }
 }
+.site-menu :deep(> button) { min-width: 44px; padding: 0 10px; }
+.site-menu :deep(> button > svg) { display: none; }
+.site-menu :deep(.menu-items) { max-height: calc(100dvh - 60px); max-width: calc(100vw - 16px); overflow-y: auto; }
+.site-menu :deep(.menu-items a), .site-menu :deep(.menu-items button) { display: flex; align-items: center; min-height: 44px; padding: 10px 14px; color: var(--text); font: inherit; text-decoration: none; text-align: left; }
+.site-menu :deep(.menu-items a:hover) { background: var(--hover-tint); }
+.account-name { padding: 10px 14px 4px; border-top: 1px solid var(--line-strong); color: var(--text-muted); font-size: 0.8rem; overflow-wrap: anywhere; }
 </style>

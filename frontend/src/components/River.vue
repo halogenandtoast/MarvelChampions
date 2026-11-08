@@ -270,4 +270,11 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
 .enemy-card .river-actions button { width: 100%; padding: 8px 6px; font-size: 0.8rem; }
 /* Keep a boost's frame identical while the back flips to its printed face. */
 .cards :deep(.card:not(.landscape):not(.unfolded)) { height: calc(var(--card-width) / var(--card-aspect)); }
+@media (max-width: 760px) {
+  .lane, .lane.compact { flex: 1 1 100%; grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 10px; }
+  .lane.compact .what { max-width: none; }
+  .cards { overflow-x: auto; padding: 6px; }
+  .cards > * { flex-shrink: 0; }
+  .river-actions button { min-height: 44px; }
+}
 </style>

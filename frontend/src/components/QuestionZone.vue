@@ -4,6 +4,7 @@ import ActionLabel from './ActionLabel.vue'
 // a hint when others are on the cards themselves. Or who is being waited on, or how the
 // game ended.
 import { computed } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { Loader, Trophy, Skull, Minus } from 'lucide-vue-next'
 import { useChoiceLabel, useChoiceName, useKeyed } from '../composables/useChoices'
@@ -31,6 +32,7 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
 }>()
 const emit = defineEmits<{ choose: [index: number]; reopen: [] }>()
 const { t, te } = useI18n()
+const mobile = useMediaQuery('(max-width: 760px)')
 const label = useChoiceLabel()
 const actionName = useChoiceName()
 const cards = useCards()
@@ -91,7 +93,10 @@ const tone = (choice: ChoiceView) =>
           @pointerleave="overlay.hide()"
         >
           <span v-if="about(choice) && choice.kind !== 'player'" class="thumb"><CardFace :code="about(choice)!.code" /></span>
-          <ActionLabel :text="text(choice)" :name="actionName(choice, about(choice)?.code)" />
+          <span v-if="mobile" class="mobile-choice">
+            {{ text(choice) }}<template v-if="actionName(choice, about(choice)?.code) && !text(choice).includes(actionName(choice, about(choice)?.code))"> · {{ actionName(choice, about(choice)?.code) }}</template>
+          </span>
+          <ActionLabel v-else :text="text(choice)" :name="actionName(choice, about(choice)?.code)" />
         </button>
       </div>
       <p v-if="onBoard" class="hint"><span class="swatch" />{{ t('game.prompt.orClickHighlighted', onBoard) }}</p>
@@ -152,5 +157,11 @@ h2 { margin: 0; font-size: 1.35rem; line-height: 1.05; text-transform: uppercase
 .outcome.lost { color: var(--crimson-bright); }
 @media (pointer: coarse) {
   .options button { min-height: 44px; }
+}
+@media (max-width: 760px) {
+  header { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+  h2 { font-size: 1.1rem; line-height: 1.2; }
+  .options button.carded { flex-wrap: nowrap; padding: 7px 10px; gap: 8px; }
+  .mobile-choice { min-width: 0; overflow-wrap: anywhere; }
 }
 </style>

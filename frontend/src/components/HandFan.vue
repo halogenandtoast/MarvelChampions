@@ -49,4 +49,11 @@ const place = (i: number) => {
 .in-hand:has(:deep(.card.active)):hover > :deep(.slot) { transform: translateY(calc(-8px - var(--drop))) rotate(calc(-1 * var(--rotate))) scale(1.06); }
 .fan:has(.empty) { min-height: 0; padding: 4px; }
 .empty { margin: auto; color: var(--text-faint); font-size: 0.8rem; font-style: italic; }
+@media (max-width: 760px) {
+  .hand { align-items: stretch; padding: 12px 0; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--ink-2); }
+  .hand-label { padding: 0 12px; font-size: 0.75rem; color: var(--text-muted); }
+  .fan { justify-content: flex-start; align-items: flex-start; overflow-x: auto; padding: 14px; gap: 14px; scroll-snap-type: x proximity; }
+  .in-hand { flex: none; margin: 0; transform: none !important; scroll-snap-align: start; }
+  .in-hand > :deep(.slot) { transform: none !important; }
+}
 </style>

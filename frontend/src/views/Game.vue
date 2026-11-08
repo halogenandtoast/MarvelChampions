@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useMediaQuery, useStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 import { parseInput, useServerText } from '../i18n'
 import { currentUser } from '../auth'
@@ -31,6 +32,10 @@ import { searchedCards, searchCardIds } from '../composables/cardSearch'
 import MissionArea from '../components/MissionArea.vue'
 import VillainArea from '../components/VillainArea.vue'
 
+const mobile = useMediaQuery('(max-width: 760px)')
+const mobileCardSize = useStorage('marvel.mobileCardSize', 108)
+const mobileActionsOpen = ref(true)
+const jumpTo = (selector: string) => document.querySelector(selector)?.scrollIntoView({ block: 'start' })
 const route = useRoute()
 const { t } = useI18n()
 const tr = useServerText()
@@ -63,6 +68,7 @@ const answering = computed(() => {
   return yours.find((id) => id === viewing.value) ?? yours[0] ?? null
 })
 const question = computed(() => (answering.value ? (game.value?.question[answering.value] ?? null) : null))
+watch(() => game.value?.questionVersion, () => { mobileActionsOpen.value = true })
 const choices = computed<ChoiceView[]>(() => {
   const options = question.value?.choices ?? []
   if (question.value?.prompt !== '$label.revealBoostCards') return options
@@ -392,7 +398,7 @@ const resetGame = () => restartDialog.value?.open()
 </script>
 
 <template>
-  <div class="game-view">
+  <div class="game-view" :style="mobile ? { '--card-width': `${Math.max(88, Math.min(160, Number(mobileCardSize) || 108))}px` } : undefined">
     <ConfirmDelete ref="restartDialog" :title="t('game.bar.restartScenario')" :confirm-label="t('game.bar.restartScenario')" @confirm="reset()">
       <p>{{ t('game.bar.restartConfirm') }}</p>
     </ConfirmDelete>
@@ -439,6 +445,10 @@ const resetGame = () => restartDialog.value?.open()
     <DebugDialog :open="debugging" @close="debugging = false" @send="debug" />
     <CardOverlay />
 
+    <div v-if="mobile && game && !inLobby" class="mobile-tools">
+      <span class="mobile-round">{{ t('game.round', { round: game.round }) }} · {{ t(`game.phases.${game.phase}`) }}</span>
+      <label>{{ t('game.mobile.cardSize') }}<input v-model.number="mobileCardSize" type="range" min="88" max="160" step="4" /></label>
+    </div>
     <div class="layout" :class="{ 'no-side': !showSidebar }">
       <main class="board" :class="{ waiting: inLobby }">
         <Lobby v-if="inLobby && table" :table="table" @join="join" @leave="leave" @start="start">
@@ -488,6 +498,7 @@ const resetGame = () => restartDialog.value?.open()
               >
                 <template v-if="seat.id === viewed?.id">
                   <QuestionZone
+                    v-if="!mobile"
                     :kind="question?.kind ?? null"
                     :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
                     :buttons="buttons"
@@ -532,6 +543,29 @@ const resetGame = () => restartDialog.value?.open()
         />
       </aside>
     </div>
+    <footer v-if="mobile && game && !inLobby" class="mobile-dock">
+      <p class="mobile-help">{{ t('game.mobile.tapToRead') }}</p>
+      <nav :aria-label="t('game.mobile.navigation')">
+        <button type="button" @click="jumpTo('.villain-half')">{{ t('game.mobile.encounter') }}</button>
+        <button type="button" @click="jumpTo('.player-half')">{{ t('game.mobile.tableau') }}</button>
+        <button type="button" @click="jumpTo('.floating-hand')">{{ t('game.hand') }} <b>{{ viewed?.handCount }}</b></button>
+        <button type="button" :aria-expanded="mobileActionsOpen" aria-controls="mobile-decisions" @click="mobileActionsOpen = !mobileActionsOpen">{{ t('game.mobile.actions') }} <b>{{ choices.length }}</b> {{ mobileActionsOpen ? '⌄' : '⌃' }}</button>
+      </nav>
+      <div v-show="mobileActionsOpen" id="mobile-decisions">
+        <QuestionZone
+          :kind="question?.kind ?? null"
+          :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
+          :buttons="choices"
+          :asking="answering && mySeats.length > 1 ? playerName[answering] : null"
+          :waiting-on="waitingOn"
+          :outcome="game.outcome"
+          :things="things"
+          :pop-out="popOut"
+          @choose="choose"
+          @reopen="closedAt = null"
+        />
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -584,5 +618,27 @@ const resetGame = () => restartDialog.value?.open()
 @media (width < 1100px) {
   .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
   .side { max-height: 45dvh; }
+}
+.mobile-tools, .mobile-dock { display: none; }
+@media (max-width: 760px) {
+  .layout { padding: 8px; gap: 8px; }
+  .board { display: flex; flex-direction: column; gap: 12px; scrollbar-gutter: auto; padding: 2px 2px 16px; }
+  .board > .half, .player-half > .half { flex: none; overflow: visible; min-height: auto; }
+  .board > .player-half { flex: none; gap: 12px; }
+  .floating-hand { position: relative; inset: auto; pointer-events: auto; }
+  .side { max-height: 32dvh; overflow: auto; }
+  .mobile-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 6px 12px; border-bottom: 1px solid var(--line); }
+  .mobile-round { font-size: 0.8rem; color: var(--text-muted); }
+  .mobile-tools label { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+  .mobile-tools input { width: 96px; min-height: 28px; accent-color: var(--interactive); }
+  .mobile-dock { display: block; flex: none; border-top: 1px solid var(--line-strong); background: var(--ink-2); box-shadow: 0 -6px 20px var(--shadow); z-index: 10; }
+  .mobile-help { margin: 0; padding: 5px 10px 0; color: var(--text-muted); font-size: 0.7rem; text-align: center; }
+  .mobile-dock nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mobile-dock nav button { min-height: 48px; padding: 8px 4px; border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; font-size: 0.8rem; cursor: pointer; }
+  .mobile-dock nav button:last-child { color: var(--interactive); }
+  .mobile-dock nav b { font-variant-numeric: tabular-nums; }
+  .mobile-dock :deep(.question) { max-height: 30dvh; border-radius: 0; padding: 8px 10px; gap: 8px; }
+  .mobile-dock :deep(.options button) { min-height: 48px; font-size: 0.95rem; line-height: 1.4; }
+  .mobile-dock :deep(.eyebrow) { font-size: 0.7rem; }
 }
 </style>

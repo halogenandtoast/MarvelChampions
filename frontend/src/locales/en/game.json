@@ -286,5 +286,14 @@
   "missionSucceeded": "Mission completed",
   "missionFailed": "Mission failed",
   "missionAttempts": "Attempts: {count}/4",
-  "attachedTo": "Attached to {name}"
+  "attachedTo": "Attached to {name}",
+  "mobile": {
+    "cardSize": "Card size",
+    "tapToRead": "Tap a card to read · Choose an action below",
+    "inspectCard": "Read {name}",
+    "navigation": "Game navigation",
+    "encounter": "Encounter",
+    "tableau": "Your board",
+    "actions": "Actions"
+  }
 }

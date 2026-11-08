@@ -4,6 +4,7 @@ import ActionLabel from './ActionLabel.vue'
 // with it. A card the open question is about lights up; a click answers, or asks which
 // when it offers several choices, each named on a chip along its foot.
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { useChoiceLabel, useChoiceName, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
@@ -63,6 +64,7 @@ const props = withDefaults(
   { morph: true, id: null, code: null, name: '', back: null, damage: 0, threat: null, counters: null, held: null, attached: () => [], flag: null, flagIcon: null },
 )
 
+const mobile = useMediaQuery('(max-width: 760px)')
 const cards = useCards()
 const revealBack = ref<Back | null>(props.back)
 watch(() => props.back, back => { if (back) revealBack.value = back })
@@ -166,7 +168,9 @@ const press = (event: PointerEvent) => {
 
 const click = () => {
   overflowOpen.value = false
-  if (options.value.length > 1) {
+  if (mobile.value && el.value) {
+    preview(el.value, true)
+  } else if (options.value.length > 1) {
     overlay.hide()
     menuOpen.value = !menuOpen.value
   } else if (options.value[0]) {
@@ -188,7 +192,10 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       :class="{ active, exhausted, landscape, unfolded, source, 'generic-actions': chips.length && (counters || bombCounters) }"
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
-      :aria-label="title"
+      :aria-label="mobile && code ? $t('game.mobile.inspectCard', { name: title }) : title"
+      :role="mobile && code ? 'button' : undefined"
+      :tabindex="mobile && code ? 0 : undefined"
+      @keydown="mobile && ['Enter', ' '].includes($event.key) && ($event.preventDefault(), click())"
       @pointerenter="$event.pointerType === 'mouse' && el && (hoveredTarget = id, preview(el))"
       @pointerleave="$event.pointerType === 'mouse' && (clearHover(), overlay.hide())"
       @focusin="hoveredTarget = id"
@@ -439,4 +446,9 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .attached-uses, .attached-damage { flex: none; padding: 0 5px; border-radius: 999px; font-weight: 800; }
 .attached-uses { background: var(--steel-deep); }
 .attached-damage { background: var(--crimson-deep); }
+@media (max-width: 760px) {
+  .chips { display: none; }
+  .attached li { min-height: 44px; font-size: 0.8rem; }
+  .attached-name { white-space: normal; }
+}
 </style>

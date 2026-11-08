@@ -286,4 +286,20 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .piles { display: flex; gap: 10px; padding-top: 18px; }
 .dealt { position: relative; z-index: 1; margin-top: auto; }
 .compact { padding: 10px 12px; }
+@media (max-width: 760px) {
+  .player-area { padding: 12px; overflow: visible; }
+  /* Reflow groups at their readable size; desktop fitting must not shrink prompts. */
+  .player-tableau { zoom: 1 !important; width: 100% !important; flex-wrap: wrap; gap: 16px 12px; }
+  .identity-column, .player-area.unfolded .identity-column, .player-area.horizontal .identity-column { width: 100%; }
+  .player-tableau > .zone, .player-tableau > .zone.allies { flex: 1 1 100%; max-width: 100%; }
+  .player-tableau .cards { flex-wrap: wrap; gap: 14px; }
+  .player-tableau > .zone.supports { margin-left: 0; }
+  .zone-label { font-size: 0.75rem; color: var(--text-muted); }
+  .zone.empty, .ally-slot { display: none; }
+  .side { width: 100%; align-items: flex-start; }
+  .piles { flex-wrap: wrap; padding-top: 0; }
+  .stats dt { font-size: 0.65rem; }
+  .stats dd { font-size: 1.4rem; }
+  .asked:empty { display: none; }
+}
 </style>

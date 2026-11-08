@@ -7,6 +7,11 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
   const width = ref<number | undefined>()
   const fit = () => {
     if (!container.value || !content.value) return
+    if (matchMedia('(max-width: 760px)').matches) {
+      scale.value = 1
+      width.value = undefined
+      return
+    }
     const style = getComputedStyle(container.value)
     const available = container.value.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
     const groups = [...content.value.children] as HTMLElement[]

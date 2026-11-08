@@ -86,4 +86,8 @@ onKeyStroke('Escape', () => emit('close'))
   border-color: var(--interactive);
   outline: none;
 }
+@media (max-width: 760px) {
+  .choice-menu { max-width: calc(100vw - 16px); max-height: 60dvh; overflow-y: auto; }
+  .choice-menu button { min-height: 48px; font-size: 1rem; line-height: 1.4; }
+}
 </style>

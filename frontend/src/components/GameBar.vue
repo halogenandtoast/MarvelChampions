@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BookOpen, Bug, Download, FlagTriangleRight, Menu, PanelRightClose, PanelRightOpen, Rewind, RotateCcw, Terminal, Undo2, Layers } from 'lucide-vue-next'
 import GameMenu from './GameMenu.vue'
+import NavBar from './NavBar.vue'
 import type { CampaignInfo } from '../server'
 
 const undoShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘Z' : 'Ctrl+Z'
@@ -34,12 +35,15 @@ const phases = ['PlayerPhase', 'VillainPhase']
 <template>
   <div class="game-bar">
     <div class="left">
+      <NavBar compact class="mobile-site-nav" />
       <span v-if="spectate" class="spectating">{{ $t('game.bar.spectating') }}</span>
       <template v-else>
         <GameMenu>
           <Menu aria-hidden="true" />
           {{ $t('common.game') }}
           <template #items>
+            <RouterLink v-if="campaignId" :to="`/campaigns/${campaignId}`" class="mobile-menu-item"><BookOpen aria-hidden="true" />{{ $t('common.campaign') }}</RouterLink>
+            <button type="button" class="mobile-menu-item" @click="emit('fileBug')"><Bug aria-hidden="true" />{{ $t('game.bar.fileBug') }}</button>
             <template v-if="!guest">
               <div class="menu-section">{{ $t('common.scenario') }}</div>
               <button type="button" @click="emit('reset')"><FlagTriangleRight aria-hidden="true" />{{ $t('game.bar.restartScenario') }}</button>
@@ -65,7 +69,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
           </template>
         </GameMenu>
         <RouterLink v-if="campaignId" :to="`/campaigns/${campaignId}`" class="bar-button campaign-link"><BookOpen aria-hidden="true" />{{ $t('common.campaign') }}</RouterLink>
-        <button type="button" class="bar-button" @click="emit('fileBug')"><Bug aria-hidden="true" />{{ $t('game.bar.fileBug') }}</button>
+        <button type="button" class="bar-button standalone-bug" @click="emit('fileBug')"><Bug aria-hidden="true" />{{ $t('game.bar.fileBug') }}</button>
       </template>
     </div>
 
@@ -162,5 +166,15 @@ const phases = ['PlayerPhase', 'VillainPhase']
 @media (width < 760px) {
   .game-bar { grid-template-columns: 1fr auto; }
   .tracker { display: none; }
+}
+.mobile-site-nav, .game-bar :deep(.menu-items .mobile-menu-item) { display: none; }
+@media (max-width: 760px) {
+  .game-bar { height: 44px; grid-template-columns: minmax(0, 1fr) auto; }
+  .mobile-site-nav { display: block; }
+  .game-bar :deep(.menu-items .mobile-menu-item) { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 9px 12px; color: inherit; text-decoration: none; }
+  .standalone-bug, .campaign-link { display: none; }
+  .tracker { display: none; }
+  .bar-button { padding: 0 10px; }
+  .game-bar :deep(.menu-items button) { min-height: 48px; }
 }
 </style>
