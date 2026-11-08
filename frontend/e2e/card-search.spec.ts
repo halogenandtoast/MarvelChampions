@@ -104,3 +104,39 @@ test('a revealed encounter card is not a deck search', async ({ page }) => {
   })
   expect(result).toEqual({ groups: [], ids: [] })
 })
+
+test('a focused search still opens the picker when its choices are described as adding cards to hand', async ({ page }) => {
+  await page.goto('/#/cards/01001a')
+  await page.evaluate(async () => {
+    const load = (path: string) => import(/* @vite-ignore */ path)
+    const { createApp, h } = await load('/node_modules/.vite/deps/vue.js')
+    const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+    const { default: CardPick } = await load('/src/components/CardPick.vue')
+    const { searchedCards, searchCardIds } = await load('/src/composables/cardSearch.ts')
+    const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+    const { messages } = await loadLocaleMessages('en')
+    const focusedCards = [
+      { id: 'stance', code: '54017', name: 'Aggressive Stance' },
+      { id: 'firepower', code: '54014', name: 'Firepower' },
+    ]
+    const question = { source: null, searched: [], choices: [{ index: 0, kind: 'addToHand', code: '54014', target: 'firepower', label: null }] }
+    const game = { focusedCards, question: { player: question } }
+    const groups = searchedCards(game, question)
+    const host = document.createElement('div')
+    document.body.replaceChildren(host)
+    host.id = 'focused-hand-search'
+    host.dataset.searchIds = [...searchCardIds(game)].join(',')
+    createApp({ setup: () => () => groups.length ? h(CardPick, {
+      choices: question.choices, searched: groups, canChoose: true,
+      onChoose: (index: number) => { host.dataset.answer = String(index) },
+    }) : null }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+  })
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('.cards button')).toHaveCount(2)
+  await expect(dialog.locator('.cards button').first()).toBeDisabled()
+  await expect(dialog.locator('.cards button').last()).toBeEnabled()
+  await expect(page.locator('#focused-hand-search')).toHaveAttribute('data-search-ids', 'stance,firepower')
+  await dialog.locator('.cards button').last().click()
+  await expect(page.locator('#focused-hand-search')).toHaveAttribute('data-answer', '0')
+})
