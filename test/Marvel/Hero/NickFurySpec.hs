@@ -37,3 +37,38 @@ spec = describe "Nick Fury" do
       changeForm p
       pass
       suitThreat p `shouldReturn` 3
+
+  it "does not offer Assault's interrupt when the suit has no threat" do
+    tg <- testGame ["nick-fury"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      clearHand p
+      suit <- suitForm p >>= maybe (error "missing suit") pure
+      choose "basic attack" (isHeroAttack p)
+      chooseVillain
+      offers (isAbilityOf suit) `shouldReturn` False
+      pass
+      villainDamageNow `shouldReturn` 2
+      suitThreat p `shouldReturn` 0
+
+  it "spends one to three Assault threat to increase attack damage" do
+    for_ [1..3] $ \n -> do
+      tg <- testGame ["nick-fury"]
+      inGame tg do
+        let p = player1 tg
+        changeForm p
+        pass
+        clearHand p
+        L.runQueueT (L.capture $ placeSuitThreat p 4) >>= runNow
+        suit <- suitForm p >>= maybe (error "missing suit") pure
+        choose "basic attack" (isHeroAttack p)
+        chooseVillain
+        choose "Assault" (isAbilityOf suit)
+        offers (isLabel $ L.countLabel "aosSpendThreat" 0) `shouldReturn` False
+        offers (isLabel $ L.countLabel "aosSpendThreat" 4) `shouldReturn` False
+        choose "spend suit threat" (isLabel $ L.countLabel "aosSpendThreat" n)
+        pass
+        villainDamageNow `shouldReturn` (2 + n)
+        suitThreat p `shouldReturn` (4 - n)

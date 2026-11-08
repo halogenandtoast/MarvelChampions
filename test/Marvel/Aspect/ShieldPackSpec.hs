@@ -342,7 +342,6 @@ spec = describe "SHIELD player cards" do
       placeMainThreat 4
       _ <- revealNow p Minions.hydraSoldier
       choose "Prism Dust" (onCard dust 1)
-      choose "skip Assault" (isLabel "$label.noResponse")
       choose "Secret Agent" (onCard agent 1)
       chooseMainScheme
       pass
@@ -566,7 +565,6 @@ spec = describe "SHIELD player cards" do
       card <- revealNow p Minions.hydraSoldier
       let mid = minionOf card
       choose "Prism Dust" (onCard dust 1)
-      choose "skip Assault" (isLabel "$label.noResponse")
       choose "Secret Agent" (onCard agent 1)
       choose "move from Show of Empathy" (isTargetChoice sid)
       choose "Show of Empathy redirects" (isAbilityOf sid)

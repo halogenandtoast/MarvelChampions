@@ -37,7 +37,7 @@ newtype AosP50035b = AosP50035b (Attrs Upgrade)
 instance HasAbilities AosP50035b where
   getAbilities (AosP50035b attrs) =
     [ limitedWindowAbility attrs 1 (W.IdentityAttacked W.When (IdentityWithId $ upgradeController attrs) AnyEnemy) Interrupt (OwnsThis <> InHeroForm) NoCost (runAbility attrs 1)
-    | toCardCode attrs == "50035a"] <>
+    | toCardCode attrs == "50035a", upgradeUses attrs > 0] <>
     [ limitedWindowAbility attrs 2 (W.EnemyWouldAttack AnyEnemy (IdentityWithId $ upgradeController attrs)) ForcedInterrupt (OwnsThis <> InHeroForm) NoCost (runAbility attrs 2)
     | toCardCode attrs == "50035b"] <>
     [ limitedWindowAbility attrs 3 (W.ThreatWouldBePlaced threatSource MainScheme) ForcedInterrupt OwnsThis NoCost (runAbility attrs 3)
@@ -46,9 +46,7 @@ instance HasAbilities AosP50035b where
 instance RunMessage AosP50035b where
   runMessage msg card@(AosP50035b attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      chooseOne you [labeled (countLabel "aosSpendThreat" n) do
-        removeCounters attrs n
-        modifyCurrentPlayerAttack you n [] | n <- [0..min 3 $ upgradeUses attrs]]
+      chooseOne you [labeled (countLabel "aosSpendThreat" n) (cardSpecific attrs "spendAssaultThreat" (you,n)) | n <- [1..min 3 $ upgradeUses attrs]]
       pure card
     RanAbility you (isTarget attrs -> True) 2 windows _ -> do
       for_ [enemy | W.EnemyAttack enemy target <- windows,target == you] $ \enemy -> do
@@ -64,6 +62,10 @@ instance RunMessage AosP50035b where
       pure $ AosP50035b attrs {upgradeRedirectNextScheme = False}
     CheckWindows windows | any (\w -> case W.windowType w of W.EnemyActivation _ who -> W.windowTiming w == W.After && who == upgradeController attrs; _ -> False) windows ->
       pure $ AosP50035b attrs {upgradeRedirectNextScheme = False}
+    CardSpecific (isTarget attrs -> True) "spendAssaultThreat" (fromJSON -> Success (you,n :: Natural)) -> do
+      removeCounters attrs n
+      modifyCurrentPlayerAttack you n []
+      pure card
     CardSpecific (isTarget attrs -> True) "clearSchemeRedirect" _ -> pure $ AosP50035b attrs {upgradeRedirectNextScheme = False}
     CardSpecific (isTarget attrs -> True) "changeSuit" (fromJSON -> Success stealth) -> do
       let def = if stealth then Cards.aosP50035b else Cards.aosP50035a
