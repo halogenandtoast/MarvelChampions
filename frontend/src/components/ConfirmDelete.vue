@@ -51,7 +51,10 @@ defineExpose({ open: () => dialog.value?.showModal() })
   font-weight: 700;
   padding: 6px 12px;
   text-transform: uppercase;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .actions button.confirm { background: var(--danger); border-color: var(--danger); }
+.actions button:not(.confirm):is(:hover, :focus-visible) { background: color-mix(in oklab, var(--interactive) 22%, var(--ink-4)); border-color: var(--interactive); }
+.actions button.confirm:is(:hover, :focus-visible) { background: var(--crimson-deep); border-color: color-mix(in oklab, var(--crimson-bright) 55%, white); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25), 0 0 0 3px rgb(210 67 75 / 0.2); }
 .actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>

@@ -218,6 +218,18 @@ button, a, input, select, label, [data-card-id] { touch-action: manipulation; }
 .btn.primary:hover:not(:disabled) { background: var(--crimson-bright); border-color: var(--crimson-bright); }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
 .btn.ghost:hover:not(:disabled) { background: var(--hover-tint); color: var(--text); }
+/* Modal actions use the same accent feedback as the card choice menu. */
+:where(dialog, [role="dialog"]) .btn:not(.primary):not(:disabled):is(:hover, :focus-visible),
+:where([role="dialog"]) .close:not(:disabled):is(:hover, :focus-visible) {
+  background: color-mix(in oklab, var(--interactive) 22%, var(--ink-4));
+  border-color: var(--interactive);
+  color: var(--text);
+}
+:where(dialog, [role="dialog"]) .btn.primary:not(:disabled):is(:hover, :focus-visible) {
+  background: var(--crimson-deep);
+  border-color: color-mix(in oklab, var(--crimson-bright) 55%, white);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25), 0 0 0 3px rgb(210 67 75 / 0.2);
+}
 .btn.big { padding: 13px 22px; font-size: 1rem; }
 
 .input, .page-container input[type='text'], .page-container input[type='email'], .page-container input[type='password'], .page-container input[type='url'] {
