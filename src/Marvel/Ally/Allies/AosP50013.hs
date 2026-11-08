@@ -38,16 +38,11 @@ newtype AosP50013 = AosP50013 (Attrs Ally)
 
 instance HasAbilities AosP50013 where
   getAbilities (AosP50013 attrs) =
-    [ ability ref 1 Action (ExtendedCardExists $ InHandOf You $ CardWithId $ CardId $ unAllyId $ allyId attrs) (ResourceCost $ Just R.Energy) (runAbility ref 1)
-    , ability attrs 1 Action OwnsThis (ResourceCost $ Just R.Energy) (runAbility attrs 1)
-    ]
+    [ability ref 1 Action (ExtendedCardExists $ InHandOf You $ CardWithId $ CardId $ unAllyId $ allyId attrs) (ResourceCost $ Just R.Energy) (runAbility ref 1)]
    where ref = CardIdRef $ CardId $ unAllyId $ allyId attrs
 
 instance RunMessage AosP50013 where
   runMessage msg card@(AosP50013 attrs) = runQueueT $ case msg of
-    RanAbility _ (AllyRef aid) 1 _ _ | aid == allyId attrs -> do
-      createEffect Cards.aosP50013 attrs (AllyEntity $ AllyWithId aid)
-      pure card
     RanAbility you (CardIdRef cid) 1 _ _ | cid == CardId (unAllyId $ allyId attrs) -> do
       cards <- selectList (InHandOf (IdentityWithId you) $ BasicCardMatches $ CardIs Cards.aosP50013)
       players <- getPlayers

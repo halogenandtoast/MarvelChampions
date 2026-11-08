@@ -391,6 +391,17 @@ spec = describe "SHIELD player cards" do
       villainDamageNow `shouldReturn` 1
       minionDamageOf mid `shouldReturn` Just 1
 
+  it "Super Spies cannot be played without its second Team-Up character" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      clearHand p
+      _ <- putIntoPlay p "50008"
+      event <- putInHand p "50024"
+      offers (isPlay event) `shouldReturn` False
+
   it "Super Spies places three counters and may choose the same support repeatedly" do
     tg <- testGame ["maria-hill", "nick-fury"]
     inGame tg do
@@ -574,21 +585,24 @@ spec = describe "SHIELD player cards" do
       getCharacterThreat (MinionCharacter mid) `shouldReturn` 1
       sideSchemeThreat sid `shouldReturn` 5
 
-  it "Slingshot may pay her Energy action while already in play and return at phase end" do
+  it "Slingshot's Energy action is unavailable while she is already in play" do
     tg <- testGame ["maria-hill"]
     inGame tg do
       let p = player1 tg
       clearHand p
       sling <- putIntoPlay p "50013"
-      energy <- putInHand p "01088"
-      choose "Slingshot in-play action" (onCard sling 1)
-      payWith [energy]
-      pass
-      length <$> alliesWith "50013" `shouldReturn` 1
-      runNow [EndPhase PlayerPhase]
-      pass
-      handOf p >>= (`shouldSatisfy` any ((== pcCardId sling) . pcCardId))
-      length <$> alliesWith "50013" `shouldReturn` 0
+      _ <- putInHand p "01088"
+      offers (onCard sling 1) `shouldReturn` False
+      offers (isAbilityOf $ CardIdRef $ pcCardId sling) `shouldReturn` False
+
+  it "Slingshot's Energy action is unavailable from the discard pile" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      sling <- putInDiscard p "50013"
+      _ <- putInHand p "01088"
+      offers (isAbilityOf $ CardIdRef $ pcCardId sling) `shouldReturn` False
 
   it "SHIELD Director can add a counter to another player's SHIELD support" do
     tg <- testGame ["maria-hill", "nick-fury"]
