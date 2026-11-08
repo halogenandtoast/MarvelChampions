@@ -36,6 +36,6 @@ instance RunMessage SwingingSilkKickSilk where
       pure u
     CardSpecific (isTarget attrs -> True) "target" (fromJSON -> Success (you,enemy :: EnemyId)) -> do
       cards <- matchingTuckedCards you (enemyRef enemy)
-      chooseOne you (labeled "$label.done" (dealDamage enemy attrs $ toDamage 7 $ FromPlayerAttack you) : [targeting card (discardTuckedEncounterCard you card >> dealDamage enemy attrs ((toDamage 9 $ FromPlayerAttack you) {damageOverkill = True})) | card <- cards])
+      chooseOne you (labeled "$label.attackWithoutDiscarding" (dealDamage enemy attrs $ toDamage 7 $ FromPlayerAttack you) : [targeting card (discardTuckedEncounterCard you card >> dealDamage enemy attrs ((toDamage 9 $ FromPlayerAttack you) {damageOverkill = True})) | card <- cards])
       pure u
     _ -> SwingingSilkKickSilk <$> runMessage msg attrs

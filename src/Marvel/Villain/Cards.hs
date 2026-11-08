@@ -193,8 +193,8 @@ allVillainCards = filter ((== VillainType) . cdCardType) CWDefs.civilWarDefiniti
 allVillainsMap :: HashMap CardCode CardDef
 allVillainsMap = fromList $ map (toFst toCardCode) allVillainCards
 
-villain :: CardCode -> Name -> [Trait] -> CardDef
-villain cardCode name traits =
+villain :: EncounterSet -> CardCode -> Name -> [Trait] -> CardDef
+villain set cardCode name traits =
   CardDef
     { cdCardCode = cardCode
     , cdName = name
@@ -206,7 +206,7 @@ villain cardCode name traits =
     , cdAbilitySubTypes = []
     , cdUnique = True
     , cdAspect = Nothing
-    , cdEncounterSet = Nothing
+    , cdEncounterSet = Just set
     , cdEncounterSetQuantity = Nothing
     , cdCriteria = NoCriteria
     , cdResources = []
@@ -228,119 +228,119 @@ villain cardCode name traits =
     }
 
 rhino1 :: CardDef
-rhino1 = villain "01094" "Rhino" [Brute, Criminal]
+rhino1 = villain NESet.Rhino "01094" "Rhino" [Brute, Criminal]
 
 rhino2 :: CardDef
-rhino2 = villain "01095" "Rhino" [Brute, Criminal]
+rhino2 = villain NESet.Rhino "01095" "Rhino" [Brute, Criminal]
 
 rhino3 :: CardDef
-rhino3 = villain "01096" "Rhino" [Brute, Criminal]
+rhino3 = villain NESet.Rhino "01096" "Rhino" [Brute, Criminal]
 
 klaw1 :: CardDef
-klaw1 = villain "01113" "Klaw" [MastersOfEvil]
+klaw1 = villain NESet.Klaw "01113" "Klaw" [MastersOfEvil]
 
 klaw2 :: CardDef
-klaw2 = villain "01114" "Klaw" [MastersOfEvil]
+klaw2 = villain NESet.Klaw "01114" "Klaw" [MastersOfEvil]
 
 klaw3 :: CardDef
-klaw3 = villain "01115" "Klaw" [MastersOfEvil]
+klaw3 = villain NESet.Klaw "01115" "Klaw" [MastersOfEvil]
 
 ultron1 :: CardDef
-ultron1 = villain "01134" "Ultron" [Android]
+ultron1 = villain NESet.Ultron "01134" "Ultron" [Android]
 
 ultron2 :: CardDef
-ultron2 = villain "01135" "Ultron" [Android]
+ultron2 = villain NESet.Ultron "01135" "Ultron" [Android]
 
 ultron3 :: CardDef
-ultron3 = (villain "01136" "Ultron" [Android]) {cdHazards = 1}
+ultron3 = (villain NESet.Ultron "01136" "Ultron" [Android]) {cdHazards = 1}
 
 -- The Green Goblin
 
 normanOsborn1 :: CardDef
-normanOsborn1 = villain "02001a" "Norman Osborn" [Businessman, Genius]
+normanOsborn1 = villain NESet.RiskyBusiness "02001a" "Norman Osborn" [Businessman, Genius]
 
 greenGoblin1 :: CardDef
-greenGoblin1 = villain "02001b" "Green Goblin" [Goblin]
+greenGoblin1 = villain NESet.RiskyBusiness "02001b" "Green Goblin" [Goblin]
 
 normanOsborn2 :: CardDef
-normanOsborn2 = villain "02002a" "Norman Osborn" [Businessman, Genius]
+normanOsborn2 = villain NESet.RiskyBusiness "02002a" "Norman Osborn" [Businessman, Genius]
 
 greenGoblin2 :: CardDef
-greenGoblin2 = villain "02002b" "Green Goblin" [Goblin]
+greenGoblin2 = villain NESet.RiskyBusiness "02002b" "Green Goblin" [Goblin]
 
 normanOsborn3 :: CardDef
-normanOsborn3 = villain "02003a" "Norman Osborn" [Businessman, Genius]
+normanOsborn3 = villain NESet.RiskyBusiness "02003a" "Norman Osborn" [Businessman, Genius]
 
 greenGoblin3 :: CardDef
-greenGoblin3 = villain "02003b" "Green Goblin" [Goblin]
+greenGoblin3 = villain NESet.RiskyBusiness "02003b" "Green Goblin" [Goblin]
 
 greenGoblinMutagen1 :: CardDef
-greenGoblinMutagen1 = villain "02014" "Green Goblin" [Goblin]
+greenGoblinMutagen1 = villain NESet.MutagenFormula "02014" "Green Goblin" [Goblin]
 
 greenGoblinMutagen2 :: CardDef
-greenGoblinMutagen2 = villain "02015" "Green Goblin" [Goblin]
+greenGoblinMutagen2 = villain NESet.MutagenFormula "02015" "Green Goblin" [Goblin]
 
 greenGoblinMutagen3 :: CardDef
-greenGoblinMutagen3 = villain "02016" "Green Goblin" [Goblin]
+greenGoblinMutagen3 = villain NESet.MutagenFormula "02016" "Green Goblin" [Goblin]
 crossbones1 :: CardDef
-crossbones1 = villain "04058" "Crossbones" [Hydra, Mercenary]
+crossbones1 = villain NESet.Crossbones "04058" "Crossbones" [Hydra, Mercenary]
 
 crossbones2 :: CardDef
-crossbones2 = villain "04059" "Crossbones" [Hydra, Mercenary]
+crossbones2 = villain NESet.Crossbones "04059" "Crossbones" [Hydra, Mercenary]
 
 crossbones3 :: CardDef
-crossbones3 = villain "04060" "Crossbones" [Hydra, Mercenary]
+crossbones3 = villain NESet.Crossbones "04060" "Crossbones" [Hydra, Mercenary]
 
 absorbingMan1 :: CardDef
-absorbingMan1 = villain "04076" "Absorbing Man" [Brute]
+absorbingMan1 = villain NESet.AbsorbingMan "04076" "Absorbing Man" [Brute]
 
 absorbingMan2 :: CardDef
-absorbingMan2 = villain "04077" "Absorbing Man" [Brute]
+absorbingMan2 = villain NESet.AbsorbingMan "04077" "Absorbing Man" [Brute]
 
 absorbingMan3 :: CardDef
-absorbingMan3 = villain "04078" "Absorbing Man" [Brute]
+absorbingMan3 = villain NESet.AbsorbingMan "04078" "Absorbing Man" [Brute]
 
 -- The Rise of Red Skull
 -- Zola
 
 zola1 :: CardDef
-zola1 = (villain "04109" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+zola1 = (villain NESet.Zola "04109" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
 
 zola2 :: CardDef
-zola2 = (villain "04110" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+zola2 = (villain NESet.Zola "04110" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
 
 zola3 :: CardDef
-zola3 = (villain "04111" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
+zola3 = (villain NESet.Zola "04111" "Zola" [Android, Hydra]) {cdKeywords = singleton (Retaliate 1)}
 
 -- Red Skull
 
 redSkull1 :: CardDef
-redSkull1 = villain "04125" "Red Skull" [Hydra]
+redSkull1 = villain NESet.RedSkull "04125" "Red Skull" [Hydra]
 
 redSkull2 :: CardDef
-redSkull2 = villain "04126" "Red Skull" [Hydra]
+redSkull2 = villain NESet.RedSkull "04126" "Red Skull" [Hydra]
 
 redSkull3 :: CardDef
-redSkull3 = villain "04127" "Red Skull" [Hydra]
+redSkull3 = villain NESet.RedSkull "04127" "Red Skull" [Hydra]
 
 -- The Rise of Red Skull
 
 -- Taskmaster
 
 taskmasterVillain1 :: CardDef
-taskmasterVillain1 = villain "04093" "Taskmaster" [Hydra, Mercenary]
+taskmasterVillain1 = villain NESet.Taskmaster "04093" "Taskmaster" [Hydra, Mercenary]
 
 taskmasterVillain2 :: CardDef
-taskmasterVillain2 = villain "04094" "Taskmaster" [Hydra, Mercenary]
+taskmasterVillain2 = villain NESet.Taskmaster "04094" "Taskmaster" [Hydra, Mercenary]
 
 taskmasterVillain3 :: CardDef
-taskmasterVillain3 = villain "04095" "Taskmaster" [Hydra, Mercenary]
+taskmasterVillain3 = villain NESet.Taskmaster "04095" "Taskmaster" [Hydra, Mercenary]
 
 -- The Once and Future Kang
 
 -- | Kang, the standard set's and the Expert Kang set's, each with toughness.
 kangVillain :: CardCode -> Text -> CardDef
-kangVillain code sub' = (villain code ("Kang" <:> sub') [Temporal]) {cdKeywords = singleton Toughness}
+kangVillain code sub' = (villain NESet.Kang code ("Kang" <:> sub') [Temporal]) {cdKeywords = singleton Toughness}
 
 kang1 :: CardDef
 kang1 = kangVillain "11001" "The Conqueror"
@@ -383,7 +383,7 @@ kang3Expert = kangVillain "11039" "The Conqueror"
 -- | The Wrecking Crew's villains, each his own encounter set: version A for standard, B
 -- for expert (TWC insert p.7).
 wreckingCrewVillain :: CardCode -> Name -> EncounterSet -> CardDef
-wreckingCrewVillain code name set = (villain code name [WreckingCrew]) {cdEncounterSet = Just set}
+wreckingCrewVillain code name set = villain set code name [WreckingCrew]
 
 wreckerA :: CardDef
 wreckerA = wreckingCrewVillain "07002" "Wrecker" Wrecker
@@ -412,147 +412,147 @@ bulldozerB = wreckingCrewVillain "07047" "Bulldozer" Bulldozer
 -- The Galaxy's Most Wanted: Brotherhood of Badoon
 
 drang1 :: CardDef
-drang1 = villain "16058" "Drang" [Badoon]
+drang1 = villain NESet.BrotherhoodOfBadoon "16058" "Drang" [Badoon]
 
 drang2 :: CardDef
-drang2 = villain "16059" "Drang" [Badoon]
+drang2 = villain NESet.BrotherhoodOfBadoon "16059" "Drang" [Badoon]
 
 drang3 :: CardDef
-drang3 = villain "16060" "Drang" [Badoon]
+drang3 = villain NESet.BrotherhoodOfBadoon "16060" "Drang" [Badoon]
 
 -- The Galaxy's Most Wanted: Escape the Museum
 
 -- | Collector (A1), Collector (B1) for expert play, each with his Wounded side (A2, B2).
 collectorA1 :: CardDef
-collectorA1 = villain "16080a" "Collector" [Elder]
+collectorA1 = villain NESet.EscapeTheMuseum "16080a" "Collector" [Elder]
 
 collectorA2 :: CardDef
-collectorA2 = villain "16080b" "Collector" [Elder, Wounded]
+collectorA2 = villain NESet.EscapeTheMuseum "16080b" "Collector" [Elder, Wounded]
 
 collectorB1 :: CardDef
-collectorB1 = villain "16081a" "Collector" [Elder]
+collectorB1 = villain NESet.EscapeTheMuseum "16081a" "Collector" [Elder]
 
 collectorB2 :: CardDef
-collectorB2 = villain "16081b" "Collector" [Elder, Wounded]
+collectorB2 = villain NESet.EscapeTheMuseum "16081b" "Collector" [Elder, Wounded]
 
 -- Ronan the Accuser
 
 ronan1 :: CardDef
-ronan1 = (villain "16103" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+ronan1 = (villain NESet.Ronan "16103" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
 
 ronan2 :: CardDef
-ronan2 = (villain "16104" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
+ronan2 = (villain NESet.Ronan "16104" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = singleton Toughness}
 
 ronan3 :: CardDef
-ronan3 = (villain "16105" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = fromList [Retaliate 1, Toughness]}
+ronan3 = (villain NESet.Ronan "16105" "Ronan the Accuser" [AccuserCorps, Kree]) {cdKeywords = fromList [Retaliate 1, Toughness]}
 
 -- The Galaxy's Most Wanted: Nebula
 
 nebula1 :: CardDef
-nebula1 = villain "16088" "Nebula" [Criminal]
+nebula1 = villain NESet.Nebula "16088" "Nebula" [Criminal]
 
 nebula2 :: CardDef
-nebula2 = villain "16089" "Nebula" [Criminal]
+nebula2 = villain NESet.Nebula "16089" "Nebula" [Criminal]
 
 nebula3 :: CardDef
-nebula3 = villain "16090" "Nebula" [Criminal]
+nebula3 = villain NESet.Nebula "16090" "Nebula" [Criminal]
 
 -- The Galaxy's Most Wanted: Infiltrate the Museum
 
 collector1 :: CardDef
-collector1 = villain "16070" "Collector" [Elder]
+collector1 = villain NESet.InfiltrateTheMuseum "16070" "Collector" [Elder]
 
 collector2 :: CardDef
-collector2 = villain "16071" "Collector" [Elder]
+collector2 = villain NESet.InfiltrateTheMuseum "16071" "Collector" [Elder]
 
 collector3 :: CardDef
-collector3 = villain "16072" "Collector" [Elder]
+collector3 = villain NESet.InfiltrateTheMuseum "16072" "Collector" [Elder]
 
 -- The Mad Titan's Shadow: Ebony Maw
 
 ebonyMaw1 :: CardDef
-ebonyMaw1 = villain "21071" "Ebony Maw" [BlackOrder, Mystic]
+ebonyMaw1 = villain NESet.EbonyMaw "21071" "Ebony Maw" [BlackOrder, Mystic]
 
 ebonyMaw2 :: CardDef
-ebonyMaw2 = villain "21072" "Ebony Maw" [BlackOrder, Mystic]
+ebonyMaw2 = villain NESet.EbonyMaw "21072" "Ebony Maw" [BlackOrder, Mystic]
 
 ebonyMaw3 :: CardDef
-ebonyMaw3 = villain "21073" "Ebony Maw" [BlackOrder, Mystic]
+ebonyMaw3 = villain NESet.EbonyMaw "21073" "Ebony Maw" [BlackOrder, Mystic]
 
 -- The Mad Titan's Shadow: Tower Defense
 
 proximaMidnight1 :: CardDef
-proximaMidnight1 = villain "21092" "Proxima Midnight" [BlackOrder]
+proximaMidnight1 = villain NESet.TowerDefense "21092" "Proxima Midnight" [BlackOrder]
 
 proximaMidnight2 :: CardDef
-proximaMidnight2 = villain "21093" "Proxima Midnight" [BlackOrder]
+proximaMidnight2 = villain NESet.TowerDefense "21093" "Proxima Midnight" [BlackOrder]
 
 proximaMidnight3 :: CardDef
-proximaMidnight3 = villain "21094" "Proxima Midnight" [BlackOrder]
+proximaMidnight3 = villain NESet.TowerDefense "21094" "Proxima Midnight" [BlackOrder]
 
 corvusGlaive1 :: CardDef
-corvusGlaive1 = villain "21095" "Corvus Glaive" [BlackOrder]
+corvusGlaive1 = villain NESet.TowerDefense "21095" "Corvus Glaive" [BlackOrder]
 
 corvusGlaive2 :: CardDef
-corvusGlaive2 = villain "21096" "Corvus Glaive" [BlackOrder]
+corvusGlaive2 = villain NESet.TowerDefense "21096" "Corvus Glaive" [BlackOrder]
 
 corvusGlaive3 :: CardDef
-corvusGlaive3 = villain "21097" "Corvus Glaive" [BlackOrder]
+corvusGlaive3 = villain NESet.TowerDefense "21097" "Corvus Glaive" [BlackOrder]
 
 -- The Mad Titan's Shadow: Thanos
 
 thanos1 :: CardDef
-thanos1 = (villain "21111" "Thanos" [BlackOrder, Titan]) {cdKeywords = singleton Stalwart}
+thanos1 = (villain NESet.Thanos "21111" "Thanos" [BlackOrder, Titan]) {cdKeywords = singleton Stalwart}
 
 thanos2 :: CardDef
-thanos2 = (villain "21112" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
+thanos2 = (villain NESet.Thanos "21112" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
 
 thanos3 :: CardDef
-thanos3 = (villain "21113" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
+thanos3 = (villain NESet.Thanos "21113" "Thanos" [BlackOrder, Titan]) {cdKeywords = fromList [Stalwart, Toughness]}
 
 -- The Mad Titan's Shadow: Loki
 -- five versions of one stage I, each with victory 1 (MTS rulebook p.24)
 
 loki1 :: CardDef
-loki1 = (villain "21160" "Loki" [Asgard, Mystic]) {cdKeywords = singleton (Victory 1)}
+loki1 = (villain NESet.Loki "21160" "Loki" [Asgard, Mystic]) {cdKeywords = singleton (Victory 1)}
 
 loki2 :: CardDef
-loki2 = (villain "21161" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Retaliate 1, Victory 1]}
+loki2 = (villain NESet.Loki "21161" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Retaliate 1, Victory 1]}
 
 loki3 :: CardDef
-loki3 = (villain "21162" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
+loki3 = (villain NESet.Loki "21162" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
 
 loki4 :: CardDef
-loki4 = (villain "21163" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
+loki4 = (villain NESet.Loki "21163" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Stalwart, Victory 1]}
 
 -- | "[star] Loki's attacks gain piercing": the keyword on his card.
 loki5 :: CardDef
-loki5 = (villain "21164" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Piercing, Victory 1]}
+loki5 = (villain NESet.Loki "21164" "Loki" [Asgard, Mystic]) {cdKeywords = fromList [Piercing, Victory 1]}
 
 -- The Mad Titan's Shadow: Hela
 
 helaA1 :: CardDef
-helaA1 = villain "21136a" "Hela" [Asgard, Mystic]
+helaA1 = villain NESet.Hela "21136a" "Hela" [Asgard, Mystic]
 
 helaA2 :: CardDef
-helaA2 = villain "21136b" "Hela" [Asgard, Wounded]
+helaA2 = villain NESet.Hela "21136b" "Hela" [Asgard, Wounded]
 
 helaB1 :: CardDef
-helaB1 = villain "21137a" "Hela" [Asgard, Mystic]
+helaB1 = villain NESet.Hela "21137a" "Hela" [Asgard, Mystic]
 
 helaB2 :: CardDef
-helaB2 = villain "21137b" "Hela" [Asgard, Wounded]
+helaB2 = villain NESet.Hela "21137b" "Hela" [Asgard, Wounded]
 
 -- The Hood
 
 theHood1 :: CardDef
-theHood1 = villain "24001" "The Hood" [Criminal]
+theHood1 = villain NESet.TheHood "24001" "The Hood" [Criminal]
 
 theHood2 :: CardDef
-theHood2 = villain "24002" "The Hood" [Criminal]
+theHood2 = villain NESet.TheHood "24002" "The Hood" [Criminal]
 
 theHood3 :: CardDef
-theHood3 = villain "24003" "The Hood" [Criminal]
+theHood3 = villain NESet.TheHood "24003" "The Hood" [Criminal]
 
 -- Sinister Motives
 

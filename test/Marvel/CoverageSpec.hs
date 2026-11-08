@@ -12,6 +12,7 @@ import Data.Text qualified as Text
 import Marvel.SideScheme (allSideSchemes)
 import Marvel.Treachery (allTreacheries)
 import Marvel.Villain (allVillains)
+import Marvel.Villain.Cards qualified as VillainDefs
 import Marvel.AlterEgo (allAlterEgos)
 import Marvel.Card.Code
 import Marvel.Event (allEvents)
@@ -173,6 +174,11 @@ encounterImplemented c = case c.cardType of
 
 spec :: Spec
 spec = do
+  describe "villain encounter sets" $
+    for_ VillainDefs.allVillainCards \card ->
+      it (show (toCardCode card) <> " has an encounter set") $
+        (cdEncounterSet card `shouldSatisfy` isJust :: IO ())
+
   it "identifies every printed nemesis minion in every hero's nemesis set" do
     json <- either error pure =<< eitherDecodeFileStrict' "frontend/public/data/cards.json"
     entries <- either error pure $ flip parseEither json $ withObject "cards" \o -> do

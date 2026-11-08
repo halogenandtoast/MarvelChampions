@@ -15,6 +15,7 @@ import Marvel.Ability.Types
 import Marvel.Attack
 import Marvel.Boost ()
 import Marvel.Card
+import Marvel.Villain.Cards qualified as Cards
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Game.Source
@@ -802,8 +803,8 @@ versionBEnters attrs
 
 -- Older saved games predate a second status card.
 instance FromJSON (Attrs Villain) where
-  parseJSON = withObject "VillainAttrs" $ \o ->
-    genericParseJSON defaultOptions $ Object $
+  parseJSON = withObject "VillainAttrs" $ \o -> do
+    attrs <- genericParseJSON defaultOptions $ Object $
       KeyMap.insertWith (\_ old -> old) "villainCounters" (toJSON (0 :: Natural)) $
       KeyMap.insertWith (\_ old -> old) "villainSchemeRemoval" (toJSON (Nothing :: Maybe (IdentityId, Source))) $
       KeyMap.insertWith (\_ old -> old) "villainPendingAttackBoostCards" (toJSON (0 :: Natural)) $
@@ -813,6 +814,9 @@ instance FromJSON (Attrs Villain) where
       KeyMap.insertWith (\_ old -> old) "villainAttackGrantedKeywords" (toJSON ([] :: [Keyword])) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalStun" (Bool False) $
       KeyMap.insertWith (\_ old -> old) "villainAdditionalConfuse" (Bool False) o
+    let def = villainCardDef attrs
+        encounterSet = cdEncounterSet def <|> (cdEncounterSet =<< lookup (toCardCode def) Cards.allVillainsMap)
+    pure attrs {villainCardDef = def {cdEncounterSet = encounterSet}}
 
 applySolidSoundStatus :: ReverseQueue m => Attrs Villain -> StatusCard -> m (Attrs Villain)
 applySolidSoundStatus attrs status = do

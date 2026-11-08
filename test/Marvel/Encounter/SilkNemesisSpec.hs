@@ -205,7 +205,7 @@ spec = describe "Silk nemesis and Growing Strong" do
       payment <- traverse (putInHand p) ["01088","01089"]
       playWith kick payment
       choose "attack Morlun" (isTargetChoice mid)
-      choose "do not spend Hunting" (isLabel "$label.done")
+      choose "do not spend Hunting" (isLabel "$label.attackWithoutDiscarding")
       pass
       L.tuckedEncounterCards p `shouldReturn` []
       damageOf p `shouldReturn` 0

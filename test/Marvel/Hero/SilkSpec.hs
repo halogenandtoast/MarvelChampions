@@ -3,6 +3,7 @@ import TestImport
 import Control.Monad (replicateM_)
 import Marvel.Card.Types qualified as MarvelCard
 import Marvel.Query
+import Marvel.Villain.Types qualified as V
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Silk.Cards qualified as Cards
 import Marvel.Minion.Cards qualified as Minions
@@ -117,9 +118,52 @@ spec = describe "Silk" do
       pay2 <- putInHand p "01089"
       playWith kick [pay1,pay2]
       chooseVillain
-      choose "no tucked payment" (isLabel "$label.done")
+      choose "no tucked payment" (isLabel "$label.attackWithoutDiscarding")
       pass
       villainDamageNow `shouldReturn` 7
+
+  it "Swinging Silk Kick can discard a tucked Rhino card for nine damage" do
+    tg <- testGame ["silk"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      stampede <- encounterCard Treacheries.stampede
+      perform (L.tuckEncounterCard p stampede)
+      pass
+      kick <- putInHand p "52003"
+      pay1 <- putInHand p "01088"
+      pay2 <- putInHand p "01089"
+      playWith kick [pay1,pay2]
+      chooseVillain
+      offers (isLabel "$label.attackWithoutDiscarding") `shouldReturn` True
+      choose "discard Stampede" (isTargetChoice stampede)
+      pass
+      villainDamageNow `shouldReturn` 9
+      L.tuckedEncounterCards p `shouldReturn` []
+
+  it "Swinging Silk Kick matches tucked Rhino cards in saves missing encounter-set metadata" do
+    tg <- testGame ["silk"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      vid <- villainIdNow
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(V.Villain v) -> V.Villain $ V.overVillainAttrs
+        (\attrs -> case fromJSON (toJSON attrs {V.villainCardDef = (V.villainCardDef attrs) {cdEncounterSet = Nothing}}) of
+          Success restored -> restored
+          Error err -> error err) v
+      stampede <- encounterCard Treacheries.stampede
+      perform (L.tuckEncounterCard p stampede)
+      pass
+      kick <- putInHand p "52003"
+      pay1 <- putInHand p "01088"
+      pay2 <- putInHand p "01089"
+      playWith kick [pay1,pay2]
+      chooseVillain
+      offers (isLabel "$label.attackWithoutDiscarding") `shouldReturn` True
+      choose "discard Stampede" (isTargetChoice stampede)
+      pass
+      villainDamageNow `shouldReturn` 9
+      L.tuckedEncounterCards p `shouldReturn` []
 
   it "Wallcrawl first removes two threat even with no matching tuck" do
     tg <- testGame ["silk"]
@@ -165,7 +209,7 @@ spec = describe "Silk" do
       payment <- traverse (putInHand p) ["01088","01089"]
       playWith kick payment
       choose "target minion" (isTargetChoice mid)
-      choose "no tucked card" (isLabel "$label.done")
+      choose "no tucked card" (isLabel "$label.attackWithoutDiscarding")
       choose "Silk Sense" (identityAbility p)
       choose "tuck the defeated minion" (\case TargetLabel (CardIdRef _) _ -> True; _ -> False)
       pass
