@@ -124,15 +124,21 @@ subtype s a = a {abilitySubType = Just s}
 passesUseLimit :: IdentityId -> HashMap IdentityId [Ability] -> Ability -> Bool
 passesUseLimit x aMap a = case baseLimit (abilityLimit a) of
   NoLimit -> True
-  PerTurn n -> count (== a) usedAbilities < n
-  PerRound n -> count (== a) usedAbilities < n
-  PerWindow n -> count (== a) usedAbilities < n
+  PerTurn n -> count samePrintedAbility usedAbilities < n
+  PerRound n -> count samePrintedAbility usedAbilities < n
+  PerWindow n -> count samePrintedAbility usedAbilities < n
   SharedPerWindow name n -> count (\used -> case baseLimit (abilityLimit used) of
     SharedPerWindow other _ -> name == other
     _ -> False) usedAbilities < n
-  PerPhase n -> count (== a) usedAbilities < n
+  PerPhase n -> count samePrintedAbility usedAbilities < n
   EachPlayer limit -> passesUseLimit x aMap a {abilityLimit = limit}
  where
+  -- Different identity faces can reuse a source, index and label. Keep the
+  -- printed timing distinct, and do not let an unlimited power spend a limit.
+  samePrintedAbility used = used == a && case abilitySource a of
+    IdentityRef _ -> baseLimit (abilityLimit used) /= NoLimit
+      && abilityType used == abilityType a && abilityWindow used == abilityWindow a
+    _ -> True
   usedAbilities = HashMap.findWithDefault [] x aMap
 
 passesCriteria :: (Projection m PlayerIdentity, MonadThrow m, HasGame m, HasQueue m) => IdentityId -> Ability -> m Bool

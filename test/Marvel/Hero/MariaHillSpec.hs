@@ -59,6 +59,27 @@ spec = describe "Maria Hill" do
       pass
       getCountersOn (supportIdOf iliad) `shouldReturn` 4
 
+  it "her alter-ego search does not consume Reassignment's once-per-round limit" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      cards <- stackDeck p ["50008", "01090"]
+      choose "alter-ego search" (\case UseAbility a -> abilityIndex a == 1 && abilitySource a == toSource p; _ -> False)
+      choose "find support" (isTargetChoice $ testHead cards)
+      pass
+      changeForm p
+      pass
+      staff <- putIntoPlay p "50008"
+      iliad <- putIntoPlay p "50009"
+      choose "Reassignment" (\case UseAbility a -> abilityIndex a == 1 && abilitySource a == toSource p; _ -> False)
+      choose "from staff" (isTargetChoice $ supportIdOf staff)
+      choose "to Iliad" (isTargetChoice $ supportIdOf iliad)
+      pass
+      getCountersOn (supportIdOf staff) `shouldReturn` 2
+      getCountersOn (supportIdOf iliad) `shouldReturn` 4
+      offers (\case UseAbility a -> abilityIndex a == 1 && abilitySource a == toSource p; _ -> False) `shouldReturn` False
+
   it "moves one mission counter between supports once each round" do
     tg <- testGame ["maria-hill"]
     inGame tg do
