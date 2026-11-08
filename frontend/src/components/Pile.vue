@@ -1,13 +1,14 @@
 <script setup lang="ts">
 // A deck, face down with its count, or a discard pile, its top card showing; a discard
 // pile opens to show every card in it, where a choice about one of them can be made.
-import { computed, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
-import { useChoices } from '../composables/useChoices'
+import { provideChoiceHandler, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
 import type { CardView } from '../server'
 import BoardCard from './BoardCard.vue'
 import CardFace from './CardFace.vue'
+import { skipViewTransitions } from '../composables/useViewTransition'
 import { dealtPileCounts } from '../composables/dealing'
 
 const { label, back = null, count = null, cards = null, pile = null } = defineProps<{
@@ -23,7 +24,9 @@ const { label, back = null, count = null, cards = null, pile = null } = definePr
 
 const overlay = useCardOverlay()
 const faces = useCards()
-const { byTarget, choose } = useChoices()
+const { byTarget, choose, remainingPicks } = useChoices()
+const mode = ref<'browse' | 'pick'>('browse')
+const picksLeft = ref<number | null>(null)
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const total = computed(() => (pile ? dealtPileCounts.get(pile) : undefined) ?? count ?? cards?.length ?? 0)
 const emptyDealt = computed(() => pile?.startsWith('dealt-') && total.value === 0)
@@ -39,9 +42,26 @@ const open = () => {
   }
   if (!cards?.length) return
   overlay.hide()
+  // Capture intent once when opening, rather than re-deriving it from
+  // intermediate questions broadcast during the resulting shuffle.
+  mode.value = (cards ?? []).some(card => byTarget.value.has(card.id)) ? 'pick' : 'browse'
+  picksLeft.value = mode.value === 'pick' ? remainingPicks.value ?? 1 : null
+  skipViewTransitions()
   dialog.value?.showModal()
 }
-const close = () => dialog.value?.close()
+const onClose = () => { skipViewTransitions(); overlay.hide() }
+const close = () => {
+  onClose()
+  dialog.value?.close()
+}
+provideChoiceHandler(index => {
+  if (dialog.value?.open && mode.value === 'pick' && picksLeft.value !== null) {
+    picksLeft.value--
+    if (picksLeft.value <= 0) close()
+  }
+  // Close the top-layer dialog synchronously, before the answer can start animations.
+  choose(index)
+})
 </script>
 
 <template>
@@ -63,11 +83,12 @@ const close = () => dialog.value?.close()
       <span class="count">{{ total }}</span>
     </button>
     <span class="label">{{ label }}</span>
-    <dialog ref="dialog" class="pile-dialog" @close="overlay.hide()" @click="$event.target === dialog && close()">
+    <dialog ref="dialog" class="pile-dialog" :data-mode="mode" :data-remaining-picks="picksLeft ?? undefined" @close="onClose" @click="$event.target === dialog && close()">
       <header>
         <h2>{{ label }} <small>{{ total }}</small></h2>
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
       </header>
+      <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t('game.piles.chooseCards', { count: picksLeft }) }}</p>
       <div class="cards">
         <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
       </div>
@@ -127,6 +148,7 @@ const close = () => dialog.value?.close()
 .label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); white-space: nowrap; }
 
 .pile-dialog {
+  view-transition-name: pile-browser;
   width: min(60rem, 100vw - 2rem);
   max-height: min(44rem, 100dvh - 2rem);
   padding: 0;
@@ -138,7 +160,15 @@ const close = () => dialog.value?.close()
 }
 .pile-dialog::backdrop { background: rgb(0 0 0 / 0.6); backdrop-filter: blur(3px); }
 .pile-dialog header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.pick-instruction { margin: 12px 16px 0; color: var(--text-muted); font-size: 0.8rem; }
 .pile-dialog h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; }
 .pile-dialog h2 small { color: var(--text-faint); font-size: 0.9rem; margin-left: 6px; }
 .pile-dialog .cards { display: flex; flex-wrap: wrap; gap: 14px; padding: 16px; overflow-y: auto; --card-width: 120px; }
+</style>
+
+<style>
+/* The open browser is its own snapshot, so board transitions do not fade its dimmer. */
+::view-transition-group(pile-browser) { animation: none; }
+::view-transition-old(pile-browser) { display: none; }
+::view-transition-new(pile-browser) { animation: none; mix-blend-mode: normal; }
 </style>

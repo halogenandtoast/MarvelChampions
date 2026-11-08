@@ -103,6 +103,20 @@ spec = describe "the game as the client sees it" do
               _ -> Nothing
         surplus `shouldBe` Just (toJSON expected)
 
+  it "reports the remaining card picks through searched and prompted questions" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+          cards = [CardLabel "01088" (Run []), CardLabel "01089" (Run []), CardLabel "01090" (Run [])]
+          cases :: [(Question, Int)]
+          cases = [(ChooseOne cards, 1), (ChooseN 2 cards, 2), (ChooseN 2 (take 1 cards), 1), (ChooseOneAtATime cards, 3),
+            (QuestionLabel "$label.searchDeck" Nothing $ Searched [] $ ChooseN 1 cards, 1)]
+      for_ cases $ \(question, expected) -> do
+        withGame_ $ questionL .~ fromList [(p, question)]
+        view <- liftIO . publicGame =<< getGame
+        let remaining = [n | Object o <- [view], Just (Object questions) <- [KeyMap.lookup "question" o], Object q <- KeyMap.elems questions, Just n <- [KeyMap.lookup "remainingPicks" q]]
+        remaining `shouldBe` [toJSON expected]
+
   it "names a choice by what it does to what it is offered on" do
     tg <- testGame ["spider-man", "she-hulk"]
     inGame tg do

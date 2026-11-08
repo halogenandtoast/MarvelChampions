@@ -3,20 +3,22 @@
 // upgrade or a card searched for is: the cards side by side (all those searched, the ones
 // that cannot be picked dimmed) in the middle of the screen, any other answer
 // ("no upgrade") as a button beneath. Everyone sees it; the player asked picks.
-import { computed, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import { useCards } from '../cards'
 import { useChoiceLabel, useKeyed } from '../composables/useChoices'
+import { skipViewTransitions } from '../composables/useViewTransition'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
 import type { ChoiceView, SearchedView } from '../server'
 
-const { prompt = null, choices, searched = [], canChoose, waitingOn = null } = defineProps<{
+const { prompt = null, choices, searched = [], canChoose, waitingOn = null, remainingPicks = 1 } = defineProps<{
   prompt?: string | null
   choices: ChoiceView[]
   searched?: SearchedView[]
   canChoose: boolean
+  remainingPicks?: number | null
   waitingOn?: string | null
 }>()
 const emit = defineEmits<{ choose: [index: number]; close: [] }>()
@@ -39,9 +41,13 @@ const press = (event: PointerEvent, code: string) => {
 const choose = (index: number | null) => {
   if (index === null) return
   overlay.hide()
+  const finalPick = remainingPicks === 1
+  if (finalPick) skipViewTransitions()
   emit('choose', index)
+  if (finalPick) emit('close')
 }
-const close = () => { overlay.hide(); emit('close') }
+const close = () => { skipViewTransitions(); overlay.hide(); emit('close') }
+onMounted(skipViewTransitions)
 onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
@@ -81,7 +87,7 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
           </section>
         </div>
         <footer>
-          <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="emit('choose', c.index)">{{ label(c) }}</button>
+          <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="choose(c.index)">{{ label(c) }}</button>
           <p v-if="!canChoose" class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
         </footer>
       </article>
@@ -90,7 +96,7 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 </template>
 
 <style scoped>
-.pick-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 0.6); }
+.pick-backdrop { view-transition-name: card-picker; position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 0.6); }
 .pick {
   display: flex;
   flex-direction: column;
@@ -132,4 +138,10 @@ h3 { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; te
 footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
 footer:empty { display: none; }
 .waiting { margin: 0 auto 0 0; color: var(--text-muted); font-style: italic; }
+</style>
+
+<style>
+::view-transition-group(card-picker) { animation: none; }
+::view-transition-old(card-picker) { display: none; }
+::view-transition-new(card-picker) { animation: none; mix-blend-mode: normal; }
 </style>

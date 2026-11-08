@@ -17,11 +17,12 @@ export interface Choices {
   choose: (index: number) => void
   /** the card the open question is about */
   sourceId: ComputedRef<string | null>
+  remainingPicks: ComputedRef<number | null>
 }
 
-const key: InjectionKey<Choices> = Symbol('choices')
+const key: InjectionKey<Choices> = Symbol.for('marvel.choices')
 
-export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void, source: () => string | null = () => null, assignedDamage: () => Record<string, number> = () => ({})) => {
+export const provideChoices = (choices: () => ChoiceView[], choose: (index: number) => void, source: () => string | null = () => null, assignedDamage: () => Record<string, number> = () => ({}), remainingPicks: () => number | null = () => null) => {
   const byTarget = computed(() => {
     const map = new Map<string, ChoiceView[]>()
     for (const choice of choices()) {
@@ -30,12 +31,17 @@ export const provideChoices = (choices: () => ChoiceView[], choose: (index: numb
     }
     return map
   })
-  const provided = { hoveredTarget: ref<string | null>(null), assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source) }
+  const provided = { hoveredTarget: ref<string | null>(null), assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source), remainingPicks: computed(remainingPicks) }
   provide(key, provided)
   return provided
 }
 
-export const useChoices = () => inject(key, { hoveredTarget: ref<string | null>(null), assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null) })
+export const useChoices = () => inject(key, { hoveredTarget: ref<string | null>(null), assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null), remainingPicks: computed(() => null) })
+
+/** A pile intercepts its cards' answers while retaining the board's choice context. */
+export const provideChoiceHandler = (choose: (index: number) => void) => {
+  provide(key, { ...useChoices(), choose })
+}
 
 /** Server text that may be a key the locale lacks yet: then its last word, spaced out. */
 export const useKeyed = () => {

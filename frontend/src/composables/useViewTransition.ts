@@ -15,6 +15,11 @@ export const cancelViewTransitions = () => {
   window.dispatchEvent(new Event('marvel:cancel-animations'))
 }
 
+/** Drop captured modal images without cancelling queued board updates or shuffles. */
+export const skipViewTransitions = () => {
+  for (const transition of active) transition.skipTransition()
+}
+
 const supported = (): StartViewTransition | null => {
   const start = (document as Document & { startViewTransition?: StartViewTransition }).startViewTransition
   return typeof start === 'function' ? start.bind(document) : null
@@ -24,9 +29,11 @@ const supported = (): StartViewTransition | null => {
  * Applies a state change inside a view transition so cards morph between zones, falling
  * back to a plain update where the API is unavailable.
  */
-/** Whether state changes will animate through a view transition. */
+/** Native modals sit below view-transition snapshots. Keep board updates plain
+ * while a picker is open, so its dimmer and cards cannot fade or show through. */
 export const transitionsOn = () =>
   supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    && !document.querySelector('dialog:modal, .pick-backdrop')
 
 export const withViewTransition = async (apply: () => void | Promise<void>): Promise<void> => {
   const startedAt = revision

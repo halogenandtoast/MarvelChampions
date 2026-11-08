@@ -445,6 +445,8 @@ data HeldView = HeldView {id :: CardId, owner :: Maybe IdentityId}
 data QuestionView = QuestionView
   { kind :: Text
   -- ^ @chooseOne@, @chooseN@, @chooseOneAtATime@ or @choosePlayerOrder@
+  , remainingPicks :: Maybe Int
+  -- ^ Picks still required, so the client can dismiss the picker on the final answer.
   , prompt :: Maybe Text
   -- ^ an i18n key under @$label.@, or text
   , source :: Maybe Text
@@ -970,11 +972,11 @@ questionView asked = \case
      in v {prompt = Just l, source = refId =<< t, choices = map named v.choices}
   Read r q -> (questionView asked q) {reading = r}
   Searched cs q -> (questionView asked q) {searched = [SearchedView l (map cardView xs) | (l, xs) <- cs]}
-  ChooseOne cs -> QuestionView "chooseOne" Nothing Nothing (allocations cs) (described cs) [] []
-  ChooseN _ cs -> QuestionView "chooseN" Nothing Nothing (allocations cs) (described cs) [] []
-  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseOne cs -> QuestionView "chooseOne" (Just 1) Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseN n cs -> QuestionView "chooseN" (Just $ min (fromIntegral n) (length cs)) Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" (Just $ length cs) Nothing Nothing (allocations cs) (described cs) [] []
   ChoosePlayerOrder (Unsorted xs) _ ->
-    QuestionView "choosePlayerOrder" Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
+    QuestionView "choosePlayerOrder" Nothing Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
  where
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
   -- Every allocation choice carries the continuation with its new point prepended.

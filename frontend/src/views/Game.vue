@@ -343,7 +343,8 @@ const popOut = computed(() => (reading.value || picking.value ? (closedAt.value 
 
 provideChoices(() => boardChoices.value, choose, () => question.value?.prompt === '$label.revealBoostCards'
   ? choices.value.find(choice => choice.label === '$label.revealBoostCards')?.target ?? null
-  : question.value?.source ?? null, () => question.value?.assignedDamage ?? {})
+  : question.value?.source ?? null, () => question.value?.assignedDamage ?? {},
+  () => question.value?.remainingPicks ?? (question.value?.kind === 'chooseOne' ? 1 : null))
 
 const filingBug = ref(false)
 const debugging = ref(false)
@@ -429,6 +430,7 @@ const resetGame = () => restartDialog.value?.open()
       :choices="picking[1].choices"
       :searched="searchedCards(game, picking[1])"
       :can-choose="answering === picking[0]"
+      :remaining-picks="picking[1].remainingPicks ?? (picking[1].kind === 'chooseOne' ? 1 : null)"
       :waiting-on="playerName[picking[0]] ?? null"
       @choose="choose"
       @close="closedAt = game?.questionVersion ?? null"
