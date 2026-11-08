@@ -621,6 +621,7 @@ gameView seesHand g = do
           gameFocusedCards g
             <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid]
             <> mapMaybe (cardInPlay g) (concatMap revealingSources $ HashMap.elems $ gameQuestion g)
+            <> concat [inspectedCards q | (pid, q) <- HashMap.toList (gameQuestion g), seesHand pid]
       , resolvingEvents =
           [ cardView $ toCard (toAttrs event)
           | eid <- reverse $ fromMaybe [] (gameResolvingEvents g)
@@ -661,6 +662,15 @@ gameView seesHand g = do
     QuestionLabel _ _ question -> revealingSources question
     Read _ question -> revealingSources question
     Searched _ question -> revealingSources question
+    _ -> []
+  -- Older look-at prompts store the physical card only in the optional discard.
+  -- Keep that inspection private to the player answering the question.
+  inspectedCards = \case
+    QuestionLabel _ _ question -> inspectedCards question
+    Read _ question -> inspectedCards question
+    Searched _ question -> inspectedCards question
+    ChooseOne [Label "$label.done" _, Label "$label.discard" [Run messages]] ->
+      [card | Msg.DiscardedCard card <- messages]
     _ -> []
   scenario = toAttrs (gameScenario g)
   villainName v = display . cdName . getCardDef <$> (HashMap.lookup v (gameVillains g) <|> HashMap.lookup v (g ^. removedEntitiesL . villainsL))

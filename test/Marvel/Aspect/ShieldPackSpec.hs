@@ -295,8 +295,10 @@ spec = describe "SHIELD player cards" do
       choose "Melinda attacks" (isAllyAttack ally)
       chooseVillain
       choose "inspect" (onCard melinda 1)
+      getsGame (lookup p . gamePrivateCards) `shouldReturn` Just [EncounterCard $ testHead cards]
       choose "discard" (isLabel "$label.discard")
       pass
+      getsGame (lookup p . gamePrivateCards) `shouldReturn` Nothing
       encounterDiscard `shouldReturn` [testHead cards]
 
   it "Melinda May may leave the inspected card on top of the encounter deck" do
@@ -313,6 +315,7 @@ spec = describe "SHIELD player cards" do
       choose "inspect" (onCard melinda 1)
       choose "leave it" (isLabel "$label.done")
       pass
+      getsGame (lookup p . gamePrivateCards) `shouldReturn` Nothing
       encounterDiscard `shouldReturn` []
 
   it "Practiced Plan returns a discarded Preparation to hand" do

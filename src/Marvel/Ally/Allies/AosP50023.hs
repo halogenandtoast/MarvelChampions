@@ -46,6 +46,7 @@ instance RunMessage AosP50023 where
       pure card
     SearchFoundCards target (mapMaybe (\case EncounterCard c -> Just c; _ -> Nothing) -> cards) | isTarget attrs target -> do
       let you = allyController attrs
-      chooseOne you [labeled "$label.done" (pure ()),labeled "$label.discard" (traverse_ discardCard cards)]
+      lookingAt you (map EncounterCard cards) $
+        chooseOne you [labeled "$label.done" (pure ()),labeled "$label.discard" (traverse_ discardCard cards)]
       pure card
     _ -> AosP50023 <$> runMessage msg attrs

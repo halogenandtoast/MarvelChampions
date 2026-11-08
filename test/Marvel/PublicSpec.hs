@@ -10,7 +10,7 @@ import Marvel.Hercules.Cards qualified as Hercules
 import Marvel.ActiveCost.Types (ActiveCost (..), ActiveCostTarget (ForTreachery))
 import Marvel.Cost.Types (Cost (..))
 import Marvel.Message.Deck
-import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
+import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame, publicGameFor)
 import System.Environment (lookupEnv)
 import TestImport
 
@@ -157,6 +157,20 @@ spec = describe "the game as the client sees it" do
       choice.kind `shouldBe` "card"
       choice.code `shouldBe` Just "01107"
       choice.target `shouldBe` Just (tshow $ toCardId card)
+
+  it "shows a saved inspection's card only to the inspecting player" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      card <- encounterCard Minions.hydraSoldier
+      withGame_ $ questionL .~ fromList [(p, ChooseOne
+        [Label "$label.done" [Run []], Label "$label.discard" [Run [DiscardedCard $ EncounterCard card]]])]
+      snapshot <- getGame
+      privateView <- liftIO $ publicGameFor (== p) snapshot
+      hiddenView <- liftIO $ publicGameFor (const False) snapshot
+      let shown view = [code | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "focusedCards" o], Object c <- toList cards, Just (String code) <- [KeyMap.lookup "code" c]]
+      shown privateView `shouldSatisfy` elem "01182"
+      shown hiddenView `shouldSatisfy` notElem "01182"
 
   it "shows a revealed attachment before its When Revealed gives it a host" do
     tg <- testGame ["hercules"]
