@@ -7,6 +7,8 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Hercules.Cards qualified as Hercules
+import Marvel.ActiveCost.Types (ActiveCost (..), ActiveCostTarget (ForTreachery))
+import Marvel.Cost.Types (Cost (..))
 import Marvel.Message.Deck
 import Marvel.Game.Public (ChoiceView (..), describeChoice, owedFor, publicGame)
 import System.Environment (lookupEnv)
@@ -74,6 +76,32 @@ spec = describe "the game as the client sees it" do
     owedFor [Just Physical, Nothing, Nothing] [Energy] `shouldBe` [Just Physical, Nothing]
     owedFor [Just Physical, Nothing] [Wild, Mental] `shouldBe` []
     owedFor [Nothing] [Physical, Mental] `shouldBe` []
+
+  it "reports excess resources using the current cost and resource types, excluding X costs" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+          twoEnergy = ResourcePayment Energy <> ResourcePayment Energy
+          cases :: [(Cost, Payment, [Int])]
+          cases =
+            [ (ResourceCost Nothing, twoEnergy, [1])
+            , (ResourceCost (Just Physical), twoEnergy, [0, 1])
+            , (MultiResourceCost [Nothing, Nothing], twoEnergy, [])
+            , (ResourceCost Nothing, twoEnergy <> ActualResourcesPayment [Energy], [1])
+            , (ResourceCost (Just Physical), ResourcePayment Energy <> ResourcePayment Physical, [0])
+            , (ResourceCost (Just Physical), WildPayment Wild <> ResourcePayment Physical, [0])
+            , (DynamicResourceCost Nothing, twoEnergy, [])
+            , (PrintedResourceCost [Physical], ResourcePayment Wild <> PrintedResourcesPayment [Wild], [0])
+            , (Costs [ResourceCost Nothing, MayOverpay], ResourcePayment Energy <> OverpaymentOnlyPayment Energy, [1])
+            ]
+      for_ cases $ \(cost, payment, expected) -> do
+        ident <- getRandom
+        withGame_ $ activeCostL .~ [ActiveCost ident p ForTreachery cost payment Nothing [] Nothing]
+        view <- liftIO . publicGame =<< getGame
+        let surplus = case view of
+              Object o | Just (Object active) <- KeyMap.lookup "activeCost" o -> KeyMap.lookup "overpaidResources" active
+              _ -> Nothing
+        surplus `shouldBe` Just (toJSON expected)
 
   it "names a choice by what it does to what it is offered on" do
     tg <- testGame ["spider-man", "she-hulk"]

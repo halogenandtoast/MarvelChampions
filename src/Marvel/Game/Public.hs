@@ -476,6 +476,8 @@ data ActiveCostView = ActiveCostView
   , paid :: [Resource]
   , wilds :: [Int]
   -- ^ which of the paid resources are wild ones, declared as the type shown
+  , overpaidResources :: [Int]
+  -- ^ Indices of generated resources the fixed resource cost cannot use.
   , owed :: [Maybe Resource]
   -- ^ what the paid resources do not yet cover: a resource of that kind, or any
   , anyAmount :: Bool
@@ -539,7 +541,9 @@ gameView seesHand g = do
       _ -> pure Nothing
     pure $ ThreatView (schemeIdText sid) n src threshold
   activeCost <- for (headMay $ gameActiveCost g) \c -> do
-    paid <- paymentResources c.activeCostPayment
+    -- The tray shows every generated icon, including resources later discarded
+    -- as surplus. ActualResourcesPayment is the engine's final spend receipt.
+    paid <- paymentResources $ mconcat [p | p <- payments c.activeCostPayment, case p of ActualResourcesPayment _ -> False; _ -> True]
     let usable = paid L.\\ [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
         discards = [card | DiscardHandCardPayment card <- payments c.activeCostPayment]
         discardedRequirements = \case
@@ -547,6 +551,11 @@ gameView seesHand g = do
           Costs costs -> concatMap discardedRequirements costs
           _ -> []
         requirements = discardedRequirements c.activeCostCost
+        requiredResources = printedResourceRequirements c.activeCostCost
+        receipts = [rs | PrintedResourcesPayment rs <- payments c.activeCostPayment]
+        printed = if null receipts then concatMap (printedResources . getCardDef) c.activeCostSpentCards else concat receipts
+        remainingResources = if null requiredResources then owedFor (costResources c.activeCostCost) usable
+          else map Just (foldl' (flip L.delete) requiredResources printed)
         discardedValue = sum [fromIntegral (max 0 $ fromMaybe 0 $ cdCost $ getCardDef card) | card <- discards, any (\(matcher, _) -> cardMatch matcher card) requirements]
     pure
       ActiveCostView
@@ -560,11 +569,9 @@ gameView seesHand g = do
             _ -> Nothing
         , paid
         , wilds = [i | (i, True) <- zip [0 ..] (concatMap wildOrNot (payments c.activeCostPayment))]
-        , owed = let required = printedResourceRequirements c.activeCostCost
-                     receipts = [rs | PrintedResourcesPayment rs <- payments c.activeCostPayment]
-                     printed = if null receipts then concatMap (printedResources . getCardDef) c.activeCostSpentCards else concat receipts
-                  in if null required then owedFor (costResources c.activeCostCost) usable
-                     else map Just (foldl' (flip L.delete) required printed)
+        , owed = remainingResources
+        , overpaidResources = if dynamic c.activeCostCost then [] else
+            overpaidResourceIndices (null requiredResources) (costResources c.activeCostCost) paid [r | OverpaymentOnlyPayment r <- payments c.activeCostPayment]
         , anyAmount = dynamic c.activeCostCost
         , spent = map cardView $ L.nub $ map PlayerCard c.activeCostSpentCards <> discards
         , discardedCost = if null requirements then Nothing else Just $ DiscardedCostView discardedValue (sum $ map snd requirements)
@@ -1108,6 +1115,20 @@ owedFor cost paid = map Just unmet <> replicate (length generic - length left) N
     | r `elem` have = (missed, L.delete r have)
     | Wild `elem` have = (missed, L.delete Wild have)
     | otherwise = (missed <> [r], have)
+
+-- | Match specific icons before generic ones, retaining each icon's position.
+-- Reserved overpayment cannot cover the cost, even when its type would match.
+overpaidResourceIndices :: Bool -> [Maybe Resource] -> [Resource] -> [Resource] -> [Int]
+overpaidResourceIndices allowWild cost paid reserved = L.sort $ reservedIndices <> map fst (drop (length $ filter isNothing cost) remaining)
+ where
+  (reservedIndices, available) = foldl' reserve ([], zip [0 ..] paid) reserved
+  reserve (indices, resources) resource = case lastMay [entry | entry@(_, r) <- resources, r == resource] of
+    Just entry -> (fst entry : indices, L.delete entry resources)
+    Nothing -> (indices, resources)
+  remaining = foldl' match available (catMaybes cost)
+  match resources required = case L.find ((== required) . snd) resources <|> (if allowWild then L.find ((== Wild) . snd) resources else Nothing) of
+    Just entry -> L.delete entry resources
+    Nothing -> resources
 
 -- | The resources a payment is of, each whether it is a wild one.
 wildOrNot :: Payment -> [Bool]

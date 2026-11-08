@@ -118,6 +118,44 @@ spec = describe "Wonder Man nemesis" do
       pass
       cards <- discardOf you
       (resource `elem` cards && additional `elem` cards) `shouldBe` True
+      minionDamageOf reaper `shouldReturn` Nothing
+
+  it "Brother vs Brother charges one discard when Jet Belt pays for Ionic Blast" do
+    tg <- testGame ["wonder-man"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      reaper <- addMinion you Cards.wm58026
+      _ <- revealNow you Cards.wm58027
+      pass
+      belt <- putIntoPlay you "58008"
+      event <- putInHand you "58004"
+      additional <- putInHand you "58010"
+      spare <- putInHand you "58018"
+      choose "Ionic Blast" (isPlay event)
+      choose "Jet Belt pays the resource" (\case UseAbility ab -> isAbilityOfCard belt (UseAbility ab) && abilityIndex ab == 1; _ -> False)
+      chooseIf isFinishPayment
+      choose "Grim Reaper" (isTargetChoice reaper)
+      choose "discard the one additional cost" (isTargetChoice additional)
+      pass
+      minionDamageOf reaper `shouldReturn` Nothing
+      handOf you `shouldReturn` [spare]
+
+  it "Brother vs Brother also charges only once for an attack without damage" do
+    tg <- testGame ["wonder-man"]
+    inGame tg do
+      let you = player1 tg
+      asHero you
+      reaper <- addMinion you Cards.wm58026
+      _ <- revealNow you Cards.wm58027
+      pass
+      additional <- putInHand you "58010"
+      spare <- putInHand you "58018"
+      Lifted.runQueueT (Lifted.capture $ Lifted.attackEnemyWithoutDamage you reaper you) >>= runNow
+      choose "discard once" (isTargetChoice additional)
+      pass
+      handOf you `shouldReturn` [spare]
+      minionDamageOf reaper `shouldReturn` Just 0
 
   it "Brother vs Brother contributes an amplify icon and two threat per player" do
     tg <- testGame ["wonder-man", "hercules"]

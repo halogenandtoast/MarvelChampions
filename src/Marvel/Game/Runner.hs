@@ -2006,19 +2006,27 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "payEnemyAttackNoDamageCost" (fromJSON -> Success (you :: IdentityId,enemy :: EnemyId,source :: Source,cost :: Cost)) -> do
     payCostThenWithPayment you source cost GameRef "enemyAttackNoDamageCostPaid" (you,enemy,source)
     pure g
-  CardSpecific GameRef "enemyAttackNoDamageCostPaid" (fromJSON -> Success ((you,enemy,source),_payment :: Payment)) -> do
+  CardSpecific GameRef "enemyAttackNoDamageCostPaid" (fromJSON -> Success ((you :: IdentityId,enemy :: EnemyId,source :: Source),_payment :: Payment)) -> do
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source (EnemyEntity $ EnemyWithId enemy) [AttackAdditionalCostPaid source] (Just Effect.DisableAtEndOfAttack)
-    attackEnemyWithoutDamage you enemy source
+    cardSpecific GameRef "resumePaidEnemyAttackWithoutDamage" (you,enemy,source)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "resumePaidEnemyAttackWithoutDamage" (fromJSON -> Success (you,enemy :: EnemyId,source :: Source)) -> do
+    attackEnemyWithoutDamage you enemy source
+    pure g
   CardSpecific GameRef "payEnemyAttackCost" (fromJSON -> Success (you :: IdentityId,target :: Target,source :: Source,damage :: Damage,cost :: Cost)) -> do
     payCostThenWithPayment you source cost GameRef "enemyAttackCostPaid" (you,target,source,damage)
     pure g
-  CardSpecific GameRef "enemyAttackCostPaid" (fromJSON -> Success ((you,target,source,damage),_payment :: Payment)) -> do
+  CardSpecific GameRef "enemyAttackCostPaid" (fromJSON -> Success ((you :: IdentityId,target :: Target,source :: Source,damage :: Damage),_payment :: Payment)) -> do
     eid <- getRandom
     let attrs = Effect.EffectAttrs eid "engine-lasting" source (SourceEntity $ toSource target) [AttackAdditionalCostPaid source] (Just Effect.DisableAtEndOfAttack)
-    resolveAs you $ DamageEnemy target source damage
+    -- Choice construction reads the game. Resume only once the paid marker is
+    -- stored, so the same attack cannot ask for its additional cost twice.
+    cardSpecific GameRef "resumePaidEnemyAttack" (you,target,source,damage)
     pure $ g & entitiesL . effectsL %~ insertMap eid (Effect.Effect $ Lasting attrs)
+  CardSpecific GameRef "resumePaidEnemyAttack" (fromJSON -> Success (you,target,source,damage)) -> do
+    resolveAs you $ DamageEnemy target source damage
+    pure g
   CardSpecific GameRef "basicThwartIgnoringPatrolAndCrisis" (fromJSON -> Success (you,bonus)) -> do
     confused <- identityMatches ConfusedIdentity you
     if confused then removeConfused you >> pure g else do

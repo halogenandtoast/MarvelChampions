@@ -266,6 +266,8 @@
     "nothingYet": "Nothing yet",
     "needs": "Needs {count} more",
     "covered": "Cost covered",
+    "overpaid": "Overpaid",
+    "overpaidBy": "Overpaid by {count} resource | Overpaid by {count} resources",
     "anyAmount": "Pay as much as you like",
     "anyResource": "Any resource",
     "declareWild": "Wild resource: spend it as"

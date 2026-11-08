@@ -64,6 +64,7 @@ const declare = (index: number) => {
   emit('choose', index)
 }
 const discardRemaining = computed(() => cost.discardedCost ? Math.max(0, cost.discardedCost.required - cost.discardedCost.paid) : 0)
+const overpaid = computed(() => new Set(cost.anyAmount ? [] : cost.overpaidResources ?? []))
 const covered = computed(() => !cost.anyAmount && !(cost.owed ?? []).length && discardRemaining.value === 0)
 const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ? { id: cost.source, ...things[cost.source] } : null))
 </script>
@@ -77,7 +78,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
       <span class="label">{{ $t(cost.discardedCost ? 'game.paying.discardedCost' : 'game.paying.paid') }}</span>
       <p v-if="cost.discardedCost" class="resources">{{ cost.discardedCost.paid }} / {{ cost.discardedCost.required }}</p>
       <p v-else-if="cost.paid.length" class="resources">
-        <template v-for="(r, i) in cost.paid" :key="i">
+        <span v-for="(r, i) in cost.paid" :key="i" class="paid-resource">
           <span v-if="declaresFor(i).length" class="wild-resource">
             <button type="button" class="declarable" :aria-expanded="open === i" :title="$t('game.paying.declareWild')" aria-haspopup="menu" @click="toggleMenu(i, $event)">
               <GameIcon :name="r.toLowerCase()" :label="$t(`game.resources.${r.toLowerCase()}`)" />
@@ -85,11 +86,12 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
 
           </span>
           <GameIcon v-else :name="r.toLowerCase()" :label="$t(`game.resources.${r.toLowerCase()}`)" />
-        </template>
+          <span v-if="overpaid.has(i)" class="overpaid-marker" aria-hidden="true">*</span>
+        </span>
       </p>
       <p v-else class="none">{{ $t('game.paying.nothingYet') }}</p>
       <p v-if="cost.anyAmount" class="owed">{{ $t('game.paying.anyAmount') }}</p>
-      <p v-else-if="covered" class="owed done">{{ $t('game.paying.covered') }}</p>
+      <p v-else-if="covered" class="owed done"><span class="status-symbol" aria-hidden="true">✓</span> <span>{{ $t('game.paying.covered') }}</span></p>
       <p v-else-if="cost.discardedCost" class="owed">{{ $t('game.paying.discardedCostNeeds', { count: discardRemaining }) }}</p>
       <p v-else class="owed">
         {{ $t('game.paying.needs', { count: cost.owed.length }) }}
@@ -98,6 +100,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
           <span v-else class="due any" :title="$t('game.paying.anyResource')" />
         </template>
       </p>
+      <p v-if="overpaid.size" class="overpaid" role="status" :aria-label="$t('game.paying.overpaidBy', { count: overpaid.size })"><span class="status-symbol" aria-hidden="true">*</span> <span aria-hidden="true">{{ $t('game.paying.overpaid') }}</span></p>
     </header>
     <BoardCard v-if="paying" :id="paying.id" :code="paying.code" :name="paying.name" :morph="!elsewhere.has(paying.id)" />
     <img v-for="status in cost.canceledBy ?? []" :key="status" class="canceling-status" :src="assetUrl(`/images/tokens/${status}.avif`)" :alt="$t(`game.status.${status}`)" />
@@ -120,6 +123,7 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
 <style scoped>
 .paying {
   --spent-width: calc(var(--card-width) * 0.72);
+  --overpaid-color: color-mix(in oklab, var(--violet) 75%, white);
   display: flex;
   gap: 14px;
   align-items: center;
@@ -131,6 +135,20 @@ const paying = computed(() => cost.card ?? (cost.source && things[cost.source] ?
   border: 1px solid rgb(226 163 59 / 0.4);
   animation: rise 0.25s ease-out;
 }
+.paid-resource { position: relative; display: inline-flex; }
+.overpaid-marker {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  z-index: 1;
+  color: var(--overpaid-color);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow: 0 1px 1px #000, 0 0 2px #000, 0 3px 5px rgb(0 0 0 / 0.85);
+}
+.overpaid { margin: 0; color: var(--overpaid-color); }
 .status-warning { margin: 0; max-width: 26ch; color: var(--amber); font-size: 0.8rem; font-weight: 700; }
 .canceling-status { width: calc(var(--card-width) * 0.8); height: auto; border-radius: 8px; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
@@ -154,7 +172,8 @@ h2 { margin: 0 0 4px; font-size: 1.2rem; line-height: 1.05; text-transform: uppe
 .paying.covered { border-color: rgb(79 174 106 / 0.6); background: linear-gradient(160deg, rgb(79 174 106 / 0.14), transparent 60%), var(--ink-2); }
 .owed { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 4px 0 0; font-size: 0.75rem; font-weight: 600; color: var(--amber); }
 .owed.done { color: var(--health); }
-.owed.done::before { content: '✓'; font-weight: 800; }
+.owed.done, .overpaid { display: grid; grid-template-columns: 1em 1fr; column-gap: 4px; align-items: center; font-size: 0.75rem; font-weight: 600; line-height: 1.4; }
+.status-symbol { text-align: center; font-weight: 800; }
 .due { width: 1.1rem; height: 1.1rem; opacity: 0.85; }
 .due.any { display: inline-block; border-radius: 50%; border: 2px dashed var(--amber); box-sizing: border-box; }
 .none { margin: 0; font-size: 0.8rem; font-style: italic; color: var(--text-faint); }
