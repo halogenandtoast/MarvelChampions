@@ -56,6 +56,7 @@ import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
+import Marvel.Message.Lifted (countLabel)
 import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, SuppressSchemeIcons, CanLookAtTopOfEncounterDeck, PlayTopOfDeckAsHand))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
@@ -1012,6 +1013,9 @@ describeChoice asked = \case
   CardLabel code (Run _) -> withCode (Just code) (plain "card" Nothing)
   CardLabel code c -> withCode (Just code) (describeChoice asked c)
   Label "$label.revealDealtEncounterCard" _ -> withTarget (Just $ "dealt-" <> idText asked) $ plain "target" (Just "$label.revealDealtEncounterCard")
+  -- Correct legacy Covert Surveillance prompts without changing their answer index.
+  Label "$label.changeSuit" [Run [Msg.CardSpecific _ "suitThreat" (fromJSON -> Success (True, n :: Natural))]] ->
+    plain "label" (Just $ countLabel "aosMoveThreat" n)
   Label l _ -> plain "label" (Just l)
   TargetLabel t body ->
     let selected = headMay [card | Run messages <- body, message <- concatMap flat messages, card <- cardsInMessage message, refId t == Just (idText $ toCardId card)]

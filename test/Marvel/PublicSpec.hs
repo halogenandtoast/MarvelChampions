@@ -158,6 +158,18 @@ spec = describe "the game as the client sees it" do
       choice.code `shouldBe` Just "01107"
       choice.target `shouldBe` Just (tshow $ toCardId card)
 
+  it "corrects a saved Stealth threat-placement label without relabeling a suit change" do
+    tg <- testGame ["nick-fury"]
+    inGame tg do
+      let p = player1 tg
+      uid <- getRandom
+      let place = describeChoice p $ Label "$label.changeSuit"
+            [Run [CardSpecific (UpgradeRef uid) "suitThreat" (toJSON (True, 2 :: Natural))]]
+          change = describeChoice p $ Label "$label.changeSuit"
+            [Run [CardSpecific (UpgradeRef uid) "changeSuit" (toJSON True)]]
+      place.label `shouldBe` Just (countLabel "aosMoveThreat" 2)
+      change.label `shouldBe` Just "$label.changeSuit"
+
   it "shows a saved inspection's card only to the inspecting player" do
     tg <- testGame ["maria-hill"]
     inGame tg do

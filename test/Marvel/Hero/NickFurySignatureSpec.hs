@@ -68,7 +68,8 @@ spec = describe "Nick Fury signature cards" do
       resource <- putInHand p "01088"
       playWith event [resource]
       chooseMainScheme
-      choose "collect threat" (isLabel "$label.changeSuit")
+      offers (isLabel "$label.changeSuit") `shouldReturn` False
+      choose "collect threat" (isLabel $ L.countLabel "aosMoveThreat" 1)
       pass
       suitThreat p `shouldReturn` 1
 
@@ -221,7 +222,7 @@ spec = describe "Nick Fury signature cards" do
       playWith event [resource]
       chooseMainScheme
       choose "Operative Skill" (isAbilityOfCard skill)
-      choose "collect actual removal" (isLabel "$label.changeSuit")
+      choose "collect actual removal" (isLabel $ L.countLabel "aosMoveThreat" 3)
       pass
       mainSchemeThreatNow `shouldReturn` 2
       suitThreat p `shouldReturn` 3

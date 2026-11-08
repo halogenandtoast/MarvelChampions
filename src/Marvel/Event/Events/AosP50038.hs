@@ -65,7 +65,7 @@ instance RunMessage CovertSurveillanceEffect where
         for_ owner $ \you -> do
           stealth <- isStealth you
           when (stealth && not redirected && n > 0) $ chooseOne you
-            [labeled "$label.done" (pure ()),labeled "$label.changeSuit" (placeSuitThreat you n)]
+            [labeled "$label.done" (pure ()),labeled (countLabel "aosMoveThreat" n) (placeSuitThreat you n)]
         disableEffect (effectId attrs)
       when (any (\case W.Window W.After (W.EventAbilityResolved _ eid _) -> effectSource attrs == EventRef eid; _ -> False) windows) $ disableEffect (effectId attrs)
       pure e
