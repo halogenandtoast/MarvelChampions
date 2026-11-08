@@ -39,6 +39,10 @@ const cards = useCards()
 
 const keyed = useKeyed()
 const prompt = computed(() => (asked ? keyed(asked) : kind && te(`game.prompt.${kind}`) ? t(`game.prompt.${kind}`) : t('game.prompt.chooseOne')))
+const explanation = computed(() => {
+  const key = asked?.startsWith('$') ? `${asked.slice(1).split(' ')[0]}Explanation` : null
+  return key && te(key) ? t(key) : null
+})
 const overlay = useCardOverlay()
 const about = (choice: ChoiceView) => {
   const thing = choice.target ? things[choice.target] : undefined
@@ -73,6 +77,7 @@ const tone = (choice: ChoiceView) =>
         <span class="eyebrow">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
         <h2 v-if="!waitingOn">{{ prompt }}</h2>
       </header>
+      <p v-if="explanation" class="explanation">{{ explanation }}</p>
       <div v-if="popOut === 'closed'" class="options">
         <button type="button" class="go" @click="emit('reopen')">{{ t('game.prompt.showAgain') }}</button>
       </div>
@@ -82,6 +87,7 @@ const tone = (choice: ChoiceView) =>
         <span class="eyebrow">{{ asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
         <h2>{{ prompt }}</h2>
       </header>
+      <p v-if="explanation" class="explanation">{{ explanation }}</p>
       <div class="options">
         <button
           v-for="choice in buttons"
@@ -145,6 +151,7 @@ h2 { margin: 0; font-size: 1.35rem; line-height: 1.05; text-transform: uppercase
 .options button.go { background: var(--steel-deep); border-color: var(--steel); }
 /* the engine's own words for a choice it has no name for yet */
 .options button.raw { font-family: ui-monospace, Menlo, monospace; font-size: 0.7rem; font-weight: 400; color: var(--text-muted); overflow-wrap: anywhere; }
+.explanation { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); }
 .hint { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.75rem; color: var(--text-muted); }
 .swatch { width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--interactive); box-shadow: 0 0 6px var(--interactive-glow); }
 .waiting { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text-muted); font-size: 0.85rem; font-style: italic; }

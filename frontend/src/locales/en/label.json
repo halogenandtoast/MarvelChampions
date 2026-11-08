@@ -23,6 +23,7 @@
   "talkedThisPhase": "I talked",
   "didNotTalkThisPhase": "I did not talk",
   "previousGameOutcome": "Did you win your previous game of Marvel Champions?",
+  "previousGameOutcomeExplanation": "Your deck includes Git Gud. It costs 2 fewer resources if you did not win your previous game.",
   "previousGameWon": "I won my previous game",
   "previousGameNotWon": "I did not win, this is my first game, or I do not remember",
   "detonateBoomBoom": "Discard Boom Boom to deal damage to each enemy",
