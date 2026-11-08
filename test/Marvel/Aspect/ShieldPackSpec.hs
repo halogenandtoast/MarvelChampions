@@ -1,5 +1,8 @@
 module Marvel.Aspect.ShieldPackSpec (spec) where
 import Marvel.Phase
+import Marvel.Effect.Types qualified as Effect
+import Marvel.Effect.Lasting (Lasting (..))
+import Marvel.Modifier (Modifier (CannotReady, CannotBeReadiedByPlayerCards))
 import Marvel.AgentsOfShield.PlayerHelpers
 import Marvel.Game.Source
 import Marvel.Matchers
@@ -135,6 +138,53 @@ spec = describe "SHIELD player cards" do
       pass
       mainSchemeThreatNow `shouldReturn` 3
       getCountersOn (supportIdOf ship) `shouldReturn` 2
+
+  it "Victoria Hand has no response when all SHIELD supports are ready" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      victoria <- putInHand p "50012"
+      resources <- traverse (putInHand p) ["01088", "01089"]
+      playWith victoria resources
+      offers (onCard victoria 1) `shouldReturn` False
+
+  for_ [CannotReady, CannotBeReadiedByPlayerCards] \restriction ->
+    it ("Victoria Hand has no response when readying is prevented: " <> show restriction) do
+      tg <- testGame ["maria-hill"]
+      inGame tg do
+        let p = player1 tg
+        staff <- putIntoPlay p "50008"
+        resolve [SupportMessage (supportIdOf staff) ExhaustedSupport]
+        eid <- getRandom
+        withGame_ $ entitiesL . effectsL . at eid ?~ Effect.Effect (Lasting $ Effect.EffectAttrs
+          eid "engine-lasting" GameRef (SourceEntity $ SupportRef $ supportIdOf staff) [restriction] Nothing)
+        clearHand p
+        victoria <- putInHand p "50012"
+        resources <- traverse (putInHand p) ["01088", "01089"]
+        playWith victoria resources
+        offers (onCard victoria 1) `shouldReturn` False
+
+  it "Victoria Hand only offers SHIELD supports that can actually ready" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      staff <- putIntoPlay p "50008"
+      ship <- putIntoPlay p "50018"
+      resolve [SupportMessage (supportIdOf staff) ExhaustedSupport, SupportMessage (supportIdOf ship) ExhaustedSupport]
+      eid <- getRandom
+      withGame_ $ entitiesL . effectsL . at eid ?~ Effect.Effect (Lasting $ Effect.EffectAttrs
+        eid "engine-lasting" GameRef (SourceEntity $ SupportRef $ supportIdOf staff) [CannotReady] Nothing)
+      clearHand p
+      victoria <- putInHand p "50012"
+      resources <- traverse (putInHand p) ["01088", "01089"]
+      playWith victoria resources
+      choose "Victoria's response" (onCard victoria 1)
+      offers (isTargetChoice $ supportIdOf staff) `shouldReturn` False
+      choose "ready ship" (isTargetChoice $ supportIdOf ship)
+      pass
+      map supportExhausted <$> supportsWith "50018" `shouldReturn` [False]
+      map supportExhausted <$> supportsWith "50008" `shouldReturn` [True]
 
   it "Victoria Hand readies an exhausted SHIELD support on entry" do
     tg <- testGame ["maria-hill"]

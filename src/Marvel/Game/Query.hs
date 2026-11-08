@@ -2422,6 +2422,12 @@ inCompetitiveAreaOnly target values = do
 
 gameSelectSupportUnscoped :: HasGame m => SupportMatcher -> m (HashSet SupportId)
 gameSelectSupportUnscoped = \case
+  SupportCanBeReadied -> do
+    supports <- HashMap.elems <$> getsGame gameSupports
+    readyable <- filterM (\support -> do
+      modifiers <- getModifiers support
+      pure $ isExhausted support && CannotReady `notElem` modifiers && CannotBeReadiedByPlayerCards `notElem` modifiers) supports
+    pure $ HashSet.fromList $ map toId readyable
   UnexhaustedSupport -> do
     supports <- HashMap.elems <$> getsGame gameSupports
     pure $ HashSet.fromList $ map toId $ filter (not . isExhausted) supports

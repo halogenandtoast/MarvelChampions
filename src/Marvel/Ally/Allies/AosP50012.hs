@@ -34,14 +34,17 @@ newtype AosP50012 = AosP50012 (Attrs Ally)
   deriving anyclass (IsAlly, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
+readyableShieldSupport :: SupportMatcher
+readyableShieldSupport = SupportWithTrait T.Shield <> SupportCanBeReadied
+
 instance HasAbilities AosP50012 where
   getAbilities (AosP50012 attrs) =
-    [limitedWindowAbility attrs 1 (W.AllyEntersPlay W.After $ AllyWithId $ allyId attrs) Response OwnsThis NoCost (runAbility attrs 1)]
+    [limitedWindowAbility attrs 1 (W.AllyEntersPlay W.After $ AllyWithId $ allyId attrs) Response (OwnsThis <> SupportExists readyableShieldSupport) NoCost (runAbility attrs 1)]
 
 instance RunMessage AosP50012 where
   runMessage msg card@(AosP50012 attrs) = runQueueT $ case msg of
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
-      supports <- selectList (SupportMatches [SupportWithTrait T.Shield,SupportWithExhaustion True])
+      supports <- selectList readyableShieldSupport
       chooseOne you [targeting sid (ready sid) | sid <- supports]
       pure card
     _ -> AosP50012 <$> runMessage msg attrs

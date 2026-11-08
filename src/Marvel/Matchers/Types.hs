@@ -141,7 +141,8 @@ instance Semigroup AllyMatcher where
   x <> y = AllyMatches [x, y]
 
 data SupportMatcher
-  = UnexhaustedSupport
+  = SupportCanBeReadied
+  | UnexhaustedSupport
   | SupportWithExhaustion Bool
   | SupportControlledBy IdentityMatcher
   | SupportWithUses GameValueMatcher
