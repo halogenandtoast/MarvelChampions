@@ -633,9 +633,9 @@ gameView seesHand g = do
           <> [idText $ toId m | m <- HashMap.elems (gameMinions g), let a = toAttrs m, isJust a.minionActivationPlayer, isNothing a.minionAttacking]
       , threat
       , boostCards =
-          [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
-            <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
-            <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) (HashMap.elems (gameBoostCards g))]
+          [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards, ecCardId c `notElem` faceupBoostIds]
+            <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards, ecCardId c `notElem` faceupBoostIds]
+            <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) faceupBoostCards]
       , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g)) + sum [(toAttrs scheme).mainSchemeAccelerationTokens | scheme <- HashMap.elems (gameMainSchemes g)]
           + sum (map Minion.getMinionAccelerationTokens $ HashMap.elems $ gameMinions g)
       , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
@@ -656,6 +656,11 @@ gameView seesHand g = do
               }
       }
  where
+  -- Flipped cards are public as soon as their interrupt window opens, before
+  -- RevealBoostCard registers them. Retain them through nested response windows.
+  faceupBoostCards = L.nubBy (\a b -> ecCardId a == ecCardId b) $
+    HashMap.elems (gameBoostCards g) <> [card | W.Window _ (W.FlippedBoostCard card _) <- concat (gameWindows g)]
+  faceupBoostIds = map ecCardId faceupBoostCards
   -- A newly revealed attachment may have no host yet, and therefore no board
   -- location. Its resolution prompt must still show the physical source card.
   revealingSources = \case

@@ -5,6 +5,9 @@ import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Treachery.Cards qualified as Treacheries
+import Marvel.Villain.Types qualified as Villain
+import Marvel.Window qualified as W
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Hercules.Cards qualified as Hercules
 import Marvel.ActiveCost.Types (ActiveCost (..), ActiveCostTarget (ForTreachery))
@@ -169,6 +172,37 @@ spec = describe "the game as the client sees it" do
             [Run [CardSpecific (UpgradeRef uid) "changeSuit" (toJSON True)]]
       place.label `shouldBe` Just (countLabel "aosMoveThreat" 2)
       change.label `shouldBe` Just "$label.changeSuit"
+
+  it "shows the flipped boost during its interrupt without exposing other boosts" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      vid <- villainIdNow
+      flipped <- encounterCard Treacheries.hardToKeepDown
+      hidden <- encounterCard Treacheries.advance
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(Villain.Villain v) ->
+        Villain.Villain $ Villain.overVillainAttrs (\attrs -> attrs {Villain.villainBoostCards = [flipped, hidden]}) v
+      withGame_ $ windowsL .~ [[W.Window W.When $ W.FlippedBoostCard flipped (EnemyVillainId vid)]]
+      snapshot <- getGame
+      view <- liftIO $ publicGameFor (const False) snapshot
+      let boosts = [cards | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" o]]
+          codes = [code | cards <- boosts, Object card <- toList cards, Just code <- [KeyMap.lookup "code" card]]
+      codes `shouldMatchList` [String "01104", Null]
+      -- Registration during the same window must not show a second copy.
+      withGame_ $ boostCardsL .~ fromList [(TreacheryRef $ TreacheryId $ unCardId $ ecCardId flipped, flipped)]
+      registered <- liftIO . publicGame =<< getGame
+      let ids = [cid | Object o <- [registered], Just (Array cards) <- [KeyMap.lookup "boostCards" o], Object card <- toList cards, Just cid <- [KeyMap.lookup "id" card]]
+      ids `shouldMatchList` [toJSON (ecCardId flipped), toJSON (ecCardId hidden)]
+
+  it "keeps the flipped boost visible through a nested response window" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      vid <- villainIdNow
+      flipped <- encounterCard Treacheries.hardToKeepDown
+      withGame_ $ windowsL .~ [[W.Window W.After $ W.PlayerDeckReset p], [W.Window W.When $ W.FlippedBoostCard flipped (EnemyVillainId vid)]]
+      view <- liftIO . publicGame =<< getGame
+      let codes = [code | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" o], Object card <- toList cards, Just (String code) <- [KeyMap.lookup "code" card]]
+      codes `shouldSatisfy` elem "01104"
 
   it "shows a saved inspection's card only to the inspecting player" do
     tg <- testGame ["maria-hill"]
