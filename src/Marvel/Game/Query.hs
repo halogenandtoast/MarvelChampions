@@ -870,7 +870,6 @@ revealBoostCardFor allowAbility card enemyId g = do
   let
     -- after it is turned faceup, before its boost ability resolves
     turnedFaceup target = do
-      checkWindows [W.Window When $ W.FlippedBoostCard card enemyId]
       checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
       when allowAbility $ revealedAsBoost target enemyId
       push $ BoostCardResolved enemyId card
@@ -929,7 +928,6 @@ revealBoostCardFor allowAbility card enemyId g = do
     -- a card with no boost ability, a player's event shuffled in among them (a Cosmic
     -- Entity), is discarded with the others: to the encounter discard pile (RR FAQ)
     _ -> do
-      checkWindows [W.Window When $ W.FlippedBoostCard card enemyId]
       checkWindows [W.Window After $ W.FlippedBoostCard card enemyId]
       push $ BoostCardResolved enemyId card
       pure $ g & (boostCardsL . at (CardIdRef $ ecCardId card) ?~ card)

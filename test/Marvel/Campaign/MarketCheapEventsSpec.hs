@@ -334,7 +334,7 @@ spec = describe "The Market: cheap events" do
         start [VillainMessage vid VillainSchemes]
         passUntil (isPlay card)
         choose "play Close Call" (isPlay card)
-        resolve []
+        pass
         -- Rhino's 1 SCH alone
         mainSchemeThreatNow `shouldReturn` (threat + 1)
         encounterDiscardCodes >>= (`shouldSatisfy` elem (toCardCode Minions.taskmaster))

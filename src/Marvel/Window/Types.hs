@@ -211,6 +211,7 @@ data WindowMatcher
     AllyTookDamageOf AllyMatcher DamageSource
   | -- | a boost card is turned face up for an enemy's activation
     BoostCardFlipped WindowTiming EnemyMatcher
+  | BoostCardWithIconsFlipped WindowTiming EnemyMatcher
   | -- | "you reveal": the encounter card is revealed for a player matching
     EncounterCardRevealedBy WindowTiming IdentityMatcher BasicEncounterCardMatcher
   | EncounterCardRevealedMatchingTucked WindowTiming IdentityMatcher

@@ -24,16 +24,11 @@ newtype CloseCall = CloseCall (Attrs Event)
 
 -- | Hero Interrupt: when a boost card is turned faceup (any enemy's, attack or scheme),
 -- cancel its "Boost" ability and all of its boost icons, then discard it. Draw 1 card.
--- Its turning faceup ('RevealBoostCard', which resolves the ability) and its icons'
--- count are just after the window, so both are taken off the queue.
+-- The pending boost resolution and that card's icon count are taken off the queue.
 instance RunMessage CloseCall where
   runMessage msg e@(CloseCall attrs) = runQueueT $ case msg of
-    EventMessage ident (PlayedEvent you _ (Just (W.FlippedBoostCard card enemy))) | ident == eventId attrs -> do
-      cancelMatchingMessage \case
-        RevealBoostCard card' _ -> card' == card
-        _ -> False
-      cancelBoostIcons enemy
-      discardCard (EncounterCard card)
+    EventMessage ident (PlayedEvent you _ (Just (W.FlippedBoostCard card _))) | ident == eventId attrs -> do
+      discardBoostCardBeforeReveal card
       drawCards you 1
       pure e
     _ -> CloseCall <$> runMessage msg attrs

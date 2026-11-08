@@ -252,7 +252,7 @@ spec = describe "Doctor Strange pack" do
       vid <- villainIdNow
       start [VillainMessage vid VillainSchemes]
       choose "Foiled!" (isPlay foiled)
-      resolve []
+      pass
       -- Rhino's 1 scheme, without the 2 boost
       mainSchemeThreatNow `shouldReturn` (threat + 1)
 

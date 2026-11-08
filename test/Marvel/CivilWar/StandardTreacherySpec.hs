@@ -141,7 +141,7 @@ spec = describe "Civil War Standard PvP treacheries" do
       pass
       damageOf p `shouldReturn` 1
 
-  it "Northstar cancels Targeted Strike's gained icons while leaving its boost ability intact" do
+  it "Northstar cannot cancel Targeted Strike before its boost ability adds any icons" do
     tg <- competitive ["spider-man","captain-marvel"]
     inGame tg do
       let p = player1 tg
@@ -152,6 +152,6 @@ spec = describe "Civil War Standard PvP treacheries" do
       start [VillainMessage vid $ VillainAttacks p]
       declineOptional
       choose "do not defend" (isLabel "$label.noDefender")
-      choose "cancel the icons with Northstar" (isAbilityOf $ allyIdOf northstar)
+      offers (\case UseAbility ab -> isAbilityOf (allyIdOf northstar) (UseAbility ab) && abilityIndex ab == 1; _ -> False) `shouldReturn` False
       pass
-      damageOf p `shouldReturn` 1
+      damageOf p `shouldReturn` 2

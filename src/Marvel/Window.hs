@@ -17,7 +17,7 @@ import Marvel.Card.Id (CardId (..), HasCardId (toCardId))
 import Marvel.Attack (sourceEnemy, Attack(..))
 import Marvel.Card.Def (cardMatch)
 import Marvel.Status (StatusCard (ToughStatus))
-import Marvel.Modifier.Types (Modifier (CannotTakeDamage, DirectedForceApplied))
+import Marvel.Modifier.Types (Modifier (CannotTakeDamage, DirectedForceApplied, AdditionalActivationBoostIcons))
 import Marvel.Damage
 import Marvel.Keyword (Keyword (Ranged))
 import Marvel.Game.Source
@@ -820,6 +820,16 @@ windowMatches matcher w source = case matcher of
   BoostCardFlipped timing enemyMatcher -> case windowType w of
     FlippedBoostCard _ enemyId
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
+    _ -> pure False
+  BoostCardWithIconsFlipped timing enemyMatcher -> case windowType w of
+    FlippedBoostCard card enemyId | windowTiming w == timing -> do
+      matches <- enemyMatches enemyMatcher enemyId
+      cardIcons <- getBoostIcons card
+      amplify <- getAmplifyCount
+      global <- getModifiers GameRef
+      own <- getModifiers (enemyRef enemyId)
+      let extra = sum [n | AdditionalActivationBoostIcons n <- global <> own]
+      pure $ matches && cardIcons + amplify + extra > 0
     _ -> pure False
   EncounterCardRevealedFromDeckBy timing identityMatcher encounterCardMatcher -> case windowType w of
     EncounterCardRevealed RevealedFromEncounterDeck ident encounterCard | windowTiming w == timing ->

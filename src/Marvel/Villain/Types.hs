@@ -343,7 +343,6 @@ getModifiedKeywords attrs = do
 flipVillainBoostCards :: ReverseQueue m => Attrs Villain -> m (Attrs Villain)
 flipVillainBoostCards attrs = do
   for_ (reverse $ villainBoostCards attrs) \card -> do
-    checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
     ignored <- elem IgnoreBoostCards <$> getModifiers attrs
     if ignored
       then revealBoostCardWithoutAbility card vid

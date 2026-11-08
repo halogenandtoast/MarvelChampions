@@ -58,7 +58,6 @@ removeOneTough attrs
 flipMinionBoostCards :: ReverseQueue m => Attrs Minion -> m (Attrs Minion)
 flipMinionBoostCards attrs = do
   for_ (minionBoostCards attrs) \card -> do
-    checkWindows [W.Window W.When $ W.FlippedBoostCard card (toEnemyId attrs)]
     ignored <- elem IgnoreBoostCards <$> getModifiers attrs
     if ignored
       then revealBoostCardWithoutAbility card (minionId attrs)

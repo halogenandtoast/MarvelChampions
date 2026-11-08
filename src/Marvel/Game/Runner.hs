@@ -2434,8 +2434,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           & (boostEntitiesL . treacheriesL %~ deleteMap (TreacheryId $ unCardId $ ecCardId card))
           & (boostEntitiesL . minionsL %~ deleteMap (MinionId $ unCardId $ ecCardId card))
     Nothing -> pure g
-  RevealBoostCard card enemyId -> revealBoostCardFor True card enemyId g
-  RevealBoostCardWithoutAbility card enemyId -> revealBoostCardFor False card enemyId g
+  RevealBoostCard card enemyId -> do
+    checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
+    cardSpecific GameRef "revealBoostAfterWindow" (True, card, enemyId)
+    pure g
+  RevealBoostCardWithoutAbility card enemyId -> do
+    checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
+    cardSpecific GameRef "revealBoostAfterWindow" (False, card, enemyId)
+    pure g
+  CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (allowAbility, card, enemyId)) ->
+    revealBoostCardFor allowAbility card enemyId g
   ConsumeBoostCard card -> do
     let cid = unCardId (ecCardId card)
     pure $ g & boostCardsL %~ HashMap.filter ((/= ecCardId card) . ecCardId)

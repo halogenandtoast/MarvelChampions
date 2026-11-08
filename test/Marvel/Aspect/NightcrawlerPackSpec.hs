@@ -5,8 +5,11 @@ import Control.Monad (replicateM_)
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ally.Runner qualified as Ally
 import Marvel.Boost (boostCount)
-import Marvel.Keyword ()
+import Marvel.Keyword (Keyword (Villainous))
+import Marvel.Effect.Types qualified as Effect
+import Marvel.Effect.Lasting (Lasting (..))
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Matchers (EntityMatcher (EnemyEntity), EnemyMatcher (EnemyWithId))
 import Marvel.Modifier
 import Marvel.Phase
 import Marvel.SideScheme.Types ()
@@ -64,6 +67,56 @@ spec = describe "Nightcrawler pack" do
       current <- allyIn "48012"
       Ally.getModifiedAttack current `shouldReturn` 2
       Ally.getModifiedThwart current `shouldReturn` 2
+
+  it "Northstar does not offer his interrupt for a card with no boost icons" do
+    tg <- testGame ["nightcrawler"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      northstar <- putIntoPlay p "48013"
+      _ <- stackEncounterDeck [Treacheries.hardToKeepDown]
+      v <- villainIdNow
+      runNow [VillainMessage v (VillainAttacks p)]
+      choose "decline defense" isNoDefender
+      offers (\choice -> isAbilityOfCard northstar choice && case choice of UseAbility ab -> abilityIndex ab == 1; _ -> False) `shouldReturn` False
+      allyDamage <$> allyIn "48013" `shouldReturn` 0
+
+  it "Northstar can cancel an amplify icon added to a card with no printed icons" do
+    tg <- testGame ["nightcrawler"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      northstar <- putIntoPlay p "48013"
+      v <- villainIdNow
+      eid <- getRandom
+      withGame_ $ entitiesL . effectsL . at eid ?~ Effect.Effect (Lasting $ Effect.EffectAttrs
+        eid "engine-lasting" GameRef (EnemyEntity $ EnemyWithId $ EnemyVillainId v) [AmplifyIconModifier 1] Nothing)
+      _ <- stackEncounterDeck [Treacheries.hardToKeepDown]
+      runNow [VillainMessage v (VillainAttacks p)]
+      choose "decline defense" isNoDefender
+      choose "Northstar cancels amplify" (isAbilityOfCard northstar)
+      pass
+      allyDamage <$> allyIn "48013" `shouldReturn` 1
+      damageOf p `shouldReturn` 2
+
+  for_ [False, True] \villainousMinion ->
+    it ("declining Northstar's interrupt closes the flip window once: " <> show villainousMinion) do
+      tg <- testGame ["nightcrawler"]
+      inGame tg do
+        let p = player1 tg
+            response card choice = isAbilityOfCard card choice && case choice of UseAbility ab -> abilityIndex ab == 1; _ -> False
+        asHero p
+        northstar <- putIntoPlay p "48013"
+        enemy <- if villainousMinion then do
+          mid <- addMinion p (Minions.hydraRegular {cdKeywords = fromList [Villainous]})
+          pure $ EnemyMinionId mid
+        else EnemyVillainId <$> villainIdNow
+        _ <- stackEncounterDeck [Minions.vulture]
+        runNow [case enemy of EnemyVillainId v -> VillainMessage v (VillainAttacks p); EnemyMinionId m -> MinionMessage m (MinionAttacks p); _ -> error "unexpected enemy"]
+        choose "decline defense" isNoDefender
+        offers (response northstar) `shouldReturn` True
+        choose "decline Northstar once" (isLabel "$label.noResponse")
+        offers (response northstar) `shouldReturn` False
 
   it "Northstar takes a damage cost and cancels only the boost card's icons" do
     tg <- testGame ["nightcrawler"]

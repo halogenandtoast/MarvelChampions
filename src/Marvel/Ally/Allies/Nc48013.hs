@@ -43,7 +43,7 @@ newtype Nc48013 = Nc48013 (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 instance HasAbilities Nc48013 where
-  getAbilities a = [limitedWindowAbility a 1 (W.BoostCardFlipped W.When AttackingEnemy) Interrupt
+  getAbilities a = [limitedWindowAbility a 1 (W.BoostCardWithIconsFlipped W.When AttackingEnemy) Interrupt
     OwnsThis (DealDamageThisCost 1) (runAbility a 1)]
 
 instance RunMessage Nc48013 where

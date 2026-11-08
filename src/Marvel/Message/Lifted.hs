@@ -2481,10 +2481,13 @@ cancelBoostEffect card = replaceMatchingMessage replace matchesMessage
  where
   matchesMessage = \case
     RevealBoostCard other _ -> other == card
+    CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (_ :: Bool, other :: EncounterCard, _ :: EnemyId)) -> other == card
     RevealedAsBoost target _ -> matchesTarget target
     _ -> False
   replace = \case
     RevealBoostCard other enemy -> [RevealBoostCardWithoutAbility other enemy]
+    CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (_ :: Bool, other :: EncounterCard, enemy :: EnemyId)) ->
+      [CardSpecific GameRef "revealBoostAfterWindow" $ toJSON (False, other, enemy)]
     RevealedAsBoost _ _ -> []
     other -> [other]
   matchesTarget = \case
@@ -2533,15 +2536,18 @@ cancelCharacterAttackDamage (toCharacter -> character) = cancelMatchingMessage \
 -- other boost card, including any other cards in a pending icon count.
 discardBoostCardBeforeReveal :: (ReverseQueue m) => EncounterCard -> m ()
 discardBoostCardBeforeReveal card = do
+  cancelBoostIconsOnCard card
   replaceMatchingMessage removeCard \case
     RevealBoostCard other _ -> other == card
-    CountActivationBoostIcons _ cards -> card `elem` cards
+    RevealBoostCardWithoutAbility other _ -> other == card
+    CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (_ :: Bool, other :: EncounterCard, _ :: EnemyId)) -> other == card
     _ -> False
   discardCard card
  where
   removeCard = \case
     RevealBoostCard _ _ -> []
-    CountActivationBoostIcons target cards -> [CountActivationBoostIcons target rest | let rest = filter (/= card) cards, not (null rest)]
+    RevealBoostCardWithoutAbility _ _ -> []
+    CardSpecific GameRef "revealBoostAfterWindow" _ -> []
     other -> [other]
 
 -- | The boost icons about to be counted and added to the enemy's activation are
