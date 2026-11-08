@@ -226,6 +226,7 @@ passesCriteria x a =
     -- what is paid for is checked as it is paid (see 'getResourceAbilities')
     SpendOnly _ -> pure True
     UpgradeExists m -> selectAny m
+    UpgradeCount matcher count -> gameValueMatches count =<< selectListCount matcher
     EnvironmentExists m -> selectAny m
     -- the card paid for is checked by 'getResourceAbilities'
     PayingFor _ -> pure True
@@ -336,6 +337,7 @@ passesCardCriteria ident card = go
     MovableThreatExists -> anyM (canMoveSchemeThreatFrom $ toSource card) =<< selectList (SchemeWithThreat $ GreaterThan $ Static 0)
     IdentityAttackedAndThwartedThisPhase matcher -> anyM getIdentityAttackedAndThwartedThisPhase =<< selectList matcher
     UpgradeExists m -> selectAny m
+    UpgradeCount matcher count -> gameValueMatches count =<< selectListCount matcher
     EnvironmentExists m -> selectAny m
     -- how it is paid for is checked as it is paid
     SpendOnly _ -> pure True

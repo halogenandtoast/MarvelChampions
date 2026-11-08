@@ -180,7 +180,9 @@ instance HasAbilities CampaignUpgrade where
     "Sharp Claws" -> [limitedWindowAbility u 1 (W.MakesBasicAttack W.When you) Interrupt OwnsThis ExhaustCost $ runAbility u 1]
     "Cat-Like Reflexes" -> [limitedWindowAbility u 1 (W.WouldTakeDamage you FromAnyDamageSource AnyValue) HeroInterrupt OwnsThis (DiscardCost $ toTarget attrs) $ runAbility u 1]
     "Hunted" -> [limitedWindowAbility u 1 (W.EnemyDefeated W.When (MinionEnemy <> EnemyWithUpgrade (UpgradeWithId $ upgradeId attrs)) AnyDamage) Interrupt OwnsThis NoCost $ runAbility u 1]
-    code | code `elem` ["Winged Shape","Hulk Shape","Armored Shape","Imitation Shape"] -> shapeResponse : [limitedWindowAbility u 2 (W.EnemyWouldAttack AnyEnemy you) ForcedInterrupt OwnsThis NoCost (runAbility u 2) | code == "Imitation Shape"]
+    "Armored Shape" -> [limitedWindowAbility u 1 (W.PlaysEvent W.After you AnyCard) HeroResponse
+      (OwnsThis <> SelfMatches (IdentityWithAnyDamage <> IdentityCanBeHealed)) ExhaustCost $ runAbility u 1]
+    code | code `elem` ["Winged Shape","Hulk Shape","Imitation Shape"] -> shapeResponse : [limitedWindowAbility u 2 (W.EnemyWouldAttack AnyEnemy you) ForcedInterrupt OwnsThis NoCost (runAbility u 2) | code == "Imitation Shape"]
     "Alien Physiology" -> [ability u 1 Resource OwnsThis ExhaustCost $ runAbility u 1]
     "Excelsior" -> [limitedWindowAbility u 1 (W.HeroDefended W.After you AnyEnemy) Response OwnsThis (ResourceCost $ Just R.Energy) $ runAbility u 1]
     "Acute Tactility" -> [senseDefeat]

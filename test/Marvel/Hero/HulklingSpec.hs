@@ -2,6 +2,10 @@ module Marvel.Hero.HulklingSpec (spec) where
 
 import Marvel.CampaignPlayerTest
 import Marvel.Minion.Cards qualified as Minions
+import Marvel.Effect.Types qualified as Effect
+import Marvel.Effect.Lasting (Lasting (..))
+import Marvel.Matchers qualified as Matchers
+import Marvel.Modifier (Modifier (CannotBeHealedByPlayerCards))
 import Marvel.Status
 import TestImport
 
@@ -27,6 +31,39 @@ spec = describe "Hulkling" do
         asHero p
         _ <- putIntoPlay p code
         heroPowers p `shouldReturn` powers
+
+  it "does not offer Chosen Shape for a first shape while Hulkling is already ready" do
+    tg <- testGame ["hulkling"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      _ <- paying p "56032" ["01088"]
+      offers (isNamedAbility "$label.chosenShape") `shouldReturn` False
+
+  it "still offers Chosen Shape for a first shape when Hulkling can ready" do
+    tg <- testGame ["hulkling"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      resolve [IdentityMessage p ExhaustedIdentity]
+      _ <- paying p "56032" ["01088"]
+      offers (isNamedAbility "$label.chosenShape") `shouldReturn` True
+      choose "Chosen Shape" (isNamedAbility "$label.chosenShape")
+      pass
+      isExhaustedNow p `shouldReturn` False
+
+  it "still discards an older shape when Hulkling is already ready" do
+    tg <- testGame ["hulkling"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      first <- putIntoPlay p "56032"
+      _ <- paying p "56033" ["01088"]
+      offers (isNamedAbility "$label.chosenShape") `shouldReturn` True
+      choose "Chosen Shape" (isNamedAbility "$label.chosenShape")
+      pass
+      discardCodes p >>= (`shouldSatisfy` elem "56032")
+      upgradesOf p >>= (`shouldSatisfy` notElem (upgradeOf first))
 
   it "entering a new shape discards the previous shape and readies Hulkling" do
     tg <- testGame ["hulkling"]
@@ -115,6 +152,32 @@ spec = describe "Hulkling" do
       choose "Armored Shape" (cardAbility shape)
       pass
       damageOf p `shouldReturn` 2
+
+  it "Armored Shape is not offered when Hulkling has no damage" do
+    tg <- testGame ["hulkling"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      shape <- putIntoPlay p "56034"
+      _ <- paying p "01087" ["01088"]
+      chooseVillain
+      damageOf p `shouldReturn` 0
+      offers (cardAbility shape) `shouldReturn` False
+
+  it "Armored Shape is not offered when a card effect prevents healing" do
+    tg <- testGame ["hulkling"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      shape <- putIntoPlay p "56034"
+      setDamage p 4
+      eid <- getRandom
+      withGame_ $ entitiesL . effectsL . at eid ?~ Effect.Effect (Lasting $ Effect.EffectAttrs
+        eid "engine-lasting" GameRef (Matchers.IdentityEntity $ Matchers.IdentityWithId p) [CannotBeHealedByPlayerCards] Nothing)
+      _ <- paying p "01087" ["01088"]
+      chooseVillain
+      offers (cardAbility shape) `shouldReturn` False
+      damageOf p `shouldReturn` 4
 
   it "Imitation Shape draws one card after an event" do
     tg <- testGame ["hulkling"]

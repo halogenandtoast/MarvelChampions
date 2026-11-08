@@ -64,7 +64,8 @@ instance HasCardCode CampaignHero where toCardCode = toCardCode . campaignHeroAt
 instance HasAbilities CampaignHero where
   getAbilities h@CampaignHero {campaignHeroAttrs=attrs,campaignEchoSuppressed=suppressed} = case toCardCode attrs of
     "56001a" -> [label "$label.onTheHunt" $ limitedWindowAbility h 1 (W.PhaseBegins W.After PlayerPhase) Response (IsSelf <> MinionExists (MinionEngagedWith $ IdentityWithId $ heroIdentityId attrs)) NoCost $ runAbility h 1]
-    "56029a" -> [label "$label.chosenShape" $ limitedWindowAbility h 1 (W.PlayerCardEntersPlay W.After you $ CardWithTrait T.Shapeshift) ForcedResponse IsSelf NoCost $ runAbility h 1]
+    "56029a" -> [label "$label.chosenShape" $ limitedWindowAbility h 1 (W.PlayerCardEntersPlay W.After you $ CardWithTrait T.Shapeshift) ForcedResponse
+      (IsSelf <> AnyCriteria [SelfMatches IdentityCanReady, UpgradeCount (UpgradeControlledBy you <> UpgradeWithTrait T.Shapeshift) (AtLeast $ Static 2)]) NoCost $ runAbility h 1]
     "60001a" -> [label "$label.superhumanSenses" $ ability h 1 Action (IsSelf <> CanPlayTopSense) NoCost $ runAbility h 1]
     "60037a" -> [label "$label.watchAndLearn" $ limitedWindowAbility h 1 (W.PlaysEvent W.After AnyIdentity $ CardMatchesAny [CardWithAspect a | a <- [Aspect.Leadership,Aspect.Aggression,Aspect.Protection,Aspect.Justice,Aspect.Pool,Aspect.Neutral]]) Response (IsSelf <> PlayedEventInDiscard <> maybe NoCriteria PlayedEventIsNot suppressed) NoCost $ runAbility h 1]
     _ -> []

@@ -70,6 +70,7 @@ data Criteria
   | -- | The enclosed condition must not hold.
     NotCriteria Criteria
   | UpgradeExists UpgradeMatcher
+  | UpgradeCount UpgradeMatcher GameValueMatcher
   | EnvironmentExists EnvironmentMatcher
   | -- | a resource ability that pays only for a card matching, as "for an event"
     PayingFor CardMatcher
