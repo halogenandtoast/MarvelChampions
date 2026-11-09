@@ -58,7 +58,7 @@ spec = describe "Spider-Man" do
       endTurn
       -- the end of the player phase draws up to hand size first
       drawnUp <- length <$> handOf p
-      choose "use Spider-Sense" (isAbilityOf p)
+      choose "use Spider-Sense" (isLabeledAbility "Spider-Sense")
       after <- length <$> handOf p
       after `shouldBe` drawnUp + 1
 
@@ -251,7 +251,7 @@ spec = describe "Spider-Man" do
       handBefore <- length <$> handOf p
       choose "resolve Webbed Up" (isAbilityOfCard webbed)
       -- the attack is replaced, so Spider-Sense no longer answers it
-      offers (isAbilityOf p) `shouldReturn` False
+      offers (isLabeledAbility "Spider-Sense") `shouldReturn` False
       length <$> handOf p `shouldReturn` handBefore
       damageOf p `shouldReturn` 0
       upgradeCodes `shouldReturn` []
