@@ -26,15 +26,19 @@ newtype MedTeam = MedTeam (Attrs Support)
   deriving anyclass (IsSupport, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
+-- | "heal 2 damage from a friendly character": the players' identities and allies.
+friendlyHealable :: CharacterMatcher
+friendlyHealable = CharacterControlledBy AnyIdentity <> healableCharacter
+
 instance HasAbilities MedTeam where
   getAbilities (MedTeam a) =
     [ ability
         a
         1
         Action
-        (OwnsThis <> CharacterExists healableCharacter)
+        (OwnsThis <> CharacterExists friendlyHealable)
         (ExhaustCost <> UseCost)
-        (ChooseHeal 2 healableCharacter)
+        (ChooseHeal 2 friendlyHealable)
     ]
 
 instance RunMessage MedTeam where

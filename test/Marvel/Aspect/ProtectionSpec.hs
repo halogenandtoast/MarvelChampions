@@ -174,6 +174,22 @@ spec = describe "Protection" do
           damageOf p `shouldReturn` (7 - 2 * n)
         supportsWith "01080" `shouldReturn` []
 
+    it "heals only friendly characters, never an enemy" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        _ <- putIntoPlay p "01080"
+        [team] <- supportsWith "01080"
+        vid <- villainIdNow
+        resolve [VillainMessage vid $ VillainDamaged GameRef $ toDamage 3 FromAbility]
+        offers (isAbilityOf (supportId team)) `shouldReturn` False
+        setDamage p 7
+        choose "use Med Team" (isAbilityOf (supportId team))
+        offers (isTargetChoice (VillainRef vid)) `shouldReturn` False
+        damageOf p `shouldReturn` 5
+        villainDamageNow `shouldReturn` 3
+
   describe "Armored Vest (01081)" do
     it "gives the hero +1 DEF, max 1 per player" do
       let
