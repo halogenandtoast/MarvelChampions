@@ -212,6 +212,7 @@ export interface MinionView extends CardView {
 }
 
 export interface SchemeView extends CardView {
+  /** Associated identity; player side schemes retain their physical card owner. */
   owner?: string | null
   targetThreat?: number | null
   escalationThreat?: number | null

@@ -1,7 +1,6 @@
 module Marvel.AlterEgo.AlterEgos.Cable where
 
 import Marvel.Prelude
-import Data.List ( sortOn )
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Damage ()
@@ -45,7 +44,7 @@ instance RunMessage Cable40001B where
       search you (SearchIdentityDeckAndDiscardPile you) (CardWithType PlayerSideSchemeType) (SearchTarget $ toRef attrs) ShuffleBackIn
       pure a
     SearchFoundCards (isTarget attrs -> True) (onlyPlayerCards -> cards) -> do
-      chooseOne (alterEgoIdentityId attrs) [targeting c $ putIntoPlay (alterEgoIdentityId attrs) c | c <- sortOn toCardCode cards]
+      traverse_ (putIntoPlay $ alterEgoIdentityId attrs) cards
       pure a
     _ -> Cable40001B <$> runMessage msg attrs
 

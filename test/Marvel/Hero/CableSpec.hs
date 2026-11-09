@@ -1,6 +1,8 @@
 module Marvel.Hero.CableSpec (spec) where
 
 import Data.Maybe (fromJust)
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGameFor)
 import Marvel.Trait (Trait (..))
 import Marvel.Window qualified as W
 import Marvel.Scenario.Types (scenarioEncounterDeck)
@@ -49,6 +51,38 @@ spec = describe "Cable" do
       hitPointsOf p `shouldReturn` 12
       handSizeOf p `shouldReturn` 6
       getsGame (any (isJust . SideScheme.sideSchemePlayerCard . toAttrs) . HashMap.elems . gameSideSchemes) `shouldReturn` True
+
+  it "puts the side scheme chosen during setup straight into play without asking twice" do
+    let setup = fromMaybe (error "no Rhino setup") (recommendedSetup "01094")
+    (app, ran, logged) <- dealtGameLogged setup [starter "cable"] 1
+    seats <- runGameApp app (getsGame gameSeats)
+    let tg = TestGame app ran logged seats
+    inGame tg do
+      let setupChoices = do
+            attrs <- playerAttrs (player1 tg)
+            let schemes = [pcCardId c | c <- unDeck (playerIdentityDeck attrs) <> unDiscard (playerIdentityDiscard attrs), cdCardType (getCardDef c) == PlayerSideSchemeType]
+            options <- maybe [] snd <$> asked
+            pure [cid | TargetLabel (CardIdRef cid) _ <- options, cid `elem` schemes]
+          advance 0 = error "setup did not reach Cable's search"
+          advance n = do
+            selecting <- notNull <$> setupChoices
+            unless selecting do
+              asked >>= \case
+                Just (ident, _) -> answerQuestion ident 0 >> advance (n - 1)
+                Nothing -> error "no setup question"
+      advance (100 :: Int)
+      chosen <- setupChoices >>= maybe (error "missing side scheme choice") pure . headMay
+      choose "side scheme from Cable's search" (isTargetChoice $ CardIdRef chosen)
+      getsGame (HashMap.member (SideSchemeId $ unCardId chosen) . gameSideSchemes) `shouldReturn` True
+      offers (isTargetChoice $ CardIdRef chosen) `shouldReturn` False
+      view <- getGame >>= liftIO . publicGameFor (== player1 tg)
+      let owners = case view of
+            Object object -> case KeyMap.lookup "sideSchemes" object of
+              Just (Array schemes) -> [KeyMap.lookup "owner" fields | Object fields <- toList schemes, KeyMap.lookup "id" fields == Just (toJSON chosen)]
+              _ -> []
+            _ -> []
+      owners `shouldBe` [Just $ toJSON $ player1 tg]
+      toFirstTurn
 
   it "Technovirus Purge permits Cable and restricts other players' threat removal" do
     tg <- cableGame ["cable", "spider-man"]

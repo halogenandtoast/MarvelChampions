@@ -127,6 +127,7 @@ const ownerOf = (view: GameView) => {
     add(p.upgrades)
     add(p.discard)
   }
+  for (const scheme of view.sideSchemes ?? []) if (scheme.owner) owner.set(scheme.id, scheme.owner)
   return owner
 }
 
