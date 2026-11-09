@@ -1235,10 +1235,13 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
     DiscardFor target RandomFromHand discardMin _ -> do
       let handCards = unHand playerIdentityHand
       discards <- take (fromIntegral discardMin) <$> shuffleM handCards
-      for_ discards discardCard
+      identityStep playerIdentityId $ DiscardedAtRandom discards
       withDiscarded target RandomFromHand $ PlayerCard <$> discards
       pure pid
     DiscardedFor _ RandomFromHand _ _ _ -> error "Can not be called"
+    DiscardedAtRandom discards -> do
+      traverse_ discardCard discards
+      pure pid
     DiscardCards -> do
       unless (null $ unHand playerIdentityHand) $ do
         chooseOnePrompted playerIdentityId "$label.discardAnyCards" $
@@ -1259,13 +1262,9 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         discards <-
           take (fromIntegral n)
             <$> shuffleM (unHand playerIdentityHand)
+        identityStep playerIdentityId $ DiscardedAtRandom discards
         for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> discards
-        traverse_ discardCard (filter (cardMatch $ CardWithTrait Shapeshifter) discards)
-        pure $
-          PlayerIdentity $
-            attrs
-              & (discardL %~ Discard . (filter (not . cardMatch (CardWithTrait Shapeshifter)) discards <>) . unDiscard)
-              & (handL %~ Hand . filter (`notElem` discards) . unHand)
+        pure pid
       FromDeck -> do
         let
           (cards, deck') = splitAt (fromIntegral n) $ unDeck playerIdentityDeck

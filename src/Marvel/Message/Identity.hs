@@ -53,6 +53,8 @@ data IdentityMessage
   | ChooseFromDiscard Target ChoiceRules Natural Natural
   | ChosenFromDiscard Target ChoiceRules Natural Natural [PlayerCard]
   | DiscardFrom FromZone Natural (Maybe Target)
+  | -- | the cards picked at random from the hand are discarded
+    DiscardedAtRandom [PlayerCard]
   | ExhaustedIdentity
   | ReadiedIdentity
   | -- | readied by the game or an encounter card, not a player card (Unnatural Storm)

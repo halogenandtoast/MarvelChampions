@@ -497,6 +497,9 @@ identityNarration ident = \case
       [ forPlayer ident $ notice [ikeyPart "log.drawsCards" ["player" ~> who, "cards" ~> map PlayerCard drawn]]
       , exceptPlayer ident $ notice [ikeyPart "log.draws" ["player" ~> who, "count" ~> length drawn]]
       ]
+  DiscardedAtRandom cards | notNull cards -> Just do
+    who <- playerRef' ident
+    one $ mechanic [ikeyPart "log.discardsAtRandom" ["player" ~> who, "cards" ~> map PlayerCard cards]]
   IdentityDamaged _ dmg | damageAmount dmg > 0 -> Just do
     tough <- getsGame $ maybe False (playerIdentityTough . toAttrs) . lookup ident . gamePlayers
     immune <- elem CannotTakeDamage <$> getModifiers (IdentityRef ident)

@@ -2,6 +2,7 @@ module Marvel.LogSpec (spec) where
 
 import Data.Text qualified as T
 import System.Environment (lookupEnv)
+import Marvel.Minion.Cards qualified as Minions
 import System.Random (mkStdGen, randomR)
 import TestImport
 
@@ -21,6 +22,21 @@ spec = describe "the game log" do
     told `shouldSatisfy` T.isInfixOf "$log.thwartCanceledByConfusion"
     told `shouldSatisfy` (not . T.isInfixOf "$log.basicAttack")
     told `shouldSatisfy` (not . T.isInfixOf "$log.basicThwart")
+
+  it "names the card Radioactive Man discards at random" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      clearHand p
+      card <- putInHand p "01088"
+      radioactive <- addMinion p Minions.radioactiveMan
+      resolve [MinionMessage radioactive (MinionAttacks p)]
+      handOf p `shouldReturn` []
+      map pcCardId <$> discardOf p `shouldReturn` [pcCardId card]
+    told <- readIORef tg.logged
+    let discards = filter (T.isInfixOf "$log.discardsAtRandom" . entryText) told
+    discards `shouldSatisfy` ((== 1) . length)
 
   it "tells the rounds, the turns and what is played" do
     let setup = fromMaybe (error "no setup") (recommendedSetup "01094")

@@ -68,6 +68,7 @@
   "engages": "{minion} engages {player}",
   "draws": "{player} draws a card | {player} draws {count} cards",
   "drawsCards": "{player} draws {cards}",
+  "discardsAtRandom": "{player} discards {cards} at random",
   "stat": "{value}{icon}",
   "stats": {
     "thwart": "THW",
