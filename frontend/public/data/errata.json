@@ -1,0 +1,420 @@
+{
+ "source": "Rules Reference v1.8",
+ "cards": {
+  "01026": {
+   "name": "Superhuman Law Division",
+   "text": "Should read: “<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.” <i>(Removed “(thwart)” label.)</i>",
+   "page": 65
+  },
+  "01029a": {
+   "name": "Iron Man",
+   "text": "Should read: “You get +1 hand size for each Tech upgrade you control (to a maximum of +6 hand size).” <i>(Changed “(to a maximum hand size of 7)” to “(to a maximum of +6 hand size)”.)</i>",
+   "page": 65
+  },
+  "01183": {
+   "name": "The Doomsday Chair",
+   "text": "Should read: “When Revealed: If M.O.D.O.K. is not in play, search the encounter deck and discard pile for M.O.D.O.K. and put him into play engaged with you, then shuffle the encounter deck.” <i>(Added periods to “M.O.D.O.K.”)</i>",
+   "page": 65
+  },
+  "01184": {
+   "name": "M.O.D.O.K.",
+   "text": "Added periods to card title.",
+   "page": 65
+  },
+  "03025": {
+   "name": "Honorary Avenger",
+   "text": "Should read: “Play only if your identity has the Avenger trait. Attach to a friendly character. Max 1 per character. Attached character gets +1 hit point and gains the Avenger trait.” <i>(Added “Max 1 per character.”)</i>",
+   "page": 65
+  },
+  "03032": {
+   "name": "Followed",
+   "text": "Should read: “<b>Interrupt</b>: When attached scheme is defeated, deal 4 damage to an enemy.” <i>(Changed “<b>Response</b>” to “<b>Interrupt</b>”.)</i>",
+   "page": 65
+  },
+  "04021": {
+   "name": "Avengers Tower",
+   "text": "Should have the Avenger trait.",
+   "page": 66
+  },
+  "04028": {
+   "name": "Marked for Death",
+   "text": "Should read: “<b>When Revealed</b>: The Clint Barton player searches their hand, deck, discard pile, and play area for Mockingbird and tucks her faceup beneath this card. When this scheme is defeated, return the tucked Mockingbird to her owner’s hand.” <i>(Changed “places” to “tucks” and “stage” to “scheme”. Added “the tucked”.)</i>",
+   "page": 66
+  },
+  "04057": {
+   "name": "Hail Hydra!",
+   "text": "Should read: “<b>When Revealed</b>: Each Hydra minion engaged with a hero attacks that hero. Each player who was not attacked this way searches the encounter deck and discard pile for a Hydra minion and puts it into play engaged with them. Shuffle the encounter deck if it was searched.” <i>(Changed the shuffle ability to only occur if the encounter deck is searched.)</i>",
+   "page": 66
+  },
+  "04061a": {
+   "name": "Attack on Mount Athena",
+   "text": "Should read: “<b>Contents</b>: Crossbones (I) and Crossbones (II). Crossbones, Experimental Weapons, and Standard Encounter sets. Three modular sets <i>(Hydra Assault, Weapon Master, and Legions of Hydra)</i>.” (<i>Changed “Hydra Patrol” to “Hydra Assault”.)</i>",
+   "page": 66
+  },
+  "04128a": {
+   "name": "The Rise of Red Skull",
+   "text": "Should read: “<b>Setup</b>: Put the Red House into play. Shuffle every other encounter side scheme into the side-scheme deck and set it next to the encounter deck (see insert). Set The Sleeper aside, out of play.” <i>(Added “encounter” before “side scheme”.)</i>",
+   "page": 66
+  },
+  "04135": {
+   "name": "Twisted Reality",
+   "text": "Should read: “<b>Forced Interrupt</b>: When attached side scheme is defeated, deal the first player an encounter card.” <i>(Changed “<b>Forced Response</b>” to “<b>Forced Interrupt</b>”.)</i>",
+   "page": 66
+  },
+  "04136": {
+   "name": "Bitter Rival",
+   "text": "Should read: “<b>When Revealed</b>: For each side scheme in play, choose and exhaust a character you control.” <i>(Revised wording to function as intended with updated “for each” rules.)</i>",
+   "page": 66
+  },
+  "04147": {
+   "name": "Hail Hydra!",
+   "text": "Should read: “<b>When Revealed</b>: Each Hydra minion engaged with a hero attacks that hero. Each player who was not attacked this way searches the encounter deck and discard pile for a Hydra minion and puts it into play engaged with them. Shuffle the encounter deck if it was searched.” <i>(Changed the shuffle ability to only occur if the encounter deck is searched.)</i>",
+   "page": 66
+  },
+  "06006": {
+   "name": "Lightning Strike",
+   "text": "Should read: “<b>Hero Action</b>: Spend X [energy] resources → deal X damage to the villain and each minion engaged with you. This damage ignores tough status cards if you have the Aerial trait.” <i>(Changed “attack” to “damage”.)</i>",
+   "page": 65
+  },
+  "06028": {
+   "name": "Loki",
+   "text": "Should read: “<b>Forced Interrupt</b>: When Loki would be defeated, discard the top card of the encounter deck. If that card is a treachery, heal all damage from Loki instead.” <i>(Changed “<b>Interrupt</b>” to “<b>Forced Interrupt</b>”.)</i>",
+   "page": 65
+  },
+  "07041": {
+   "name": "“I’ve Been Waiting for This!”",
+   "text": "Should read: “<b>When Revealed</b>: The active villain heals 3 hit points. Give that villain a tough status card.” <i>(Changed “gains” to “heals”.)</i>",
+   "page": 65
+  },
+  "08001a": {
+   "name": "Black Widow",
+   "text": "Should read: “<i>Widowmaker</i> — <b>Response</b>: After you resolve the ability of a Preparation card you control, deal 1 damage to an enemy.” <i>(Changed “trigger” to “resolve”.)</i>",
+   "page": 66
+  },
+  "08009": {
+   "name": "Synth-Suit",
+   "text": "Should read: “<b>Hero Response</b>: After you resolve the ability of a preparation card you control, exhaust Synth-Suit → ready Black Widow.” <i>(Changed “trigger” to “resolve”.)</i>",
+   "page": 66
+  },
+  "09014": {
+   "name": "Iron Fist",
+   "text": "Should read: “<b>Interrupt</b>: When Iron Fist attacks an enemy, remove 1 mystic counter from him → stun that enemy and deal 1 damage to it.” <i>(Changed “<b>Response</b>” to “<b>Interrupt</b>”.)</i>",
+   "page": 66
+  },
+  "09021": {
+   "name": "Warning",
+   "text": "Should read: “<b>Interrupt</b>: When a hero would take any amount of damage, reduce that amount by 1.” <i>(Removed “(defense)” and the Defense trait.)</i>",
+   "page": 66
+  },
+  "10025": {
+   "name": "Inner Demons",
+   "text": "Should read: “<b>Give to the Bruce Banner player</b>. Change form <i>(flip your identity)</i>. • If you are Bruce Banner, discard 2 cards from your hand. Discard this obligation. • If you are Hulk, exhaust your hero. Discard this obligation.” <i>(Removed “Then:”.)</i>",
+   "page": 66
+  },
+  "13028": {
+   "name": "Beetle",
+   "text": "Should read: “<b>Forced Interrupt</b>: When Beetle is defeated, the defeating player chooses to either spend a [physical] resource or shuffle Beetle into the encounter deck.” <i>(Specified which player should resolve the ability.)</i>",
+   "page": 66
+  },
+  "16123": {
+   "name": "Obedience Potion",
+   "text": "Should read: “<b>Hero Action</b>: Take 1 damage and spend [mental] [mental] resources → discard this card. Any player can do this.” <i>(Changed reminder text to rules text.)</i>",
+   "page": 66
+  },
+  "16125": {
+   "name": "The Poison",
+   "text": "Should read: “<b>Hero Action</b>: Spend 3 resources of different types → discard this card. Any player can do this.” <i>(Changed reminder text to rules text.)</i>",
+   "page": 66
+  },
+  "17020": {
+   "name": "Cosmo",
+   "text": "Should read: “<b>Interrupt</b>: When Cosmo attacks or thwarts, name a card type, then discard the top card of a player deck or the encounter deck. If that card is of the named type, Cosmo does not take consequential damage for this use.” <i>(Changed “a deck” to “a player deck or the encounter deck”. Removed reminder text.)</i>",
+   "page": 67
+  },
+  "21116": {
+   "name": "Sanctuary",
+   "text": "Should read: “Thanos cannot take damage from player cards.” <i>(Added “from player cards”.)</i>",
+   "page": 67
+  },
+  "21129": {
+   "name": "Infinity Gauntlet",
+   "text": "Should read: “Permanent. Setup.\nAttach to the villain.\n<b>Forced Response</b>: After attached villain activates against you, resolve the Special ability of each Infinity Stone in play. Otherwise, put the top card of the Infinity Stone deck into play.” <i>(Added “Attach to the villain” and “against you”.)</i>",
+   "page": 67
+  },
+  "22011": {
+   "name": "Eros",
+   "text": "Should read: “<b>Response</b>: After you play Eros from your hand, for each [mental] resource you used to pay for him, choose a minion and confuse it.” <i>(Revised wording to function as intended with updated “for each” rules.)</i>",
+   "page": 67
+  },
+  "22020": {
+   "name": "Cosmo",
+   "text": "Should read: “<b>Interrupt</b>: When Cosmo attacks or thwarts, name a card type, then discard the top card of a player deck or the encounter deck. If that card is of the named type, Cosmo does not take consequential damage for this use.” <i>(Changed “a deck” to “a player deck or the encounter deck”. Removed reminder text.)</i>",
+   "page": 67
+  },
+  "22031": {
+   "name": "Old Rivals",
+   "text": "Should read: “<b>When Revealed</b>: Gamora attacks you. If the Gamora hero or ally is in play, she attacks you <i>(resolve her ATK against you without exhausting her)</i>. If no attack was made this way, this card gains surge.” <i>(Changed reminder text to rules text to function with the updated rules on referential abilities.)</i>",
+   "page": 67
+  },
+  "23001b": {
+   "name": "James Rhodes",
+   "text": "Should read: “<b>Action</b>: Choose a War Machine card in your discard pile and shuffle it into your deck. (Limit once per phase.)” <i>(Added “(Limit once per phase.)”)</i>",
+   "page": 67
+  },
+  "25007": {
+   "name": "Aragorn",
+   "text": "Should read: “You get +4 hit points and gain the Aerial trait.” <i>(Changed “Valkyrie” to “You”.)</i>",
+   "page": 67
+  },
+  "25011": {
+   "name": "Shieldmaiden",
+   "text": "Should have the Defense trait and read: “<b>Hero Interrupt</b> <i>(defense)</i>: When the enemy with Death-Glow attached attacks, declare Valkyrie the defender without exhausting her. She gets +2 DEF for this attack.” <i>(Added “</i>(defense)<i>”.)</i>",
+   "page": 67
+  },
+  "25031": {
+   "name": "Beguiled",
+   "text": "Should have the Condition trait and read: “<b>When Revealed</b>: Attach to the ally with the highest cost without Beguiled attached. Attached ally engages its controller. Otherwise, this card gains surge.”",
+   "page": 67
+  },
+  "26022": {
+   "name": "Machine Man",
+   "text": "Should read: “<b>Interrupt</b>: When Machine Man attacks or thwarts, spend up to 3 resources of any type → Machine Man gets +1 THW and +1 ATK for this use for each resource spent this way.” <i>(Added “for this use”.)</i>",
+   "page": 67
+  },
+  "27025": {
+   "name": "Worried Father",
+   "text": "Should read: “Search your deck, hand, discard pile, and play area for George Stacy and attach him facedown to this card.” <i>(Attaches George Stacy to itself instead of setting him aside and attaching to him.)</i>",
+   "page": 67
+  },
+  "27073": {
+   "name": "Venom I and II",
+   "text": "Should read: “<i>Vengeance</i> — <b>Forced Response</b>: After you or an ally you control attacks and damages Venom, place 1 facedown boost card on your identity.” <i>(Changed “you attack and damage Venom with a card you control” to “you or an ally you control attacks and damages Venom”.)</i>",
+   "page": 67
+  },
+  "27074": {
+   "name": "Venom I and II",
+   "text": "Should read: “<i>Vengeance</i> — <b>Forced Response</b>: After you or an ally you control attacks and damages Venom, place 1 facedown boost card on your identity.” <i>(Changed “you attack and damage Venom with a card you control” to “you or an ally you control attacks and damages Venom”.)</i>",
+   "page": 67
+  },
+  "27075": {
+   "name": "Venom III",
+   "text": "Should read: “<i>Retribution</i> — <b>Forced Response</b>: After you or an ally you control attacks and damages Venom, place 1 facedown boost card on your identity (2 facedown boost cards instead if this is the first attack this turn).” <i>(Changed “you attack and damage Venom with a card you control” to “you or an ally you control attacks and damages Venom”.)</i>",
+   "page": 67
+  },
+  "27171": {
+   "name": "Manipulated Mind",
+   "text": "Should read: “<b>When Revealed</b>: Attach to the ally you control with the lowest cost. Attached ally engages its controller. Otherwise, this card gains surge.” <i>(Added “Attached ally engages its controller.”)</i>",
+   "page": 67
+  },
+  "28002": {
+   "name": "Ms. Marvel",
+   "text": "Should read: “<b>Hero Response</b>: After you play an event, exhaust Ms. Marvel and deal 1 damage to her → return that event to your hand from your discard pile.” <i>(Added “from your discard pile”.)</i>",
+   "page": 68
+  },
+  "29025": {
+   "name": "“Go for Champions!”",
+   "text": "Should read: “<b>Hero Action</b>: Remove ‘Go for Champions!’ from the game → each Champion character in play cannot take damage until the end of the round.” <i>(Added “Remove ‘Go for Champions!’ from the game →”.)</i>",
+   "page": 68
+  },
+  "31001b": {
+   "name": "SP//dr Suit",
+   "text": "Should read: “<i>Return to Base</i> — <b>Forced Interrupt</b>: When you flip to this side, flip SP//dr to Peni Parker. Detach Peni Parker from here, moving all counters on this card and cards attached to this card to her.” <i>(Counters and attachments now move to Peni Parker, instead of the reverse.)</i>",
+   "page": 68
+  },
+  "31027": {
+   "name": "M.O.R.B.I.U.S.",
+   "text": "Should read: “<b>Forced Response</b>: After the engaged player generates any number of resources, deal an equal amount of damage to that player’s hero.” <i>(Changed “engaged hero” to “engaged player” and “that hero” to “that player’s hero”.)</i>",
+   "page": 68
+  },
+  "32008": {
+   "name": "Steel Fist",
+   "text": "Should read: “<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy. You may discard a tough status card from your hero to stun and confuse that enemy.” <i>(Replaced cost arrow with “to”.)</i>",
+   "page": 68
+  },
+  "32010": {
+   "name": "Armor Up",
+   "text": "Should read: “<b>Alter-Ego Interrupt</b>: When the villain would activate, change to hero form.” <i>(Added “would”.)</i>",
+   "page": 68
+  },
+  "32088a": {
+   "name": "Mutants at the Mall",
+   "text": "Should read: “<b>When Defeated</b>: The first player searches the encounter deck and discard pile for a Sentinel minion and reveals it. Flip this card and put Jubilee into play, discarding any other ally version of Jubilee from play.” <i>(Added “ally”.)</i>",
+   "page": 68
+  },
+  "32141b": {
+   "name": "Asteroid M",
+   "text": "Should read: “<b>Forced Response</b>: After you place a magnet counter on this scheme, if there are at least 3 magnet counters here, remove 3 of them and discard cards from the encounter deck until a Magnetic card is discarded. Reveal that card.” <i>(Magnet counters are now removed before the</i> Magnetic <i>card is revealed.)</i>",
+   "page": 68
+  },
+  "32142b": {
+   "name": "Factory Online",
+   "text": "Should read: “<b>Forced Response</b>: After you place a magnet counter on this scheme, if there are at least 3 magnet counters here, remove 3 of them and discard cards from the encounter deck until a Magnetic card is discarded. Reveal that card.” <i>(Magnet counters are now removed before the</i> Magnetic <i>card is revealed.)</i>",
+   "page": 68
+  },
+  "32143b": {
+   "name": "The Rule of Magnus",
+   "text": "Should read: “<b>Forced Response</b>: After you place a magnet counter on this scheme, if there are at least 3 magnet counters here, remove 3 of them and discard cards from the encounter deck until a Magnetic card is discarded. Reveal that card.” <i>(Magnet counters are now removed before the</i> Magnetic <i>card is revealed.)</i>",
+   "page": 68
+  },
+  "35001b": {
+   "name": "Logan",
+   "text": "Should read: “<b>Setup</b>: Put Wolverine’s Claws into play.”",
+   "page": 68
+  },
+  "35008": {
+   "name": "Berserker Barrage",
+   "text": "Should read: “<b>Hero Action</b> <i>(attack)</i>: Deal 4 damage to an enemy. If this attack defeats an enemy, you may take 2 damage to repeat this ability.” <i>(Replaced cost arrow with “to”.)</i>",
+   "page": 68
+  },
+  "36030": {
+   "name": "Claustrophobia",
+   "text": "Should read: “Flip to alter-ego form. You cannot change to hero form.” <i>(Changed “change forms” to “change to hero form”.)</i>",
+   "page": 68
+  },
+  "36038": {
+   "name": "Possessed",
+   "text": "Should read: “<b>When Revealed</b>: Attach to the ally with the lowest THW without Possessed attached. Attached ally engages its controller. If you cannot, this card gains surge.” <i>(Added “Attached ally engages its controller.”)</i>",
+   "page": 68
+  },
+  "37034": {
+   "name": "Psionic Shield",
+   "text": "Should read: “<b>Forced Interrupt</b>: When attached minion would leave play, instead heal all damage from that minion. Then, discard this attachment.” <i>(Removed “and put it back into play”.)</i>",
+   "page": 68
+  },
+  "38001a": {
+   "name": "Rogue",
+   "text": "Should read: “<i>Skin Contact</i> — <b>Action</b>: Find Touched and attach it to another character. You gain each of the attached character’s Traits until the end of the round. (Limit once per round.)” <i>(Changed “Attach Touched...” to “Find Touched and attach it...”.)</i>",
+   "page": 69
+  },
+  "38001b": {
+   "name": "Anna Marie",
+   "text": "Should read: “<b>Setup</b>: Find your Touched upgrade and set it aside.\n<i>Withdrawn</i> — <b>Forced Response</b>: After you change to this form, find Touched and set it aside.” <i>(Now specifies to “find” Touched and set it aside.)</i>",
+   "page": 69
+  },
+  "38007": {
+   "name": "Energy Transfer",
+   "text": "Should read: “<b>Hero Action</b>: Find Touched and attach it to a character other than Rogue and deal 2 damage to that character → heal 2 damage from Rogue and ready her. You gain each of the attached character’s Traits until the end of the round.” <i>(Changed “Attach Touched...” to “Find Touched and attach it...”.)</i>",
+   "page": 69
+  },
+  "38026": {
+   "name": "Mystique’s Manipulations",
+   "text": "Should read: “<b>When Defeated</b>: The defeating player searches the encounter deck and discard pile for a copy of the Misled treachery and shuffles it into their deck.” <i>(Specified who should resolve the ability.)</i>",
+   "page": 69
+  },
+  "38031": {
+   "name": "Bonebreaker",
+   "text": "Should read: “<b>Forced Response</b>: After Bonebreaker engages you, take 1 indirect damage for each Reaver minion engaged with you.” <i>(Changed “<b>Forced Interrupt</b>” to “<b>Forced Response</b>”.)</i>",
+   "page": 69
+  },
+  "39016": {
+   "name": "The Search for Spiral",
+   "text": "Should read: “<b>Hero Action</b>: Take 2 damage → remove 3 threat from here.” <i>(Added cost arrow.)</i>",
+   "page": 69
+  },
+  "39045": {
+   "name": "Fetch Quest",
+   "text": "Should read: “<b>When Defeated</b>: In player order, each player may search their deck for a card and play that card, ignoring its resource cost. <i>(Shuffle.)</i>” <i>(Replaced “for free” with “ignoring its resource cost”.)</i>",
+   "page": 69
+  },
+  "40092": {
+   "name": "Inhibitor Collar",
+   "text": "Should read: “<b>Action</b>: Choose to either exhaust a character you control or take 3 damage → discard this card. Any player can do this.” <i>(Changed reminder text to rules text.)</i>",
+   "page": 69
+  },
+  "43036": {
+   "name": "Front Line Specialist",
+   "text": "Should read: “Your identity gets +4 hit points.” <i>(Changed “hero” to “identity”.)</i>",
+   "page": 69
+  },
+  "44041": {
+   "name": "‘Pool-Ized",
+   "text": "Should read: “<b>When Revealed</b>: Attach to the ally with the highest cost without ‘Pool-ized attached. Attached ally engages its controller. Otherwise, this card gains surge.” <i>(Added “Attached ally engages its controller.”)</i>",
+   "page": 69
+  },
+  "45017": {
+   "name": "Suit Up",
+   "text": "Should read: “<b>Alter-Ego Action</b>: Search your deck and discard pile for an ally and an upgrade that can be attached to an ally. Add them to your hand.” <i>(Changed “can be attached to that ally” to “can be attached to an ally”.)</i>",
+   "page": 69
+  },
+  "45171a": {
+   "name": "Mission Team",
+   "text": "The first bullet should read: “Reduce the cost of the next ally played to the mission this phase by 2.” <i>(Added “this phase”.)</i>",
+   "page": 69
+  },
+  "48012": {
+   "name": "Rogue",
+   "text": "Should read: “<b>Action</b>: Deal 1 damage to another friendly character → until the end of the round, Rogue gains each of that character’s Traits and adds that character’s base THW and ATK to her matching powers. (Limit once per round.)” <i>(Changed “printed” to “base”.)</i>",
+   "page": 69
+  },
+  "48037": {
+   "name": "Tweedledope",
+   "text": "Removed the star icon ([star]) from this card’s boost field.",
+   "page": 69
+  },
+  "49010": {
+   "name": "Magnetic Missile",
+   "text": "Should read: “<b>Hero Action</b>: Discard a minion with Wrapped in Metal attached. Then, deal 5 damage to an enemy and stun it.” <i>(Changed cost arrow to “Then”.)</i>",
+   "page": 69
+  },
+  "49023": {
+   "name": "Deft Focus",
+   "text": "Classification should be “Basic” instead of “Protection.”",
+   "page": 69
+  },
+  "49028": {
+   "name": "Exodus",
+   "text": "Should read: “<b>Forced Response</b>: After Exodus attacks you, discard cards from the top of your deck equal to his total ATK for that attack.” <i>(Added “for that attack”.)</i>",
+   "page": 69
+  },
+  "50153": {
+   "name": "Radiation Exposure",
+   "text": "The “SCH” modifier on this card should be a “THW” modifier.",
+   "page": 69
+  },
+  "50156": {
+   "name": "Mach-Iv",
+   "text": "Should read: “Each character without the Aerial trait cannot defend against MACH-IV’s attacks.” <i>(Changed “make basic defenses” to “defend”.)</i>",
+   "page": 69
+  },
+  "52008": {
+   "name": "Eidetic Memory",
+   "text": "Should read: “<b>Interrupt</b>: When you reveal a card from the same encounter set as a card tucked under your identity, exhaust Eidetic Memory → swap those cards. Reveal the card that had been tucked under your identity instead.” <i>(Changed “Silk” to “your identity”.)</i>",
+   "page": 70
+  },
+  "54033": {
+   "name": "S.H.I.E.L.D. Deputy",
+   "text": "Should read: “Attach to a friendly character. Max 1 per character.” <i>(Added “Max 1 per character.”)</i>",
+   "page": 70
+  },
+  "56019": {
+   "name": "Yellow Jacket",
+   "text": "Title should read “Yellowjacket”.\nText should read: “<b>Response</b>: After Yellowjacket enters play, search the top 5 cards of your deck for an upgrade and add it to your hand.” <i>(Changed “Yellow Jacket” to “Yellowjacket”.)</i>",
+   "page": 70
+  },
+  "56073": {
+   "name": "Yellow Jacket",
+   "text": "Title should read “Yellowjacket”.",
+   "page": 70
+  },
+  "56098": {
+   "name": "Energy Channel",
+   "text": "Should read: “<b>Forced Response</b>: After a leader, hero, or ally attacks Captain Marvel, place 1 energy counter here. Then, if there are at least 4 energy counters here, remove all of them and Captain Marvel attacks that character. This attack gains overkill.” <i>(Changed “→” to “and”.)</i>",
+   "page": 70
+  },
+  "57065": {
+   "name": "Moon Knight",
+   "text": "Should read: “<b>When Revealed</b>: Resolve the “<b>When Revealed</b>” ability of the topmost treachery in the encounter discard pile. (Limit once per phase.)” <i>(Added “(Limit once per phase.)”)</i>",
+   "page": 70
+  },
+  "57076": {
+   "name": "Phased Out",
+   "text": "Should read: “<b>Action</b>: Choose an attachment on the enemy leader with the text ‘<b>Hero Action</b>’ or ‘<b>Hero Response</b>’ and discard it.” <i>(Changed “<b>Hero Interrupt</b>” to “<b>Hero Action</b>.”)</i>",
+   "page": 70
+  },
+  "58002": {
+   "name": "Ionic Physiology",
+   "text": "Should read: “<b>Response</b>: After you play an event with a printed [energy] resource, tuck that event from your discard pile under this card. Then, heal 1 damage from your identity.” <i>(Changed cost arrow to “Then”.)</i>",
+   "page": 70
+  }
+ }
+}
