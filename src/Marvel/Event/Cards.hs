@@ -2920,7 +2920,7 @@ teamInvestigation = CardDef
   { cdCardCode = "40053", cdName = "Team Investigation", cdCost = Just 2
   , cdTraits = fromList [], cdKeywords = fromList []
   , cdCardType = EventType, cdAbilityType = Just NEAbility.HeroAction, cdAbilitySubTypes = []
-  , cdUnique = False, cdAspect = Just NEA.Justice, cdCriteria = NoCriteria
+  , cdUnique = False, cdAspect = Just NEA.Justice, cdCriteria = SchemeExists (NotScheme MainScheme <> ThwartableScheme)
   , cdResources = [(PrintedResource, NER.Mental)], cdBoostIcons = []
   , cdEncounterSet = Nothing, cdEncounterSetQuantity = Nothing
   , cdResponseWindow = Nothing, cdActionCriteria = Nothing, cdHazards = 0, cdAcceleration = 0, cdAmplify = 0

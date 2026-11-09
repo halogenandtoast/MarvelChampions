@@ -218,6 +218,13 @@ spec = describe "Domino pack" do
       choose "side scheme" (isTargetChoice scheme)
       pass
       sideSchemeThreat scheme `shouldReturn` (before - 6)
+  it "Team Investigation is not playable without a side scheme to remove threat from" do
+    tg <- testGame ["domino", "spider-man"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      card <- putInHand p "40053"
+      offers (isPlay card) `shouldReturn` False
   it "Take Out the Guards lets each player discard a non-Elite minion anywhere in play" do
     tg <- testGame ["domino", "spider-man"]
     inGame tg do
