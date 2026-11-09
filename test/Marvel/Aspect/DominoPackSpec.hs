@@ -1,6 +1,8 @@
 module Marvel.Aspect.DominoPackSpec (spec) where
 import Marvel.Ally.Types
 import Marvel.Deck
+import Marvel.Discard
+import Marvel.Ally.Allies.Wolfsbane qualified as Wolfsbane
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Minion.Cards qualified as Minions
 import TestImport
@@ -33,6 +35,53 @@ spec = describe "Domino pack" do
       pass
       villainDamageNow `shouldReturn` 2
       mainSchemeThreat `shouldReturn` 3
+  it "Overwatch copies Wolfsbane's thwart before her response" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      main <- mainSchemeIdNow
+      placeMainThreat 4
+      scheme <- encounterCard Schemes.bombScare
+      resolve [RevealEncounterCard p scheme]
+      let sid = sideSchemeOf scheme
+      before <- sideSchemeThreat sid
+      overwatch <- putInHand p "40055"
+      playOn overwatch main []
+      wolf <- putIntoPlay p "40051"
+      [event] <- stackDeck p ["40040"]
+      thwartWith wolf
+      choose "Overwatch interrupt" (cardAbility overwatch 1)
+      choose "copy removal" (isTargetChoice sid)
+      choose "Wolfsbane response" (cardAbility wolf 1)
+      choose "name event" (isLabel "$label.nameEventType")
+      choose "retrieve event" (isTargetChoice event)
+      pass
+      mainSchemeThreat `shouldReturn` 2
+      sideSchemeThreat sid `shouldReturn` (before - 2)
+      handOf p >>= (`shouldSatisfy` elem event)
+
+  it "does not offer Overwatch for Wolfsbane when no different scheme is in play" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      placeMainThreat 5
+      overwatch <- putInHand p "40055"
+      playWith overwatch []
+      wolf <- putIntoPlay p "40051"
+      [event] <- stackDeck p ["40040"]
+      thwartWith wolf
+      offers (cardAbility overwatch 1) `shouldReturn` False
+      offers (cardAbility wolf 1) `shouldReturn` True
+      mainSchemeThreat `shouldReturn` 3
+      choose "Wolfsbane response" (cardAbility wolf 1)
+      choose "name event" (isLabel "$label.nameEventType")
+      choose "retrieve event" (isTargetChoice event)
+      pass
+      length <$> upgradesWith "40055" `shouldReturn` 1
+      handOf p >>= (`shouldSatisfy` elem event)
+
   it "Wolfsbane names a card type and may retrieve the matching discarded card" do
     tg <- testGame ["domino"]
     inGame tg do
@@ -223,3 +272,98 @@ spec = describe "Domino pack" do
       choose "decline" (isLabel "$label.noResponse")
       pass
       minionDamageOf elite `shouldReturn` Just 0
+
+  for_ [False, True] $ \reset -> do
+    it ("Wolfsbane cannot retrieve Jackpot after its response shuffles it away; reset=" <> show reset) do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        asHero p
+        placeMainThreat 4
+        wolf <- putIntoPlay p "40051"
+        [jackpot] <- stackDeck p ["40043"]
+        when reset $ withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [jackpot]}
+        thwartWith wolf
+        choose "Wolfsbane" (cardAbility wolf 1)
+        choose "name resource" (isLabel "$label.nameResourceType")
+        choose "shuffle Jackpot" (isNamedAbility "$label.dominoJackpot")
+        offers (isTargetChoice jackpot) `shouldReturn` False
+        pass
+        handOf p >>= (`shouldSatisfy` notElem jackpot)
+        deck <- unDeck . playerIdentityDeck <$> playerAttrs p
+        length (filter ((== pcCardId jackpot) . pcCardId) deck) `shouldBe` 1
+
+  it "Wolfsbane retrieves the exact card after an automatic empty-deck reset" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      placeMainThreat 4
+      wolf <- putIntoPlay p "40051"
+      [jackpot] <- stackDeck p ["40043"]
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [jackpot]}
+      thwartWith wolf
+      choose "Wolfsbane" (cardAbility wolf 1)
+      choose "name resource" (isLabel "$label.nameResourceType")
+      choose "decline Jackpot shuffle" (isLabel "$label.noResponse")
+      choose "retrieve reset card" (isTargetChoice jackpot)
+      pass
+      handOf p `shouldReturn` [jackpot]
+      unDeck . playerIdentityDeck <$> playerAttrs p >>= (`shouldSatisfy` notElem jackpot)
+
+  for_ [("40060", "$label.dominoDiggingDeep", "$label.nameResourceType"), ("40057", "$label.dominoWhiteFox", "$label.nameAllyType")] $ \(code, response, name) -> do
+    it ("Wolfsbane cannot claim " <> show code <> " after its response has moved it") do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        asHero p
+        placeMainThreat 4
+        wolf <- putIntoPlay p "40051"
+        [card] <- stackDeck p [code]
+        thwartWith wolf
+        choose "Wolfsbane" (cardAbility wolf 1)
+        choose "name type" (isLabel name)
+        choose "discard response" (isNamedAbility response)
+        offers (isTargetChoice card) `shouldReturn` False
+        pass
+
+  it "Wolfsbane loads legacy and current pending-response memory" do
+    fromJSON @Wolfsbane.WolfsbaneMemory Null `shouldBe` Success Wolfsbane.emptyMemory
+    fromJSON @Wolfsbane.WolfsbaneMemory (toJSON ResourceType) `shouldBe` Success (Wolfsbane.WolfsbaneMemory (Just ResourceType) [])
+    let pending = Wolfsbane.WolfsbaneMemory (Just ResourceType) []
+    (fromJSON (toJSON pending) `shouldBe` Success pending :: IO ())
+
+  it "Pistol counts discarded Digging Deep's icons even after its response retrieves it" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      pistol <- putIntoPlay p "40046"
+      [card] <- stackDeck p ["40060"]
+      choose "Pistol" (cardAbility pistol 1)
+      chooseVillain
+      choose "discard" (isLabel $ countLabel "discardTopOfDeck" 1)
+      choose "Digging Deep" (isNamedAbility "$label.dominoDiggingDeep")
+      pass
+      handOf p `shouldReturn` [card]
+      villainDamageNow `shouldReturn` 2
+
+  it "Jackpot can respond again to Sharpshooter's separate discard without duplicating" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      pistol <- putIntoPlay p "40046"
+      sharp <- putIntoPlay p "40064"
+      [card] <- stackDeck p ["40043"]
+      withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [card], playerIdentityDiscard = Discard []}
+      choose "Pistol" (cardAbility pistol 1)
+      chooseVillain
+      choose "Pistol discard" (isLabel $ countLabel "discardTopOfDeck" 1)
+      choose "first Jackpot response" (isNamedAbility "$label.dominoJackpot")
+      choose "Sharpshooter" (cardAbility sharp 1)
+      choose "Sharpshooter discard" (isLabel $ countLabel "discardTopOfDeck" 1)
+      choose "second Jackpot response" (isNamedAbility "$label.dominoJackpot")
+      pass
+      villainDamageNow `shouldReturn` 6
+      unDeck . playerIdentityDeck <$> playerAttrs p `shouldReturn` [card]

@@ -5,6 +5,9 @@ import Marvel.Card
 import Marvel.Cost
 import Marvel.Criteria
 import Marvel.Domino
+import Marvel.Deck
+import Marvel.Identity.Types
+import Marvel.Projection
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -31,8 +34,16 @@ discardResponseAbilities you cards =
   ]
 
 runDiscardResponse :: ReverseQueue m => IdentityId -> PlayerCard -> m ()
-runDiscardResponse you card = whenM (cardInDeckOrDiscard you card) $ case toCardCode card of
-  "40043" -> shuffleIntoDeck you [card]
-  "40060" -> addToHand you card
-  "40057" -> putIntoPlay you card
-  _ -> pure ()
+runDiscardResponse you card = whenM (cardInDeckOrDiscard you card) $ do
+  -- Continuing effects such as Wolfsbane must distinguish a card claimed by a
+  -- response from the automatic reset which precedes the response window.
+  cardSpecific (CardIdRef $ pcCardId card) "discardResponseMoved" ()
+  case toCardCode card of
+    "40043" -> do
+      deck <- projectMap PlayerIdentityDeck unDeck you
+      -- The last-card reset already put Jackpot in the deck: reshuffle that
+      -- deck, without inserting a second copy of the same physical card.
+      if any ((== pcCardId card) . pcCardId) deck then shuffleDeck you else shuffleIntoDeck you [card]
+    "40060" -> addToHand you card
+    "40057" -> putIntoPlay you card
+    _ -> pure ()

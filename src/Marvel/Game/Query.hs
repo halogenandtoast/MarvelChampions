@@ -1819,7 +1819,12 @@ getUsedAbilities = getsGame (HashMap.map (map fst) . view usedAbilitiesL)
 -- A discard response is tied to this window occurrence, even across an immediate
 -- empty-deck shuffle. A response which moves its card consumes this occurrence.
 discardResponseAvailable :: HasGame m => CardId -> m Bool
-discardResponseAvailable cid = getsGame $ \g -> not $ any (\(a, depth) -> depth == gameWindowDepth g && abilitySource a == CardIdRef cid) $ concat $ HashMap.elems $ gameUsedAbilities g
+discardResponseAvailable cid = do
+  unused <- getsGame $ \g -> not $ any (\(a, depth) -> depth == gameWindowDepth g && abilitySource a == CardIdRef cid) $ concat $ HashMap.elems $ gameUsedAbilities g
+  playerCard <- getsGame $ any (\player -> any ((== cid) . pcCardId)
+    (unDeck (playerIdentityDeck $ toAttrs player) <> unDiscard (playerIdentityDiscard $ toAttrs player))) . HashMap.elems . gamePlayers
+  encounterCard <- any ((== cid) . ecCardId) <$> getEncounterDiscard
+  pure $ unused && (playerCard || encounterCard)
 
 -- | Whether a player may use an ability again under its limit. An ability on an
 -- encounter card is anyone's to trigger, so its limit counts every player's uses (a

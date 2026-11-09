@@ -31,9 +31,26 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 
 wolfsbane :: AllyCard Wolfsbane
-wolfsbane = ally (Wolfsbane . (`With` (Nothing :: Maybe CardType))) Cards.wolfsbane (Thw 2, 1) (Atk 1, 1) (HP 3)
-newtype Wolfsbane = Wolfsbane (Attrs Ally `With` Maybe CardType)
+wolfsbane = ally (Wolfsbane . (`With` emptyMemory)) Cards.wolfsbane (Thw 2, 1) (Atk 1, 1) (HP 3)
+newtype Wolfsbane = Wolfsbane (Attrs Ally `With` WolfsbaneMemory)
   deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+-- Keep explicit shuffles separate from an automatic empty-deck reset while
+-- the discard's responses resolve. Older saves stored only the named type.
+data WolfsbaneMemory = WolfsbaneMemory
+  { namedType :: Maybe CardType
+  , movedCards :: [CardId]
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON)
+
+emptyMemory :: WolfsbaneMemory
+emptyMemory = WolfsbaneMemory Nothing []
+
+instance FromJSON WolfsbaneMemory where
+  parseJSON Null = pure emptyMemory
+  parseJSON value@(String _) = (\typ -> WolfsbaneMemory (Just typ) []) <$> parseJSON value
+  parseJSON value = withObject "WolfsbaneMemory" (\o -> WolfsbaneMemory <$> o .:? "namedType" <*> o .:? "movedCards" .!= []) value
 
 instance HasAbilities Wolfsbane where
   getAbilities a@(Wolfsbane (attrs `With` _)) = [limitedWindowAbility a 1
@@ -54,11 +71,13 @@ instance RunMessage Wolfsbane where
       pure a
     CardSpecific (isTarget attrs -> True) "named" (fromJSON -> Success typ) -> do
       discardFromDeck (allyController attrs) 1 attrs
-      pure $ Wolfsbane (attrs `With` Just typ)
+      pure $ Wolfsbane (attrs `With` WolfsbaneMemory (Just typ) [])
     WithDiscarded (isTarget attrs -> True) FromDeck cards -> do
       let you = allyController attrs
-      eligible <- filterM (cardInDeckOrDiscard you) [card | PlayerCard card <- cards, Just (cdCardType $ getCardDef card) == remembered]
+      eligible <- filterM (cardInDeckOrDiscard you) [card | PlayerCard card <- cards, Just (cdCardType $ getCardDef card) == namedType remembered, pcCardId card `notElem` movedCards remembered]
       for_ eligible $ \card -> chooseOne you
         [targeting card (addToHand you card), labeled "$label.noResponse" (pure ())]
-      pure $ Wolfsbane (attrs `With` Nothing)
+      pure $ Wolfsbane (attrs `With` emptyMemory)
+    CardSpecific (CardIdRef cid) "discardResponseMoved" _ | isJust (namedType remembered) ->
+      pure $ Wolfsbane (attrs `With` remembered {movedCards = movedCards remembered <> [cid]})
     _ -> Wolfsbane . (`With` remembered) <$> runMessage msg attrs

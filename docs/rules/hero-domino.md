@@ -27,10 +27,18 @@ The newer [post-1.6 collection](https://hallofheroeslcg.com/latest-ffg-rulings-p
 
 The printed Domino/Justice deck has 40 cards: fifteen signature cards, twelve Justice cards, and thirteen Basic cards. Her obligation is Memories of Armageddon; her nemesis set consists of Topaz, Not My Lucky Day, Prototype, and two Superpower Feedback attachments.
 
-No project-owner ruling is required by the currently identified interactions; use the official clarifications above.
+Use the official clarifications above; the additional Wolfsbane ruling below is an explicit project-owner decision.
 
 ## Additional damage and threat removal
 
 The printed [A Good Workout](https://hallofheroeslcg.com/wp-content/uploads/2023/08/40040.jpg) says “that enemy”; MarvelCDB's “an enemy” transcription is incorrect. Choose one enemy, discard and count the card, then deal one combined instance of 4 plus that count. Tough prevents that whole instance, and attack damage reduction applies once.
 
 The printed [Right Place, Right Time](https://hallofheroeslcg.com/wp-content/uploads/2023/08/40042.jpg) likewise adds the discarded count to its original removal: choose one scheme and remove 3 plus that count in one instance after discarding. The extra amount cannot move to another scheme.
+
+## Discard responses and zone changes
+
+All responses to a bulk discard share a window, so the player can resolve the individual discarded cards in any order. The Painted Lady can store each eligible discarded card once, up to its three-card capacity. Resolving one card’s response does not consume another card’s response.
+
+An automatic empty-deck reset can put the original discarded card back into the deck before its response. Jackpot's subsequent optional shuffle must reshuffle that same physical card, not add a second copy. Digging Deep, White Fox, and The Painted Lady likewise move the original card; they cannot claim a card already taken by a competing response. Resource-counting effects still use the printed icons of the discarded card even after a response moves it.
+
+**Project-owner ruling (2026-11-09):** When Wolfsbane discards Jackpot and Jackpot's response deliberately shuffles it into the deck, Wolfsbane cannot subsequently retrieve it. This is distinct from an automatic empty-deck reset, after which Wolfsbane can still retrieve the exact discarded card if Jackpot's optional response is declined. No direct FFG ruling on the deliberate-shuffle/Wolfsbane interaction was found; the owner explicitly selected this behavior.

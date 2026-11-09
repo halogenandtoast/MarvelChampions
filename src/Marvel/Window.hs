@@ -146,7 +146,7 @@ windowMatches matcher w source = case matcher of
     PlayerDiscardedFromDeck actor _ card | windowTiming w == After -> (&&) <$> identityMatches identityMatcher actor <*> discardResponseAvailable (pcCardId card)
     _ -> pure False
   CardsDiscardedFromPlayerDeck identityMatcher -> case windowType w of
-    DiscardedFromPlayerDeck ident cards | windowTiming w == After && not (null cards) -> allM (discardResponseAvailable . pcCardId) cards >>= \available -> if available then identityMatches identityMatcher ident else pure False
+    DiscardedFromPlayerDeck ident cards | windowTiming w == After && not (null cards) -> identityMatches identityMatcher ident
     _ -> pure False
   ResourcesGeneratedBy identityMatcher -> case windowType w of
     GeneratedResources ident n | windowTiming w == After && n > 0 -> identityMatches identityMatcher ident

@@ -1274,7 +1274,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         -- the replacement helper, but still count as discarded by this effect.
         let reported = [card | card <- cards, card `elem` discarded || cardMatch (CardWithTrait Shapeshifter) card]
         actor <- getYou
-        for_ reported $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
+        checkWindows [window | card <- reported, window <-
+          [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]]
         for_ mTarget \target -> withDiscarded target fromZone $ PlayerCard <$> reported
         pure $
           PlayerIdentity $
@@ -1508,7 +1509,8 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
         found = take 1 rest
       discarded <- discardPlayerDeckEncounters playerIdentityId (missed <> found)
       actor <- getYou
-      for_ discarded $ \card -> checkWindows [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]
+      checkWindows [window | card <- discarded, window <-
+        [W.Window W.After $ W.DiscardedFromPlayerDeck playerIdentityId [card], W.Window W.After $ W.PlayerDiscardedFromDeck actor playerIdentityId card]]
       for_ [c | c <- found, isNothing (playerZoneEncounterCard c)] \c -> withDiscardedMatch target FromDeck (PlayerCard c)
       pure $
         PlayerIdentity $

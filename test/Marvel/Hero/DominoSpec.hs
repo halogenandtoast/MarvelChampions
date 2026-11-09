@@ -252,3 +252,119 @@ spec = describe "Domino" do
       pass
       -- ATK 2 plus two icons from the wild, rather than THW 1 plus two.
       sideSchemeThreat scheme `shouldReturn` (before - 4)
+
+  describe "discard response zone changes" do
+    for_ [("40043", "$label.dominoJackpot"), ("40060", "$label.dominoDiggingDeep"), ("40057", "$label.dominoWhiteFox")] $ \(code, response) -> do
+      for_ [False, True] $ \reset -> do
+        it ("lets Painted Lady claim " <> show code <> " before its own response; reset=" <> show reset) do
+          tg <- testGame ["domino"]
+          inGame tg do
+            let p = player1 tg
+            clearHand p
+            lady <- putIntoPlay p "40045"
+            [card] <- stackDeck p [code]
+            when reset $ withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [card]}
+            runNow [IdentityMessage p (DiscardFrom FromDeck 1 Nothing)]
+            offers (isNamedAbility response) `shouldReturn` True
+            choose "Painted Lady" (cardAbility lady 1)
+            choose "hold exact card" (isTargetChoice card)
+            offers (isNamedAbility response) `shouldReturn` False
+            pass
+            held <- getsGame $ supportHeldCards . toAttrs . (HashMap.! supportIdOf lady) . gameSupports
+            held `shouldBe` [card]
+            cardInDeckOrDiscard p card `shouldReturn` False
+            handOf p >>= (`shouldSatisfy` notElem card)
+
+        it ("does not let Painted Lady reclaim " <> show code <> " after its response; reset=" <> show reset) do
+          tg <- testGame ["domino"]
+          inGame tg do
+            let p = player1 tg
+            clearHand p
+            lady <- putIntoPlay p "40045"
+            [card] <- stackDeck p [code]
+            when reset $ withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [card]}
+            runNow [IdentityMessage p (DiscardFrom FromDeck 1 Nothing)]
+            choose "card's own response" (isNamedAbility response)
+            offers (cardAbility lady 1) `shouldReturn` False
+            pass
+            held <- getsGame $ supportHeldCards . toAttrs . (HashMap.! supportIdOf lady) . gameSupports
+            held `shouldBe` []
+            case code of
+              "40043" -> do
+                deck <- unDeck . playerIdentityDeck <$> playerAttrs p
+                length (filter ((== pcCardId card) . pcCardId) deck) `shouldBe` 1
+              "40060" -> do
+                handOf p `shouldReturn` [card]
+                cardInDeckOrDiscard p card `shouldReturn` False
+              _ -> do
+                map allyId <$> alliesWith "40057" `shouldReturn` [allyIdOf card]
+                cardInDeckOrDiscard p card `shouldReturn` False
+
+    it "resolves every copy in a bulk discard after the empty-deck reset" do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        cards <- stackDeck p ["40060", "40060", "40057", "40043"]
+        withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck cards}
+        runNow [IdentityMessage p (DiscardFrom FromDeck 4 Nothing)]
+        for_ (reverse $ take 2 cards) $ \card -> choose "exact Digging Deep" (isAbilityOf $ CardIdRef $ pcCardId card)
+        choose "White Fox" (isNamedAbility "$label.dominoWhiteFox")
+        choose "Jackpot" (isNamedAbility "$label.dominoJackpot")
+        pass
+        handOf p `shouldReturn` take 2 cards
+        length <$> alliesWith "40057" `shouldReturn` 1
+        cardInDeckOrDiscard p (last cards) `shouldReturn` True
+
+    it "does not duplicate a last-card Jackpot when its response shuffles it again" do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        [jackpot] <- stackDeck p ["40043"]
+        withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity a) -> PlayerIdentity a {playerIdentityDeck = Deck [jackpot]}
+        runNow [IdentityMessage p (DiscardFrom FromDeck 1 Nothing)]
+        choose "Jackpot after automatic reset" (isNamedAbility "$label.dominoJackpot")
+        pass
+        deck <- unDeck . playerIdentityDeck <$> playerAttrs p
+        length (filter ((== pcCardId jackpot) . pcCardId) deck) `shouldBe` 1
+
+    it "does not put a second White Fox into play but allows Painted Lady to hold it" do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        fox <- putIntoPlay p "40057"
+        lady <- putIntoPlay p "40045"
+        [other] <- stackDeck p ["40057"]
+        runNow [IdentityMessage p (DiscardFrom FromDeck 1 Nothing)]
+        offers (isNamedAbility "$label.dominoWhiteFox") `shouldReturn` False
+        choose "Painted Lady" (cardAbility lady 1)
+        choose "hold duplicate unique ally" (isTargetChoice other)
+        pass
+        map allyId <$> alliesWith "40057" `shouldReturn` [allyIdOf fox]
+        held <- getsGame $ supportHeldCards . toAttrs . (HashMap.! supportIdOf lady) . gameSupports
+        held `shouldBe` [other]
+
+    it "offers bulk discard responses in any order and stores each eligible card only once" do
+      tg <- testGame ["domino"]
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        lady <- putIntoPlay p "40045"
+        [first, second, fox, jackpot] <- stackDeck p ["40060", "40060", "40057", "40043"]
+        runNow [IdentityMessage p (DiscardFrom FromDeck 4 Nothing)]
+        choose "Jackpot first although discarded last" (isNamedAbility "$label.dominoJackpot")
+        choose "Painted Lady" (cardAbility lady 1)
+        offers (isTargetChoice $ jackpot) `shouldReturn` False
+        choose "hold White Fox" (isTargetChoice $ fox)
+        offers (isNamedAbility "$label.dominoWhiteFox") `shouldReturn` False
+        choose "Painted Lady again" (cardAbility lady 1)
+        offers (isTargetChoice $ fox) `shouldReturn` False
+        choose "hold second Digging Deep" (isTargetChoice $ second)
+        choose "retrieve first Digging Deep" (isAbilityOf $ CardIdRef $ pcCardId $ first)
+        offers (cardAbility lady 1) `shouldReturn` False
+        pass
+        held <- getsGame $ supportHeldCards . toAttrs . (HashMap.! supportIdOf lady) . gameSupports
+        held `shouldBe` [fox, second]
+        handOf p `shouldReturn` [first]

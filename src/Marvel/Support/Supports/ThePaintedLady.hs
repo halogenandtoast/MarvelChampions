@@ -38,7 +38,9 @@ newtype ThePaintedLady = ThePaintedLady (Attrs Support)
 
 instance HasAbilities ThePaintedLady where
   getAbilities a@(ThePaintedLady attrs) =
-    [limitedWindowAbility a 1 (W.CardsDiscardedBy $ IdentityWithId $ supportController attrs)
+    -- A bulk discard shares one response window, but each discarded card can
+    -- be stored once, up to the ship's total capacity of three.
+    [limited (PerWindow 3) $ limitedWindowAbility a 1 (W.CardsDiscardedBy $ IdentityWithId $ supportController attrs)
       Response OwnsThis NoCost (runAbility a 1) | length (supportHeldCards attrs) < 3]
     <> [ability a 2 AlterEgoAction OwnsThis ExhaustCost (runAbility a 2) | notNull $ supportHeldCards attrs]
 
