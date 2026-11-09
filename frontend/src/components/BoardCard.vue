@@ -309,7 +309,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   user-select: none;
   container-type: inline-size;
 }
-.card.unfolded { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
+/* Unfold the artwork while keeping controls at the normal card scale. */
+.card.unfolded { --control-unit: calc(var(--w) / 100); width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / (2 * var(--card-aspect))); }
 .card.landscape { width: calc(var(--w) / var(--card-aspect)); aspect-ratio: calc(1 / var(--card-aspect)); border-radius: calc(var(--w) * 0.05); }
 .card.unfolded.landscape { width: calc(2 * var(--w)); aspect-ratio: calc(2 * var(--card-aspect)); }
 .card :deep(.card-face) { border-radius: inherit; }
@@ -366,7 +367,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   background: var(--ink-2);
   color: var(--text);
   box-shadow: 0 2px 5px var(--shadow);
-  font-size: max(12px, 12cqi);
+  font-size: max(12px, calc(var(--control-unit, 1cqi) * 12));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -376,7 +377,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .statuses { position: absolute; top: 4%; left: 4%; }
 .metagame-board { position: absolute; top: 9%; left: 12%; right: 12%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 4px; border-radius: 5px; background: var(--ink-2); border: 1px solid var(--line-strong); }
 .metagame-board.three-columns { grid-template-columns: repeat(3, 1fr); }
-.metagame-space { position: relative; display: grid; place-items: center; min-height: 26px; padding: 2px; background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 3px; font-size: max(12px, 12cqi); }
+.metagame-space { position: relative; display: grid; place-items: center; min-height: 26px; padding: 2px; background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 3px; font-size: max(12px, calc(var(--control-unit, 1cqi) * 12)); }
 .metagame-space:not(:disabled) { border-color: var(--interactive); cursor: pointer; }
 .metagame-space:not(:disabled):hover, .metagame-space:focus-visible { outline: 2px solid var(--interactive); outline-offset: 1px; background: var(--ink-4); }
 .metagame-space.occupied { background: var(--ink-4); }
@@ -384,10 +385,10 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .space-token { position: absolute; inset: 0; display: grid; place-items: center; color: var(--amber); text-shadow: 0 1px 2px var(--ink-1); font-size: 1.35em; }
 
 /* tokens: the printed ones, lifted off the art */
-.token { position: absolute; --token-size: max(22px, 26cqi); }
+.token { position: absolute; --token-size: max(22px, calc(var(--control-unit, 1cqi) * 26)); }
 .token.damage { top: 4%; right: 4%; }
-.token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, 22cqi); }
-.card:not(.landscape) .token.threat { --token-size: max(28px, 34cqi); }
+.token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, calc(var(--control-unit, 1cqi) * 22)); }
+.card:not(.landscape) .token.threat, .card.unfolded .token.threat { --token-size: max(28px, calc(var(--control-unit, 1cqi) * 34)); }
 .token.bombs { bottom: 42%; right: 4%; }
 .token.counters { bottom: 24%; right: 4%; }
 .held {
@@ -420,6 +421,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .card.generic-actions .token.bombs { top: 39%; bottom: auto; }
 .card.generic-actions .chips { inset: auto 3% 4%; max-height: 56%; overflow-y: auto; }
 .card.generic-actions .chip { flex-shrink: 0; }
+.card.unfolded .chips { bottom: 4%; inset-inline: auto; left: 50%; translate: -50% 0; width: calc(var(--w) * 0.94); }
+.card.unfolded.exhausted .chips { top: 50%; bottom: auto; translate: -50% -50%; }
 .chip {
   padding: 3px 4px;
   border: 1px solid var(--interactive);
@@ -427,7 +430,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
   background: rgb(8 24 34 / 0.9);
   color: #dff5ff;
   font: inherit;
-  font-size: max(10px, 9.5cqi);
+  font-size: max(10px, calc(var(--control-unit, 1cqi) * 9.5));
   font-weight: 700;
   line-height: 1.15;
   text-align: center;

@@ -19,10 +19,10 @@ const inactive = computed(() => inactiveStatusCards(props))
 
 <style scoped>
 .statuses { display: flex; flex-direction: column; align-items: flex-start; z-index: 1; }
-img { width: max(40px, 52cqi); height: auto; border-radius: 4px; box-shadow: 0 2px 5px rgb(0 0 0 / 0.55); }
+img { width: max(40px, calc(var(--control-unit, 1cqi) * 52)); height: auto; border-radius: 4px; box-shadow: 0 2px 5px rgb(0 0 0 / 0.55); }
 .inactive { filter: grayscale(1); }
 .status-group { display: flex; align-items: flex-start; gap: 3px; }
-.status-group + .status-group { margin-top: calc(-1 * max(6px, 10cqi)); }
-.status-group.multiple img { width: max(32px, 44cqi); }
-.status-group.multiple img + img { margin-left: calc(-1 * max(12px, 18cqi)); }
+.status-group + .status-group { margin-top: calc(-1 * max(6px, calc(var(--control-unit, 1cqi) * 10))); }
+.status-group.multiple img { width: max(32px, calc(var(--control-unit, 1cqi) * 44)); }
+.status-group.multiple img + img { margin-left: calc(-1 * max(12px, calc(var(--control-unit, 1cqi) * 18))); }
 </style>
