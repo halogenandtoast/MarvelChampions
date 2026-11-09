@@ -252,6 +252,7 @@ data Game = Game
   , gameBoostPlayerOverride :: Maybe IdentityId
   -- ^ Query-only override while dispatching one in-play minion's boost text.
   , gameFriendlyBoosts :: [FriendlyBoostContext]
+  , gameCancelledBoostIcons :: [CardId]
   , gamePlayerBoostCards :: [(CardId, PlayerCard)]
   -- ^ Original player cards temporarily represented by facedown boost cards.
   , gameCollection :: [Card]
@@ -393,6 +394,7 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "inPlayBoosts" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "boostPlayerOverride" Null
             . KeyMap.insertWith (\_ existing -> existing) "friendlyBoosts" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "cancelledBoostIcons" (toJSON ([] :: [CardId]))
             . KeyMap.insertWith (\_ existing -> existing) "playerBoostCards" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collection" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "collecting" (toJSON ([] :: [Value]))

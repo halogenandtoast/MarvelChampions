@@ -228,6 +228,7 @@ newGame player scenario =
     , gameDefeatedMinionBoosts = []
     , gameInPlayBoosts = []
     , gameBoostPlayerOverride = Nothing
+    , gameCancelledBoostIcons = []
     , gameFriendlyBoosts = []
     , gamePlayerBoostCards = []
     , gameCollection = []

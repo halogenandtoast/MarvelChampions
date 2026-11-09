@@ -829,7 +829,8 @@ windowMatches matcher w source = case matcher of
       global <- getModifiers GameRef
       own <- getModifiers (enemyRef enemyId)
       let extra = sum [n | AdditionalActivationBoostIcons n <- global <> own]
-      pure $ matches && cardIcons + amplify + extra > 0
+      cancelled <- boostIconsCancelled card
+      pure $ matches && not cancelled && cardIcons + amplify + extra > 0
     _ -> pure False
   EncounterCardRevealedFromDeckBy timing identityMatcher encounterCardMatcher -> case windowType w of
     EncounterCardRevealed RevealedFromEncounterDeck ident encounterCard | windowTiming w == timing ->

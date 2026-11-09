@@ -93,6 +93,28 @@ spec = describe "Ms. Marvel pack" do
       text `shouldSatisfy` T.isInfixOf "$log.boost"
       text `shouldSatisfy` (not . T.isInfixOf "$log.boostAdded")
 
+    it "cannot replay the returned copy after its boost icons have been canceled" do
+      tg <- msMarvel
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "05014"
+        energy <- putInHand p "01088"
+        _ <- putInHand p "01088"
+        _ <- stackEncounterDeck [Minions.vulture]
+        villainAttacks p
+        choose "no defender" isNoDefender
+        choose "play Preemptive Strike" (isPlay strike)
+        choose "pay" (isPayWith energy)
+        chooseIf isFinishPayment
+        choose "Morphogenetics" (isNamedAbility "Morphogenetics")
+        map pcCardId <$> handOf p >>= (`shouldSatisfy` elem (pcCardId strike))
+        offers (isPlay strike) `shouldReturn` False
+        pass
+        villainDamageNow `shouldReturn` 2
+        damageOf p `shouldReturn` 2
+
     it "defeating the villain's stage mid-attack, the attack goes on at the next stage's ATK" do
       tg <- msMarvel
       let p = player1 tg

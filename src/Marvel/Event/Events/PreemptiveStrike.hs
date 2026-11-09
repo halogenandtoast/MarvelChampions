@@ -25,12 +25,12 @@ newtype PreemptiveStrike = PreemptiveStrike (Attrs Event)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | The boost card's icons are added just after it turns face up: cancelling them takes
--- that off the queue.
+-- the card out of the pending count.
 instance RunMessage PreemptiveStrike where
   runMessage msg e@(PreemptiveStrike attrs) = runQueueT $ case msg of
     EventMessage ident msg' | ident == eventId attrs -> case msg' of
       PlayedEvent _ _ (Just (W.FlippedBoostCard card (EnemyVillainId vid))) -> do
-        cancelBoostIcons vid
+        cancelBoostIconsOnCard card
         countBoostIcons attrs vid [card]
         pure e
       _ -> PreemptiveStrike <$> runMessage msg attrs

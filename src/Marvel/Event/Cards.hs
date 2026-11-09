@@ -913,7 +913,7 @@ preemptiveStrike :: CardDef
 preemptiveStrike =
   reprintedAs ["38015"] $ (event "05014" "Preemptive Strike" 1 HeroInterrupt [Defense] [Energy] Protection)
     { cdAbilitySubTypes = [Ability.Defense]
-    , cdResponseWindow = Just (BoostCardFlipped When (VillainEnemy <> AttackingEnemy))
+    , cdResponseWindow = Just (BoostCardWithIconsFlipped When (VillainEnemy <> AttackingEnemy))
     }
 
 tackle :: CardDef

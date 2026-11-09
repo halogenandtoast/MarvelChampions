@@ -2449,14 +2449,16 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           & (boostEntitiesL . treacheriesL %~ deleteMap (TreacheryId $ unCardId $ ecCardId card))
           & (boostEntitiesL . minionsL %~ deleteMap (MinionId $ unCardId $ ecCardId card))
     Nothing -> pure g
+  CardSpecific GameRef "cancelBoostIconsOnCard" (fromJSON -> Success card) ->
+    pure g {gameCancelledBoostIcons = ecCardId card : gameCancelledBoostIcons}
   RevealBoostCard card enemyId -> do
     checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
     cardSpecific GameRef "revealBoostAfterWindow" (True, card, enemyId)
-    pure g
+    pure g {gameCancelledBoostIcons = filter (/= ecCardId card) gameCancelledBoostIcons}
   RevealBoostCardWithoutAbility card enemyId -> do
     checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
     cardSpecific GameRef "revealBoostAfterWindow" (False, card, enemyId)
-    pure g
+    pure g {gameCancelledBoostIcons = filter (/= ecCardId card) gameCancelledBoostIcons}
   CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (allowAbility, card, enemyId)) ->
     revealBoostCardFor allowAbility card enemyId g
   ConsumeBoostCard card -> do

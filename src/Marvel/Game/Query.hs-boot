@@ -76,6 +76,7 @@ treacheryHasResolvedPart :: (HasGame m) => TreacheryId -> m Bool
 getTreacheriesRevealedThisPhase :: (HasGame m) => m [(IdentityId, TreacheryId)]
 getPhase :: (HasGame m) => m Phase
 getEncounterDeck :: (HasGame m) => m [EncounterCard]
+boostIconsCancelled :: HasGame m => EncounterCard -> m Bool
 getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getEncounterDiscard :: (HasGame m) => m [EncounterCard]
 getAbilitiesFor :: (HasGame m) => IdentityId -> m [Ability]

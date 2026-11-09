@@ -2569,8 +2569,10 @@ cancelBoostIcons (toEnemy -> enemy) = cancelMatchingMessage \case
 
 -- | Cancel the icons of one physical boost card, leaving every other boost card
 -- and this card's star ability intact (Northstar).
-cancelBoostIconsOnCard :: HasQueue m => EncounterCard -> m ()
-cancelBoostIconsOnCard card = replaceMatchingMessage change matchesMessage
+cancelBoostIconsOnCard :: ReverseQueue m => EncounterCard -> m ()
+cancelBoostIconsOnCard card = do
+  cardSpecific GameRef "cancelBoostIconsOnCard" card
+  replaceMatchingMessage change matchesMessage
  where
   matchesMessage = \case
     CountActivationBoostIcons _ cards -> card `elem` cards
@@ -2578,9 +2580,9 @@ cancelBoostIconsOnCard card = replaceMatchingMessage change matchesMessage
     WithBoostIcons _ _ counts -> any ((== card) . fst) counts
     _ -> False
   change = \case
-    CountActivationBoostIcons target cards -> [CountActivationBoostIcons target $ filter (/= card) cards]
-    CountBoostIcons target value cards -> [CountBoostIcons target value $ filter (/= card) cards]
-    WithBoostIcons target value counts -> [WithBoostIcons target value [(c, if c == card then 0 else n) | (c,n) <- counts]]
+    CountActivationBoostIcons target cards -> [CountActivationBoostIcons target remaining | let remaining = filter (/= card) cards, notNull remaining]
+    CountBoostIcons target value cards -> [CountBoostIcons target value remaining | let remaining = filter (/= card) cards, notNull remaining]
+    WithBoostIcons target value counts -> [WithBoostIcons target value remaining | let remaining = filter ((/= card) . fst) counts, notNull remaining]
     other -> [other]
 
 -- | The count of the boost icons on the card, as its window answers it ("count ...

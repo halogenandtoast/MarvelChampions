@@ -1766,7 +1766,10 @@ withGameM f = getGame >>= f >>= withGame_ . const
 getsGame :: (HasGame m) => (Game -> a) -> m a
 getsGame f = f <$> getGame
 
--- | The encounter deck, its top card first.
+-- | Whether this physical boost card's icons were canceled for its current reveal.
+boostIconsCancelled :: HasGame m => EncounterCard -> m Bool
+boostIconsCancelled card = getsGame $ elem (ecCardId card) . gameCancelledBoostIcons
+
 -- | The boost icons on the encounter card: its own, and those The Next Evolution adds.
 getBoostIcons :: (HasGame m) => EncounterCard -> m Natural
 getBoostIcons card = do
