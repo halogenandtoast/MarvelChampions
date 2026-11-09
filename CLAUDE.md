@@ -22,6 +22,13 @@ there before implementing it.
   answers at random. Keep it passing; a crash there is an engine bug. By default each
   scenario gets a few tables and 4 seeds; `SMOKE_FULL=1` plays every table and every
   modular with every scenario, `SMOKE_SEEDS=n` more games.
+- Agents: never run the whole suite (it takes over an hour and holds the build lock) or
+  every smoke game. Test in small batches with `--match`: the specs for the cards and
+  rules you touched, then focused smoke games only (`SMOKE_HEROES=…`, `SMOKE_MODULARS=…`,
+  `SMOKE_SAMPLE=n`, or `--match` on a scenario's smoke path). Build with dev.up's flags,
+  `stack test --fast --ghc-options -DDEVELOPMENT`, so its build is reused; for many
+  `--match` paths (they contain spaces and quotes) run the built
+  `.stack-work/dist/*/ghc-*/build/MarvelChampions-test/MarvelChampions-test` directly.
 - Every core card has a behaviour test that plays it as a player would
   (`test/Marvel/Hero/`, `test/Marvel/Aspect/`, `test/Marvel/Encounter/`), and
   `CoverageSpec` checks each MarvelCDB core code is implemented. A new card gets a test
