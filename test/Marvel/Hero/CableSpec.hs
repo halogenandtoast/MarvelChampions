@@ -198,6 +198,24 @@ spec = describe "Cable" do
       pass
       supportExhaustedNow (supportOf gray) `shouldReturn` True
 
+  for_ [False, True] $ \heroExhausted ->
+    for_ [False, True] $ \grayExhausted ->
+      it ("Graymalkin's response checks its own exhaustion; hero=" <> show heroExhausted <> ", support=" <> show grayExhausted) do
+        tg <- cableGame ["cable"]
+        inGame tg do
+          let p = player1 tg
+          asHero p
+          sid <- fromJust <$> purge
+          gray <- putIntoPlay p "40007"
+          when heroExhausted $ runNow [IdentityMessage p ExhaustedIdentity]
+          when grayExhausted $ runNow [SupportMessage (supportOf gray) ExhaustedSupport]
+          runNow [CheckWindows [W.Window W.After $ W.DefeatedSideSchemeBy sid p (Just $ IdentityRef p)]]
+          offers (cardAbility gray 1) `shouldReturn` grayExhausted
+          when grayExhausted do
+            choose "ready Graymalkin" (cardAbility gray 1)
+            supportExhaustedNow (supportOf gray) `shouldReturn` False
+          pass
+
   it "Professor offers an alter ego draw and exhausts" do
     tg <- cableGame ["cable"]
     inGame tg do

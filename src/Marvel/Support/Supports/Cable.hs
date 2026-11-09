@@ -101,10 +101,10 @@ instance RunMessage Cable40022 where
   runMessage msg (Cable40022 attrs) = runQueueT $ Cable40022 <$> runMessage msg attrs
 
 instance HasAbilities Cable40007 where
-  getAbilities a@(Cable40007 _) =
-    [ limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response (OwnsThis <> Exhausted) NoCost (runAbility a 1)
-    , ability a 2 Resource OwnsThis ExhaustCost (Pay $ ResourcePayment Energy)
-    ]
+  getAbilities a@(Cable40007 attrs) =
+    [ limitedWindowAbility a 1 (W.SideSchemeDefeated W.After AnySideScheme) Response OwnsThis NoCost (runAbility a 1)
+    | supportExhausted attrs
+    ] <> [ability a 2 Resource OwnsThis ExhaustCost (Pay $ ResourcePayment Energy)]
 
 instance HasAbilities Cable40008 where
   getAbilities a@(Cable40008 _) =
