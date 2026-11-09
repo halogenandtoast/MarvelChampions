@@ -242,6 +242,26 @@ spec = describe "She-Hulk" do
       _ <- putInHand p "01089"
       offers (isAbilityOfCard division) `shouldReturn` False
 
+  -- RR v1.8 errata removed its "(thwart)" label, so a confused alter-ego is not stopped
+  it "Superhuman Law Division is no thwart: a confused alter-ego still removes threat" do
+    tg <- sheHulk
+    let p = player1 tg
+    inGame tg do
+      mainScheme <- mainSchemeIdNow
+      runNow [MainSchemeMessage mainScheme (MainSchemePlaceThreat 5)]
+      before <- mainSchemeThreat
+      clearHand p
+      division <- inPlay p "01026" ["01090"]
+      genius <- putInHand p "01089"
+      resolve [IdentityMessage p IdentityConfused]
+      isConfused p `shouldReturn` True
+      choose "use the division" (isAbilityOfCard division)
+      choose "pay with genius" (isPayWith genius)
+      whenM (offers isFinishPayment) $ choose "finish paying" isFinishPayment
+      chooseMainScheme
+      mainSchemeThreat `shouldReturn` (before - 2)
+      isConfused p `shouldReturn` True
+
   it "Superhuman Law Division needs a mental resource and alter-ego form" do
     tg <- sheHulk
     let p = player1 tg
