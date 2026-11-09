@@ -341,6 +341,10 @@ export const useGame = (gameId: string, spectate = false) => {
       if (epoch !== animationEpoch) { held?.cancel(); return false }
       const accepted = await post('', { choice, questionVersion, player })
       if (!accepted) held?.cancel()
+      // The socket may miss the final question (for example during a reconnect).
+      // Reconcile after the move is stored, using refresh's broadcast guard to
+      // avoid replacing a newer live update with this snapshot.
+      if (accepted && epoch === animationEpoch) await refresh()
       return accepted
     },
     debug: (message: unknown) => post('/debug', message),
