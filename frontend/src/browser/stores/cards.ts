@@ -5,7 +5,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from './store'
 import { activeFilterCount, emptyFilters, filterCards, isEmptyFilters, sortCards, type CardFilters, type SortField } from '@browser/lib/search'
-import type { Card, CardIndex, Pack } from '@browser/types/card'
+import type { Card, CardIndex, Errata, ErrataIndex, Pack } from '@browser/types/card'
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -16,10 +16,21 @@ async function fetchCardIndex(): Promise<CardIndex> {
   return response.json()
 }
 
+// The Rules Reference errata, beside the index; a card without one, or no file at all, has none.
+async function fetchErrata(): Promise<Record<string, Errata>> {
+  try {
+    const response = await fetch('/data/errata.json')
+    return response.ok ? ((await response.json()) as ErrataIndex).cards : {}
+  } catch {
+    return {}
+  }
+}
+
 export const useCardStore = defineStore('cards', () => {
   // shallow: the array is large and never changes once loaded
   const all = shallowRef<Card[]>([])
   const packs = shallowRef<Pack[]>([])
+  const errata = shallowRef<Record<string, Errata>>({})
   const state = ref<LoadState>('idle')
   const error = ref<string | null>(null)
 
@@ -34,9 +45,10 @@ export const useCardStore = defineStore('cards', () => {
     if (state.value === 'ready') return Promise.resolve()
     if (inFlight) return inFlight
     state.value = 'loading'
-    inFlight = fetchCardIndex()
-      .then((index) => {
+    inFlight = Promise.all([fetchCardIndex(), fetchErrata()])
+      .then(([index, cardErrata]) => {
         all.value = index.cards
+        errata.value = cardErrata
         packs.value = [...index.packs].sort((a, b) => a.order - b.order)
         state.value = 'ready'
       })
@@ -56,6 +68,13 @@ export const useCardStore = defineStore('cards', () => {
     return index
   })
   const cardByCode = (code: string | null | undefined): Card | undefined => (code ? byCode.value.get(code) : undefined)
+
+  /** A card's errata, by its own code or the face it was printed with (01029a beside 01029). */
+  const errataFor = (code: string | null | undefined): Errata | undefined => {
+    if (!code) return undefined
+    const lettered = /[a-z]$/.test(code)
+    return errata.value[code] ?? (lettered ? errata.value[code.slice(0, -1)] : errata.value[`${code}a`])
+  }
 
   /** A fold-out identity's third side (Ant-Man's Giant, 12001c beside 12001a), browsed with its A side. */
   const thirdFace = (card: Card): Card | undefined => (/a$/.test(card.code) ? cardByCode(card.code.replace(/a$/, 'c')) : undefined)
@@ -106,5 +125,5 @@ export const useCardStore = defineStore('cards', () => {
     else list.splice(i, 1)
   }
 
-  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, thirdFace, results, facets, hasFilters, filterCount, resetFilters, toggle }
+  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, errataFor, thirdFace, results, facets, hasFilters, filterCount, resetFilters, toggle }
 })

@@ -96,6 +96,21 @@ export interface Pack {
   cardCount: number
 }
 
+/** A card's errata from the Rules Reference (tools/generate-errata.py). */
+export interface Errata {
+  /** the card as the Rules Reference names it */
+  name: string
+  /** what the errata says, as card text */
+  text: string
+  /** its page in the Rules Reference */
+  page: number
+}
+
+export interface ErrataIndex {
+  source: string
+  cards: Record<string, Errata>
+}
+
 export interface CardIndex {
   version: number
   generatedAt: string

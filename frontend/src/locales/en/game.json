@@ -45,6 +45,10 @@
     "hero": "Hero",
     "alterEgo": "Alter-ego"
   },
+  "errata": {
+    "title": "Errata",
+    "source": "Rules Reference v1.8, p. {page}"
+  },
   "status": {
     "inactive": "{status} (inactive)",
     "stunned": "Stunned",

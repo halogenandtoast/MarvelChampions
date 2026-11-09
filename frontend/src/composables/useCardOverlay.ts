@@ -35,6 +35,8 @@ const anchor = shallowRef<HTMLElement | null>(null)
 // shown by a touch rather than a hover: centred, and up until the next touch
 const pinned = ref(false)
 const placement = reactive<Placement>({ top: 0, left: 0, width: OVERLAY_WIDTH, height: 0 })
+// what hangs below the preview (its errata), in pixels: kept on screen with the card
+const below = ref(0)
 
 let frame: number | null = null
 let listening = false
@@ -58,12 +60,12 @@ const measure = () => {
 
   if (pinned.value) {
     // as big as fits, up to the hover size, in the middle of the screen, statuses and all
-    const scale = Math.min(1, (window.innerWidth - 2 * PAD) / (width + extra), (window.innerHeight - 2 * PAD) / height)
+    const scale = Math.min(1, (window.innerWidth - 2 * PAD) / (width + extra), (window.innerHeight - 2 * PAD - below.value) / height)
     side.value = 'right'
     placement.width = width * scale
     placement.height = height * scale
     placement.left = (window.innerWidth - placement.width - extra * scale) / 2
-    placement.top = (window.innerHeight - placement.height) / 2
+    placement.top = (window.innerHeight - placement.height - below.value) / 2
     return
   }
 
@@ -76,7 +78,7 @@ const measure = () => {
 
   // Line up with the card, then lift it so the whole card stays inside the viewport.
   const desiredTop = rect.top - 40
-  const maxTop = window.innerHeight - height - PAD
+  const maxTop = window.innerHeight - height - below.value - PAD
   const top = Math.max(PAD, Math.min(desiredTop, maxTop))
 
   placement.top = top
@@ -153,4 +155,10 @@ export const useCardOverlay = () => (listen(), {
     if (anchor.value) anchorObserver.observe(document.body, { childList: true, subtree: true })
   },
   hide,
+  /** Set by the overlay to the height of what it draws below the card. */
+  setBelow: (height: number) => {
+    if (below.value === height) return
+    below.value = height
+    if (card.value) schedule()
+  },
 })
