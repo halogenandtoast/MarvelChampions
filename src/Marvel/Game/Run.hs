@@ -13,9 +13,11 @@ import Marvel.Game
 import Marvel.Log (idText, sendLog)
 import Marvel.Log.Narrator
 import Marvel.Id
+import Marvel.Ref (Ref (GameRef))
 import Marvel.Message
 import Marvel.Message.Identity ()
 import Marvel.Message.Villain ()
+import Marvel.Window.Types qualified
 
 narrate :: Message -> GameAppT ()
 narrate msg = do
@@ -56,12 +58,11 @@ stepBegins = \case
 intoRiver :: Message -> Bool
 intoRiver = \case
   VillainMessage _ (VillainDealtBoost _) -> True
-  RevealEncounterCardFrom {} -> True
-  _ -> False
+  msg -> isJust $ revealingCard msg
 
 -- | What the board animates for a message, read before it runs.
--- RevealEncounterCard delegates to RevealEncounterCardFrom; only the latter cues
--- the reveal, so the board does not draw the same card twice.
+-- Reveal only after would-reveal interrupts finish, including when an interrupt
+-- cancels the printed effects. The card must stay hidden while costs are chosen.
 cue :: Message -> Maybe FrontendMessage
 cue = \case
   ShuffleEncounterDeck -> Just $ Shuffled "deck-encounter"
@@ -70,8 +71,13 @@ cue = \case
   IdentityMessage ident (ShuffleIntoIdentityDeck _) -> Just $ Shuffled ("deck-" <> idText ident)
   IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck -> Just $ Shuffled ("deck-" <> idText ident)
   VillainMessage _ (VillainDealtBoost card) -> Just $ BoostDealt (ecCardId card)
-  RevealEncounterCardFrom _ _ card -> Just $ Revealing (ecCardId card) (toCardCode card) False
   RevealBoostCard card _ -> Just $ Revealing (ecCardId card) (toCardCode card) True
+  msg -> (\card -> Revealing (ecCardId card) (toCardCode card) False) <$> revealingCard msg
+
+revealingCard :: Message -> Maybe EncounterCard
+revealingCard = \case
+  CardSpecific GameRef key (fromJSON -> Success (_ :: Marvel.Window.Types.RevealSource, _ :: IdentityId, card :: EncounterCard))
+    | key `elem` ["revealAfterWould", "revealAfterWouldWithoutWhenRevealed"] -> Just card
   _ -> Nothing
 
 -- | Play on until someone has to answer a question.

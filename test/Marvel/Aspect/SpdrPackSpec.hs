@@ -373,20 +373,48 @@ spec = describe "SP//dr pack" do
 
   describe "Spider-Tingle" do
     it "cancels a treachery's When Revealed effect, deals its cost and discards itself" do
-      tg <- pack
-      let p = player1 tg
+      original <- pack
+      sent <- newIORef []
+      let tg = original {app = original.app {appFrontend = \message -> original.app.appFrontend message >> modifyIORef' sent (<> [message])}}
+          p = player1 tg
       inGame tg do
         changeForm p
         card <- putIntoPlay p "31020"
+        _ <- putIntoPlay p "31015"
+        liftIO $ writeIORef sent []
         _ <- revealNow p Treacheries.imTough
+        messages <- liftIO $ readIORef sent
+        [code | Revealing {code, boost = False} <- messages] `shouldBe` []
         getsGame gameFocusedCards `shouldReturn` []
         choose "Spider-Tingle" (ownAbility card)
         getsGame gameFocusedCards `shouldReturn` []
+        beforeCost <- liftIO $ readIORef sent
+        [code | Revealing {code, boost = False} <- beforeCost] `shouldBe` []
         choose "damage Suit" (isTargetChoice $ characterRef $ IdentityCharacter p)
         pass
+        afterCost <- liftIO $ readIORef sent
+        [code | Revealing {code, boost = False} <- afterCost] `shouldBe` [toCardCode Treacheries.imTough]
         damageOf p `shouldReturn` 1
         upgradeCodes >>= (`shouldSatisfy` notElem "31020")
         Villain.villainTough . toAttrs <$> getVillain `shouldReturn` False
+    it "reveals the card only after declining its interrupt" do
+      original <- pack
+      sent <- newIORef []
+      let tg = original {app = original.app {appFrontend = \message -> original.app.appFrontend message >> modifyIORef' sent (<> [message])}}
+          p = player1 tg
+      inGame tg do
+        changeForm p
+        _ <- putIntoPlay p "31020"
+        liftIO $ writeIORef sent []
+        _ <- revealNow p Treacheries.imTough
+        beforeChoice <- liftIO $ readIORef sent
+        [code | Revealing {code, boost = False} <- beforeChoice] `shouldBe` []
+        choose "decline Spider-Tingle" isNoResponse
+        pass
+        afterChoice <- liftIO $ readIORef sent
+        [code | Revealing {code, boost = False} <- afterChoice] `shouldBe` [toCardCode Treacheries.imTough]
+        Villain.villainTough . toAttrs <$> getVillain `shouldReturn` True
+
     for_ [Treacheries.huntedByHydra, Treacheries.theWarsBeenBrought] \treacheryDef ->
       it ("cancels early printed keywords without feeding Noir: " <> show (toCardCode treacheryDef)) do
         tg <- pack
