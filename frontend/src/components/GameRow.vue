@@ -8,7 +8,7 @@ import { useCards } from '../cards'
 import { scenarioPortraits } from '../scenarios'
 import type { CampaignView, GameSummary } from '../server'
 
-const props = defineProps<{ game: GameSummary; campaign?: CampaignView | null; deleteCampaign?: () => void; deleteGame?: () => void; spectate?: boolean }>()
+const props = defineProps<{ game: GameSummary; campaign?: CampaignView | null; deleteCampaign?: () => void; deleteGame?: () => void; spectate?: boolean; preview?: boolean }>()
 
 const title = computed(() => {
   const prefix = props.campaign ? `${props.campaign.name} – ` : ''
@@ -25,7 +25,7 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
   <article class="game-row" :class="{ won: game.outcome === 'Won', lost: game.outcome === 'Lost' }">
     <CampaignBar v-if="campaign" :campaign="campaign" :delete-campaign="deleteCampaign" />
     <div class="game-content">
-      <RouterLink class="scenario-link" :to="link" :aria-label="title">
+      <component :is="preview ? 'div' : 'RouterLink'" class="scenario-link" :to="preview ? undefined : link" :aria-label="title">
         <span class="villain portrait" :class="{ 'scheme-art': cards.landscape(portraitCode) }" :style="{ backgroundImage: villainArt }" aria-hidden="true" />
         <div class="body">
           <div class="title-line">
@@ -47,8 +47,8 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
           </ul>
           <p v-else class="meta">{{ game.playerName }}</p>
         </div>
-        <ChevronRight class="select-chevron" aria-hidden="true" />
-      </RouterLink>
+        <ChevronRight v-if="!preview" class="select-chevron" aria-hidden="true" />
+      </component>
       <button v-if="deleteGame && !campaign" type="button" class="delete" :aria-label="$t('home.deleteGame')" :title="$t('home.deleteGame')" @click="confirm?.open()">
         <Trash2 aria-hidden="true" />
       </button>

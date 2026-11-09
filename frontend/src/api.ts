@@ -59,7 +59,7 @@ export const deleteGame = (id: string) => apiFetch(`/api/games/${id}`, { method:
 export const exportGame = async (id: string) => {
   const response = await apiFetch(`/api/games/${id}/export`)
   if (!response.ok) throw new Error((await response.text()) || response.statusText)
-  const filename = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') ?? '')?.[1] ?? `game-${id}.json`
+  const filename = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') ?? '')?.[1] ?? `game-${id}.json.gz`
   const url = URL.createObjectURL(await response.blob())
   const link = Object.assign(document.createElement('a'), { href: url, download: filename })
   link.click()
@@ -73,8 +73,8 @@ export const fileBug = (id: string) => apiFetch(`/api/games/${id}/file-bug`, { m
 export const importGame = async (file: File) =>
   apiFetch('/api/import', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: await file.text(),
+    headers: { 'Content-Type': 'application/octet-stream' },
+    body: file,
   }).then((r) => json<{ id: string }>(r))
 
 export interface NewCampaign {

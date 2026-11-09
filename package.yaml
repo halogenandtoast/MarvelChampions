@@ -94,6 +94,9 @@ executables:
     - persistent-postgresql
     - time
     - yesod-core
+    - zlib
+    - conduit
+    - conduit-extra
     - yesod-persistent
     - yesod-websockets
     - monad-logger

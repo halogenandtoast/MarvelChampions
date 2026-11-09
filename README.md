@@ -14,6 +14,13 @@ With postgres running locally and GHC 9.14 / stack on the path:
 builds and watches the API, restarting it on each rebuild, and starts the client once
 the API answers. Tests: `stack test`.
 
+Game imports allow up to 1 GiB when `DEVELOPMENT=true` (set by `dev.up`),
+or 64 MiB otherwise. Set `MAX_IMPORT_BYTES` to a positive byte count to override
+this limit in either environment. Other API requests retain the 2 MiB limit.
+The limit also applies to the decompressed import. Downloads use `.json.gz` and
+include a summary for the load screen's local preview. The loader accepts both
+gzip files and older JSON exports; undo history and logs are preserved.
+
 ## Card data and images
 
 - `tools/generate-cards.py` rebuilds `frontend/public/data/cards.json` from MarvelCDB.

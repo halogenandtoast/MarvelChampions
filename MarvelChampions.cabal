@@ -2834,6 +2834,8 @@ executable marvel-champions
     , bcrypt
     , bytestring
     , classy-prelude
+    , conduit
+    , conduit-extra
     , containers
     , crypton
     , exceptions
@@ -2863,6 +2865,7 @@ executable marvel-champions
     , yesod-core
     , yesod-persistent
     , yesod-websockets
+    , zlib
   default-language: GHC2021
 
 test-suite MarvelChampions-test

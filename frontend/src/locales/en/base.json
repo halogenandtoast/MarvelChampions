@@ -83,7 +83,7 @@
     "finishedGames": "Finished",
     "loadGame": "Load game",
     "loading": "Loading…",
-    "chooseFile": "Choose an exported game (.json)",
+    "chooseFile": "Choose an exported game (.json or .json.gz)",
     "serverUnreachable": "The server could not be reached.",
     "couldNotLoadFile": "Could not load that file.",
     "noActiveGames": "No games in progress. Start one and put a villain away.",

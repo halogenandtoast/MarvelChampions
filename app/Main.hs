@@ -7,6 +7,11 @@
 module Main (main) where
 
 import AppPrelude
+import Codec.Compression.GZip qualified as GZip
+import Control.Exception qualified as Exception
+import Data.ByteString.Lazy qualified as BL
+import Data.Conduit (runConduit, (.|))
+import Data.Conduit.Binary (sinkLbs)
 import Auth
 import BugUpload (uploadBugExport)
 import CardDb (CardDb, loadCardDb)
@@ -101,6 +106,7 @@ data App = App
   , channels :: TVar (Map MarvelGameId (TChan Outgoing))
   , cardDb :: CardDb
   , manager :: Manager
+  , maxImportBytes :: Word64
   }
 
 mkYesod
@@ -144,6 +150,9 @@ mkYesod
 
 -- | The API authenticates with tokens, so there is no cookie session.
 instance Yesod App where
+  -- Exports include undo history and can exceed Yesod's default 2 MiB limit.
+  maximumContentLength app (Just (ApiP ImportR)) = Just app.maxImportBytes
+  maximumContentLength _ _ = Just (2 * 1024 * 1024)
   makeSessionBackend _ = pure Nothing
 
 instance YesodPersist App where
@@ -1409,6 +1418,7 @@ postResetR gid = do
 -- | Everything needed to carry a game elsewhere, undo history included.
 data ExportedGame = ExportedGame
   { version :: Int
+  , preview :: Maybe Value
   , name :: Text
   , playerName :: Text
   , scenario :: Value
@@ -1446,6 +1456,7 @@ exportGame gid = do
     ( row
     , ExportedGame
         { version = exportVersion
+        , preview = toJSON <$> summary [] (Entity gid row)
         , name = row.marvelGameName
         , playerName = row.marvelGamePlayerName
         , scenario = row.marvelGameScenario
@@ -1461,11 +1472,11 @@ exportGame gid = do
         }
     )
 
-getExportR :: MarvelGameId -> Handler Value
+getExportR :: MarvelGameId -> Handler TypedContent
 getExportR gid = do
   (row, exported) <- exportGame gid
-  addHeader "Content-Disposition" $ "attachment; filename=\"" <> slug row.marvelGameName <> ".json\""
-  pure $ toJSON exported
+  addHeader "Content-Disposition" $ "attachment; filename=\"" <> slug row.marvelGameName <> ".json.gz\""
+  pure $ TypedContent "application/gzip" $ toContent $ GZip.compress $ encode exported
  where
   slug = T.intercalate "-" . T.words . T.filter (\c -> c == ' ' || c == '-' || isAlphaNum c) . toLower
 
@@ -1482,7 +1493,18 @@ postBugR gid = do
 postImportR :: Handler Value
 postImportR = do
   userId <- requireUserId
-  exported <- requireCheckJsonBody @_ @ExportedGame
+  bytes <- runConduit $ rawRequestBody .| sinkLbs
+  limit <- getsYesod (.maxImportBytes)
+  let unpacked = if BL.take 2 bytes == BL.pack [0x1f, 0x8b] then GZip.decompress bytes else bytes
+      bounded = BL.take (fromIntegral limit + 1) unpacked
+  decoded <- liftIO $ Exception.try @Exception.SomeException $ Exception.evaluate $ BL.length bounded
+  case decoded of
+    Left _ -> sendResponseStatus status400 ("$error.invalidGameFile" :: Text)
+    Right size | size > fromIntegral limit -> sendResponseStatus status400 ("$error.gameFileTooLarge" :: Text)
+    Right _ -> pure ()
+  exported <- case eitherDecode @ExportedGame bounded of
+    Left _ -> sendResponseStatus status400 ("$error.invalidGameFile" :: Text)
+    Right value -> pure value
   unless (exported.version == exportVersion) $ sendResponseStatus status400 (ikey "error.unsupportedExport")
   -- refuse a file the engine cannot read before storing any of it
   imported <- decodeOrFail @Game "game" exported.game
@@ -1533,6 +1555,12 @@ sweepGuests = do
 main :: IO ()
 main = do
   port <- fromMaybe 3000 . (>>= readMaybe) <$> lookupEnv "PORT"
+  development <- (== Just "true") <$> lookupEnv "DEVELOPMENT"
+  maxImportBytes <- lookupEnv "MAX_IMPORT_BYTES" >>= \case
+    Nothing -> pure $ (if development then 1024 else 64) * 1024 * 1024
+    Just value -> case readMaybe value of
+      Just bytes | bytes > 0 -> pure bytes
+      _ -> fail "MAX_IMPORT_BYTES must be a positive number of bytes"
   database <- fromMaybe "host=localhost dbname=marvelchampions" <$> lookupEnv "DATABASE_URL"
   pool <- runStdoutLoggingT $ createPostgresqlPool (encodeUtf8 $ pack database) 10
   runSqlPool
@@ -1555,7 +1583,7 @@ main = do
   cardsPath <- fromMaybe "frontend/public/data/cards.json" <$> lookupEnv "CARDS_JSON"
   cardDb <- loadCardDb cardsPath >>= either (\err -> error $ "could not load " <> cardsPath <> ": " <> err) pure
   manager <- newTlsManager
-  warp port App {pool, jwtSecret, channels, cardDb, manager}
+  warp port App {pool, jwtSecret, channels, cardDb, manager, maxImportBytes}
 
 -- Campaign planning runs inside the game's stored generator. The database title
 -- and setup are updated after its players choose the actual next scenario.

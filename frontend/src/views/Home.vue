@@ -10,6 +10,7 @@ import SegmentedToggle from '../components/SegmentedToggle.vue'
 import type { CampaignView, GameSummary } from '../server'
 import { useServerText } from '../i18n'
 import { currentUser } from '../auth'
+import { inspectGameFile } from '../gameFiles'
 
 const tr = useServerText()
 type Tab = 'active' | 'finished'
@@ -72,10 +73,31 @@ const showImportGame = ref(false)
 const importFile = ref<File | null>(null)
 const importing = ref(false)
 const importError = ref<string | null>(null)
+const importPreview = ref<GameSummary | null>(null)
+const importName = ref<string | null>(null)
+const inspecting = ref(false)
+let selection = 0
 
-const chooseFile = (event: Event) => {
-  importFile.value = (event.target as HTMLInputElement).files?.[0] ?? null
+const chooseFile = async (event: Event) => {
+  const chosen = ++selection
+  const file = (event.target as HTMLInputElement).files?.[0] ?? null
+  importFile.value = null
+  importPreview.value = null
+  importName.value = null
   importError.value = null
+  inspecting.value = !!file
+  if (!file) return
+  try {
+    const result = await inspectGameFile(file)
+    if (chosen !== selection) return
+    importPreview.value = result.preview
+    importName.value = result.name
+    importFile.value = file
+  } catch (e) {
+    if (chosen === selection) importError.value = e instanceof Error ? e.message : t('home.couldNotLoadFile')
+  } finally {
+    if (chosen === selection) inspecting.value = false
+  }
 }
 
 const submitImport = async () => {
@@ -107,9 +129,12 @@ const submitImport = async () => {
       <Transition name="fade">
         <div v-if="showImportGame" class="load-game box">
           <label class="file-picker">
-            <input type="file" accept="application/json,.json" @change="chooseFile" />
+            <input type="file" accept="application/json,application/gzip,.json,.gz" :disabled="importing" @change="chooseFile" />
             <span>{{ importFile ? importFile.name : $t('home.chooseFile') }}</span>
           </label>
+          <p v-if="inspecting" role="status">{{ $t('home.loading') }}</p>
+          <GameRow v-if="importPreview" :game="importPreview" preview />
+          <p v-else-if="importName">{{ importName }}</p>
           <div class="load-actions">
             <button class="btn ghost" type="button" @click="showImportGame = false">{{ $t('common.cancel') }}</button>
             <button class="btn primary" type="button" :disabled="!importFile || importing" @click="submitImport">{{ importing ? $t('home.loading') : $t('home.loadGame') }}</button>

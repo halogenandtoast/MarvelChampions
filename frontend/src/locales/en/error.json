@@ -48,5 +48,7 @@
   "wonderManEvents": "Wonder Man may use printed energy events from any aspect; his other aspect cards must use his chosen aspect.",
   "cwSeatCount": "Civil War requires two or four hero seats.",
   "cwSeatsUnfilled": "Fill every seat before starting Civil War.",
-  "cwLeaderHero": "Choose a hero with a different title from your own team leader."
+  "cwLeaderHero": "Choose a hero with a different title from your own team leader.",
+  "invalidGameFile": "This file is not a readable game export. Choose a JSON or gzip save file.",
+  "gameFileTooLarge": "This game export exceeds the server’s import size limit."
 }
