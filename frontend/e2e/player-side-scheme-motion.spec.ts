@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-for (const source of ['deck', 'discard', 'encounter'] as const) {
+for (const source of ['deck', 'discard', 'encounter', 'set-aside'] as const) {
   test(`a side scheme enters from its ${source} pile`, async ({ page }) => {
     await page.goto('/#/cards/40018')
     const result = await page.evaluate(async source => {
@@ -10,7 +10,7 @@ for (const source of ['deck', 'discard', 'encounter'] as const) {
       await useCards().store.load()
       const host = document.createElement('div')
       document.body.replaceChildren(host)
-      for (const [pile, left] of [['deck-owner', 50], ['deck-encounter', 350], ['discard-owner', 650]] as const) {
+      for (const [pile, left] of [['deck-owner', 50], ['deck-encounter', 350], ['discard-owner', 650], ['set-aside', 950]] as const) {
         const element = document.createElement('div')
         element.dataset.pile = pile
         element.innerHTML = '<div class="stack"></div>'
@@ -18,8 +18,8 @@ for (const source of ['deck', 'discard', 'encounter'] as const) {
         host.append(element)
       }
       const card = { id: 'selected-scheme', code: source === 'encounter' ? '01109' : '40018', name: 'Side scheme' }
-      const before = { players: [{ id: 'owner', hand: [], discard: source === 'discard' ? [card] : [] }], sideSchemes: [] }
-      const after = { ...before, players: [{ id: 'owner', hand: [], discard: [] }], sideSchemes: [{ ...card, owner: source === 'encounter' ? null : 'owner' }] }
+      const before = { players: [{ id: 'owner', hand: [], discard: source === 'discard' ? [card] : [] }], sideSchemes: [], setAsideCards: source === 'set-aside' ? [card] : [] }
+      const after = { ...before, setAsideCards: [], players: [{ id: 'owner', hand: [], discard: [] }], sideSchemes: [{ ...card, owner: source === 'encounter' ? null : 'owner' }] }
       const move = dealFrom(before, after, () => ['/card-image.png'])
       const ghost = [...document.body.children].find(el => (el as HTMLElement).style.viewTransitionName === morphName(card.id)) as HTMLElement | undefined
       if (!ghost) throw new Error('No source ghost for the selected side scheme')
@@ -28,7 +28,8 @@ for (const source of ['deck', 'discard', 'encounter'] as const) {
       move.done()
       return result
     }, source)
-    expect(result.left).toBe(source === 'deck' ? 50 : source === 'discard' ? 650 : 350)
-    if (source !== 'discard') expect(result.image).toBe(result.back)
+    expect(result.left).toBe(source === 'deck' ? 50 : source === 'discard' ? 650 : source === 'set-aside' ? 950 : 350)
+    if (source === 'deck' || source === 'encounter') expect(result.image).toBe(result.back)
+    else expect(result.image).toBe('/card-image.png')
   })
 }

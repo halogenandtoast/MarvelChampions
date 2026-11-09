@@ -7,6 +7,21 @@ import TestImport
 
 spec :: Spec
 spec = describe "the game log" do
+  it "explains basic actions canceled by statuses without logging a successful action" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      runDebug $ CardSpecific (IdentityRef p) "debugSetValues" $ object ["stunned" .= True, "confused" .= True]
+      runNow [IdentityMessage p (SideMessage Attacked)]
+      runNow [IdentityMessage p (SideMessage Thwarted)]
+    told <- T.concat . map entryText <$> readIORef tg.logged
+    told `shouldSatisfy` T.isInfixOf "$log.attackCanceledByStun"
+    told `shouldSatisfy` T.isInfixOf "$log.thwartCanceledByConfusion"
+    told `shouldSatisfy` (not . T.isInfixOf "$log.basicAttack")
+    told `shouldSatisfy` (not . T.isInfixOf "$log.basicThwart")
+
   it "tells the rounds, the turns and what is played" do
     let setup = fromMaybe (error "no setup") (recommendedSetup "01094")
     (app, _, logged) <- dealtGameLogged setup [starter "spider-man"] 5

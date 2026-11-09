@@ -49,7 +49,7 @@ export interface RiverSchemer {
 }
 
 const { cards, revealedCards = [], resolvingEvents = [], label = null, reactionCards = [], reactionLabel = null, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
-  activationKind?: 'attack' | 'scheme' | 'playerPhase' | 'villainPhase'
+  activationKind?: 'attack' | 'scheme' | 'playerPhase' | 'villainPhase' | 'stunned' | 'confused'
   schemer?: RiverSchemer | null
   activationBanner?: boolean
   actions?: ChoiceView[]
@@ -90,7 +90,7 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
 <template>
   <section class="river" :aria-label="t('game.zones.river')">
     <Transition name="activation" :css="!skipAnimation">
-      <div v-if="activationAlert" class="activation-alert" :class="{ 'fight-banner': activationBanner, 'scheme-banner': activationKind === 'scheme' || activationKind === 'playerPhase' }" role="status"><span>{{ activationAlert }}</span></div>
+      <div v-if="activationAlert" class="activation-alert" :class="{ 'fight-banner': activationBanner, 'scheme-banner': activationKind === 'scheme' || activationKind === 'playerPhase', 'stunned-banner': activationKind === 'stunned', 'confused-banner': activationKind === 'confused' }" role="status"><span>{{ activationAlert }}</span></div>
     </Transition>
     <section v-if="reactionLabel" class="lane live reaction" :class="{ compact: hasMainLane || shared || revealedCards.length || resolvingEvents.length }" :aria-label="reactionLabel">
       <div class="what"><p>{{ reactionLabel }}</p></div>
@@ -174,15 +174,22 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
 .activation-enter-active, .activation-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
 .activation-enter-from { opacity: 0; transform: translateY(6px); }
 .activation-leave-to { opacity: 0; transform: translateY(-4px); }
-.fight-banner { overflow: hidden; border: 0; background: var(--banner-color, var(--stat-atk)); color: var(--ink-1); font-size: clamp(1.6rem, 3.5vw, 3.5rem); font-style: italic; letter-spacing: -0.025em; animation: fight-flood 2200ms both; }
+.fight-banner { overflow: hidden; border: 0; background: var(--banner-color, var(--stat-atk)); color: var(--ink-1); font-size: clamp(1.6rem, 3.5vw, 3.5rem); font-style: italic; letter-spacing: -0.025em; opacity: 0; clip-path: inset(0 100% 0 0); animation: fight-flood 2200ms both; }
+/* Match the yellow Stunned and purple Confused status cards. Solid fills
+   keep the cancellation readable above busy card art (both exceed 7:1). */
+.stunned-banner { --status-stunned: #f4d232; --banner-color: var(--status-stunned); color: #201d12; }
+.confused-banner { --status-confused: #75448c; --banner-color: var(--status-confused); color: #fff; }
 .scheme-banner { --banner-color: var(--stat-sch); }
 .fight-banner span { position: relative; z-index: 1; animation: fight-title 2200ms both; }
+.fight-banner:is(.stunned-banner, .confused-banner),
+.fight-banner:is(.stunned-banner, .confused-banner) span { animation-duration: 1800ms; }
 .fight-banner::after { content: ''; position: absolute; inset: -50% -20%; background: repeating-linear-gradient(-55deg, transparent 0 50px, rgb(0 0 0 / 0.08) 50px 65px); animation: fight-streak 6600ms linear both; }
 .fight-banner.activation-enter-active, .fight-banner.activation-leave-active { transition: none; }
-@keyframes fight-flood { 0% { clip-path: inset(0 100% 0 0); transform: scaleY(0.25); } 18%, 76% { clip-path: inset(0); transform: scaleY(1); opacity: 1; } 100% { clip-path: inset(0); transform: scale(0.84); opacity: 0; } }
+.fight-banner.activation-leave-active { opacity: 0; visibility: hidden; animation: none; }
+@keyframes fight-flood { 0% { clip-path: inset(0 100% 0 0); transform: scaleY(0.25); opacity: 0; } 18%, 76% { clip-path: inset(0); transform: scaleY(1); opacity: 1; } 100% { clip-path: inset(0); transform: scale(0.84); opacity: 0; } }
 @keyframes fight-title { 0% { transform: translateX(-12%) scale(1.6); opacity: 0; } 40% { transform: translateX(1%) scale(1.05); opacity: 1; } 52%, 76% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: scale(0.8); opacity: 0; } }
 @keyframes fight-streak { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
-@media (prefers-reduced-motion: reduce) { .fight-banner, .fight-banner span, .fight-banner::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .fight-banner { opacity: 1; clip-path: none; } .fight-banner, .fight-banner span, .fight-banner::after { animation: none; } }
 @media (prefers-reduced-motion: reduce) { .activation-enter-active, .activation-leave-active { transition: none; } .activation-enter-from, .activation-leave-to { transform: none; } }
 .canceled-status { width: var(--card-width); height: auto; border-radius: 8px; }
 .lane {

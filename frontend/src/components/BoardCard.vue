@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useCardDebug } from '../composables/useCardDebug'
 import ActionLabel from './ActionLabel.vue'
 // A card on the table: its scan, the tokens on it, its statuses, and what can be done
 // with it. A card the open question is about lights up; a click answers, or asks which
@@ -161,16 +162,25 @@ const statuses = computed(() => statusCards(props))
 const preview = (element: HTMLElement, touched = false, code = props.code, back = props.back) =>
   overlay.show({ code, name: title.value, back, statuses: code === props.code ? statuses.value : [], inactiveStatuses: code === props.code ? inactiveStatusCards(props) : [] }, element, !back && cards.landscape(code), touched)
 
+const cardDebug = useCardDebug()
+let debugHeld = false
+let pressOrigin = { x: 0, y: 0 }
+const openDebug = () => { if (cardDebug?.enabled.value && props.id) { overlay.hide(); cardDebug.open(props.id, { code: props.code ?? '', name: title.value }); return true } return false }
 let lastPointer = 'mouse'
 let pressTimer: ReturnType<typeof setTimeout> | undefined
 const cancelPress = () => clearTimeout(pressTimer)
+onBeforeUnmount(cancelPress)
 const press = (event: PointerEvent) => {
+  debugHeld = false
+  pressOrigin = { x: event.clientX, y: event.clientY }
   lastPointer = event.pointerType
   cancelPress()
-  if (event.pointerType !== 'mouse' && el.value) pressTimer = setTimeout(() => el.value && preview(el.value, true), 400)
+  if (cardDebug?.enabled.value && props.id) pressTimer = setTimeout(() => { debugHeld = true; openDebug() }, 500)
+  else if (event.pointerType !== 'mouse' && el.value) pressTimer = setTimeout(() => el.value && preview(el.value, true), 400)
 }
 
 const click = () => {
+  if (debugHeld) { debugHeld = false; return }
   overflowOpen.value = false
   if (mobile.value && el.value) {
     preview(el.value, true)
@@ -197,17 +207,19 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       :style="{ viewTransitionName: transitionName }"
       :data-card-id="id ?? undefined"
       :aria-label="mobile && code ? $t('game.mobile.inspectCard', { name: title }) : title"
-      :role="mobile && code ? 'button' : undefined"
-      :tabindex="mobile && code ? 0 : undefined"
-      @keydown="mobile && ['Enter', ' '].includes($event.key) && ($event.preventDefault(), click())"
+      :role="(mobile || cardDebug?.enabled.value) && code ? 'button' : undefined"
+      :tabindex="(mobile || cardDebug?.enabled.value) && code ? 0 : undefined"
+      @keydown="cardDebug?.enabled.value && $event.shiftKey && $event.key === 'F10' ? ($event.preventDefault(), openDebug()) : mobile && ['Enter', ' '].includes($event.key) && ($event.preventDefault(), click())"
       @pointerenter="$event.pointerType === 'mouse' && el && (hoveredTarget = id, preview(el))"
-      @pointerleave="$event.pointerType === 'mouse' && (clearHover(), overlay.hide())"
+      @pointerleave="cancelPress(); $event.pointerType === 'mouse' && (clearHover(), overlay.hide())"
       @focusin="hoveredTarget = id"
       @focusout="clearHover"
       @pointerdown="press"
       @pointerup="cancelPress"
       @pointercancel="cancelPress"
-      @contextmenu="lastPointer !== 'mouse' && $event.preventDefault()"
+      @pointermove="Math.hypot($event.clientX - pressOrigin.x, $event.clientY - pressOrigin.y) > 10 && cancelPress()"
+      @contextmenu="(cardDebug?.enabled.value ? (cancelPress(), openDebug()) : lastPointer !== 'mouse') && $event.preventDefault()"
+      @click.capture="debugHeld && ($event.preventDefault(), $event.stopImmediatePropagation(), debugHeld = false)"
       @click="click"
     >
       <div v-if="flipReveal && revealBack" class="reveal-flip" :class="{ revealed: !back }">
@@ -250,7 +262,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
         :class="{ active: attachedChoice(a), emphasized: attachedChoice(a) && hoveredTarget === a.id, exhausted: a.exhausted }"
         :data-card-id="a.id"
         @pointerenter="$event.pointerType === 'mouse' && preview($event.currentTarget as HTMLElement, false, a.code, null)"
-        @pointerleave="$event.pointerType === 'mouse' && overlay.hide()"
+        @pointerleave="cancelPress(); $event.pointerType === 'mouse' && overlay.hide()"
         @click.stop="attachedChoice(a) ? choose(attachedChoice(a)!.index) : preview($event.currentTarget as HTMLElement, true, a.code, null)"
       >
         <span class="attached-name">{{ cards.name(a.code, a.name) }}</span>

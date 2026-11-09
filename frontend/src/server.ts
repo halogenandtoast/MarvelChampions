@@ -353,6 +353,7 @@ export interface GameView {
   minions: MinionView[]
   /** Environments: lasting encounter cards, with what is attached to them. */
   environments?: EnvironmentView[]
+  setAsideCards?: CardView[]
   setAsideModulars?: string[]
   encounterDeckSize: number
   encounterDeckTop?: CardView | null

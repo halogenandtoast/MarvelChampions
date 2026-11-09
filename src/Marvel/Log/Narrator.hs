@@ -20,6 +20,7 @@ import Data.Aeson ()
 import Marvel.Window.Types qualified as W
 
 import Marvel.Ability.Types (Ability (..), AbilityType (..))
+import Marvel.Ability.Types qualified as Ability
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Campaign (CampaignRecord (..), CampaignStepKind (..))
 import Marvel.Campaign qualified as Campaign
@@ -38,7 +39,8 @@ import Marvel.Identity
 import Marvel.Keyword (Keyword (Overkill, Piercing, Ranged))
 import Marvel.Log
 import Marvel.Ally.Types qualified as Ally
-import Marvel.Matchers (EnemyMatcher (EnemyWithId, StunnedEnemy, ConfusedEnemy))
+import Marvel.Matchers (EnemyMatcher (EnemyWithId, StunnedEnemy, ConfusedEnemy), IdentityMatcher (StunnedIdentity, ConfusedIdentity), identityMatches)
+import Marvel.Payment qualified
 import Marvel.Query (selectAny)
 import Marvel.Message
 import Marvel.Minion.Types qualified as Minion
@@ -57,6 +59,15 @@ import Marvel.Villain.Types qualified as Villain
 -- says nothing costs nothing; only a narrating one reads the game.
 narrationFor :: (HasGame m) => Message -> Maybe (m [LogEntry])
 narrationFor = \case
+  CardSpecific GameRef "resolveLabeledAbility" (fromJSON -> Success (you, ab :: Ability, _ :: [W.WindowType], _ :: Marvel.Payment.Payment)) -> Just do
+    g <- getGame
+    let labels = labeledAbilityTypes g ab
+    stunned <- identityMatches StunnedIdentity you
+    confused <- identityMatches ConfusedIdentity you
+    who <- playerRef' you
+    pure [toned Bad $ mechanic [ikeyPart key ["target" ~> who]]
+      | (applies, key) <- [(stunned && Ability.Attack `elem` labels, "log.attackCanceledByStun"), (confused && Ability.Thwart `elem` labels, "log.thwartCanceledByConfusion")]
+      , applies]
   ResolveBoostAssignment original -> narrationFor original
   ResolveReadiedUpgrade uid -> Just $ simply "log.readied" (UpgradeRef uid)
   UpgradeMessage _ ReadiedUpgrade -> Nothing
@@ -470,8 +481,8 @@ identityNarration ident = \case
       [ action [ikeyPart "log.changesForm" ["player" ~> who, "identity" ~> (codeRef RefIdentity (cdCardCode def)) {logRefName = display (cdName def)}]]
       | Just def <- [face]
       ]
-  SideMessage Attacked -> Just $ simplyPlayer "log.basicAttack"
-  SideMessage Thwarted -> Just $ simplyPlayer "log.basicThwart"
+  SideMessage Attacked -> Just $ playerAction StunnedIdentity "log.attackCanceledByStun" "log.basicAttack"
+  SideMessage Thwarted -> Just $ playerAction ConfusedIdentity "log.thwartCanceledByConfusion" "log.basicThwart"
   SideMessage Recovered -> Just $ simplyPlayer "log.recovers"
   SideMessage (RecoveredWithBonus _) -> Just $ simplyPlayer "log.recovers"
   SideMessage (DefendedWithoutExhausting _ enemy) -> identityNarration ident (SideMessage $ Defended enemy)
@@ -510,6 +521,9 @@ identityNarration ident = \case
   IdentityBecomeTough -> Just $ status "log.tough"
   _ -> Nothing
  where
+  playerAction matcher canceled normal = do
+    blocked <- identityMatches matcher ident
+    if blocked then simply canceled (IdentityRef ident) else simplyPlayer normal
   simplyPlayer key = do
     who <- playerRef' ident
     one $ action [ikeyPart key ["player" ~> who]]
@@ -610,6 +624,12 @@ attackChanged :: (HasGame m) => Target -> Int -> m [LogEntry]
 attackChanged enemy n = whenRef enemy \e ->
   one $ notice [ikeyPart (if n > 0 then "log.attackRaised" else "log.attackLowered") ["enemy" ~> e, "count" ~> abs n]]
 
+allyAction :: HasGame m => StatusCard -> Text -> Text -> AllyId -> m [LogEntry]
+allyAction status canceled normal aid = do
+  blocked <- characterHasCondition status (AllyCharacter aid)
+  if blocked then simply canceled (AllyRef aid)
+    else whenRef (AllyRef aid) \a -> one $ action [ikeyPart normal ["ally" ~> a]]
+
 allyNarration :: (HasGame m) => AllyId -> AllyMessage -> Maybe (m [LogEntry])
 allyNarration aid = \case
   AllyAttackConsequential -> Nothing
@@ -621,8 +641,8 @@ allyNarration aid = \case
   AllyAttackMultipleNext {} -> Nothing
   AllyAttackMultipleRetaliation {} -> Nothing
   AllyAttackMultipleFinished {} -> Nothing
-  AllyAttacked -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyAttacks" ["ally" ~> a]]
-  AllyThwarted -> Just $ whenRef (AllyRef aid) \a -> one $ action [ikeyPart "log.allyThwarts" ["ally" ~> a]]
+  AllyAttacked -> Just $ allyAction StunnedStatus "log.attackCanceledByStun" "log.allyAttacks" aid
+  AllyThwarted -> Just $ allyAction ConfusedStatus "log.thwartCanceledByConfusion" "log.allyThwarts" aid
   AllyDefended enemy -> Just $ whenRef (AllyRef aid) \a -> whenRef (EnemyRef enemy) \e ->
     one $ action [ikeyPart "log.allyDefends" ["ally" ~> a, "enemy" ~> e]]
   AllyDamaged _ dmg | damageAmount dmg > 0 -> Just do

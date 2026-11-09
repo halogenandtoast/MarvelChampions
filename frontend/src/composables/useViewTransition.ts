@@ -30,10 +30,11 @@ const supported = (): StartViewTransition | null => {
  * back to a plain update where the API is unavailable.
  */
 /** Native modals sit below view-transition snapshots. Keep board updates plain
- * while a picker is open, so its dimmer and cards cannot fade or show through. */
+ * while a picker or river banner is open, so its live animation cannot be
+ * captured as a frozen rectangle and replayed by the snapshot. */
 export const transitionsOn = () =>
   supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    && !document.querySelector('dialog:modal, .pick-backdrop')
+    && !document.querySelector('dialog:modal, .pick-backdrop, .activation-alert')
 
 export const withViewTransition = async (apply: () => void | Promise<void>): Promise<void> => {
   const startedAt = revision

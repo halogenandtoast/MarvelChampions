@@ -109,6 +109,7 @@ data GameView = GameView
   , futurePastDeckCount :: Maybe Int
   , encounterDeckSize :: Int
   , encounterDeckTop :: Maybe CardView
+  , setAsideCards :: [CardView]
   , setAsideModulars :: [EncounterSet.EncounterSet]
   , encounterDiscard :: [CardView]
   , victoryDisplay :: [CardView]
@@ -630,6 +631,7 @@ gameView seesHand g = do
           _ -> Nothing
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDeckTop = if globallyVisible || mayLookPrivate then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
+      , setAsideCards = map cardView scenario.scenarioSetAsideCards
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g) <> map (cardView . PlayerCard) (gamePlayerVictoryDisplay g)

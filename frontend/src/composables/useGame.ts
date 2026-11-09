@@ -7,12 +7,13 @@ import type { LogEntry } from '../gameLog'
 import { useCards } from '../cards'
 import type { RiverCard } from '../components/River.vue'
 import { cancelHeldRiverSources, dealFrom, holdRiverSource, intoRiver, notePiles, riffle } from './dealing'
-import { cancelViewTransitions, transitionsOn, withViewTransition } from './useViewTransition'
+import { cancelViewTransitions, skipViewTransitions, transitionsOn, withViewTransition } from './useViewTransition'
 
 // how long a card turned up in the river is left to be read, and how quickly it is cleared
 // for the next
 const HOLD_MS = 650
 const CLEAR_MS = 160
+const STATUS_NOTICE_MS = 1800
 class AnimationCancelled extends Error {}
 
 // entries are numbered from 1, so a page not reaching it has more before it
@@ -38,7 +39,7 @@ export const useGame = (gameId: string, spectate = false) => {
   const canceledEvent = shallowRef<{ code: string; statuses: ('stunned' | 'confused')[] } | null>(null)
   const activationAlert = ref<string | null>(null)
   const activationBanner = ref(false)
-  const activationKind = ref<'attack' | 'scheme' | 'playerPhase' | 'villainPhase'>('attack')
+  const activationKind = ref<'attack' | 'scheme' | 'playerPhase' | 'villainPhase' | 'stunned' | 'confused'>('attack')
   const cards = useCards()
   const hasOlder = ref(false)
   const queue: ServerMessage[] = []
@@ -49,6 +50,19 @@ export const useGame = (gameId: string, spectate = false) => {
   let animationEpoch = 0
   let animationController = new AbortController()
   let undoing = false
+  let statusNoticeTimer: ReturnType<typeof setTimeout> | undefined
+  const showStatusNotice = (label: string, kind: 'stunned' | 'confused') => {
+    skipViewTransitions()
+    clearTimeout(statusNoticeTimer)
+    const epoch = animationEpoch
+    activationBanner.value = true
+    activationKind.value = kind
+    activationAlert.value = label
+    // Status replacement effects resolve immediately while their notice stays visible.
+    statusNoticeTimer = setTimeout(() => {
+      if (epoch === animationEpoch && activationAlert.value === label) activationAlert.value = null
+    }, STATUS_NOTICE_MS)
+  }
   const waitForAnimation = <T>(promise: Promise<T>): Promise<T> => {
     const signal = animationController.signal
     return new Promise((resolve, reject) => {
@@ -142,7 +156,9 @@ export const useGame = (gameId: string, spectate = false) => {
       case 'EventCanceled':
         await clearRiver()
         await withViewTransition(() => { canceledEvent.value = message })
-        await sleep(1500)
+        for (const status of message.statuses) {
+          showStatusNotice(t(`game.river.${status}`), status)
+        }
         return
       case 'Update':
         return update(message.contents)
@@ -152,6 +168,7 @@ export const useGame = (gameId: string, spectate = false) => {
           if (part.tag !== 'LogI18n') continue
           const [key, params] = part.contents
           if (key === 'log.phase.player' || key === 'log.phase.villain') {
+            skipViewTransitions()
             activationBanner.value = true
             activationKind.value = key === 'log.phase.player' ? 'playerPhase' : 'villainPhase'
             activationAlert.value = t(key)
@@ -160,9 +177,16 @@ export const useGame = (gameId: string, spectate = false) => {
             activationAlert.value = null
             continue
           }
+          const canceledStatus = ['log.attackCanceledByStun', 'log.stunnedInstead'].includes(key) ? 'stunned'
+            : ['log.thwartCanceledByConfusion', 'log.confusedInstead'].includes(key) ? 'confused' : null
+          if (canceledStatus) {
+            showStatusNotice(t(key === 'log.confusedInstead' ? 'game.river.confusedScheme' : `game.river.${canceledStatus}`), canceledStatus)
+            continue
+          }
           const enemy = params.enemy
           if (!['log.attacks', 'log.schemes'].includes(key) || enemy?.tag !== 'LogRefPart' || enemy.contents.kind !== 'RefVillain') continue
           const player = params.player
+          skipViewTransitions()
           activationBanner.value = true
           activationKind.value = key === 'log.attacks' ? 'attack' : 'scheme'
           activationAlert.value = t(key, { enemy: enemy.contents.name, player: player?.tag === 'LogRefPart' ? player.contents.name : '' })
@@ -269,6 +293,7 @@ export const useGame = (gameId: string, spectate = false) => {
   connect()
 
   onScopeDispose(() => {
+    clearTimeout(statusNoticeTimer)
     closed = true
     animationController.abort()
     window.clearTimeout(reconnect)

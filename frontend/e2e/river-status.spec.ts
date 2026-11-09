@@ -126,3 +126,59 @@ for (const reaction of ['Responses', 'Interrupts']) {
     expect((await responses.boundingBox())!.width).toBeCloseTo((await page.locator('.river').boundingBox())!.width, 0)
   })
 }
+
+for (const status of ['stunned', 'confused'] as const) {
+  for (const reduced of [false, true]) {
+    test(`${status} flood has a clean first and last frame${reduced ? ' with reduced motion' : ''}`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
+      await page.goto('/#/cards/01001a')
+      await page.evaluate(async status => {
+        const load = (path: string) => import(/* @vite-ignore */ path)
+        const { createApp, h, ref } = await load('/node_modules/.vite/deps/vue.js')
+        const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
+        const { default: River } = await load('/src/components/River.vue')
+        const { loadLocaleMessages } = await load('/src/locales/messages.ts')
+        const { messages } = await loadLocaleMessages('en')
+        const alert = ref<string | null>(null)
+        const host = document.createElement('div')
+        document.body.replaceChildren(host)
+        createApp({ setup: () => () => h(River, { cards: [], elsewhere: new Set(), activationAlert: alert.value, activationBanner: true, activationKind: status }) })
+          .use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
+        Object.assign(window, { statusAlert: alert })
+        alert.value = status === 'stunned' ? 'Stunned: attack canceled' : 'Confused: thwart canceled'
+      }, status)
+      const alert = page.locator('.activation-alert')
+      await expect(alert).toBeAttached()
+      const frames = await alert.evaluate((el, reduced) => {
+        const animation = el.getAnimations().find(animation => (animation as CSSAnimation).animationName.startsWith('fight-flood'))
+        const read = () => ({ opacity: getComputedStyle(el).opacity, clip: getComputedStyle(el).clipPath })
+        const color = getComputedStyle(el).backgroundColor
+        if (reduced) return { color, animation: !!animation, first: read(), middle: read(), last: read() }
+        animation!.pause()
+        animation!.currentTime = 0
+        const first = read()
+        animation!.currentTime = 900
+        const middle = read()
+        animation!.currentTime = 1800
+        return { color, animation: !!animation, first, middle, last: read() }
+      }, reduced)
+      expect(frames.color).toBe(status === 'stunned' ? 'rgb(244, 210, 50)' : 'rgb(117, 68, 140)')
+      if (reduced) {
+        expect(frames.animation).toBe(false)
+        expect(frames.first.opacity).toBe('1')
+      } else {
+        expect(frames.first.opacity).toBe('0')
+        expect(frames.first.clip).toContain('100%')
+        expect(frames.middle.opacity).toBe('1')
+        expect(frames.last.opacity).toBe('0')
+      }
+      expect(await page.evaluate(async () => {
+        const { transitionsOn } = await import(/* @vite-ignore */ '/src/composables/useViewTransition.ts')
+        return transitionsOn()
+      })).toBe(false)
+      await page.evaluate(() => { (window as any).statusAlert.value = null })
+      await expect(alert).toHaveCount(0)
+    })
+  }
+}

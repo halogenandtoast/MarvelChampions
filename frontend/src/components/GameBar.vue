@@ -8,6 +8,7 @@ const undoShortcut = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘Z' : 'Ctrl
 
 // a guest at a friend's game can undo and export, but restarting and debugging are the owner's
 const { round = null, phase = null } = defineProps<{
+  debugMode?: boolean
   canUndo: boolean
   showSidebar: boolean
   spectate: boolean
@@ -27,6 +28,7 @@ const emit = defineEmits<{
   export: []
   fileBug: []
   debug: []
+  toggleDebugMode: []
   toggleSidebar: []
 }>()
 const phases = ['PlayerPhase', 'VillainPhase']
@@ -52,6 +54,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
             <button type="button" @click="emit('export')"><Download aria-hidden="true" />{{ $t('game.bar.exportGame') }}</button>
             <template v-if="!guest">
               <div class="menu-section">{{ $t('game.bar.testing') }}</div>
+              <button type="button" :aria-pressed="!!debugMode" @click="emit('toggleDebugMode')"><Bug aria-hidden="true" />{{ $t(debugMode ? 'game.debug.disable' : 'game.debug.enable') }}</button>
               <button type="button" @click="emit('debug')"><Terminal aria-hidden="true" />{{ $t('game.bar.debugMessage') }}</button>
             </template>
           </template>

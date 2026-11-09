@@ -74,10 +74,12 @@
     "ThreatFromVillain": "Villain schemes",
     "ThreatFromMinion": "Minion schemes",
     "ThreatFromAbility": "Card effect",
-    "ThreatFromAcceleration": "Acceleration"
+    "ThreatFromAcceleration": "Acceleration",
+    "confusedScheme": "Confused: scheme canceled"
   },
   "setAsideModulars": "Sets awaiting recruitment",
   "piles": {
+    "setAside": "Set aside",
     "chooseCards": "Choose {count} card | Choose {count} cards",
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",
@@ -222,7 +224,26 @@
     "title": "Run an engine message",
     "explain": "The message is run against the game as it stands, as the engine's JSON encodes it, and can be undone like any answer.",
     "invalid": "That is not JSON.",
-    "send": "Run"
+    "send": "Run",
+    "enable": "Enable debug mode",
+    "disable": "Disable debug mode",
+    "hint": "Debug mode — long-press or right-click a card to edit it.",
+    "cardExplain": "Adjust this card directly. Changes can be undone.",
+    "notInPlay": "Tokens can be edited while this card is in play.",
+    "apply": "Apply changes",
+    "saving": "Applying…",
+    "failed": "Could not apply changes. Check the values and try again.",
+    "fields": {
+      "damage": "Damage",
+      "threat": "Threat",
+      "counters": "Counters",
+      "uses": "Uses / counters",
+      "exhausted": "Exhausted",
+      "accelerationTokens": "Acceleration tokens",
+      "stunned": "Stunned cards (0–2)",
+      "confused": "Confused cards (0–2)",
+      "tough": "Tough cards"
+    }
   },
   "fileBug": {
     "title": "File a bug",

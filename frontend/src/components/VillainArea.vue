@@ -184,6 +184,7 @@ const escalation = (scheme: SchemeView) => {
       <Pile v-if="game.victoryDisplay?.length || game.victoryCondition" :label="victoryLabel" :cards="game.victoryDisplay ?? []" pile="victory-display" />
       <!-- The Collection (Infiltrate the Museum): shared, out of play, its cards faceup -->
       <Pile v-if="game.collection?.length" :label="t('game.piles.collection')" :cards="game.collection" pile="collection" />
+      <Pile v-if="game.setAsideCards?.length" :label="t('game.piles.setAside')" :cards="game.setAsideCards" pile="set-aside" />
       <div v-if="game.setAsideModulars?.length" class="set-aside-modulars">
         <strong>{{ t('game.setAsideModulars') }}</strong>
         <ul><li v-for="set in game.setAsideModulars" :key="set">{{ modularName(set) }}</li></ul>

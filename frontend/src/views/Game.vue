@@ -13,6 +13,8 @@ import { useScenarios } from '../scenarios'
 import AreaTabs from '../components/AreaTabs.vue'
 import CardOverlay from '../components/CardOverlay.vue'
 import DebugDialog from '../components/DebugDialog.vue'
+import CardDebugDialog from '../components/CardDebugDialog.vue'
+import { provideCardDebug } from '../composables/useCardDebug'
 import ConfirmDelete from '../components/ConfirmDelete.vue'
 import FileBug from '../components/FileBug.vue'
 import GameBar from '../components/GameBar.vue'
@@ -79,6 +81,7 @@ const waitingOn = computed(() => (answering.value ? null : (asked.value.map((id)
 
 // the seat shown: yours at first, then whoever of yours is asked
 const viewed = computed(() => players.value.find((p) => p.id === viewing.value) ?? players.value.find((p) => mySeats.value.includes(p.id)) ?? players.value[0] ?? null)
+
 watch(answering, (id) => {
   if (id) viewing.value = id
 }, { immediate: true })
@@ -250,6 +253,7 @@ const onBoard = computed(() => {
     add(e.attachments)
   }
   add(g.encounterDiscard)
+  add(g.setAsideCards)
   add(g.victoryDisplay ?? [])
   add(g.collection ?? [])
   add(riverCards.value)
@@ -319,6 +323,7 @@ const things = computed(() => {
     add(environment.attachments)
   }
   add(g.encounterDiscard)
+  add(g.setAsideCards)
   add(g.victoryDisplay ?? [])
   add(g.collection ?? [])
   add(g.focusedCards)
@@ -354,6 +359,10 @@ provideChoices(() => boardChoices.value, choose, () => question.value?.prompt ==
 
 const filingBug = ref(false)
 const debugging = ref(false)
+const debugMode = ref(false)
+const debugEnabled = computed(() => debugMode.value && owner.value && !spectate)
+const { debugCard, saveDebugCard } = provideCardDebug(game, debugEnabled, debug)
+
 // on a narrower screen the log starts shut
 const showSidebar = ref(!matchMedia('(width < 1100px)').matches)
 
@@ -406,7 +415,9 @@ const resetGame = () => restartDialog.value?.open()
       :can-undo="canUndo"
       :show-sidebar="showSidebar"
       :spectate="spectate"
-      :guest="guest"
+      :guest="guest || !owner"
+      :debug-mode="debugEnabled"
+      @toggle-debug-mode="debugMode = !debugMode"
       :round="game?.round ?? null"
       :phase="game?.competition?.phase ?? game?.phase ?? null"
       :turn="active ? playerName[active] : null"
@@ -443,6 +454,8 @@ const resetGame = () => restartDialog.value?.open()
     />
     <FileBug :open="filingBug" :game-id="gameId" @close="filingBug = false" />
     <DebugDialog :open="debugging" @close="debugging = false" @send="debug" />
+    <CardDebugDialog :card="debugCard" :save="saveDebugCard" @close="debugCard = null" />
+    <p v-if="debugEnabled" class="debug-mode-hint" role="status">{{ t('game.debug.hint') }}</p>
     <CardOverlay />
 
     <div v-if="mobile && game && !inLobby" class="mobile-tools">
@@ -642,4 +655,6 @@ const resetGame = () => restartDialog.value?.open()
   .mobile-dock :deep(.options button) { min-height: 48px; font-size: 0.95rem; line-height: 1.4; }
   .mobile-dock :deep(.eyebrow) { font-size: 0.7rem; }
 }
+
+.debug-mode-hint { margin: 0; padding: 6px 12px; color: var(--amber); background: var(--ink-2); font-size: .85rem; }
 </style>

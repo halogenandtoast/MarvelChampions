@@ -3,12 +3,14 @@ module Marvel.PublicSpec (spec) where
 import Control.Monad (replicateM_)
 import Data.ByteString.Lazy qualified as BL
 import Data.Aeson.Key (Key)
+import Data.Text qualified as T
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as Villain
 import Marvel.Window qualified as W
 import Marvel.SideScheme.Cards qualified as Schemes
+import Marvel.Scenario.Types qualified as Scenario
 import Marvel.Hercules.Cards qualified as Hercules
 import Marvel.Ability (ability, AbilityType (HeroAction))
 import Marvel.Criteria (Criteria (OwnsThis))
@@ -22,6 +24,74 @@ import TestImport
 
 spec :: Spec
 spec = describe "the game as the client sees it" do
+  it "applies direct debug tokens and statuses without losing the waiting question" do
+    tg <- testGame ["gambit"]
+    inGame tg do
+      let p = player1 tg
+      waiting <- getsGame gameQuestion
+      runDebug $ CardSpecific (IdentityRef p) "debugSetValues" $ object
+        ["damage" .= (3 :: Natural), "counters" .= (4 :: Natural), "exhausted" .= True,
+         "stunned" .= True, "additionalStun" .= True, "confused" .= True, "tough" .= True, "additionalTough" .= (2 :: Natural)]
+      attrs <- playerAttrs p
+      playerIdentityDamage attrs `shouldBe` 3
+      playerIdentityCounters attrs `shouldBe` 4
+      playerIdentityExhausted attrs `shouldBe` True
+      playerIdentityStunned attrs `shouldBe` True
+      playerIdentityAdditionalStun attrs `shouldBe` True
+      playerIdentityConfused attrs `shouldBe` True
+      playerIdentityAdditionalTough attrs `shouldBe` 2
+      getsGame gameQuestion `shouldReturn` waiting
+      runDebug $ CardSpecific (IdentityRef p) "debugSetValues" $ object ["confused" .= False]
+      playerIdentityConfused <$> playerAttrs p `shouldReturn` False
+    told <- T.concat . map entryText <$> readIORef tg.logged
+    told `shouldSatisfy` (not . T.isInfixOf "$log.thwartCanceledByConfusion")
+
+  it "rejects invalid debug edits atomically and preserves card-specific metadata" do
+    tg <- testGame ["gambit"]
+    inGame tg do
+      let p = player1 tg
+      before <- getPlayer p
+      for_ [object ["damage" .= (-1 :: Int)], object ["damage" .= (1.5 :: Double)], object ["counters" .= (4 :: Int), "hp" .= (1 :: Int)], object ["damage" .= True]] \values -> do
+        runDebug $ CardSpecific (IdentityRef p) "debugSetValues" values
+        getPlayer p `shouldReturn` before
+      guild <- putIntoPlay p "37003"
+      let sid = SupportId $ unCardId $ toCardId guild
+      original <- getsGame $ lookup sid . gameSupports
+      runDebug $ CardSpecific (SupportRef sid) "debugSetValues" $ object ["uses" .= (5 :: Natural), "exhausted" .= True]
+      edited <- getsGame $ lookup sid . gameSupports
+      let withoutEdit entity = case toJSON entity of
+            Object fields -> Object $ KeyMap.delete "supportUses" $ KeyMap.delete "supportExhausted" fields
+            value -> value
+      withoutEdit edited `shouldBe` withoutEdit original
+      edited `shouldSatisfy` (/= original)
+      wolfsbane <- putIntoPlay p "40051"
+      let aid = AllyId $ unCardId $ toCardId wolfsbane
+      originalAlly <- getsGame $ lookup aid . gameAllies
+      runDebug $ CardSpecific (AllyRef aid) "debugSetValues" $ object ["damage" .= (1 :: Natural), "counters" .= (2 :: Natural), "stunned" .= True, "additionalStun" .= True]
+      editedAlly <- getsGame $ lookup aid . gameAllies
+      let unchangedFields entity = case toJSON entity of
+            Object fields -> Object $ foldr KeyMap.delete fields ["allyDamage", "allyCounters", "allyStunned", "allyAdditionalStun"]
+            value -> value
+      unchangedFields editedAlly `shouldBe` unchangedFields originalAlly
+      editedAlly `shouldSatisfy` (/= originalAlly)
+      main <- mainSchemeIdNow
+      runDebug $ CardSpecific (MainSchemeRef main) "debugSetValues" $ object ["threat" .= (99 :: Natural), "counters" .= (2 :: Natural), "accelerationTokens" .= (3 :: Natural)]
+      mainSchemeThreatNow `shouldReturn` 99
+
+  it "shows set-aside cards to every viewer and removes cards when they leave that area" do
+    tg <- testGame ["rogue"]
+    inGame tg do
+      cards <- getsGame $ Scenario.scenarioSetAsideCards . toAttrs . gameScenario
+      cards `shouldSatisfy` notNull
+      let shown view = [(cid, code) | Object o <- [view], Just (Array entries) <- [KeyMap.lookup "setAsideCards" o], Object card <- toList entries, Just cid <- [KeyMap.lookup "id" card], Just code <- [KeyMap.lookup "code" card]]
+          expected = [(toJSON $ toCardId card, toJSON $ toCardCode card) | card <- cards]
+      view <- getGame >>= liftIO . publicGameFor (const False)
+      shown view `shouldBe` expected
+      for_ (headMay cards) $ \card -> do
+        runNow [RemoveFromGame $ CardIdRef $ toCardId card]
+        updated <- getGame >>= liftIO . publicGameFor (const False)
+        shown updated `shouldBe` filter ((/= toJSON (toCardId card)) . fst) expected
+
   it "loads stored games from before phase history was tracked" do
     tg <- testGame ["spider-man"]
     game <- inGame tg getGame

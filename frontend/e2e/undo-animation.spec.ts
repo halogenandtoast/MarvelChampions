@@ -55,6 +55,18 @@ test('undo interrupts the active banner and drops queued animation states', asyn
   }, state(2))
   await expect(page.locator('#version')).toHaveText('2', { timeout: 700 })
   await expect(page.locator('.river').getByRole('status')).toHaveCount(0)
+  for (const [index, key] of ['log.attackCanceledByStun', 'log.thwartCanceledByConfusion', 'log.stunnedInstead', 'log.confusedInstead'].entries()) {
+    await page.evaluate(({ key, next }) => {
+      const socket = (window as any).animationSocket
+      const send = (message: unknown) => socket.dispatchEvent(new MessageEvent('message', { data: JSON.stringify(message) }))
+      send({ tag: 'Logged', entry: { seq: 2, body: [{ tag: 'LogI18n', contents: [key, {}] }] } })
+      send({ tag: 'Update', contents: next })
+    }, { key, next: state(10 + index) })
+    // The state must advance while the status notice is still on screen.
+    await expect(page.locator('#version')).toHaveText(String(10 + index), { timeout: 700 })
+    await expect(page.locator('.river').getByRole('status')).toBeVisible()
+    await expect(page.locator('.river').getByRole('status')).toHaveCount(0, { timeout: 3000 })
+  }
   await page.evaluate(old => {
     const socket = (window as any).animationSocket
     const send = (message: unknown) => socket.dispatchEvent(new MessageEvent('message', { data: JSON.stringify(message) }))

@@ -1,6 +1,7 @@
 module Marvel.Hero.GambitSpec (spec) where
 
 import Control.Monad (replicateM)
+import Data.Text qualified as T
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.SideScheme.Cards qualified as Schemes
 import Marvel.Boost (BoostIcon (..))
@@ -353,6 +354,31 @@ spec = describe "Gambit" do
       playerIdentityConfused <$> playerAttrs p `shouldReturn` False
       encounterDiscardCodes `shouldReturn` [toCardCode $ testHead cards]
       isExhaustedPlayer p `shouldReturn` True
+
+  it "confusion cancels Thief Extraordinaire without offering The Thieves Guild" do
+    tg <- testGame ["gambit"]
+    inGame tg do
+      let p = player1 tg
+      guild <- putIntoPlay p "37003"
+      placeMainThreat 2
+      resolve [IdentityMessage p IdentityConfused]
+      (cards, _) <- setEncounterDeck [Schemes.breakinAndTakin, Treacheries.advance] []
+      main <- mainSchemeIdNow
+      choose "confused Thief Extraordinaire" (isNamedAbility "$label.thiefExtraordinaire")
+      choose "pay with two boost icons" (isTargetChoice $ CardIdRef $ toCardId $ testHead cards)
+      offers (isTargetChoice main) `shouldReturn` False
+      offers (isAbilityOfCard guild) `shouldReturn` False
+      pass
+      mainSchemeThreatNow `shouldReturn` 2
+      playerIdentityConfused <$> playerAttrs p `shouldReturn` False
+      isExhaustedPlayer p `shouldReturn` True
+      supportsWith "37003" >>= \case
+        [attrs] -> supportExhausted attrs `shouldBe` False
+        _ -> error "expected Thieves Guild"
+      encounterDiscardCodes `shouldReturn` ["01107"]
+
+    told <- T.concat . map entryText <$> readIORef tg.logged
+    told `shouldSatisfy` T.isInfixOf "$log.thwartCanceledByConfusion"
 
   it "Remy works with one card remaining and resets the exhausted encounter deck" do
     tg <- testGame ["gambit"]

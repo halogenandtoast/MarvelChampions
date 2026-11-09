@@ -127,6 +127,7 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Marvel.Hero.Runner qualified as Hero
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Aeson.Key qualified as Key
 import Marvel.EncounterCard qualified as MGEncounter
 import Marvel.PlayerCard qualified as MGPlayer
 import Marvel.MainScheme.Types qualified as MS
@@ -308,6 +309,20 @@ runPreGameMessage msg g = runQueueT $ case msg of
 
 runGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runGameMessage msg g@Game {..} = runQueueT $ case msg of
+  -- Owner-only debug requests use a small allowlist, preserving card metadata and
+  -- bypassing normal damage/threat/status windows. The saved step remains undoable.
+  CardSpecific target "debugSetValues" (Object values) -> pure $ case target of
+    IdentityRef ident -> g & entitiesL . playersL . ix ident %~ debugPatch "" values
+    AllyRef ident -> g & entitiesL . alliesL . ix ident %~ debugPatch "ally" values
+    VillainRef ident -> g & entitiesL . villainsL . ix ident %~ debugPatch "villain" values
+    MinionRef ident -> g & entitiesL . minionsL . ix ident %~ debugPatch "minion" values
+    MainSchemeRef ident -> g & entitiesL . mainSchemesL . ix ident %~ debugPatch "mainScheme" values
+    SideSchemeRef ident -> g & entitiesL . sideSchemesL . ix ident %~ debugPatch "sideScheme" values
+    SupportRef ident -> g & entitiesL . supportsL . ix ident %~ debugPatch "support" values
+    UpgradeRef ident -> g & entitiesL . upgradesL . ix ident %~ debugPatch "upgrade" values
+    AttachmentRef ident -> g & entitiesL . attachmentsL . ix ident %~ debugPatch "attachment" values
+    EnvironmentRef ident -> g & entitiesL . environmentsL . ix ident %~ debugPatch "environment" values
+    _ -> g
   EventMessage eid ResolvedEvent ->
     pure g {gameResolvingEvents = Just $ filter (/= eid) $ fromMaybe [] gameResolvingEvents}
   CardSpecific GameRef "resolveKeywordRetaliate" (fromJSON -> Success (enemy,attacker)) -> do
@@ -4106,3 +4121,24 @@ synchronizeDeceivedAllies g
  where
   zemos = [minion | minion <- HashMap.elems (gameMinions g),toCardCode (getCardDef minion) == "60145"]
   deceived = [mid | (mid,minion) <- HashMap.toList (gameMinions g),Deceived `HashSet.member` cdTraits (getCardDef minion),isJust $ Minion.minionFacedownCard $ toAttrs minion]
+
+-- Only existing scalar token fields can be changed; unknown keys, negative or
+-- fractional counters, and incompatible values leave the whole edit unchanged.
+debugPatch :: (ToJSON a, FromJSON a) => Text -> Object -> a -> a
+debugPatch prefix values original = case toJSON original of
+  Object fields | all valid (KeyMap.toList values) -> case fromJSON (Object $ KeyMap.union translated fields) of
+    Success updated -> updated
+    Error _ -> original
+   where
+    field key = Key.fromText $ prefix <> (if prefix == "" then Key.toText key else upperFirst (Key.toText key))
+    upperFirst text = case T.uncons text of
+      Nothing -> text
+      Just (first, rest) -> T.toUpper (T.singleton first) <> rest
+    translated = KeyMap.fromList [(field key, value) | (key, value) <- KeyMap.toList values]
+    valid (key, value) = KeyMap.member (field key) fields && case value of
+      Bool _ -> key `elem` ["exhausted", "stunned", "confused", "tough", "additionalStun", "additionalConfuse"]
+      Number _ -> key `elem` ["damage", "threat", "counters", "uses", "accelerationTokens", "additionalTough"] && case fromJSON @Natural value of
+        Success _ -> True
+        Error _ -> False
+      _ -> False
+  _ -> original
