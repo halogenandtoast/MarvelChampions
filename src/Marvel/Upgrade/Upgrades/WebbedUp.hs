@@ -49,14 +49,11 @@ instance RunMessage WebbedUp where
       _ -> WebbedUp <$> runMessage msg a
     RanAbility _ (isTarget a -> True) 1 _ _ -> do
       case upgradeAttachedEnemy a of
-        Just enemyId -> do
+        Just enemyId ->
           flip insteadOf (removeFromPlay a >> stun enemyId a) \case
             VillainMessage vid (VillainBeginAttack _) -> enemyId == EnemyVillainId vid
+            VillainMessage vid (VillainBeginAttackWithoutBoost _) -> enemyId == EnemyVillainId vid
             MinionMessage mid (MinionBeginAttack _) -> enemyId == EnemyMinionId mid
-            _ -> False
-          cancelMatchingMessage $ \case
-            CheckWindows [Window Would (EnemyAttack enemyId' _)] ->
-              enemyId == enemyId'
             _ -> False
         Nothing -> error "Something terrible must have happened"
       pure u

@@ -248,8 +248,11 @@ spec = describe "Spider-Man" do
       _ <- traverse (putInHand p) ["01088", "01090"]
       offers (isPlay webbed') `shouldReturn` False
       runNow [VillainMessage vid (VillainAttacks p)]
+      handBefore <- length <$> handOf p
       choose "resolve Webbed Up" (isAbilityOfCard webbed)
-      pass
+      -- the attack is replaced, so Spider-Sense no longer answers it
+      offers (isAbilityOf p) `shouldReturn` False
+      length <$> handOf p `shouldReturn` handBefore
       damageOf p `shouldReturn` 0
       upgradeCodes `shouldReturn` []
       (V.villainStunned . toAttrs <$> getVillain) `shouldReturn` True

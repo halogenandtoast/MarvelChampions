@@ -3187,7 +3187,12 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- a treachery's reveal, or an encounter card's, is cancelled by taking it off the
     -- queue: its window then closes, so a second cancel is not offered
     -- likewise damage prevented in full: nothing more answers it
-    let open = \case
+    let attackQueued enemy = isQueued \case
+          VillainMessage vid (VillainBeginAttack _) -> enemy == EnemyVillainId vid
+          VillainMessage vid (VillainBeginAttackWithoutBoost _) -> enemy == EnemyVillainId vid
+          MinionMessage mid (MinionBeginAttack _) -> enemy == EnemyMinionId mid
+          _ -> False
+        open = \case
           W.Window W.When (W.IdentityAttackTarget you enemy) -> isQueued (\case
             VillainMessage vid (VillainDamaged _ damage) -> enemy == EnemyVillainId vid && damageSource damage == FromPlayerAttack you
             MinionMessage mid (MinionDamaged _ damage) -> enemy == EnemyMinionId mid && damageSource damage == FromPlayerAttack you
@@ -3200,6 +3205,11 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           W.Window W.Would (W.IdentityDefeat iid) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window W.Would (W.IdentityDefeatFromDamage iid _ _) -> isQueued (== IdentityMessage iid IdentityDefeated)
           W.Window W.Would (W.UpgradeReadying uid) -> isQueued (== UpgradeMessage uid ReadiedUpgrade)
+          -- an attack replaced in its would window (Webbed Up) is no longer imminent,
+          -- so nothing more answers it (RR "Replacement Effect")
+          W.Window W.Would (W.EnemyAttack enemy _) -> attackQueued enemy
+          W.Window W.Would (W.EnemyAttackAlly enemy _ _) -> attackQueued enemy
+          W.Window W.Would (W.EnemyAttackOnEnemy enemy _) -> attackQueued enemy
           W.Window W.Would (W.CharacterRemovingThreat _ scheme _) -> isQueued \message ->
             maybe False (\(_,target,n,_,_) -> target == scheme && n > 0) (threatRemovalMessage message)
           W.Window W.Would (W.CharacterPlacingThreat _ scheme _) -> isQueued \case
