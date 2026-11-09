@@ -365,10 +365,17 @@ instance RunMessage (Attrs Minion) where
       MinionMessage ident msg'
         | ident == minionId attrs ->
             runMinionMessage msg' attrs
-      AttachmentRemoved attachmentId ->
+      -- "if an ability that says a minion gets +X hit points ceases to be in effect and
+      -- causes that minion to have damage on it equal to or greater than its hit points,
+      -- that minion is defeated": what left may have given it hit points from anywhere
+      -- (Upgraded Drones is attached to the environment)
+      AttachmentRemoved attachmentId -> do
+        when (minionDamage attrs > 0) $ minionStep (minionId attrs) MinionCheckHitPoints
         pure $ attrs & attachmentsL %~ HashSet.delete attachmentId
       UpgradeMessage uid UpgradeDetached -> pure $ attrs & upgradesL %~ HashSet.delete uid
-      UpgradeRemoved upgradeId -> pure $ attrs & upgradesL %~ HashSet.delete upgradeId
+      UpgradeRemoved upgradeId -> do
+        when (minionDamage attrs > 0) $ minionStep (minionId attrs) MinionCheckHitPoints
+        pure $ attrs & upgradesL %~ HashSet.delete upgradeId
       WithBoostIcons (MinionRef mid) _ counts | mid == minionId attrs -> do
         minionStep mid (MinionAddBoost $ sum $ map snd counts)
         pure attrs

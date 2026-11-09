@@ -87,3 +87,19 @@ spec = describe "Ultron" do
       liftIO $ mapMaybe (fmap pcCardId . getMinionFacedownCard) ds' `shouldSatisfy` all (`elem` discard)
       encounterDiscard <- getsGame (map getCardDef . scenarioDiscard . toAttrs . gameScenario)
       liftIO $ encounterDiscard `shouldNotContain` [Cards.drone]
+
+  it "discarding Upgraded Drones defeats a drone with damage equal to its remaining hit points" do
+    app <- ultron
+    runGameApp app do
+      [you] <- players
+      upgraded <- encounterCard Cards.upgradedDrones
+      resolve [RevealEncounterCard you upgraded]
+      resolve [PutTopOfDeckIntoPlayAsDrone you]
+      [hurt, fresh] <- drones
+      resolve [MinionMessage (toId hurt) $ MinionDamaged GameRef (toDamage 1 FromAbility)]
+      map toId <$> drones >>= liftIO . (`shouldBe` [toId hurt, toId fresh])
+      resolve [RemoveFromPlay $ AttachmentRef $ AttachmentId $ unCardId $ ecCardId upgraded]
+      -- the undamaged drone survives at 1 hit point
+      map toId <$> drones >>= liftIO . (`shouldBe` [toId fresh])
+      discard <- map pcCardId . unDiscard . playerIdentityDiscard . toAttrs <$> player
+      liftIO $ mapMaybe (fmap pcCardId . getMinionFacedownCard) [hurt] `shouldSatisfy` all (`elem` discard)
