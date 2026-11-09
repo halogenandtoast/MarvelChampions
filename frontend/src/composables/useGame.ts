@@ -88,7 +88,7 @@ export const useGame = (gameId: string, spectate = false) => {
       await nextTick()
       if (epoch === animationEpoch) dealing?.land()
     }
-    if (animate) await withViewTransition(applyState)
+    if (animate && before) await withViewTransition(applyState)
     else await applyState()
     dealing?.done()
   }

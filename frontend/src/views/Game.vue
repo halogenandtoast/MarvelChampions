@@ -578,6 +578,7 @@ const resetGame = () => restartDialog.value?.open()
   flex: 1;
   min-height: 0;
   padding: 12px;
+  padding-bottom: 2px;
 }
 .layout.no-side { grid-template-columns: minmax(0, 1fr); }
 /* the villain's side and the river a quarter of the board each, at least a card high, the
@@ -602,7 +603,7 @@ const resetGame = () => restartDialog.value?.open()
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
 /* the hand floats over the foot of the player area */
-.board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; }
+.board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; overflow: clip; }
 .floating-hand { position: absolute; z-index: 0; inset: auto 0 0; pointer-events: none; }
 .floating-hand :deep(.in-hand) { pointer-events: auto; }
 /* beneath what you are asked, but a card pointed at comes in front of it */
@@ -624,7 +625,7 @@ const resetGame = () => restartDialog.value?.open()
   .layout { padding: 8px; gap: 8px; }
   .board { display: flex; flex-direction: column; gap: 12px; scrollbar-gutter: auto; padding: 2px 2px 16px; }
   .board > .half, .player-half > .half { flex: none; overflow: visible; min-height: auto; }
-  .board > .player-half { flex: none; gap: 12px; }
+  .board > .player-half { flex: none; gap: 12px; overflow: visible; }
   .floating-hand { position: relative; inset: auto; pointer-events: auto; }
   .side { max-height: 32dvh; overflow: auto; }
   .mobile-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 6px 12px; border-bottom: 1px solid var(--line); }

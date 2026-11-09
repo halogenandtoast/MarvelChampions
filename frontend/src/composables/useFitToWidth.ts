@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { onMounted, onUpdated, ref, type Ref } from 'vue'
 import { useMutationObserver, useResizeObserver } from '@vueuse/core'
 
 /** Fit a tableau without squeezing its individual card groups into narrow columns. */
@@ -25,6 +25,10 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
       width.value = available / scale.value
     }
   }
+  // Fit in Vue's render cycle, before a view transition captures the new board.
+  // ResizeObserver alone runs after that snapshot and briefly exposes full-size cards.
+  onMounted(fit)
+  onUpdated(fit)
   useResizeObserver([container, content], fit)
   useResizeObserver(() => [...(content.value?.children ?? [])] as HTMLElement[], fit)
   useMutationObserver(content, fit, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] })

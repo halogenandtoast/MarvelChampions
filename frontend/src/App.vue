@@ -25,14 +25,14 @@ watchEffect(() => {
 
 <style scoped>
 footer {
-  position: fixed;
-  bottom: 0;
-  z-index: 100;
+  flex-shrink: 0;
+  margin-top: auto;
   width: 100%;
-  padding: 1px 8px;
+  padding: 0 8px;
   font-size: 0.6rem;
+  line-height: 1.2;
   color: var(--text-faint);
-  background: var(--ink-0);
+  background: transparent;
   text-align: center;
   pointer-events: none;
 }
