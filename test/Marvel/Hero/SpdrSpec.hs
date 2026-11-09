@@ -6,7 +6,9 @@ import Marvel.AlterEgo.Runner qualified as AlterEgo
 import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Attachment.Types qualified as Attachment
 import Marvel.Cost.Types (Cost (..))
+import Marvel.Game.Public (ChoiceView (..), describeChoice)
 import Marvel.Hero.Runner qualified as Hero
+import Marvel.Log (idText)
 import Marvel.Identity (currentIdentity)
 import Marvel.Matchers hiding (ExhaustedIdentity)
 import Marvel.Minion.Cards qualified as Minions
@@ -265,6 +267,21 @@ spec = describe "SP//dr" do
         upgradeIsExhausted (upgradeIdOf psychic) `shouldReturn` True
         upgradeIsExhausted (upgradeIdOf armor) `shouldReturn` True
         isExhaustedNow who `shouldReturn` True
+
+    it "offers each Interface's Sync Ratio on that Interface, for the client" do
+      tg <- spdr
+      let who = player1 tg
+      inGame tg do
+        asSuit who
+        psychic <- putIntoPlay who "31011"
+        armor <- putIntoPlay who "31012"
+        host <- putInHand who "31010"
+        interface <- pilot
+        choose "play Host Spider" (isPlay host)
+        Just (_, choices) <- asked
+        let shown uid = [(describeChoice who c).target | c <- choices, sync uid c]
+        for_ [upgradeId interface, upgradeIdOf psychic, upgradeIdOf armor] \uid ->
+          shown uid `shouldBe` [Just (idText uid)]
 
     it "has no Sync Ratio in alter-ego form, even while other Interfaces are ready" do
       tg <- spdr

@@ -56,6 +56,7 @@ import Marvel.Id
 import Marvel.Identity
 import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
+import Marvel.Matchers.Types (UpgradeMatcher (UpgradeWithId))
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted (countLabel)
@@ -1047,7 +1048,7 @@ describeChoice asked = \case
      in withCode (toCardCode <$> selected) $ withKind kind (on "target" t)
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
-    (on "ability" (refocus a.abilitySource))
+    (on "ability" (usedFrom a))
       { label = a.abilityLabel <|> basicLabel a.abilityChoices
       , abilityType = Just a.abilityType
       }
@@ -1082,6 +1083,11 @@ describeChoice asked = \case
   withCode value (ChoiceView i k l t _ a) = ChoiceView i k l t value a
   withKind value (ChoiceView i _ l t c a) = ChoiceView i value l t c a
   withTarget value (ChoiceView i k l _ c a) = ChoiceView i k l value c a
+  -- an ability paid by exhausting one named upgrade (Sync Ratio) is used from that
+  -- upgrade, so each is offered on the card it exhausts
+  usedFrom a = case a.abilityCost of
+    ExhaustUpgradeCost (UpgradeWithId uid) -> UpgradeRef uid
+    _ -> refocus a.abilitySource
   -- the powers every identity and ally has are named by what they do
   basicLabel = \case
     (ChangeForm : _) -> Just "$label.changeForm"
