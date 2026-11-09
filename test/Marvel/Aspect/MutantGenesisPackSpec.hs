@@ -152,6 +152,38 @@ spec = describe "Mutant Genesis player cards" do
       choose "Defensive Energy" (isLabel "$label.defensiveEnergy")
       (length <$> handOf p) `shouldReturn` 1
 
+  for_ ["32021", "32050"] \code ->
+    it ("Shadow and Steel " <> show code <> " cannot interrupt without Colossus") do
+      tg <- testGame ["shadowcat"]
+      inGame tg do
+        let p = player1 tg
+        changeForm p
+        pass
+        clearHand p
+        card <- putInHand p code
+        _ <- putInHand p "01090"
+        vid <- villainIdNow
+        start [VillainMessage vid (VillainAttacksWithoutBoost p)]
+        offers (isPlay card) `shouldReturn` False
+
+  it "Shadow and Steel can interrupt with Shadowcat and the Colossus ally in play" do
+    tg <- testGame ["shadowcat"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      clearHand p
+      _ <- putIntoPlay p "32048"
+      card <- putInHand p "32050"
+      two <- putInHand p "01090"
+      vid <- villainIdNow
+      start [VillainMessage vid (VillainAttacksWithoutBoost p)]
+      offers (isPlay card) `shouldReturn` True
+      playWith card [two]
+      pass
+      damageOf p `shouldReturn` 0
+      villainDamageNow `shouldReturn` 4
+
   it "Shadow and Steel requires its team-up and prevents the enemy attack's damage" do
     tg <- testGame ["colossus"]
     inGame tg do

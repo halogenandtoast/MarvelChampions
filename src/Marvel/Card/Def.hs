@@ -12,6 +12,7 @@ import Marvel.Criteria
 import Marvel.EncounterSet
 import Marvel.Keyword
 import Marvel.Name
+import Marvel.Matchers.Types (CharacterMatcher (IdentityCharacters), IdentityMatcher (IdentityWithTitle, HeroIdentity), AllyMatcher (AllyNamedAs))
 import Marvel.Resource.Types
 import Marvel.Trait.Types
 import Marvel.Window.Types
@@ -257,3 +258,8 @@ toAdditionalCriteria :: CardDef -> Criteria
 toAdditionalCriteria def =
   maybe NoCriteria abilityTypeCriteria (cdAbilityType def)
     <> foldMap abilitySubTypeCriteria (cdAbilitySubTypes def)
+    <> foldMap (\(first, second) -> present first <> present second) (cdTeamUp def)
+ where
+  -- Read the keyword even on saved card definitions that lack explicit criteria.
+  present name = AnyCriteria
+    [CharacterExists (IdentityCharacters $ IdentityWithTitle name <> HeroIdentity), AllyExists (AllyNamedAs name)]
