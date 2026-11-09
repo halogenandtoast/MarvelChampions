@@ -16,7 +16,7 @@ import Control.Monad (replicateM_)
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
-import Data.List (find, partition, sortOn)
+import Data.List (partition, sortOn)
 import Marvel.Ability
 import Marvel.ActiveCost
 import Marvel.AlterEgo
@@ -593,11 +593,9 @@ getCardCostWithX chosenX attrs c mTarget = do
   modifiedCost <- case chosenX of
     Nothing -> getModifiedCost attrs c mTarget
     Just n -> getModifiedCostWithBase attrs c mTarget (Just $ fromIntegral n)
-  printed <- case (cdAbilityCost def, mTarget) of
-    (abilityCost, Just (CardIdRef cid)) | usesTargetCost abilityCost -> do
-      cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) =<< getPlayers
-      pure $ maybe 0 (fromMaybe 0 . cdCost . getCardDef) (find ((== cid) . pcCardId) cards)
-    _ -> pure 0
+  printed <- if usesTargetCost (cdAbilityCost def)
+    then maybe 0 (fromMaybe 0 . cdCost . getCardDef) <$> targetPrintedCostCard c mTarget
+    else pure 0
   echoReduction <- echoReplayDiscount (toId attrs) c
   (_, adjustment) <- resourceCostAdjustment attrs c mTarget
   let base = maybe (fromMaybe 0 $ cdCost def) fromIntegral chosenX
@@ -650,11 +648,12 @@ playableTargetsAtDestination ignoringCost attrs c = do
   flip filterM targets \mTarget -> do
     cost <- getCardCost attrs c mTarget
     payers <- resourceCostPayers (toId attrs) (Just c)
+    context <- resourceContextCard c mTarget
     resources <- filter (canSpendOn $ cdCriteria $ getCardDef c) <$> concatMapM (\payer -> do
       let reserved = if payer == toId attrs then sum [n | IdentityCountersCost n <- flattenCosts cost] else 0
       abilities <- concatMapM (abilityResourcesForCardWithReservedCounters (Just c) reserved) =<< getPaymentResourceAbilities (toId attrs) payer (Just c)
       cards <- filter (\candidate -> pcCardId candidate /= pcCardId c && not (isChosenHandTarget c mTarget candidate)) <$> getPaymentSourcesFor (toId attrs) payer (Just c)
-      doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just c)) cards) payers
+      doubleWildResources (Just $ getCardDef c) . (<> abilities) <$> concatMapM (\payingCard -> resourcesFor payingCard (Just context)) cards) payers
     prePlayReduction <- mayReduceCostToPlay attrs c mTarget
     spendingReduction <- continuousSpendingCostReduction attrs c mTarget payers
     let reduction = prePlayReduction + spendingReduction
@@ -1094,7 +1093,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       case mActiveCost of
         Nothing -> error "no cost"
         Just activeCostId -> do
-          mCost <- getActiveCostCard activeCostId
+          mCost <- getActiveCostResourceCard activeCostId
           generated <- resourcesFor card mCost
           printed <- printedResourcesFor card
           if toCardCode card == "58006" then energySiphonResources playerIdentityId activeCostId card

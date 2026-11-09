@@ -215,6 +215,7 @@ canPlayCardIgnoringResourceCost :: (HasGame m, HasQueue m) => IdentityId -> Play
 canPlayCardWithReduction :: (HasGame m, HasQueue m) => IdentityId -> Natural -> PlayerCard -> m Bool
 hasCardToPlayWithReductionAfterExhausting :: (HasGame m, HasQueue m) => IdentityId -> PlayerCard -> Natural -> m Bool
 getActiveCostCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
+getActiveCostResourceCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
 eventExhaustionsValid :: (HasGame m) => IdentityId -> PlayerCard -> [CharacterId] -> m Bool
 eventExhaustionsAffordable :: (HasGame m) => IdentityId -> [IdentityId] -> PlayerCard -> Cost -> m Bool

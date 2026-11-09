@@ -135,6 +135,34 @@ spec = describe "Leadership" do
         discardOf q `shouldReturn` [maria]
         alliesWith "01067" `shouldReturn` []
 
+    it "The Power of Leadership pays 2 toward calling a Leadership ally" do
+      tg <- testGame ["captain-marvel"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        call <- putInHand p "01071"
+        power <- putInHand p "01072"
+        maria <- putInDiscard p "01067"
+        playOn call (CardIdRef $ pcCardId maria) [power]
+        pass
+        [m] <- alliesWith "01067"
+        m.allyController `shouldBe` p
+
+    -- the ally's printed cost is the one paid: Make the Call being Leadership is no matter
+    it "The Power of Leadership pays 1 toward calling an ally of no aspect" do
+      tg <- testGame ["captain-marvel"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        call <- putInHand p "01071"
+        power <- putInHand p "01072"
+        shuri <- putInDiscard p "01041"
+        offers (isPlay call) `shouldReturn` False
+        energy <- putInHand p "01088"
+        playOn call (CardIdRef $ pcCardId shuri) [power, energy]
+        pass
+        alliesWith "01041" >>= (`shouldSatisfy` ((== 1) . length))
+
   describe "The Power of Leadership (01072)" do
     it "pays 2 for a Leadership card" do
       tg <- testGame ["captain-marvel"]

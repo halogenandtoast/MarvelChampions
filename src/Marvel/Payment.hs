@@ -31,7 +31,7 @@ paymentResources payment = case paymentActualResources payment of
     extra <- project PlayerIdentityAdditionalTough ident
     pure $ replicate (fromIntegral $ (if tough then 1 else 0) + extra) Physical
   generated (ResourcePaymentFromPlayerCard card) = do
-    context <- getActiveCost >>= maybe (pure Nothing) getActiveCostCard
+    context <- getActiveCost >>= maybe (pure Nothing) getActiveCostResourceCard
     resourcesFor card context
   generated (OverpaymentOnlyPayment r) = pure [r]
   generated (ResourcePayment r) = pure [r]

@@ -2928,6 +2928,13 @@ getActiveCostCard acid = do
   cost <- getsGame $ headMay . filter ((== acid) . activeCostId) . gameActiveCost
   maybe (pure Nothing) activeCostPaymentCard cost
 
+-- | The card an active cost's resources are generated for: the called ally for Make
+-- the Call, otherwise 'getActiveCostCard'.
+getActiveCostResourceCard :: (HasGame m) => ActiveCostId -> m (Maybe PlayerCard)
+getActiveCostResourceCard acid = do
+  cost <- getsGame $ headMay . filter ((== acid) . activeCostId) . gameActiveCost
+  maybe (pure Nothing) activeCostResourceCard cost
+
 getActiveCostPayer :: (HasGame m) => ActiveCostId -> m (Maybe IdentityId)
 getActiveCostPayer acid = getsGame $ fmap activeCostIdentityId . find ((== acid) . activeCostId) . gameActiveCost
 

@@ -60,6 +60,24 @@ activeCostPaymentCard cost = case activeCostTarget cost of
   ForAbility _ -> resourcePaymentCard (activeCostIdentityId cost) (activeCostSource cost)
   _ -> pure Nothing
 
+-- | The discard-pile card whose printed cost a card pays as its own (Make the Call).
+targetPrintedCostCard :: HasGame m => PlayerCard -> Maybe Target -> m (Maybe PlayerCard)
+targetPrintedCostCard card = \case
+  Just (CardIdRef cid) | TargetPrintedCost `elem` flattenCosts (cdAbilityCost $ getCardDef card) -> do
+    cards <- concatMapM (projectMap PlayerIdentityDiscard unDiscard) =<< getPlayers
+    pure $ L.find ((== cid) . pcCardId) cards
+  _ -> pure Nothing
+
+-- | The card resources are generated "for": one paying another card's printed cost
+-- pays for that card, so The Power of [Aspect] reads the called ally's aspect.
+resourceContextCard :: HasGame m => PlayerCard -> Maybe Target -> m PlayerCard
+resourceContextCard card target = fromMaybe card <$> targetPrintedCostCard card target
+
+-- | 'activeCostPaymentCard' as the context its resources are generated for.
+activeCostResourceCard :: HasGame m => ActiveCost -> m (Maybe PlayerCard)
+activeCostResourceCard cost =
+  traverse (`resourceContextCard` paymentTarget (activeCostPayment cost)) =<< activeCostPaymentCard cost
+
 -- | Pay this part of the cost. Resources are paid first, so a cost that cannot be paid
 -- in full is given up before anything else is paid.
 payCostPart :: (ReverseQueue m) => ActiveCost -> Cost -> m ()
@@ -565,7 +583,8 @@ payCostPartAs contributing activeCost cost = do
           && (ChosenHandCardCost `notElem` flattenCosts (activeCostCost activeCost)
               || paymentTarget (activeCostPayment activeCost) /= Just (CardIdRef $ pcCardId c))
     originalPayer <- fromMaybe iid <$> getActiveCostPayer acid
-    cards <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getPaymentSourcesFor originalPayer payer mcard
+    context <- activeCostResourceCard activeCost
+    cards <- filterM (fmap spendable . (`resourcesFor` context)) . filter notTheSource =<< getPaymentSourcesFor originalPayer payer mcard
     -- "from your hand": the cards in it, none of the resource abilities in play
     let printed = printedResourceRequirements (activeCostCost activeCost)
         printedOnly = notNull printed && length printed == length (costResources $ activeCostCost activeCost)
@@ -575,7 +594,7 @@ payCostPartAs contributing activeCost cost = do
         then pure []
         else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities originalPayer payer mcard
     let canHelp p = do
-          cs <- filterM (fmap spendable . (`resourcesFor` mcard)) . filter notTheSource =<< getPaymentSourcesFor iid p mcard
+          cs <- filterM (fmap spendable . (`resourcesFor` context)) . filter notTheSource =<< getPaymentSourcesFor iid p mcard
           abs' <- if fromHandOnly then pure [] else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities iid p mcard
           pure $ notNull cs || notNull abs'
     payers <- resourceCostPayers iid mcard
@@ -932,7 +951,7 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
       cardSpecific (ActiveCostRef ident) "finishSpendingCard" (discard, resources, printed)
       pure activeCost {activeCostSpentCards = discard : activeCostSpentCards activeCost}
     Spent ident discard | ident == activeCostId activeCost -> do
-      context <- activeCostPaymentCard activeCost
+      context <- activeCostResourceCard activeCost
       resources <- resourcesFor discard context
       printed <- printedResourcesFor discard
       molecularAccelerationSpent (fromMaybe (activeCostIdentityId activeCost) $ pcController discard <|> pcOwner discard) discard
