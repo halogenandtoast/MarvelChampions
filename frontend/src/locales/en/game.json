@@ -84,6 +84,7 @@
   "setAsideModulars": "Sets awaiting recruitment",
   "piles": {
     "setAside": "Set aside",
+    "encounterSource": "Encounter",
     "chooseCards": "Choose {count} card | Choose {count} cards",
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",

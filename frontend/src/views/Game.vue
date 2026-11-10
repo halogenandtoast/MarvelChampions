@@ -266,6 +266,7 @@ const onBoard = computed(() => {
     p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
     add(p.supports)
     add(p.upgrades)
+    for (const card of [...(p.supports ?? []), ...(p.upgrades ?? [])]) add(card.heldCards)
     add(p.attachments)
     add(p.obligations)
     add(p.discard)
@@ -298,6 +299,7 @@ const things = computed(() => {
     p.allies?.forEach((a) => (add(a.upgrades), add(a.attachments)))
     add(p.supports)
     add(p.upgrades)
+    for (const card of [...(p.supports ?? []), ...(p.upgrades ?? [])]) add(card.heldCards)
     add(p.attachments)
     add(p.obligations)
   }

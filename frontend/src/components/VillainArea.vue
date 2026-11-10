@@ -7,7 +7,7 @@ import { computed, ref } from 'vue'
 import { useScenarios } from '../scenarios'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
-import type { AreaView, DeckView, GameView, SchemeView } from '../server'
+import type { AreaView, CardView, DeckView, GameView, SchemeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
@@ -20,6 +20,27 @@ const { t, te } = useI18n()
 const { assignedDamage } = useChoices()
 const cards = useCards()
 const { modularName } = useScenarios(ref([]))
+
+// Keep one pile on the table; separate its contents by source when opened.
+const setAsideGroups = computed(() => {
+  const remaining = new Set((game.setAsideCards ?? []).map(card => card.id))
+  const groups: { label: string; cards: CardView[] }[] = []
+  for (const player of game.players) {
+    const identity = cards.card(player.faces[0] ?? player.code)
+    if (!identity?.setCode) continue
+    const heroCards = (game.setAsideCards ?? []).filter(card => {
+      const set = cards.card(card.code)?.setCode
+      return remaining.has(card.id) && (set === identity.setCode || set === `${identity.setCode}_nemesis`)
+    })
+    if (heroCards.length) {
+      groups.push({ label: identity.name, cards: heroCards })
+      heroCards.forEach(card => remaining.delete(card.id))
+    }
+  }
+  const encounter = (game.setAsideCards ?? []).filter(card => remaining.has(card.id))
+  if (encounter.length) groups.push({ label: t('game.piles.encounterSource'), cards: encounter })
+  return groups
+})
 
 // what is in the area, in the area's order, or everything when there is no area to narrow to
 const inArea = <T extends { id: string }>(xs: T[] | undefined, ids: string[] | undefined): T[] =>
@@ -184,7 +205,7 @@ const escalation = (scheme: SchemeView) => {
       <Pile v-if="game.victoryDisplay?.length || game.victoryCondition" :label="victoryLabel" :cards="game.victoryDisplay ?? []" pile="victory-display" />
       <!-- The Collection (Infiltrate the Museum): shared, out of play, its cards faceup -->
       <Pile v-if="game.collection?.length" :label="t('game.piles.collection')" :cards="game.collection" pile="collection" />
-      <Pile v-if="game.setAsideCards?.length" :label="t('game.piles.setAside')" :cards="game.setAsideCards" pile="set-aside" />
+      <Pile v-if="game.setAsideCards?.length" :label="t('game.piles.setAside')" :cards="game.setAsideCards" :groups="setAsideGroups" pile="set-aside" />
       <div v-if="game.setAsideModulars?.length" class="set-aside-modulars">
         <strong>{{ t('game.setAsideModulars') }}</strong>
         <ul><li v-for="set in game.setAsideModulars" :key="set">{{ modularName(set) }}</li></ul>

@@ -4,7 +4,7 @@
 import { computed, useTemplateRef } from 'vue'
 import { useFitToWidth } from '../composables/useFitToWidth'
 import { useI18n } from 'vue-i18n'
-import type { EnvironmentView, MinionView, PlayerView, SupportView, UpgradeView } from '../server'
+import type { CardView, EnvironmentView, MinionView, PlayerView, SupportView, UpgradeView } from '../server'
 import BoardCard from './BoardCard.vue'
 import Meter from './Meter.vue'
 import Pile from './Pile.vue'
@@ -56,9 +56,10 @@ const supports = computed<TableCard[]>((previous) => {
     .filter(card => card.id !== identityCompanion.value?.id)
     .sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity))
 })
-// cards attached to a support facedown, shown as such
-const facedown = (card: { id: string; facedownCards?: number; heldCardsFacedown?: number }) =>
-  Array.from({ length: card.facedownCards ?? card.heldCardsFacedown ?? 0 }, (_, n) => ({ id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') }))
+// Keep hidden cards anonymous; the controller can inspect and play known tucked cards.
+const facedown = (card: { id: string; facedownCards?: number; heldCardsFacedown?: number; heldCards?: CardView[] }) =>
+  Array.from({ length: card.facedownCards ?? card.heldCardsFacedown ?? 0 }, (_, n) =>
+    card.heldCards?.[n] ?? { id: `${card.id}-facedown-${n}`, code: '', name: t('game.facedownCard') })
 const encounterHolders = computed(() => [...(player.supports ?? []), ...(player.obligations ?? [])].filter(c => c.tuckedCards?.length))
 const holders = computed(() => [...(player.upgrades ?? []), ...(player.supports ?? [])].filter((u) => u.heldCards?.length))
 const detachedMinions = computed(() => minions.filter((m) => !m.attachedToMinion))

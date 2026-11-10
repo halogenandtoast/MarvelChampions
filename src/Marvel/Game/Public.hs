@@ -19,6 +19,8 @@ import Data.Functor.Identity (runIdentity)
 import Data.HashMap.Strict qualified as HashMap
 import Data.HashSet qualified as HashSet
 import Data.Text qualified as Text
+import Data.UUID.V5 qualified as UUID
+import Marvel.Hero.Cards qualified as HeroCards
 import Marvel.Ability.Types (Ability (..), AbilityType)
 import Marvel.Ability.Types qualified as Ability
 import Marvel.ActiveCost.Types
@@ -514,6 +516,7 @@ data ChoiceView = ChoiceView
   -- ^ the id of the card or entity the choice is about
   , code :: Maybe CardCode
   , abilityType :: Maybe AbilityType
+  , paymentLabel :: Maybe Text
   }
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
@@ -632,7 +635,17 @@ gameView seesHand g = do
           _ -> Nothing
       , encounterDeckSize = length scenario.scenarioEncounterDeck
       , encounterDeckTop = if globallyVisible || mayLookPrivate then cardView . EncounterCard <$> headMay scenario.scenarioEncounterDeck else Nothing
-      , setAsideCards = map cardView scenario.scenarioSetAsideCards
+      , setAsideCards = map cardView scenario.scenarioSetAsideCards <>
+          [ CardView
+              (CardId $ UUID.generateNamed owner $ map (fromIntegral . fromEnum) $ Text.unpack $ unCardCode code)
+              code (display $ cdName def)
+          | p <- HashMap.elems (gamePlayers g)
+          , let IdentityId owner = toId p
+          , toBaseCardCode (toCardCode p) `elem` ["29001", "29002", "29003"]
+          , def <- [HeroCards.ironheartVersion1, HeroCards.ironheartVersion2, HeroCards.ironheartVersion3]
+          , let code = toCardCode def
+          , toBaseCardCode code /= toBaseCardCode (toCardCode p)
+          ]
       , setAsideModulars = L.nub [set | c <- scenario.scenarioSetAsideCards, Just set <- [cdEncounterSet $ getCardDef c], set `elem` EncounterSet.modularSets]
       , encounterDiscard = map (cardView . EncounterCard) scenario.scenarioDiscard
       , victoryDisplay = map (cardView . EncounterCard) (gameVictoryDisplay g) <> map (cardView . PlayerCard) (gamePlayerVictoryDisplay g)
@@ -733,7 +746,17 @@ gameView seesHand g = do
        }
 
   visibleQuestion asked question =
-    let view = questionView asked question
+    let raw = questionView asked question
+        -- A spent resource remains on the paying tray while its response is offered,
+        -- including questions already stored before card targeting was displayed.
+        onResource choice
+          | choice.label == Just "$label.strokeOfGenius"
+          , card : _ <- [card | cost <- gameActiveCost g, cost.activeCostIdentityId == asked, card <- cost.activeCostSpentCards, toCardCode card == "29009"] =
+              choice {kind = "ability", target = raw.source <|> Just (idText $ pcCardId card), abilityType = Just Ability.Response}
+          | otherwise = choice
+        view = raw
+          { choices = map onResource raw.choices
+          }
      in if isJust (gameCompetition g) && not (seesHand asked)
           then view {choices = [], searched = []}
           else view
@@ -1012,7 +1035,7 @@ questionView asked = \case
   ChooseN n cs -> QuestionView "chooseN" (Just $ min (fromIntegral n) (length cs)) Nothing Nothing (allocations cs) (described cs) [] []
   ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" (Just $ length cs) Nothing Nothing (allocations cs) (described cs) [] []
   ChoosePlayerOrder (Unsorted xs) _ ->
-    QuestionView "choosePlayerOrder" Nothing Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
+    QuestionView "choosePlayerOrder" Nothing Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
  where
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
   -- Every allocation choice carries the continuation with its new point prepended.
@@ -1051,6 +1074,11 @@ describeChoice asked = \case
     (on "ability" (usedFrom a))
       { label = a.abilityLabel <|> basicLabel a.abilityChoices
       , abilityType = Just a.abilityType
+      , paymentLabel = if a.abilityLabel == Just "Child Prodigy" then case a.abilityCost of
+          ResourceCost (Just Mental) -> Just "$label.childProdigyMentalPayment"
+          MultiResourceCost [Nothing, Nothing] -> Just "$label.childProdigyTwoResourcesPayment"
+          _ -> Nothing
+        else Nothing
       }
   RunAbility t _ -> on "ability" t
   ChangeForm -> plain "changeForm" (Just "$label.changeForm")
@@ -1080,9 +1108,9 @@ describeChoice asked = \case
   ReturnTargetToHand t -> on "returnToHand" t
   other -> plain "other" (Just (tshow other))
  where
-  withCode value (ChoiceView i k l t _ a) = ChoiceView i k l t value a
-  withKind value (ChoiceView i _ l t c a) = ChoiceView i value l t c a
-  withTarget value (ChoiceView i k l _ c a) = ChoiceView i k l value c a
+  withCode value (ChoiceView i k l t _ a p) = ChoiceView i k l t value a p
+  withKind value (ChoiceView i _ l t c a p) = ChoiceView i value l t c a p
+  withTarget value (ChoiceView i k l _ c a p) = ChoiceView i k l value c a p
   -- an ability paid by exhausting one named upgrade (Sync Ratio) is used from that
   -- upgrade, so each is offered on the card it exhausts
   usedFrom a = case a.abilityCost of
@@ -1146,9 +1174,9 @@ describeChoice asked = \case
     Msg.RemoveFromPlay t' -> Just ("discard", t')
     Msg.ReturnToHand t' -> Just ("returnToHand", t')
     _ -> Nothing
-  plain kind label = ChoiceView 0 kind label Nothing Nothing Nothing
-  on kind t = ChoiceView 0 kind Nothing (refId t) Nothing Nothing
-  onCard kind cid = ChoiceView 0 kind Nothing (Just $ idText cid) Nothing Nothing
+  plain kind label = ChoiceView 0 kind label Nothing Nothing Nothing Nothing
+  on kind t = ChoiceView 0 kind Nothing (refId t) Nothing Nothing Nothing
+  onCard kind cid = ChoiceView 0 kind Nothing (Just $ idText cid) Nothing Nothing Nothing
 
 -- | The resources a cost still needs once those paid are matched to it: each kind first,
 -- a wild in place of one, then what is left over against the generic ones.

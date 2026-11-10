@@ -1,4 +1,6 @@
 {
+  "childProdigyMentalPayment": "Spend 1 mental resource",
+  "childProdigyTwoResourcesPayment": "Spend 2 resources of any type",
   "attackWithoutDiscarding": "Attack without discarding",
   "callingInFavorsSearch": "Choose an ally to play with its cost reduced by 2",
   "searchDeckAndDiscard": "Choose a card from your deck or discard pile",

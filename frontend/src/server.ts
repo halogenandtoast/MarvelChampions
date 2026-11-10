@@ -246,6 +246,7 @@ export interface ChoiceView {
   /** The id of the card or entity the choice is about. */
   target: string | null
   code: string | null
+  paymentLabel?: string | null
   abilityType: string | null
 }
 

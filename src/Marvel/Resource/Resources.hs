@@ -22,7 +22,7 @@ beforeSpent = leaderRewardWhenSpent
 -- spent with it are on their way to the discard pile.
 afterSpent :: (ReverseQueue m) => IdentityId -> IdentityId -> [PlayerCard] -> PlayerCard -> m ()
 afterSpent recipient you spent card
-  | getCardDef card `sameCard` Cards.strokeOfGenius = chooseOne you
+  | getCardDef card `sameCard` Cards.strokeOfGenius = chooseOnePromptedAbout you "$label.strokeOfGenius" card
       [ labeled "$label.strokeOfGenius" (placeCounters you 1 >> drawCards you 1)
       , labeled "$label.noResponse" (pure ())
       ]

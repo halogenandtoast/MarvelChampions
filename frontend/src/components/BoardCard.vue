@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ChoiceView } from '../server'
 import { useCardDebug } from '../composables/useCardDebug'
 import ActionLabel from './ActionLabel.vue'
 // A card on the table: its scan, the tokens on it, its statuses, and what can be done
@@ -114,7 +115,8 @@ const active = computed(() => options.value.length > 0)
 // the card the question is about: lifted, and ringed in amber
 const source = computed(() => !!props.id && sourceId.value === props.id && !(revealStarted.value && byTarget.value.get(props.id)?.some(option => option.label === '$label.revealBoostCards')))
 const menuOpen = ref(false)
-watch(options, () => (menuOpen.value = false))
+const selectedOptions = ref<ChoiceView[] | null>(null)
+watch(options, () => { menuOpen.value = false; selectedOptions.value = null })
 const slotChoices = computed(() => {
   const found = new Map<number, (typeof options.value)[number]>()
   if (!props.resourceSlots?.length) return found
@@ -128,15 +130,29 @@ const slotChoices = computed(() => {
 })
 // the chips: each distinct thing it can do, named; several of the same are told apart
 const chips = computed(() => {
+  const result: { option: ChoiceView; text: string; alternatives: ChoiceView[] }[] = []
   const seen = new Map<string, number>()
-  return options.value.filter((option) => ![...slotChoices.value.values()].some((slot) => slot.index === option.index)).map((option) => {
+  for (const option of options.value.filter(option => ![...slotChoices.value.values()].some(slot => slot.index === option.index))) {
     const basic = option.abilityType === 'Basic' || /^\$label\.(changeForm|changeTo[AB]|attack|thwart|recover|defend)\b/.test(option.label ?? '')
     const text = label(option.kind === 'ability' && !basic ? { ...option, label: null } : option, title.value)
-    const n = (seen.get(text) ?? 0) + 1
-    seen.set(text, n)
-    return { option, text: n > 1 ? `${text} ${n}` : text }
-  })
+    const same = option.paymentLabel && result.find(chip => chip.option.paymentLabel && chip.option.label === option.label && chip.option.abilityType === option.abilityType)
+    if (same) same.alternatives.push(option)
+    else {
+      const n = (seen.get(text) ?? 0) + 1
+      seen.set(text, n)
+      result.push({ option, text: n > 1 ? `${text} ${n}` : text, alternatives: [option] })
+    }
+  }
+  return result
 })
+const chooseChip = (chip: (typeof chips.value)[number]) => {
+  if (chip.alternatives.length === 1) choose(chip.option.index)
+  else {
+    overlay.hide()
+    selectedOptions.value = chip.alternatives
+    menuOpen.value = true
+  }
+}
 // Replace crowded action stacks with one menu containing every action.
 // Several effects of the same interrupt/response are one entry point; the
 // player picks the effect from the menu after opening that ability.
@@ -186,6 +202,7 @@ const click = () => {
     preview(el.value, true)
   } else if (options.value.length > 1) {
     overlay.hide()
+    selectedOptions.value = null
     menuOpen.value = !menuOpen.value
   } else if (options.value[0]) {
     choose(options.value[0].index)
@@ -251,7 +268,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
       <TokenStack v-if="counters" class="token counters" kind="generic" :count="counters" :aria-label="$t('game.countersOn', { count: counters })" />
       <span v-if="held" class="held" :aria-label="$t('game.heldBeneath', { count: held })">{{ $t('game.heldBeneath', { count: held }) }}</span>
       <div v-if="chips.length" class="chips">
-        <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" @click.stop="choose(chip.option.index)"><ActionLabel :text="chip.text" :name="actionName(chip.option, code)" /></button>
+        <button v-for="chip in visibleChips" :key="chip.option.index" type="button" class="chip" :aria-haspopup="chip.alternatives.length > 1 ? 'menu' : undefined" @click.stop="chooseChip(chip)"><ActionLabel :text="chip.text" :name="actionName(chip.option, code)" /></button>
         <button v-if="overflowChips.length" type="button" class="chip" :aria-label="groupedReaction ?? $t('label.moreActions')" aria-haspopup="menu" :aria-expanded="overflowOpen" @click.stop="toggleOverflow">{{ groupedReaction ?? '…' }}</button>
       </div>
     </div>
@@ -272,7 +289,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     </ul>
     <ChoiceMenu
       v-if="overflowOpen && el"
-      :options="overflowChips.map(chip => chip.option)"
+      :options="overflowChips.flatMap(chip => chip.alternatives)"
       :anchor="el"
       :card-name="title"
       @choose="(index) => ((overflowOpen = false), choose(index))"
@@ -280,7 +297,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
     />
     <ChoiceMenu
       v-if="menuOpen && el"
-      :options="options"
+      :options="selectedOptions ?? options"
       :anchor="el"
       :card-name="title"
       @choose="(index) => ((menuOpen = false), choose(index))"

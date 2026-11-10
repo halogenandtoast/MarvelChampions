@@ -12,6 +12,55 @@ cardObjects code = \case
 
 spec :: Spec
 spec = describe "Hero pack public counters" do
+  it "shows Ironheart's inactive identity cards after setup and each level up" do
+    tg <- testGame ["ironheart"]
+    inGame tg do
+      let p = player1 tg
+          check expected = do
+            view <- liftIO . publicGame =<< getGame
+            let codes = case view of
+                  Object obj -> case KeyMap.lookup "setAsideCards" obj of
+                    Just (Array cards) -> [code | Object card <- toList cards, Just code <- [KeyMap.lookup "code" card]]
+                    _ -> []
+                  _ -> []
+            filter (`elem` map toJSON (["29001a", "29002a", "29003a"] :: [CardCode])) codes
+              `shouldBe` map toJSON (expected :: [CardCode])
+      check ["29002a", "29003a"]
+      resolve [IdentityMessage p $ SwapIdentityVersion "29002a" "29002b"]
+      check ["29001a", "29003a"]
+      resolve [IdentityMessage p $ SwapIdentityVersion "29003a" "29003b"]
+      check ["29001a", "29002a"]
+
+  it "names the alternative payments for Riri's single Child Prodigy action" do
+    tg <- testGame ["ironheart"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      resolve [IdentityMessage p $ SwapIdentityVersion "29002a" "29002b"]
+      _ <- putInHand p "01091"
+      _ <- putInHand p "01090"
+      resolve [IdentityMessage p PlayerTurnOption]
+      view <- liftIO . publicGame =<< getGame
+      let payments = collectPaymentLabels view
+      payments `shouldMatchList` [String "$label.childProdigyMentalPayment", String "$label.childProdigyTwoResourcesPayment"]
+
+  it "shows Stroke of Genius's response on the spent resource card" do
+    tg <- testGame ["ironheart"]
+    inGame tg do
+      let p = player1 tg
+      clearHand p
+      ronnie <- putInHand p "29010"
+      genius <- putInHand p "29009"
+      choose "play" (isPlay ronnie)
+      choose "pay Stroke" (isPayWith genius)
+      view <- liftIO . publicGame =<< getGame
+      let responses = findResponses view
+      responses `shouldSatisfy` notNull
+      for_ responses $ \response -> do
+        KeyMap.lookup "kind" response `shouldBe` Just (String "ability")
+        KeyMap.lookup "target" response `shouldBe` Just (toJSON $ pcCardId genius)
+        KeyMap.lookup "abilityType" response `shouldBe` Just (String "Response")
+
   it "shows Magnetic Bubble's absorbed damage as damage" do
     tg <- testGame ["magneto"]
     inGame tg do
@@ -39,3 +88,15 @@ spec = describe "Hero pack public counters" do
       for_ cards $ \card -> do
         KeyMap.lookup "damage" card `shouldBe` Just (toJSON (3 :: Natural))
         KeyMap.lookup "uses" card `shouldBe` Just (toJSON (0 :: Natural))
+
+findResponses :: Value -> [Object]
+findResponses = \case
+  Object obj -> [obj | KeyMap.lookup "label" obj == Just (String "$label.strokeOfGenius")] <> concatMap findResponses (KeyMap.elems obj)
+  Array items -> concatMap findResponses (toList items)
+  _ -> []
+
+collectPaymentLabels :: Value -> [Value]
+collectPaymentLabels = \case
+  Object obj -> [v | Just v <- [KeyMap.lookup "paymentLabel" obj], v /= Null] <> concatMap collectPaymentLabels (KeyMap.elems obj)
+  Array items -> concatMap collectPaymentLabels (toList items)
+  _ -> []

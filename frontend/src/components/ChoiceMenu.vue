@@ -38,7 +38,7 @@ onKeyStroke('Escape', () => emit('close'))
     <div ref="menu" class="choice-menu" role="menu" :style="{ top: `${place.top}px`, left: `${place.left}px` }">
       <p v-if="cardName" class="title">{{ cardName }}</p>
       <button v-for="option in options" :key="option.index" type="button" role="menuitem" @click="emit('choose', option.index)">
-        {{ label(option, cardName) }}
+        {{ label(option.paymentLabel ? { ...option, label: option.paymentLabel } : option, cardName) }}
       </button>
     </div>
   </Teleport>

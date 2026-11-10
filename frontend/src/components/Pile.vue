@@ -11,8 +11,9 @@ import CardFace from './CardFace.vue'
 import { skipViewTransitions } from '../composables/useViewTransition'
 import { dealtPileCounts } from '../composables/dealing'
 
-const { label, back = null, count = null, cards = null, pile = null } = defineProps<{
+const { label, back = null, count = null, cards = null, pile = null, groups = null } = defineProps<{
   label: string
+  groups?: { label: string; cards: readonly CardView[] }[] | null
   /** what cards flying to and from it look for: deck-encounter, discard-<player> and so on */
   pile?: string | null
   /** face down: a deck */
@@ -89,7 +90,15 @@ provideChoiceHandler(index => {
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
       </header>
       <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t('game.piles.chooseCards', { count: picksLeft }) }}</p>
-      <div class="cards">
+      <template v-if="groups">
+        <section v-for="group in groups" :key="group.label" class="pile-group">
+          <h3>{{ group.label }} <small>{{ group.cards.length }}</small></h3>
+          <div class="cards">
+            <BoardCard v-for="card in group.cards" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
+          </div>
+        </section>
+      </template>
+      <div v-else class="cards">
         <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
       </div>
     </dialog>
@@ -161,6 +170,9 @@ provideChoiceHandler(index => {
 .pile-dialog::backdrop { background: rgb(0 0 0 / 0.6); backdrop-filter: blur(3px); }
 .pile-dialog header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .pick-instruction { margin: 12px 16px 0; color: var(--text-muted); font-size: 0.8rem; }
+.pile-group h3 { margin: 16px 16px 0; font-size: 1rem; }
+.pile-group h3 small { margin-left: 6px; color: var(--text-faint); }
+.pile-group + .pile-group { border-top: 1px solid var(--line); }
 .pile-dialog h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; }
 .pile-dialog h2 small { color: var(--text-faint); font-size: 0.9rem; margin-left: 6px; }
 .pile-dialog .cards { display: flex; flex-wrap: wrap; gap: 14px; padding: 16px; overflow-y: auto; --card-width: 120px; }
