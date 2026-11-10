@@ -1438,6 +1438,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         frameworkDiscard $ for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
         for_ [aid | (aid, attachment) <- HashMap.toList (gameAttachments g), Attachment.attachmentMainScheme (toAttrs attachment) == Just mid] removeFromPlay
         pure $ g
+          & (tombstonesL . mainSchemesL %~ maybe id (insertMap mid) (lookup mid $ gameMainSchemes g))
           & (entitiesL . mainSchemesL %~ deleteMap mid)
           & (removedEntitiesL . mainSchemesL %~ insertMap mid scheme)
           & (areasL . each %~ \area -> area {areaMainSchemes = filter (/= mid) (areaMainSchemes area)})
@@ -1486,6 +1487,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ [aid | (aid, at) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs at) == Just sid] removeFromPlay
         pure $
           g
+            & (tombstonesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
             & (entitiesL . sideSchemesL %~ deleteMap sid)
             & (removedEntitiesL . sideSchemesL %~ insertMap sid scheme)
             & (areasL . each %~ \area -> area {areaSideSchemes = filter (/= sid) (areaSideSchemes area)})
@@ -1665,7 +1667,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     -- without one until a stage takes its place
     MainSchemeRef mid -> do
       frameworkDiscard $ for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
-      pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid) & (areasL . each %~ \a -> a {areaMainSchemes = filter (/= mid) (areaMainSchemes a)})
+      pure $ g & (tombstonesL . mainSchemesL %~ maybe id (insertMap mid) (lookup mid $ gameMainSchemes g))
+          & (entitiesL . mainSchemesL %~ deleteMap mid) & (areasL . each %~ \a -> a {areaMainSchemes = filter (/= mid) (areaMainSchemes a)})
     -- out of the game, not discarded: what is attached to it is discarded
     SideSchemeRef sid -> whenCanLeavePlay g sid do
       for_ (lookup sid $ gameSideSchemes g) $ traverse_ discardCard . SideScheme.sideSchemeHeldEncounterCards . toAttrs
@@ -1676,7 +1679,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         ]
         removeFromPlay
       for_ [aid | (aid, a) <- HashMap.toList (gameAttachments g), attachmentSideScheme (toAttrs a) == Just sid] removeFromPlay
-      pure $ g & (entitiesL . sideSchemesL %~ deleteMap sid) & (areasL . each %~ \a -> a {areaSideSchemes = filter (/= sid) (areaSideSchemes a)})
+      pure $ g & (tombstonesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
+            & (entitiesL . sideSchemesL %~ deleteMap sid) & (areasL . each %~ \a -> a {areaSideSchemes = filter (/= sid) (areaSideSchemes a)})
     MinionRef mid -> case lookup mid (gameMinions g) of
       Nothing -> pure g
       Just minion -> do
@@ -1902,11 +1906,13 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         for_ (lookup sid $ gameSideSchemes g) discardLeaving
         pure $
           g
+            & (tombstonesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
             & (entitiesL . sideSchemesL %~ deleteMap sid)
             & (removedEntitiesL . sideSchemesL %~ maybe id (insertMap sid) (lookup sid $ gameSideSchemes g))
       MainSchemeRef mid -> do
         frameworkDiscard $ for_ [uid | (uid, u) <- HashMap.toList (gameUpgrades g), upgradeAttachedMainScheme (toAttrs u) == Just mid] removeFromPlay
-        pure $ g & (entitiesL . mainSchemesL %~ deleteMap mid)
+        pure $ g & (tombstonesL . mainSchemesL %~ maybe id (insertMap mid) (lookup mid $ gameMainSchemes g))
+          & (entitiesL . mainSchemesL %~ deleteMap mid)
           & (areasL . each %~ \area -> area {areaMainSchemes = filter (/= mid) (areaMainSchemes area)})
       EnvironmentRef eid -> do
         for_ (lookup eid $ gameEnvironments g) discardLeaving

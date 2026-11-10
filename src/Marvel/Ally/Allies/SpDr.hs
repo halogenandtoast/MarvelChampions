@@ -26,6 +26,7 @@ newtype SpDr = SpDr (Attrs Ally `With` Bool)
 
 instance IsAlly SpDr where
   toAllyAttrs (SpDr (attrs `With` _)) = attrs
+  allyWhenDefeatedRelevant (SpDr (_ `With` excess)) = excess
 
 instance IsRef SpDr where
   toRef = toRef . toAllyAttrs

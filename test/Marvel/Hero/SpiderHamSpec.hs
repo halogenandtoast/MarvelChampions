@@ -134,6 +134,23 @@ spec = describe "Spider-Ham" do
       c <- putInHand p "30004"
       offers (isPlay c) `shouldReturn` False
 
+  it "reserves Hogwashed's last toon counter throughout resource payment" do
+    tg <- testGame ["spider-ham"]
+    inGame tg do
+      let p = player1 tg
+      asHero p
+      runNow [PlaceCounters (toTarget p) 1]
+      m <- addMinion p Minions.hydraMercenary
+      card <- putInHand p "30004"
+      payment <- putInHand p "01090"
+      offers (isPlay card) `shouldReturn` True
+      choose "play Hogwashed" (isPlay card)
+      offers (isNamedAbility "$label.spendIdentityCounter") `shouldReturn` False
+      payWith [payment]
+      choose "target minion" (isTargetChoice m)
+      countersOf p `shouldReturn` 0
+      minionDamageOf m `shouldReturn` Nothing
+
   it "cannot spend toon counters as resources in alter-ego" do
     tg <- testGame ["spider-ham"]
     inGame tg do

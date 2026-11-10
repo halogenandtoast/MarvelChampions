@@ -177,6 +177,9 @@ data Game = Game
   , gameEntities :: Entities
   , gameBoostEntities :: Entities
   , gameRemovedFromGameEncounterCards :: [EncounterCard]
+  -- Last state of departed schemes, retained for historical window queries.
+  -- These entities never receive messages or contribute to the live board.
+  , gameTombstones :: Entities
   , gameRemovedEntities :: Entities
   , gameQuestion :: HashMap IdentityId Question
   , gameUsedAbilities :: HashMap IdentityId [(Ability, Int)]
@@ -394,6 +397,7 @@ instance FromJSON Game where
             . KeyMap.insertWith (\_ existing -> existing) "playedInWindows" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playedThisTurn" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "removedFromGameEncounterCards" (toJSON ([] :: [Value]))
+            . KeyMap.insertWith (\_ existing -> existing) "tombstones" (toJSON defaultEntities)
             . KeyMap.insertWith (\_ existing -> existing) "victoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "playerVictoryDisplay" (toJSON ([] :: [Value]))
             . KeyMap.insertWith (\_ existing -> existing) "defeatedMinionBoosts" (toJSON ([] :: [Value]))

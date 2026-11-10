@@ -791,7 +791,10 @@ gameSelectSideScheme m = do
   sideSchemes <- inCompetitiveAreaOrExplicit (explicitSideSchemeTargets m) (SideSchemeRef . toId) . HashMap.elems =<< getsGame gameSideSchemes
   removedSideSchemes <-
     inCompetitiveAreaOnlyOrExplicit (explicitSideSchemeTargets m) (SideSchemeRef . toId) =<< case m of
-      LeftPlaySideScheme _ -> HashMap.elems <$> getsGame (view (removedEntitiesL . sideSchemesL))
+      LeftPlaySideScheme _ -> getsGame $ \g -> HashMap.elems $
+        HashMap.difference
+          (HashMap.union (entitiesSideSchemes $ gameRemovedEntities g) (entitiesSideSchemes $ gameTombstones g))
+          (gameSideSchemes g)
       _ -> pure []
   result <- filterM (matchFilter m) (sideSchemes <> removedSideSchemes)
   pure $ HashSet.fromList $ map toId result

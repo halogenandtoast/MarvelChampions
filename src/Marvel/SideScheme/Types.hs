@@ -221,8 +221,8 @@ instance RunMessage (Attrs SideScheme) where
     RemovePlayerCardFromHeldZones cid -> pure attrs {sideSchemeHeldCards = filter ((/= cid) . pcCardId) (sideSchemeHeldCards attrs), sideSchemeHeldEncounterCards = filter ((/= cid) . ecCardId) (sideSchemeHeldEncounterCards attrs)}
     CardSpecific target "resolveThwart" (fromJSON -> Success (source, n :: Natural)) | target == toRef attrs -> do
       let scheme = SchemeSideSchemeId $ sideSchemeId attrs
-      thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n
       attrs' <- removed True source n
+      thwartRemovesThreat After source scheme (sideSchemeThreat attrs) n
       heroThwartedAllThreat source scheme (sideSchemeThreat attrs) n
       pure attrs'
     PlaceCounters target n | target == toRef attrs -> pure $ attrs & countersL +~ n

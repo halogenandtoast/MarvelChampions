@@ -183,6 +183,7 @@ newGame player scenario =
     , gamePlayerOrder = [toId player]
     , gameBoostEntities = defaultEntities
     , gameRemovedFromGameEncounterCards = []
+    , gameTombstones = defaultEntities
     , gameRemovedEntities = defaultEntities
     , gameEntities =
         defaultEntities

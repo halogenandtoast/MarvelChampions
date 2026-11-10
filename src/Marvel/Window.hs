@@ -215,11 +215,11 @@ windowMatches matcher w source = case matcher of
       , damageSource damage `elem` [FromAttack, FromOverkill] -> identityMatches identityMatcher ident
     _ -> pure False
   ThreatRemovedFromScheme matcher -> case windowType w of
-    ThreatRemovedBy _ scheme _ _ | windowTiming w == After -> schemeMatches matcher scheme
+    ThreatRemovedBy _ scheme _ _ | windowTiming w == After -> historicalSchemeMatches matcher scheme
     _ -> pure False
   ThreatRemovedByThwart timing sourceMatcher schemeMatcher -> case windowType w of
     ThwartRemovedThreat from scheme _ removed | windowTiming w == timing && removed > 0 ->
-      (&&) <$> sourceMatches sourceMatcher from <*> schemeMatches schemeMatcher scheme
+      (&&) <$> sourceMatches sourceMatcher from <*> historicalSchemeMatches schemeMatcher scheme
     _ -> pure False
   BoostCardFlippedDuringUndefendedAttack timing matcher -> case windowType w of
     FlippedBoostCard _ enemy | windowTiming w == timing -> do
@@ -227,7 +227,7 @@ windowMatches matcher w source = case matcher of
       maybe (pure False) (\a -> (not (attackDefended a) &&) <$> enemyMatches matcher enemy) attack
     _ -> pure False
   CharacterThwartsScheme timing sourceMatcher schemeMatcher -> case windowType w of
-    ThwartRemovedThreat from scheme _ _ | windowTiming w == timing -> (&&) <$> sourceMatches sourceMatcher from <*> schemeMatches schemeMatcher scheme
+    ThwartRemovedThreat from scheme _ _ | windowTiming w == timing -> (&&) <$> sourceMatches sourceMatcher from <*> historicalSchemeMatches schemeMatcher scheme
     _ -> pure False
   CharacterSharingHeroTraitWouldTakeDamage matcher -> case windowType w of
     IdentityTakeDamage ident damage | windowTiming w == When -> sharingTraitDamage matcher (IdentityCharacter ident) damage
@@ -252,7 +252,7 @@ windowMatches matcher w source = case matcher of
     ExactlyDefeatedSideSchemeBy _ source | windowTiming w == After -> getHeroSourceController source >>= maybe (pure False) (identityMatches matcher)
     _ -> pure False
   RemovesLastThreatFrom identityMatcher schemeMatcher -> case windowType w of
-    LastThreatRemoved ident scheme | windowTiming w == After -> (&&) <$> identityMatches identityMatcher ident <*> schemeMatches schemeMatcher scheme
+    LastThreatRemoved ident scheme | windowTiming w == After -> (&&) <$> identityMatches identityMatcher ident <*> historicalSchemeMatches schemeMatcher scheme
     _ -> pure False
   RemovesLastThreat identityMatcher -> case windowType w of
     LastThreatRemoved ident _ | windowTiming w == After -> identityMatches identityMatcher ident

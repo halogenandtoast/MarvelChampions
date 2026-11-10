@@ -36,6 +36,10 @@ class (Typeable a, Show a, Eq a, ToJSON a, FromJSON a, HasModifiersFor a, HasAbi
   allyHasAttack :: a -> Bool
   allyHasAttack _ = True
 
+  -- Whether acknowledging the printed defeat text can have an effect.
+  allyWhenDefeatedRelevant :: a -> Bool
+  allyWhenDefeatedRelevant _ = True
+
 type AllyCard a = CardBuilder (IdentityId, Id.AllyId) a
 
 data Ally = forall a. (IsAlly a) => Ally a

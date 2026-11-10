@@ -1378,7 +1378,9 @@ whenDefeatedTarget msg g = case msg of
     pure $ toTarget vid
   AllyMessage aid AllyDefeatedByDamage -> whenDefeatedTarget (AllyMessage aid AllyDefeated) g
   AllyMessage aid AllyDefeated -> do
-    card <- lookup aid (gameAllies g)
+    card@(Ally.Ally concrete) <- lookup aid (gameAllies g)
+    guard $ Ally.allyWhenDefeatedRelevant concrete
+    guard $ not $ blankIn g (AllyRef aid)
     guard $ hasWhenDefeated (toCardCode $ getCardDef card)
     pure $ toTarget aid
   _ -> Nothing
@@ -5808,3 +5810,17 @@ environmentIntoPlay ident environment g =
   g
     & (entitiesL . environmentsL %~ insertMap (toId environment) environment)
     & intoAreaOf ident (\a -> a {areaEnvironments = areaEnvironments a <> [toId environment]})
+
+-- | Match a timing window's subject against its last state when it has left play.
+-- Only this read-only query restores the named entity; ordinary selection, icons,
+-- modifiers and legal targets continue to see the live board.
+historicalSchemeMatches :: HasGame m => SchemeMatcher -> SchemeId -> m Bool
+historicalSchemeMatches matcher sid = do
+  g <- getGame
+  let history = gameTombstones g
+      entities = gameEntities g
+      restore live dead key = maybe live (\card -> HashMap.insertWith (\_ current -> current) key card live) (HashMap.lookup key dead)
+      snapshot = case sid of
+        SchemeSideSchemeId key -> entities {entitiesSideSchemes = restore (entitiesSideSchemes entities) (entitiesSideSchemes history) key}
+        SchemeMainSchemeId key -> entities {entitiesMainSchemes = restore (entitiesMainSchemes entities) (entitiesMainSchemes history) key}
+  runReaderT (HashSet.member sid <$> gameSelectScheme matcher) g {gameEntities = snapshot, gameAllAreas = True}

@@ -372,3 +372,5 @@ threatSourceCharacter :: (HasGame m) => Source -> m (Maybe CharacterId)
 boostAssignmentEnemy :: Message -> Maybe EnemyId
 fearNoEvilRemovedTitles :: (HasGame m) => m [Text]
 getRound :: (HasGame m) => m Int
+
+historicalSchemeMatches :: HasGame m => SchemeMatcher -> SchemeId -> m Bool

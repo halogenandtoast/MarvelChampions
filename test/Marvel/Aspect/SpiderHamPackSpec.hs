@@ -1,5 +1,7 @@
 module Marvel.Aspect.SpiderHamPackSpec (spec) where
 
+import Marvel.Game.Base qualified as Game
+import Marvel.GameValue (GameValue (Static))
 import Marvel.Damage
 import Marvel.Ally.Cards qualified as Allies
 import Marvel.Keyword (Keyword (Patrol))
@@ -53,6 +55,46 @@ spec = describe "Spider-Ham pack" do
         chooseMainScheme
         mainSchemeThreat `shouldReturn` 3
         allyDamage <$> allyIn "30012" `shouldReturn` 2
+
+    it "can copy removal to the main scheme after defeating the last crisis scheme" do
+      tg <- pack
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        sid <- side p Schemes.defenseNetwork
+        current <- sideSchemeThreat sid
+        resolve [SideSchemeMessage sid $ SideSchemeThreatRemoved GameRef (current - 2)]
+        placeMainThreat 4
+        card <- putIntoPlay p "30012"
+        choose "Lady Spider thwarts" . isAllyThwart =<< allyIn "30012"
+        choose "crisis scheme" (isTargetChoice sid)
+        choose "copy removal after crisis leaves play" (ownAbility card)
+        chooseMainScheme
+        mainSchemeThreat `shouldReturn` 2
+        -- An intervening ability's ClearRemoved must not erase historical state.
+        resolve [ClearRemoved]
+        historicalSchemeMatches (NotScheme MainScheme <> NotScheme (SchemeWithThreat $ GreaterThan $ Static 0)) (SchemeSideSchemeId sid) `shouldReturn` True
+        sideSchemeMatches (LeftPlaySideScheme $ SideSchemeIs Schemes.defenseNetwork) sid `shouldReturn` True
+        sideSchemeMatches (LeftPlaySideScheme CrisisSideScheme) sid `shouldReturn` True
+        sideSchemeMatches AnySideScheme sid `shouldReturn` False
+        snapshot <- getGame
+        case fromJSON (toJSON snapshot) of
+          Success (restored :: Game.Game) -> Game.gameTombstones restored `shouldBe` Game.gameTombstones snapshot
+          Error err -> error err
+
+    it "cannot copy removal to the main scheme while the crisis scheme survives" do
+      tg <- pack
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        sid <- side p Schemes.defenseNetwork
+        resolve [SideSchemeMessage sid $ SideSchemePlaceThreat 3]
+        placeMainThreat 4
+        card <- putIntoPlay p "30012"
+        choose "Lady Spider thwarts" . isAllyThwart =<< allyIn "30012"
+        choose "crisis scheme" (isTargetChoice sid)
+        offers (ownAbility card) `shouldReturn` False
+        mainSchemeThreat `shouldReturn` 4
 
     it "needs another Web-Warrior card under her controller's control" do
       tg <- testGame ["spider-man"]
@@ -329,7 +371,10 @@ spec = describe "Spider-Ham pack" do
         placeMainThreat 3
         choose "SP//dr thwarts" . isAllyThwart =<< allyIn "30021"
         chooseMainScheme
-        pressWhenRevealed
+        question <- openQuestion
+        question `shouldSatisfy` \case
+          Just (_, QuestionLabel "$label.resolveWhenDefeated" _ _) -> False
+          _ -> True
         handOf p >>= (`shouldSatisfy` all ((/= pcCardId card) . pcCardId))
         discardOf p >>= (`shouldSatisfy` any ((== pcCardId card) . pcCardId))
 
@@ -367,7 +412,10 @@ spec = describe "Spider-Ham pack" do
         placeMainThreat 3
         choose "SP//dr thwarts" . isAllyThwart =<< allyIn "30021"
         chooseMainScheme
-        pressWhenRevealed
+        question <- openQuestion
+        question `shouldSatisfy` \case
+          Just (_, QuestionLabel "$label.resolveWhenDefeated" _ _) -> False
+          _ -> True
         handOf p >>= (`shouldSatisfy` all ((/= pcCardId card) . pcCardId))
         discardOf p >>= (`shouldSatisfy` any ((== pcCardId card) . pcCardId))
 
