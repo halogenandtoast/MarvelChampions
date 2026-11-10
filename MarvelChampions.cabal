@@ -1271,6 +1271,7 @@ library
       Marvel.Invocation
       Marvel.JessicaJones.Cards
       Marvel.JessicaJones.Helpers
+      Marvel.Json
       Marvel.Jubilee.Cards
       Marvel.Keyword
       Marvel.KreeFanatic

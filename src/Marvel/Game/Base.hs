@@ -4,15 +4,13 @@ module Marvel.Game.Base where
 
 import Data.Aeson.Diff qualified as Diff (Patch, diff, patch)
 import Data.Aeson.KeyMap qualified as KeyMap (
+  delete,
   insert,
   insertWith,
   lookup,
  )
 import Data.Aeson.TH (
   deriveJSON,
-  mkParseJSON,
-  mkToEncoding,
-  mkToJSON,
  )
 import Marvel.Ability.Types (Ability)
 import Marvel.Ability.Types qualified as Ability (AbilitySubType)
@@ -61,6 +59,7 @@ import Marvel.Id (
  )
 import Marvel.Identity ()
 import Marvel.Identity.Types (PlayerIdentity)
+import Marvel.Json (compactToJSON, compactParseJSON)
 import Marvel.Keyword (Keyword (..))
 import Marvel.MainScheme ()
 import Marvel.MainScheme.Types (MainScheme)
@@ -112,6 +111,12 @@ data Entities = Entities
   deriving stock (Show, Eq, Generic)
 
 makeLensesWith suffixedFields ''Entities
+
+instance ToJSON Entities where
+  toJSON = $(compactToJSON defaultOptions ''Entities)
+
+instance FromJSON Entities where
+  parseJSON = $(compactParseJSON defaultOptions ''Entities)
 
 defaultEntities :: Entities
 defaultEntities =
@@ -292,7 +297,7 @@ instance ToJSON GainedTraits where
 instance FromJSON GainedTraits where
   parseJSON _ = pure $ GainedTraits Nothing
 
-$(concat <$> traverse (deriveJSON defaultOptions) [''GameState, ''Entities, ''TrackedEnemyAttack, ''SimultaneousMinionAttackGroup, ''FriendlyBoostContext])
+$(concat <$> traverse (deriveJSON defaultOptions) [''GameState, ''TrackedEnemyAttack, ''SimultaneousMinionAttackGroup, ''FriendlyBoostContext])
 
 makeLensesWith suffixedFields ''Game
 
@@ -339,8 +344,9 @@ gameEnvironments :: Game -> EntityMap Environment
 gameEnvironments = entitiesEnvironments . gameEntities
 
 instance ToJSON Game where
-  toJSON = $(mkToJSON (aesonOptions $ Just "game") ''Game)
-  toEncoding = $(mkToEncoding (aesonOptions $ Just "game") ''Game)
+  toJSON game = case $(compactToJSON (aesonOptions $ Just "game") ''Game) game of
+    Object fields -> Object $ KeyMap.delete "gainedTraits" fields
+    value -> value
 
 -- CardSpecific payloads and saved snapshots can contain physical cards nested in
 -- arbitrary card metadata. Only their printed per-player definitions are changed.
@@ -369,7 +375,7 @@ instance FromJSON Game where
         players = maybe (max 1 $ max (count "seats") (count "playerOrder")) (length . CW.competitiveRegistrationPlayers) competitive
 
     -- Saves from before phase limits were tracked have no phase history.
-    $(mkParseJSON (aesonOptions $ Just "game") ''Game)
+    $(compactParseJSON (aesonOptions $ Just "game") ''Game)
       $ resolveCardCostValues players
       $ Object
         ( KeyMap.insertWith (\_ existing -> existing) "competition" Null

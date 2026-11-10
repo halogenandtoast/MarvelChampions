@@ -1,5 +1,6 @@
 module Marvel.JsonCompatibilitySpec (spec) where
 
+import Data.Aeson.Diff qualified as Diff
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson.Types (Parser, parseEither)
@@ -119,7 +120,9 @@ spec = do
       mapM_
         (compatible (genericToJSON defaultOptions) (genericParseJSON defaultOptions))
         [Game.Unstarted, Game.InProgress, Game.Finished Won]
-      compatible (genericToJSON defaultOptions) (genericParseJSON defaultOptions) Game.defaultEntities
+      fromJSON (genericToJSON defaultOptions Game.defaultEntities) `shouldBe` Success Game.defaultEntities
+      toJSON Game.defaultEntities `shouldBe` object []
+      eitherDecode (encode Game.defaultEntities) `shouldBe` Right Game.defaultEntities
       compatible
         (genericToJSON defaultOptions)
         (genericParseJSON defaultOptions)
@@ -132,13 +135,56 @@ spec = do
         (genericToJSON defaultOptions)
         (genericParseJSON defaultOptions)
         (Game.FriendlyBoostContext (AllyId UUID.nil) True [] [] 2 [])
+    it "continues legacy and compact saves with the same queue and random generator" do
+      tg <- testGame ["spider-man"]
+      (game, queue, generator) <- currentState tg.app
+      let snapshots = [genericToJSON (aesonOptions $ Just "game") game, toJSON game]
+      outcomes <- for snapshots $ \snapshot -> case fromJSON snapshot of
+        Error err -> expectationFailure err >> error "invalid saved game"
+        Success restored -> do
+          app <- newGameApp restored queue generator (const $ pure ())
+          runGameApp app $ openQuestion >>= \case
+            Nothing -> error "expected a player question"
+            Just (ident, _) -> answerQuestion ident 0
+          (after, pending, gen) <- currentState app
+          pure (toJSON after, toJSON pending, show gen)
+      case outcomes of
+        [legacy, compact] -> legacy `shouldBe` compact
+        _ -> expectationFailure "expected both saved representations"
+    it "keeps present empty optionals and zero counters in saved games" do
+      tg <- testGame ["spider-man"]
+      game <- inGame tg getGame
+      let saved = game {gameResolvingEvents = Just [], gamePlayerCountContext = Just 0, gameRound = 0}
+      eitherDecode (encode saved) `shouldBe` Right saved
+      case toJSON saved of
+        Object fields -> do
+          KeyMap.lookup "resolvingEvents" fields `shouldBe` Just (toJSON ([] :: [Value]))
+          KeyMap.lookup "playerCountContext" fields `shouldBe` Just (toJSON (0 :: Int))
+          KeyMap.lookup "round" fields `shouldBe` Just (toJSON (0 :: Int))
+        _ -> expectationFailure "game did not encode as an object"
     it "preserves live snapshots and the parser's legacy field defaults" do
       tg <- testGame ["spider-man"]
       game <- inGame tg getGame
-      compatible
-        (genericToJSON $ aesonOptions $ Just "game")
-        (genericParseJSON $ aesonOptions $ Just "game")
-        game
+      let legacy = genericToJSON (aesonOptions $ Just "game") game
+          compact = toJSON game
+      fromJSON legacy `shouldBe` Success game
+      fromJSON compact `shouldBe` Success game
+      eitherDecode (encode game) `shouldBe` Right game
+      (eitherDecode (encode game) :: Either String Value) `shouldBe` Right compact
+      length (show compact) `shouldSatisfy` (< length (show legacy))
+      case compact of
+        Object fields -> do
+          KeyMap.lookup "playerCountContext" fields `shouldBe` Nothing
+          KeyMap.lookup "printedPlayerCounts" fields `shouldBe` Nothing
+          KeyMap.lookup "gainedTraits" fields `shouldBe` Nothing
+        _ -> expectationFailure "game did not encode as an object"
+      -- The server diffs against the exact stored representation, so the first
+      -- move in an old game must undo back to its original, verbose snapshot.
+      let changed = toJSON game {gameRound = gameRound game + 1}
+      Diff.patch (Diff.diff changed legacy) changed `shouldBe` Success legacy
+      case Diff.patch (Diff.diff changed legacy) changed of
+        Success restored -> fromJSON restored `shouldBe` Success game
+        Error err -> expectationFailure err
       case toJSON game of
         Object fields -> fromJSON (Object $ KeyMap.delete "gainedTraits" fields) `shouldBe` Success game
         _ -> expectationFailure "game did not encode as an object"
