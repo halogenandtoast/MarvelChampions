@@ -45,9 +45,15 @@ const stats = computed(() =>
   ).filter(([, v]) => v !== null && v !== undefined),
 )
 type TableCard = SupportView & Partial<Pick<UpgradeView, 'resourceSlots' | 'occupiedSlots' | 'heldCardsFacedown' | 'attachedTo'>>
+// SP//dr's other physical identity card remains an interactive support/upgrade.
+const separatedIdentity = computed(() => player.faces.includes('31001a') && player.faces.includes('31002a'))
+const identityCompanion = computed<TableCard | undefined>(() => separatedIdentity.value
+  ? [...(player.supports ?? []), ...(player.upgrades ?? [])].find(card => card.code === '31001b' || card.code === '31002b')
+  : undefined)
 const supports = computed<TableCard[]>((previous) => {
   const rank = new Map(previous?.map((card, i) => [card.id, i]))
   return [...(player.supports ?? []), ...(player.upgrades ?? []), ...(player.attachments ?? []), ...(player.obligations ?? [])]
+    .filter(card => card.id !== identityCompanion.value?.id)
     .sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity))
 })
 // cards attached to a support facedown, shown as such
@@ -60,7 +66,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 </script>
 
 <template>
-  <section ref="area" class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero }">
+  <section ref="area" class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero, 'separated-identity': !!identityCompanion }">
     <div ref="tableau" class="player-tableau" :style="{ zoom: scale, width: tableauWidth === undefined ? undefined : `${tableauWidth}px` }">
     <div class="identity-column">
       <div class="identity">
@@ -72,7 +78,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
           <BoardCard
             :id="player.id"
             :code="player.code"
-            :faces="player.faces"
+            :faces="separatedIdentity ? undefined : player.faces"
             :name="player.name"
             :exhausted="player.exhausted"
             :damage="player.damage"
@@ -84,6 +90,19 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             :tough="player.tough"
             :tough-cards="player.toughCards"
             :counters="player.counters || null"
+          />
+          <BoardCard
+            v-if="identityCompanion"
+            :id="identityCompanion.id"
+            :code="identityCompanion.code"
+            :name="identityCompanion.name"
+            :exhausted="identityCompanion.exhausted"
+            :counters="identityCompanion.uses ?? identityCompanion.counters ?? null"
+            :resource-slots="identityCompanion.resourceSlots"
+            :occupied-slots="identityCompanion.occupiedSlots"
+            :damage="identityCompanion.damage || 0"
+            :threat="identityCompanion.threat || null"
+            :attached="facedown(identityCompanion)"
           />
         </div>
         <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :subtracting="assignedDamage[player.id] ?? 0" :max="player.hitPoints" />
@@ -239,6 +258,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .player-area.unfolded .identity > :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 .player-area.horizontal .identity-column { width: calc(2 * var(--card-width) + 164px); }
 .player-area.horizontal .identity > :deep(.meter) { width: calc(2 * var(--card-width)); }
+.player-area.separated-identity .identity-column { width: calc(2 * var(--card-width) + 170px); }
+.player-area.separated-identity .identity > :deep(.meter) { width: calc(2 * var(--card-width) + 6px); }
 /* above the hand that floats over the foot of the board */
 .asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
@@ -290,7 +311,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   .player-area { padding: 12px; overflow: visible; }
   /* Reflow groups at their readable size; desktop fitting must not shrink prompts. */
   .player-tableau { zoom: 1 !important; width: 100% !important; flex-wrap: wrap; gap: 16px 12px; }
-  .identity-column, .player-area.unfolded .identity-column, .player-area.horizontal .identity-column { width: 100%; }
+  .identity-column, .player-area.unfolded .identity-column, .player-area.horizontal .identity-column, .player-area.separated-identity .identity-column { width: 100%; }
   .player-tableau > .zone, .player-tableau > .zone.allies { flex: 1 1 100%; max-width: 100%; }
   .player-tableau .cards { flex-wrap: wrap; gap: 14px; }
   .player-tableau > .zone.supports { margin-left: 0; }

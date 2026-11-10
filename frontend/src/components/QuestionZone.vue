@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import ActionLabel from './ActionLabel.vue'
-// The open question: the choices that are not about a card on the table, as buttons, and
-// a hint when others are on the cards themselves. Or who is being waited on, or how the
-// game ended.
+// The open question: choices as buttons, who is being waited on, or how the game ended.
 import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
@@ -105,7 +103,6 @@ const tone = (choice: ChoiceView) =>
           <ActionLabel v-else :text="text(choice)" :name="actionName(choice, about(choice)?.code)" />
         </button>
       </div>
-      <p v-if="onBoard" class="hint"><span class="swatch" />{{ t('game.prompt.orClickHighlighted', onBoard) }}</p>
     </template>
     <p v-else-if="waitingOn" class="waiting"><Loader class="spin" aria-hidden="true" />{{ t('game.waitingOn', { name: waitingOn }) }}</p>
     <p v-else class="waiting">{{ t('game.prompt.waiting') }}</p>
@@ -152,8 +149,6 @@ h2 { margin: 0; font-size: 1.35rem; line-height: 1.05; text-transform: uppercase
 /* the engine's own words for a choice it has no name for yet */
 .options button.raw { font-family: ui-monospace, Menlo, monospace; font-size: 0.7rem; font-weight: 400; color: var(--text-muted); overflow-wrap: anywhere; }
 .explanation { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); }
-.hint { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.75rem; color: var(--text-muted); }
-.swatch { width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--interactive); box-shadow: 0 0 6px var(--interactive-glow); }
 .waiting { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
 .waiting svg { width: 16px; height: 16px; }
 .spin { animation: spin 2s linear infinite; }
