@@ -580,14 +580,14 @@ printedXChoices ignoringCost attrs c mTarget = do
 -- | The whole cost of playing the card on the target: its resource cost, and the cost
 -- of its ability (an event's "→"), paid together.
 getCardCost ::
-  (MonadThrow m, Projection m PlayerIdentity, HasGame m) =>
+  (MonadThrow m, HasGame m) =>
   PlayerIdentity ->
   PlayerCard ->
   Maybe Target ->
   m Cost
 getCardCost = getCardCostWithX Nothing
 
-getCardCostWithX :: (MonadThrow m, Projection m PlayerIdentity, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
+getCardCostWithX :: (MonadThrow m, HasGame m) => Maybe Natural -> PlayerIdentity -> PlayerCard -> Maybe Target -> m Cost
 getCardCostWithX chosenX attrs c mTarget = do
   def <- effectivePlayerCardDef (toId attrs) c
   modifiedCost <- case chosenX of
