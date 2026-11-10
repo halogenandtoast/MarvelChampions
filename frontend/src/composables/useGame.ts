@@ -290,6 +290,9 @@ export const useGame = (gameId: string, spectate = false) => {
     })
   }
 
+  // Load the board even when the socket handshake is delayed or fails. The
+  // socket's open handler reconciles again to cover updates missed meanwhile.
+  void refresh()
   connect()
 
   onScopeDispose(() => {
