@@ -1,6 +1,9 @@
 module Marvel.Aspect.VisionPackSpec (spec) where
 
 import Marvel.ActiveCost (allocationLabel)
+import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Text qualified as Text
+import Marvel.Game.Public (publicGame)
 import Marvel.Ally.Runner qualified as Ally
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.SideScheme.Cards qualified as Schemes
@@ -98,8 +101,10 @@ spec = describe "Vision pack" do
 
   describe "Defiance and Flow Like Water" do
     it "discards the boost card instead of turning it faceup and answers the Defense play" do
-      tg <- testGame ["spider-man"]
-      let p = player1 tg
+      original <- testGame ["spider-man"]
+      sent <- newIORef []
+      let tg = original {app = original.app {appFrontend = \message -> original.app.appFrontend message >> modifyIORef' sent (<> [message])}}
+          p = player1 tg
       inGame tg do
         changeForm p
         clearHand p
@@ -110,11 +115,52 @@ spec = describe "Vision pack" do
         defense <- putInHand p "26018"
         rhinoAttacks p
         choose "take the attack" isNoDefender
+        view <- liftIO . publicGame =<< getGame
+        let codes = [code | Object obj <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" obj], Object card <- toList cards, Just code <- [KeyMap.lookup "code" card]]
+        codes `shouldSatisfy` notNull
+        codes `shouldSatisfy` all (== Null)
+        toldBefore <- liftIO $ readIORef tg.logged
+        Text.concat (map entryText toldBefore) `shouldSatisfy` (not . Text.isInfixOf "$log.boost(")
+        cuesBefore <- liftIO $ readIORef sent
+        [code | Revealing _ code True <- cuesBefore] `shouldBe` []
         choose "Defiance" (isPlay defense)
         choose "Flow Like Water" (isAbilityOfCard flow)
         pass
         villainDamageNow `shouldReturn` 1
         damageOf p `shouldReturn` 2
+        cuesAfter <- liftIO $ readIORef sent
+        [code | Revealing _ code True <- cuesAfter] `shouldBe` []
+
+    it "offers Defiance facedown, then reveals before offering Preemptive Strike" do
+      original <- testGame ["spider-man"]
+      sent <- newIORef []
+      let tg = original {app = original.app {appFrontend = \message -> original.app.appFrontend message >> modifyIORef' sent (<> [message])}}
+          p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        defense <- putInHand p "26018"
+        strike <- putInHand p "05014"
+        _ <- putInHand p "01088"
+        _ <- stackEncounterDeck [Treacheries.stampede]
+        vid <- villainIdNow
+        runNow [VillainMessage vid $ VillainAttacks p]
+        chooseIf isNoResponse
+        choose "take the attack" isNoDefender
+        offers (isPlay defense) `shouldReturn` True
+        offers (isPlay strike) `shouldReturn` False
+        before <- liftIO $ readIORef sent
+        [code | Revealing _ code True <- before] `shouldBe` []
+        choose "decline Defiance" isNoResponse
+        after <- liftIO $ readIORef sent
+        [code | Revealing _ code True <- after] `shouldBe` [toCardCode Treacheries.stampede]
+        offers (isPlay defense) `shouldReturn` False
+        offers (isPlay strike) `shouldReturn` True
+        view <- liftIO . publicGame =<< getGame
+        let codes = [code | Object obj <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" obj], Object card <- toList cards, Just code <- [KeyMap.lookup "code" card]]
+        codes `shouldSatisfy` any (/= Null)
+        told <- liftIO $ readIORef tg.logged
+        Text.concat (map entryText told) `shouldSatisfy` Text.isInfixOf "$log.boost("
 
   describe "Joining Forces" do
     it "puts an Avenger and Guardian into play from different players' hands" do

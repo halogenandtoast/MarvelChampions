@@ -270,8 +270,8 @@ narrationFor = \case
   FriendlyCharacterAttacks attacker target -> Just $ whenRef (characterRef attacker) \who -> do
     victim <- playerRef' target
     one $ action [ikeyPart "log.friendlyCharacterAttacks" ["attacker" ~> who, "player" ~> victim]]
-  RevealBoostCard card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
-  RevealBoostCardWithoutAbility card _ -> Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
+  CardSpecific GameRef "flipBoostAfterWould" (fromJSON -> Success (_ :: Bool, card :: EncounterCard, _ :: EnemyId)) ->
+    Just $ one $ notice [ikeyPart "log.boost" ["card" ~> EncounterCard card]]
   -- a player's event into the encounter deck (a Cosmic Entity, Adam Warlock): played
   -- openly, so named
   ShuffleIntoEncounterDeck cards

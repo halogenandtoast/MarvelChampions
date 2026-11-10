@@ -2458,13 +2458,17 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
   CardSpecific GameRef "cancelBoostIconsOnCard" (fromJSON -> Success card) ->
     pure g {gameCancelledBoostIcons = ecCardId card : gameCancelledBoostIcons}
   RevealBoostCard card enemyId -> do
-    checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
-    cardSpecific GameRef "revealBoostAfterWindow" (True, card, enemyId)
+    checkWindows [W.Window W.When $ W.WouldFlipBoostCard card enemyId]
+    cardSpecific GameRef "flipBoostAfterWould" (True, card, enemyId)
     pure g {gameCancelledBoostIcons = filter (/= ecCardId card) gameCancelledBoostIcons}
   RevealBoostCardWithoutAbility card enemyId -> do
-    checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
-    cardSpecific GameRef "revealBoostAfterWindow" (False, card, enemyId)
+    checkWindows [W.Window W.When $ W.WouldFlipBoostCard card enemyId]
+    cardSpecific GameRef "flipBoostAfterWould" (False, card, enemyId)
     pure g {gameCancelledBoostIcons = filter (/= ecCardId card) gameCancelledBoostIcons}
+  CardSpecific GameRef "flipBoostAfterWould" (fromJSON -> Success (allowAbility :: Bool, card, enemyId)) -> do
+    checkWindows [W.Window W.When $ W.FlippedBoostCard card enemyId]
+    cardSpecific GameRef "revealBoostAfterWindow" (allowAbility, card, enemyId)
+    pure g
   CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (allowAbility, card, enemyId)) ->
     revealBoostCardFor allowAbility card enemyId g
   ConsumeBoostCard card -> do

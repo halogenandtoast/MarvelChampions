@@ -1124,7 +1124,9 @@ isWindowPlayable window original c = do
               pure $ permitted && canDefend && not forbidden && affordable && passedCriteria && passedPlayLimits
  where
   ident = toId original
-  def = getCardDef c
+  -- Stored player cards retain their old definition; Defiance must use its
+  -- pre-reveal window even when the deck was saved before that window existed.
+  def = if toCardCode c == "26018" then MGPlayer.lookupPlayerCard "26018" else getCardDef c
 
 abilityInWindow :: (HasGame m) => Window -> Ability -> m Bool
 abilityInWindow window a =

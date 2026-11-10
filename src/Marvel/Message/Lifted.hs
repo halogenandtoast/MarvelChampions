@@ -2540,14 +2540,15 @@ discardBoostCardBeforeReveal card = do
   replaceMatchingMessage removeCard \case
     RevealBoostCard other _ -> other == card
     RevealBoostCardWithoutAbility other _ -> other == card
-    CardSpecific GameRef "revealBoostAfterWindow" (fromJSON -> Success (_ :: Bool, other :: EncounterCard, _ :: EnemyId)) -> other == card
+    CardSpecific GameRef key (fromJSON -> Success (_ :: Bool, other :: EncounterCard, _ :: EnemyId))
+      | key `elem` ["flipBoostAfterWould", "revealBoostAfterWindow"] -> other == card
     _ -> False
   discardCard card
  where
   removeCard = \case
     RevealBoostCard _ _ -> []
     RevealBoostCardWithoutAbility _ _ -> []
-    CardSpecific GameRef "revealBoostAfterWindow" _ -> []
+    CardSpecific GameRef key _ | key `elem` ["flipBoostAfterWould", "revealBoostAfterWindow"] -> []
     other -> [other]
 
 -- | The boost icons about to be counted and added to the enemy's activation are

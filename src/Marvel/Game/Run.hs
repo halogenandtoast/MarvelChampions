@@ -71,7 +71,8 @@ cue = \case
   IdentityMessage ident (ShuffleIntoIdentityDeck _) -> Just $ Shuffled ("deck-" <> idText ident)
   IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck -> Just $ Shuffled ("deck-" <> idText ident)
   VillainMessage _ (VillainDealtBoost card) -> Just $ BoostDealt (ecCardId card)
-  RevealBoostCard card _ -> Just $ Revealing (ecCardId card) (toCardCode card) True
+  CardSpecific GameRef "flipBoostAfterWould" (fromJSON -> Success (_ :: Bool, card :: EncounterCard, _ :: EnemyId)) ->
+    Just $ Revealing (ecCardId card) (toCardCode card) True
   msg -> (\card -> Revealing (ecCardId card) (toCardCode card) False) <$> revealingCard msg
 
 revealingCard :: Message -> Maybe EncounterCard

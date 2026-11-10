@@ -15,18 +15,21 @@ test('a boost flips in place and the river offers an explicit resolution button'
     const { messages } = await loadLocaleMessages('en')
     const cards = ref([{ id: 'boost-flip-test', code: null }])
     const actions = ref([])
+    const source = ref('boost-flip-test')
+    const choices = ref([{ index: 0, kind: 'target', target: 'boost-flip-test', label: '$label.revealBoostCards' }])
     const host = document.createElement('div')
     host.id = 'boost-host'
     host.style.setProperty('--card-width', '124px')
     document.body.replaceChildren(host)
     createApp({ setup() {
-      provideChoices(() => [{ index: 0, kind: 'target', target: 'boost-flip-test', label: '$label.revealBoostCards' }], () => {}, () => 'boost-flip-test')
+      provideChoices(() => choices.value, () => {}, () => source.value)
       return () => h(River, {
       cards: cards.value, actions: actions.value, elsewhere: new Set(),
       attacker: { id: 'villain-test', code: '27113', name: 'Venom Goblin', attack: 2 },
       onChoose: (index: number) => { host.dataset.chosen = String(index) },
     }) } }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
-    Object.assign(window, { flipBoost: async () => {
+    Object.assign(window, { defianceWindow: () => { choices.value = [] }, flipBoost: async () => {
+      source.value = null
       cards.value = [{ id: 'boost-flip-test', code: '01186' }]
       await nextTick()
     }, resolveBoost: () => {
@@ -38,6 +41,11 @@ test('a boost flips in place and the river offers an explicit resolution button'
   await expect(card.getByRole('button', { name: 'Reveal', exact: true })).toBeVisible()
   await expect(card).toHaveClass(/active/)
   const before = (await card.boundingBox())!
+  await page.evaluate(() => (window as any).defianceWindow())
+  await expect(card).toBeVisible()
+  await expect(card).toHaveClass(/source/)
+  await expect(card.locator('.reveal-back')).toHaveAttribute('src', /back-encounter/)
+  await expect(card.getByRole('button', { name: 'Reveal', exact: true })).toHaveCount(0)
   await page.evaluate(() => (window as any).flipBoost())
   await expect(card.locator('.reveal-front')).toHaveAttribute('src', /01186/)
   await expect(card.getByRole('button', { name: 'Reveal', exact: true })).toHaveCount(0)

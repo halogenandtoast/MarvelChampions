@@ -2247,7 +2247,7 @@ massIncrease = deckLimited 1 $ (identityEvent "26012" "Mass Increase" 1 HeroInte
 defiance :: CardDef
 defiance = deckLimited 3 $ (event "26018" "Defiance" 0 HeroInterrupt [Defense] [Energy] Protection)
     { cdAbilitySubTypes = [Ability.Defense]
-    , cdResponseWindow = Just (BoostCardFlipped When (EnemyAttackingCharacter (IdentityCharacters You)))
+    , cdResponseWindow = Just (BoostCardWouldBeFlipped When (EnemyAttackingCharacter (IdentityCharacters You)))
     }
 
 reboot :: CardDef

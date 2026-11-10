@@ -666,9 +666,14 @@ gameView seesHand g = do
           <> [idText $ toId m | m <- HashMap.elems (gameMinions g), let a = toAttrs m, isJust a.minionActivationPlayer, isNothing a.minionAttacking]
       , threat
       , boostCards =
-          [BoostView (ecCardId c) Nothing Nothing | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards, ecCardId c `notElem` faceupBoostIds]
-            <> [BoostView (ecCardId c) Nothing Nothing | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards, ecCardId c `notElem` faceupBoostIds]
-            <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) faceupBoostCards]
+          [ BoostView (ecCardId card) Nothing Nothing
+          | card <- L.nubBy (\a b -> ecCardId a == ecCardId b) $
+              [c | v <- HashMap.elems (gameVillains g), c <- reverse (toAttrs v).villainBoostCards]
+                <> [c | m <- HashMap.elems (gameMinions g), c <- (toAttrs m).minionBoostCards]
+                <> pendingBoostCards
+          , ecCardId card `notElem` faceupBoostIds
+          , ecCardId card `notElem` map ecCardId scenario.scenarioDiscard
+          ] <> [BoostView c.id (Just c.code) (Just c.name) | c <- map (cardView . EncounterCard) faceupBoostCards]
       , accelerationTokens = sum (map areaAccelerationTokens (gameAreas g)) + sum [(toAttrs scheme).mainSchemeAccelerationTokens | scheme <- HashMap.elems (gameMainSchemes g)]
           + sum (map Minion.getMinionAccelerationTokens $ HashMap.elems $ gameMinions g)
       , accelerationIcons = sum (map (accelerationIconsIn g . areaId) (gameAreas g))
@@ -692,7 +697,35 @@ gameView seesHand g = do
   -- Flipped cards are public as soon as their interrupt window opens, before
   -- RevealBoostCard registers them. Retain them through nested response windows.
   faceupBoostCards = L.nubBy (\a b -> ecCardId a == ecCardId b) $
-    HashMap.elems (gameBoostCards g) <> [card | W.Window _ (W.FlippedBoostCard card _) <- concat (gameWindows g)]
+    HashMap.elems (gameBoostCards g) <> [card | W.Window _ (W.FlippedBoostCard card _) <- concat (gameWindows g), ecCardId card `notElem` legacyDefianceBoosts]
+  -- Saved Defiance prompts used the already-flipped window. Keep that card hidden
+  -- while the old interrupt is offered or its event is being paid for.
+  legacyDefianceBoosts = concatMap defianceInQuestion (HashMap.elems $ gameQuestion g) <>
+    [ ecCardId card | cost <- gameActiveCost g, ForCard pc <- [cost.activeCostTarget]
+    , toCardCode pc == "26018", Just (W.Window _ (W.FlippedBoostCard card _)) <- [cost.activeCostWindow]
+    ]
+  defianceInQuestion = \case
+    QuestionLabel _ _ q -> defianceInQuestion q
+    Read _ q -> defianceInQuestion q
+    Searched _ q -> defianceInQuestion q
+    ChooseOne cs -> concatMap defianceInChoice cs
+    ChooseN _ cs -> concatMap defianceInChoice cs
+    ChooseOneAtATime cs -> concatMap defianceInChoice cs
+    _ -> []
+  defianceInChoice = \case
+    PlayCard pc (Just (W.Window _ (W.FlippedBoostCard card _))) | toCardCode pc == "26018" -> [ecCardId card]
+    Label _ cs -> concatMap defianceInChoice cs
+    TargetLabel _ cs -> concatMap defianceInChoice cs
+    CardLabel _ c -> defianceInChoice c
+    _ -> []
+  -- The enemy releases its facedown pile when the flip sequence starts. The
+  -- current boost remains on the table until its would-flip interrupt closes.
+  pendingBoostCards =
+    [ card | window <- concat (gameWindows g), card <- case W.windowType window of
+        W.WouldFlipBoostCard c _ -> [c]
+        W.FlippedBoostCard c _ | ecCardId c `elem` legacyDefianceBoosts -> [c]
+        _ -> []
+    ]
   faceupBoostIds = map ecCardId faceupBoostCards
   -- A newly revealed attachment may have no host yet, and therefore no board
   -- location. Its resolution prompt must still show the physical source card.
@@ -756,6 +789,8 @@ gameView seesHand g = do
           | otherwise = choice
         view = raw
           { choices = map onResource raw.choices
+          , source = raw.source <|> (if raw.prompt == Just "$label.respond"
+              then idText . ecCardId <$> headMay pendingBoostCards else Nothing)
           }
      in if isJust (gameCompetition g) && not (seesHand asked)
           then view {choices = [], searched = []}

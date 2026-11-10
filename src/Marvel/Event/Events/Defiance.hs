@@ -31,7 +31,12 @@ newtype Defiance = Defiance (Attrs Event)
 
 instance RunMessage Defiance where
   runMessage msg e@(Defiance attrs) = runQueueT $ case msg of
-    EventMessage eid (PlayedEvent _ _ (Just (W.FlippedBoostCard card _))) | eid == eventId attrs -> do
-      discardBoostCardBeforeReveal card
-      pure e
+    EventMessage eid (PlayedEvent _ _ (Just window))
+      | eid == eventId attrs
+      , Just card <- (case window of
+          W.WouldFlipBoostCard c _ -> Just c
+          W.FlippedBoostCard c _ -> Just c -- a saved interrupt from before the timing fix
+          _ -> Nothing) -> do
+          discardBoostCardBeforeReveal card
+          pure e
     _ -> Defiance <$> runMessage msg attrs

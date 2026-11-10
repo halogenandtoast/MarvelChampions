@@ -314,6 +314,41 @@ spec = describe "the game as the client sees it" do
       let ids = [cid | Object o <- [registered], Just (Array cards) <- [KeyMap.lookup "boostCards" o], Object card <- toList cards, Just cid <- [KeyMap.lookup "id" card]]
       ids `shouldMatchList` [toJSON (ecCardId flipped), toJSON (ecCardId hidden)]
 
+  it "keeps the pending boost visible and highlighted after the villain releases its pile" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      vid <- villainIdNow
+      boost <- encounterCard Treacheries.hardToKeepDown
+      defense <- putInHand p "26018"
+      let window = W.Window W.When $ W.WouldFlipBoostCard boost (EnemyVillainId vid)
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(Villain.Villain v) ->
+        Villain.Villain $ Villain.overVillainAttrs (\attrs -> attrs {Villain.villainBoostCards = []}) v
+      withGame_ $ windowsL .~ [[window]]
+      withGame_ $ questionL .~ fromList [(p, QuestionLabel "$label.respond" Nothing $ ChooseOne [PlayCard defense $ Just window])]
+      view <- liftIO . publicGame =<< getGame
+      let boosts = [card | Object obj <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" obj], Object card <- toList cards]
+          sources = [source | Object obj <- [view], Just (Object questions) <- [KeyMap.lookup "question" obj], Object question <- KeyMap.elems questions, Just source <- [KeyMap.lookup "source" question]]
+      map (KeyMap.lookup "id") boosts `shouldBe` [Just $ toJSON $ ecCardId boost]
+      map (KeyMap.lookup "code") boosts `shouldBe` [Just Null]
+      sources `shouldBe` [toJSON $ ecCardId boost]
+
+  it "keeps the boost facedown in a saved Defiance interrupt" do
+    tg <- testGame ["spider-man"]
+    inGame tg do
+      let p = player1 tg
+      vid <- villainIdNow
+      boost <- encounterCard Treacheries.hardToKeepDown
+      defense <- putInHand p "26018"
+      let window = W.Window W.When $ W.FlippedBoostCard boost (EnemyVillainId vid)
+      withGame_ $ entitiesL . villainsL . ix vid %~ \(Villain.Villain v) ->
+        Villain.Villain $ Villain.overVillainAttrs (\attrs -> attrs {Villain.villainBoostCards = [boost]}) v
+      withGame_ $ windowsL .~ [[window]]
+      withGame_ $ questionL .~ fromList [(p, ChooseOne [PlayCard defense $ Just window])]
+      view <- liftIO . publicGame =<< getGame
+      let codes = [code | Object obj <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" obj], Object card <- toList cards, Just code <- [KeyMap.lookup "code" card]]
+      codes `shouldBe` [Null]
+
   it "keeps the flipped boost visible through a nested response window" do
     tg <- testGame ["spider-man"]
     inGame tg do

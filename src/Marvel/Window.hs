@@ -817,6 +817,10 @@ windowMatches matcher w source = case matcher of
     DefeatedAlly _ (Just enemyId)
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
     _ -> pure False
+  BoostCardWouldBeFlipped timing enemyMatcher -> case windowType w of
+    WouldFlipBoostCard _ enemyId
+      | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
+    _ -> pure False
   BoostCardFlipped timing enemyMatcher -> case windowType w of
     FlippedBoostCard _ enemyId
       | windowTiming w == timing -> enemyMatches enemyMatcher enemyId
