@@ -1,6 +1,8 @@
 module Marvel.Aspect.WarMachinePackSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGameFor)
 import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
 import Marvel.Hp (HP (..))
 import Marvel.Identity (getModifiedCost)
@@ -94,6 +96,19 @@ spec = describe "War Machine pack" do
         pass
         getAllyHeldCards p `shouldReturn` [event]
         discardOf p >>= (`shouldSatisfy` notElem event)
+        snapshot <- getGame
+        controllerView <- liftIO $ publicGameFor (== p) snapshot
+        otherView <- liftIO $ publicGameFor (== player2 tg) snapshot
+        spectatorView <- liftIO $ publicGameFor (const False) snapshot
+        let held = \case
+              Object obj -> [card | Just (String "23012") <- [KeyMap.lookup "code" obj], Just (Array cards) <- [KeyMap.lookup "heldCards" obj], Object card <- toList cards]
+                <> concatMap held (KeyMap.elems obj)
+              Array values -> concatMap held (toList values)
+              _ -> []
+        map (KeyMap.lookup "id") (held controllerView) `shouldBe` [Just $ toJSON $ pcCardId event]
+        map (KeyMap.lookup "code") (held controllerView) `shouldBe` [Just $ toJSON $ toCardCode event]
+        held otherView `shouldBe` []
+        held spectatorView `shouldBe` []
 
     it "may decline the attachment response" do
       tg <- warMachine

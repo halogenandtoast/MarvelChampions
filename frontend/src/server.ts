@@ -57,6 +57,8 @@ export interface AttachmentView extends CardView {
 }
 
 export interface AllyView extends CardView {
+  /** Player cards tucked beneath the ally, visible to its controller. */
+  heldCards?: CardView[]
   /** Only the boost field of Gambit's tucked card is public. */
   tuckedBoostIcons?: number | null
   tuckedBoostStar?: boolean | null

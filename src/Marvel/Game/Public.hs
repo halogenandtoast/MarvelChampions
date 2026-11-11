@@ -328,6 +328,7 @@ data AllyView = AllyView
   , counters :: Natural
   , upgrades :: [UpgradeView]
   , facedownCards :: Int
+  , heldCards :: [CardView]
   , tuckedBoostIcons :: Maybe Natural
   , tuckedBoostStar :: Maybe Bool
   , attachments :: [AttachmentView]
@@ -383,6 +384,7 @@ data MinionView = MinionView
   , id :: MinionId
   , code :: CardCode
   , name :: Text
+  , heldCards :: [CardView]
   , facedownCards :: Int
   , attachedToMinion :: Maybe MinionId
   , attachedToEnvironment :: Maybe EnvironmentId
@@ -969,6 +971,7 @@ gameView seesHand g = do
         , tuckedBoostIcons = if toCardCode a.allyCardDef == "48021" then Just (sum $ map (boostCount . cdBoostIcons . getCardDef) a.allyHeldTreacheries) else Nothing
         , tuckedBoostStar = if toCardCode a.allyCardDef == "48021" then Just (any (elem Star . cdBoostIcons . getCardDef) a.allyHeldTreacheries) else Nothing
         , facedownCards = length a.allyHeldCards + length a.allyHeldTreacheries
+        , heldCards = [cardView (PlayerCard card) | seesHand a.allyController, card <- a.allyHeldCards]
         , upgrades = upgradesOn \u -> u.upgradeAttachedAlly == Just a.allyId
         , attachments = [attachmentView x | x <- HashMap.elems (gameAttachments g), (toAttrs x).attachmentAlly == Just a.allyId]
         }
