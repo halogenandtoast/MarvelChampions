@@ -6,6 +6,8 @@ module Marvel.Event.Events.LightningStrike (
 import Marvel.Prelude
 
 import Marvel.Card.Code
+import Marvel.Cost.Types (Cost (DynamicResourceCost))
+import Marvel.Resource.Types (Resource (Energy))
 import Marvel.Damage
 import Marvel.Entity
 import Marvel.Id
@@ -26,12 +28,15 @@ newtype LightningStrike = LightningStrike (Attrs Event)
   deriving anyclass (IsEvent, HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
--- | Spend X [energy] resources (a wild resource counts), with its resource cost → X
+-- | After paying the printed cost, spend X [energy] resources (wild counts) → X
 -- damage to the villain and each minion engaged with you, past tough status cards if
 -- you are Aerial. Not an attack (FAQ errata).
 instance RunMessage LightningStrike where
   runMessage msg e@(LightningStrike attrs) = runQueueT $ case msg of
-    EventMessage ident (PlayedEvent identityId payment _) | ident == eventId attrs -> do
+    EventMessage ident (PlayedEvent identityId _ _) | ident == eventId attrs -> do
+      payCostThenWithPayment identityId attrs (DynamicResourceCost $ Just Energy) attrs "lightningDamage" identityId
+      pure e
+    CardSpecific (isTarget attrs -> True) "lightningDamage" (fromJSON -> Success (identityId, payment)) -> do
       let x = paymentX payment
       aerial <- selectAny $ IdentityWithId identityId <> IdentityWithTrait Aerial
       minions <- selectList $ MinionEngagedWith (IdentityWithId identityId)

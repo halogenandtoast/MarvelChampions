@@ -1034,10 +1034,7 @@ hammerThrow =
     }
 
 lightningStrike :: CardDef
-lightningStrike =
-  (identityEvent "06006" "Lightning Strike" 1 HeroAction [Superpower] [Mental])
-    { cdAbilityCost = DynamicResourceCost (Just Energy)
-    }
+lightningStrike = identityEvent "06006" "Lightning Strike" 1 HeroAction [Superpower] [Mental]
 
 getOverHere :: CardDef
 getOverHere =

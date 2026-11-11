@@ -1,6 +1,9 @@
 module Marvel.Hero.ThorSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.ActiveCost.Types
+import Marvel.Cost.Types (Cost (DynamicResourceCost))
+import Marvel.Game.Refresh (refreshTurnQuestions)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Treachery.Cards qualified as Treacheries
@@ -202,10 +205,12 @@ spec = describe "Thor" do
         strike <- putInHand p "06006"
         genius <- putInHand p "01089"
         energy <- putInHand p "01088"
-        -- X is paid with the card's cost: the mental resource pays for the card, the
-        -- energy resources are X
+        -- Pay the printed cost first, then open a separate energy payment.
         choose "play" (isPlay strike)
         choose "pay with a mental card" (isPayWith genius)
+        offers isFinishPayment `shouldReturn` True
+        choose "finish the 1-resource play cost" isFinishPayment
+        villainDamageNow `shouldReturn` 0
         offers isFinishPayment `shouldReturn` False
         choose "spend energy" (isPayWith energy)
         pass
@@ -230,17 +235,78 @@ spec = describe "Thor" do
         pass
         minionDamageOf sandman `shouldReturn` Just 0
 
-    it "takes what pays for its own cost out of X" do
+    it "does not carry excess energy from the play cost into the effect payment" do
       tg <- thor
       let p = player1 tg
       inGame tg do
         changeForm p
         clearHand p
         strike <- putInHand p "06006"
-        energy <- traverse (putInHand p) ["01088", "01088"]
-        playWith strike energy
+        [playCost, effectEnergy] <- traverse (putInHand p) ["01088", "01088"]
+        playWith strike [playCost]
+        villainDamageNow `shouldReturn` 0
+        choose "spend energy for the effect" (isPayWith effectEnergy)
         pass
-        villainDamageNow `shouldReturn` 3
+        villainDamageNow `shouldReturn` 2
+
+    it "repairs an old saved play payment without losing the resource already spent" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "06006"
+        let oldStrike = strike {pcCardDef = (pcCardDef strike) {cdAbilityCost = DynamicResourceCost $ Just Energy}}
+        withGame_ $ entitiesL . playersL . ix p %~ \(PlayerIdentity attrs) ->
+          PlayerIdentity attrs {playerIdentityHand = Hand [oldStrike]}
+        playCost <- putInHand p "06021"
+        energy <- putInHand p "01088"
+        choose "play a copy carrying the old card definition" (isPlay oldStrike)
+        choose "pay the printed cost" (isPayWith playCost)
+        offers isFinishPayment `shouldReturn` True
+        current <- getGame
+        let oldCost cost = cost {activeCostCost = activeCostCost cost <> DynamicResourceCost (Just Energy)}
+            removeFinish = \case
+              QuestionLabel prompt source question -> QuestionLabel prompt source (removeFinish question)
+              ChooseOne choices -> ChooseOne $ filter (not . isFinishPayment) choices
+              question -> question
+            saved = current {gameActiveCost = map oldCost (gameActiveCost current), gameQuestion = removeFinish <$> gameQuestion current}
+        repaired <- liftIO $ refreshTurnQuestions saved
+        withGame_ $ const repaired
+        offers isFinishPayment `shouldReturn` True
+        choose "finish the repaired printed-cost payment" isFinishPayment
+        villainDamageNow `shouldReturn` 0
+        choose "pay energy separately" (isPayWith energy)
+        pass
+        villainDamageNow `shouldReturn` 2
+        discardOf p >>= (`shouldSatisfy` elem playCost)
+
+    it "finishes without damage if paying to play leaves no energy to spend" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "06006"
+        genius <- putInHand p "01089"
+        playWith strike [genius]
+        pass
+        villainDamageNow `shouldReturn` 0
+        discardOf p >>= (`shouldSatisfy` \cards -> strike `elem` cards && genius `elem` cards)
+
+    it "accepts wild resources in the separate energy payment" do
+      tg <- thor
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        strike <- putInHand p "06006"
+        genius <- putInHand p "01089"
+        wild <- putInHand p "01055"
+        playWith strike [genius]
+        payWith [wild]
+        pass
+        villainDamageNow `shouldReturn` 1
 
   describe "Asgard (06007)" do
     it "gives +1 hand size" do

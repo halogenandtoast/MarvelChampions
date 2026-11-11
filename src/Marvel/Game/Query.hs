@@ -1058,7 +1058,11 @@ effectivePlayerCardDef ident card
   | cdCardType def == EventType = case createEvent ident card of
       Event event -> do
         labels <- eventAbilitySubTypes event
-        cost <- if toCardCode card == "61026" then ExhaustCharacterCost <$> JLHelpers.joysExhaustMatcher else pure (cdAbilityCost def)
+        cost <- case toCardCode card of
+          "61026" -> ExhaustCharacterCost <$> JLHelpers.joysExhaustMatcher
+          -- Saved physical cards can still carry the old upfront energy cost.
+          "06006" -> pure $ filterCosts (/= DynamicResourceCost (Just Energy)) (cdAbilityCost def)
+          _ -> pure (cdAbilityCost def)
         pure def {cdAbilitySubTypes = labels, cdAbilityCost = cost}
   | otherwise = pure def
  where
