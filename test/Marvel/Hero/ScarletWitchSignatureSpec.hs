@@ -1,5 +1,8 @@
 module Marvel.Hero.ScarletWitchSignatureSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
+import Marvel.Message.Lifted (countLabel)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
@@ -28,6 +31,15 @@ isAnyTarget :: Choice -> Bool
 isAnyTarget = \case
   TargetLabel {} -> True
   _ -> False
+
+prompts :: Value -> [Value]
+prompts (Object obj) | Just (Object questions) <- KeyMap.lookup "question" obj =
+  [prompt | Object q <- KeyMap.elems questions, Just prompt <- [KeyMap.lookup "prompt" q]]
+prompts _ = []
+
+unprompt :: Question -> Question
+unprompt (QuestionLabel _ _ question) = unprompt question
+unprompt question = question
 
 -- Advance has no boost icon, Stampede 1, Explosion 2, Under Fire 3.
 spec :: Spec
@@ -78,8 +90,17 @@ spec = describe "Scarlet Witch's signature events" do
         energy <- putInHand p "01088"
         playWith hex [energy]
         declineCounts
-        chooseIf isAnyTarget -- the villain
+        length <$> handOf p `shouldReturn` 0
+        choose "draw before damage or threat removal" (isLabel "$label.drawOneCard")
+        length <$> handOf p `shouldReturn` 1
+        choose "remove threat next" (isLabelStarting "$label.removeThreatFromAScheme")
+        threatPrompt <- liftIO . publicGame =<< getGame
+        prompts threatPrompt `shouldBe` [String $ countLabel "removeThreatFromAScheme" 2]
         chooseIf isAnyTarget -- the main scheme
+        choose "deal damage last" (isLabelStarting "$label.dealDamageToAnEnemy")
+        damagePrompt <- liftIO . publicGame =<< getGame
+        prompts damagePrompt `shouldBe` [String $ countLabel "dealDamageToAnEnemy" 2]
+        chooseIf isAnyTarget -- the villain
         villainDamageNow `shouldReturn` 2
         mainSchemeThreatNow `shouldReturn` (threat - 2)
         length <$> handOf p `shouldReturn` 1
@@ -96,10 +117,17 @@ spec = describe "Scarlet Witch's signature events" do
         energy <- putInHand p "01088"
         playWith hex [energy]
         declineCounts
-        -- the card drawn first, as the bullets are written
-        length <$> handOf p `shouldReturn` 1
+        length <$> handOf p `shouldReturn` 0
+        choose "resolve the first status result before drawing" (isLabel "$label.hexBoltChooseCharacter")
+        current <- getGame
+        legacyView <- liftIO $ publicGame current {gameQuestion = unprompt <$> gameQuestion current}
+        prompts legacyView `shouldBe` [String "$label.hexBoltChooseCharacter"]
         choose "the villain" (isCharacter (VillainCharacter vid))
         choose "stunned" (isLabel "$label.stunnedStatus")
+        offers (isLabel "$label.hexBoltChooseCharacter") `shouldReturn` True
+        choose "draw between the two status results" (isLabel "$label.drawOneCard")
+        length <$> handOf p `shouldReturn` 1
+        choose "resolve the second status result" (isLabel "$label.hexBoltChooseCharacter")
         choose "Scarlet Witch" (isCharacter (IdentityCharacter p))
         choose "tough" (isLabel "$label.toughStatus")
         V.villainStunned . toAttrs <$> getVillain `shouldReturn` True

@@ -20,6 +20,8 @@ The team-up keyword names two characters. To include a card with the team-up key
 
 - Chaos Control and Scarlet Witch's Crest on the same count: the last one used wins. Chaos Control replaces the whole count (a ±1 from the Crest used before it is lost); the Crest used after Chaos Control adjusts the new count.
 
+- Hex Bolt resolves its results in the player’s chosen order, each discarded card once (project owner clarification, 2026-11-11).
+
 ## Readings from the rules (not asked)
 
 - A count is "the exact number of boost icons on an encounter card" (rulesheet): a boost card's icons added to an activation, and every "for each boost icon discarded" / "equal to the number of boost icons". Whether a card has boost icons at all (Attacrobatics' condition) is no count; it still sees The Next Evolution's +1.
@@ -27,7 +29,6 @@ The team-up keyword names two characters. To include a card with the team-up key
 - Chaos Magic plays the card "ignoring its resource cost": no resources are paid, Magical Suspension's +1 included (RR Ignore). It discards as many encounter cards as the card's printed cost.
 - Superpowered Siblings: "Pietro Maximoff is in play" is the Quicksilver ally (his subtitle), or an identity whose face-up title is Pietro Maximoff (as the Quicksilver ruling for Wanda).
 - Slipping Sanity's first option needs Wanda Maximoff in play and ready (RR Target, Choose (Option)); both copies go into the encounter deck at setup (FAQ).
-- Hex Bolt resolves its bullets in the order written, each discarded card once.
 - Molecular Decay's 5 and its additional damage are one instance of damage.
 - Wiccan: each boost icon deals 1 damage to an enemy the player chooses, one at a time.
 - Warp Reality cancels everything the revealed card would do, surge and incite included; it does not enter play, and no replacement card is revealed.

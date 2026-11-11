@@ -62,6 +62,7 @@ import Marvel.Matchers.Types (UpgradeMatcher (UpgradeWithId))
 import Marvel.Message (FinishedStatus (..))
 import Marvel.Message qualified as Msg
 import Marvel.Message.Lifted (countLabel)
+import Marvel.Damage (damageAmount)
 import Marvel.Modifier (Modifier (InfiniteHitPoints, CrisisIcon, SuppressSchemeIcons, CanLookAtTopOfEncounterDeck, PlayTopOfDeckAsHand))
 import Marvel.Minion.Types (Minion)
 import Marvel.Minion.Types qualified as Minion
@@ -787,8 +788,27 @@ gameView seesHand g = do
        , leaderAttachments = length attachments + length highTechSuits
        }
 
+  -- The target's effect identifies Hex Bolt's bullet, including saved questions
+  -- from before those prompts named what the player was choosing.
+  contextualQuestion question@(ChooseOne choices) = case
+      [ (eid, prompt)
+      | TargetLabel _ body <- choices
+      , effect <- body
+      , (eid, prompt) <- hexBoltContext effect
+      , Just event <- [HashMap.lookup eid $ gameEvents g]
+      , toCardCode (toCard $ toAttrs event) == "15004"
+      ] of
+    (eid, prompt) : _ -> QuestionLabel prompt (Just $ EventRef eid) question
+    _ -> question
+  contextualQuestion question = question
+  hexBoltContext = \case
+    DamageEnemy _ (EventRef eid) damage -> [(eid, countLabel "dealDamageToAnEnemy" $ damageAmount damage)]
+    ThwartScheme _ (EventRef eid) amount -> [(eid, countLabel "removeThreatFromAScheme" amount)]
+    Run messages -> [(eid, "$label.hexBoltChooseCharacter") | Msg.CardSpecific (EventRef eid) "status" _ <- messages]
+    _ -> []
+
   visibleQuestion asked question =
-    let raw = questionView asked question
+    let raw = questionView asked $ contextualQuestion question
         -- A spent resource remains on the paying tray while its response is offered,
         -- including questions already stored before card targeting was displayed.
         onResource choice

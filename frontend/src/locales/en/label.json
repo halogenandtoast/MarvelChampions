@@ -1,4 +1,7 @@
 {
+  "hexBoltChooseEffect": "Hex Bolt: Choose the next effect to resolve",
+  "hexBoltChooseCharacter": "Hex Bolt: Choose a character to receive a status card",
+  "hexBoltChooseStatus": "Hex Bolt: Choose a status card to give this character",
   "childProdigyMentalPayment": "Spend 1 mental resource",
   "childProdigyTwoResourcesPayment": "Spend 2 resources of any type",
   "attackWithoutDiscarding": "Attack without discarding",
