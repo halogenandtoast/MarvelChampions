@@ -360,6 +360,22 @@ spec = describe "the game as the client sees it" do
       let codes = [code | Object o <- [view], Just (Array cards) <- [KeyMap.lookup "boostCards" o], Object card <- toList cards, Just (String code) <- [KeyMap.lookup "code" card]]
       codes `shouldSatisfy` elem "01104"
 
+  it "identifies the player deck for Gamora's inspected card without exposing it to other viewers" do
+    tg <- testGame ["gamora"]
+    inGame tg do
+      let p = player1 tg
+      cards <- stackDeck p ["18004"]
+      choose "inspect the top card" \case
+        UseAbility a -> abilitySource a == IdentityRef p && abilityIndex a == 1
+        _ -> False
+      g <- getGame
+      privateView <- liftIO $ publicGameFor (== p) g
+      otherView <- liftIO $ publicGameFor (const False) g
+      let focused view = [card | Object obj <- [view], Just (Array cards) <- [KeyMap.lookup "focusedCards" obj], Object card <- toList cards]
+      map (KeyMap.lookup "id") (focused privateView) `shouldBe` [Just $ toJSON $ pcCardId $ testHead cards]
+      map (KeyMap.lookup "owner") (focused privateView) `shouldBe` [Just $ toJSON p]
+      focused otherView `shouldBe` []
+
   it "shows a saved inspection's card only to the inspecting player" do
     tg <- testGame ["maria-hill"]
     inGame tg do

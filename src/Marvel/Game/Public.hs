@@ -236,7 +236,7 @@ data BoostView = BoostView {id :: CardId, code :: Maybe CardCode, name :: Maybe 
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
-data CardView = CardView {id :: CardId, code :: CardCode, name :: Text}
+data CardView = CardView {id :: CardId, code :: CardCode, name :: Text, owner :: Maybe IdentityId}
   deriving stock (Show, Generic)
   deriving anyclass (ToJSON)
 
@@ -638,7 +638,7 @@ gameView seesHand g = do
       , setAsideCards = map cardView scenario.scenarioSetAsideCards <>
           [ CardView
               (CardId $ UUID.generateNamed owner $ map (fromIntegral . fromEnum) $ Text.unpack $ unCardCode code)
-              code (display $ cdName def)
+              code (display $ cdName def) (Just $ toId p)
           | p <- HashMap.elems (gamePlayers g)
           , let IdentityId owner = toId p
           , toBaseCardCode (toCardCode p) `elem` ["29001", "29002", "29003"]
@@ -1049,7 +1049,9 @@ sideCode = \case
   AlterEgoSide x -> toCardCode x
 
 cardView :: Card -> CardView
-cardView c = CardView (toCardId c) (toCardCode c) (display . cdName $ getCardDef c)
+cardView c = CardView (toCardId c) (toCardCode c) (display . cdName $ getCardDef c) $ case c of
+  PlayerCard pc -> pcOwner pc <|> pcController pc
+  EncounterCard _ -> Nothing
 
 -- | The question as asked of a player.
 questionView :: IdentityId -> Question -> QuestionView

@@ -10,6 +10,7 @@ export interface SearchedView {
 }
 
 export interface CardView {
+  owner?: string | null
   id: string
   code: string
   name: string

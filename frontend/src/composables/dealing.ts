@@ -127,7 +127,9 @@ const ownerOf = (view: GameView) => {
     add(p.upgrades)
     add(p.discard)
   }
-  for (const scheme of view.sideSchemes ?? []) if (scheme.owner) owner.set(scheme.id, scheme.owner)
+  for (const card of [...(view.focusedCards ?? []), ...(view.resolvingEvents ?? []), ...(view.sideSchemes ?? [])]) {
+    if (card.owner) owner.set(card.id, card.owner)
+  }
   return owner
 }
 
