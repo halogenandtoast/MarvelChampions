@@ -1,5 +1,7 @@
 module Marvel.Hero.QuicksilverSignatureSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity ( currentIdentity )
 import TestImport
@@ -26,6 +28,11 @@ heroStats p =
 deckOf :: IdentityId -> GameAppT [PlayerCard]
 deckOf p = unDeck . (.playerIdentityDeck) <$> playerAttrs p
 
+remainingPicks :: Value -> [Value]
+remainingPicks (Object obj) | Just (Object questions) <- KeyMap.lookup "question" obj =
+  [count | Object q <- KeyMap.elems questions, Just count <- [KeyMap.lookup "remainingPicks" q]]
+remainingPicks _ = []
+
 spec :: Spec
 spec = describe "Quicksilver's signature upgrades and support" do
   describe "Serval Industries (14007)" do
@@ -36,7 +43,11 @@ spec = describe "Quicksilver's signature upgrades and support" do
         serval <- putIntoPlay p "14007"
         [reflex, perception, _, _] <- stackDiscard p ["14008", "14010", "14011", "01088"]
         choose "use Serval Industries" (isAbilityOfCard serval)
+        before <- liftIO . publicGame =<< getGame
+        remainingPicks before `shouldBe` [toJSON (2 :: Int)]
         choose "Accelerated Reflex" (isTargetChoice reflex)
+        after <- liftIO . publicGame =<< getGame
+        remainingPicks after `shouldBe` [toJSON (1 :: Int)]
         choose "Hyper Perception" (isTargetChoice perception)
         map toCardCode <$> discardOf p `shouldReturn` ["14011", "01088"]
         deck <- deckOf p

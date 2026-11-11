@@ -1103,13 +1103,34 @@ questionView asked = \case
      in v {prompt = Just l, source = refId =<< t, choices = map named v.choices}
   Read r q -> (questionView asked q) {reading = r}
   Searched cs q -> (questionView asked q) {searched = [SearchedView l (map cardView xs) | (l, xs) <- cs]}
-  ChooseOne cs -> QuestionView "chooseOne" (Just 1) Nothing Nothing (allocations cs) (described cs) [] []
+  ChooseOne cs -> QuestionView "chooseOne" (Just $ 1 + extraCardPicks cs) Nothing Nothing (allocations cs) (described cs) [] []
   ChooseN n cs -> QuestionView "chooseN" (Just $ min (fromIntegral n) (length cs)) Nothing Nothing (allocations cs) (described cs) [] []
   ChooseOneAtATime cs -> QuestionView "chooseOneAtATime" (Just $ length cs) Nothing Nothing (allocations cs) (described cs) [] []
   ChoosePlayerOrder (Unsorted xs) _ ->
     QuestionView "choosePlayerOrder" Nothing Nothing Nothing mempty [ChoiceView n "player" Nothing (Just $ idText x) Nothing Nothing Nothing | (n, x) <- zip [0 ..] xs] [] []
  where
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
+  -- Some selections (Serval Industries, for example) ask for the next card
+  -- inside each choice. Count the shared continuation so a pile stays open.
+  extraCardPicks cs = case L.nub (map cardContinuation cs) of
+    [n] -> n
+    _ -> 0
+  cardContinuation = \case
+    TargetLabel (CardIdRef _) body -> sum $ map continuation body
+    _ -> 0
+  continuation = \case
+    Run messages -> sum
+      [ fromMaybe 1 (questionView asked question).remainingPicks
+      | Msg.Ask player question <- messages
+      , player == asked
+      , isCardQuestion question
+      ]
+    _ -> 0
+  isCardQuestion = \case
+    ChooseOne cs -> notNull cs && all (\case TargetLabel (CardIdRef _) _ -> True; _ -> False) cs
+    QuestionLabel _ _ q -> isCardQuestion q
+    Searched _ q -> isCardQuestion q
+    _ -> False
   -- Every allocation choice carries the continuation with its new point prepended.
   -- Remove that point to describe the current state, including targets now full.
   allocations cs = fromMaybe mempty $ headMay $ concatMap allocationChoice cs
