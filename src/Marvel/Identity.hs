@@ -1220,7 +1220,7 @@ runIdentityMessage msg pid@(PlayerIdentity attrs@PlayerIdentityAttrs {..}) =
       if length cards >= fromIntegral discardMax
         then withDiscarded target FromHand cards
         else
-          chooseOne playerIdentityId $
+          chooseOnePrompted playerIdentityId (countLabel "discardMoreFromHand" $ discardMax - fromIntegral (length cards)) $
             [ labeled "$label.done" (withDiscarded target FromHand cards)
             | length cards >= fromIntegral discardMin
             ]

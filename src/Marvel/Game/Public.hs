@@ -557,7 +557,7 @@ gameView seesHand g = do
       SchemeMainSchemeId mid | Just s <- HashMap.lookup mid (gameMainSchemes g) -> Just <$> MainScheme.getThreshold (toAttrs s)
       _ -> pure Nothing
     pure $ ThreatView (schemeIdText sid) n src threshold
-  activeCost <- for (headMay $ gameActiveCost g) \c -> do
+  activeCost <- for (headMay $ filter (not . discardOnlyAbility) $ gameActiveCost g) \c -> do
     -- The tray shows every generated icon, including resources later discarded
     -- as surplus. ActualResourcesPayment is the engine's final spend receipt.
     paid <- paymentResources $ mconcat [p | p <- payments c.activeCostPayment, case p of ActualResourcesPayment _ -> False; _ -> True]
@@ -696,6 +696,10 @@ gameView seesHand g = do
               }
       }
  where
+  discardOnlyAbility cost = case (cost.activeCostTarget, cost.activeCostCost) of
+    (ForAbility _, DiscardHandCardsCost _ _) -> True
+    _ -> False
+
   displayedDiscards = L.nubBy (\a b -> toCardId a == toCardId b) $
     concatMap discardDisplayCards (reverse $ fromMaybe [] $ gameDiscardDisplays g)
       <> map (EncounterCard . snd) (fromMaybe [] $ gameBoostIconReplacements g)
@@ -817,7 +821,9 @@ gameView seesHand g = do
               choice {kind = "ability", target = raw.source <|> Just (idText $ pcCardId card), abilityType = Just Ability.Response}
           | otherwise = choice
         view = raw
-          { choices = map onResource raw.choices
+          { prompt = raw.prompt <|> (if any discardOnlyAbility (gameActiveCost g) && not (null raw.choices) && all ((== "discard") . (.kind)) raw.choices
+              then Just "$label.chooseHandDiscard" else Nothing)
+          , choices = map onResource raw.choices
           , source = raw.source <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
               then idText . ecCardId <$> headMay pendingBoostCards else Nothing)
           }

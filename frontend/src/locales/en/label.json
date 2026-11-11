@@ -1,4 +1,6 @@
 {
+  "chooseHandDiscard": "Choose a card to discard from your hand",
+  "discardMoreFromHand": "Discard {count} more cards from your hand",
   "hexBoltChooseEffect": "Hex Bolt: Choose the next effect to resolve",
   "hexBoltChooseCharacter": "Hex Bolt: Choose a character to receive a status card",
   "hexBoltChooseStatus": "Hex Bolt: Choose a status card to give this character",

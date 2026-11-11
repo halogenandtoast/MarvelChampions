@@ -1,6 +1,8 @@
 module Marvel.Hero.QuicksilverSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity ( currentIdentity )
 import Marvel.Minion.Cards qualified as Minions
@@ -171,9 +173,31 @@ spec = describe "Quicksilver" do
         offers isSuperSpeed `shouldReturn` False
         isExhaustedNow p `shouldReturn` True
 
+  describe "Drawing cards" do
+    it "keeps ordinary one-card draws batched rather than publishing a board for each card" do
+      original <- quicksilver
+      frames <- newIORef (0 :: Int)
+      let tg = original {app = original.app {appFrontend = \message -> do
+            original.app.appFrontend message
+            case message of
+              Board _ -> modifyIORef' frames (+ 1)
+              _ -> pure ()}}
+      inGame tg do
+        let p = player1 tg
+        clearHand p
+        runNow $ replicate 6 $ IdentityMessage p (DrawCards FromDeck 1)
+        length <$> handOf p `shouldReturn` 6
+        liftIO (readIORef frames) `shouldReturn` 0
+
   describe "Superpowered Siblings" do
     it "discards 2 cards to draw 2, once a round" do
-      tg <- quicksilver
+      original <- quicksilver
+      snapshots <- newIORef []
+      let tg = original {app = original.app {appFrontend = \message -> do
+            original.app.appFrontend message
+            case message of
+              Board value | Success game <- fromJSON value -> modifyIORef' snapshots (<> [game :: Game])
+              _ -> pure ()}}
       let p = player1 tg
       inGame tg do
         clearHand p
@@ -181,8 +205,18 @@ spec = describe "Quicksilver" do
         b <- putInHand p "01089"
         _ <- putInHand p "01090"
         choose "Superpowered Siblings" isSiblings
+        view <- liftIO . publicGame =<< getGame
+        case view of
+          Object obj -> KeyMap.lookup "activeCost" obj `shouldBe` Just Null
+          _ -> liftIO $ expectationFailure "Expected a public game object"
         choose "discard" (isTargetChoice a)
+        discardOf p >>= (`shouldSatisfy` elem a)
+        length <$> handOf p `shouldReturn` 2
         choose "discard" (isTargetChoice b)
+        states <- liftIO $ readIORef snapshots
+        let playerStates = [toAttrs player | state <- states, Just player <- [HashMap.lookup p $ gamePlayers state]]
+        playerStates `shouldSatisfy` any (\player -> length (unHand $ playerIdentityHand player) == 1 && all (`elem` unDiscard (playerIdentityDiscard player)) [a,b])
+        states `shouldSatisfy` all (null . fromMaybe [] . gameDiscardDisplays)
         pass
         length <$> handOf p `shouldReturn` 3
         discardOf p >>= (`shouldSatisfy` \d -> a `elem` d && b `elem` d)

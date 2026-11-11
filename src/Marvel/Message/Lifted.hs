@@ -2400,6 +2400,7 @@ withDisplayedDiscards source cards body = do
 
 -- | The target is told the cards discarded from the zone.
 withDiscarded :: (ReverseQueue m, IsRef target) => target -> FromZone -> [Card] -> m ()
+withDiscarded (toTarget -> ActiveCostRef cost) FromHand cards = push $ WithDiscarded (ActiveCostRef cost) FromHand cards
 withDiscarded target zone cards = withDisplayedDiscards (Just $ toTarget target) cards $
   push $ WithDiscarded (toTarget target) zone cards
 

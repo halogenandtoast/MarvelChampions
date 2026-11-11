@@ -192,7 +192,11 @@ const riverEnemyIds = computed(() => {
 const elsewhere = computed(() => {
   const g = game.value
   const ids = new Set([...(g?.minions ?? []), ...(g?.sideSchemes ?? []), ...(g?.environments ?? [])].map((x) => x.id))
-  for (const p of g?.players ?? []) [...(p.hand ?? []), ...(p.supports ?? []), ...(p.upgrades ?? []), ...(p.allies ?? []), ...(p.discard ?? [])].forEach((c) => ids.add(c.id))
+  for (const p of g?.players ?? []) {
+    ids.add(p.id)
+    const cards = [...(p.hand ?? []), ...(p.supports ?? []), ...(p.upgrades ?? []), ...(p.allies ?? []), ...(p.discard ?? [])]
+    cards.forEach((c) => ids.add(c.id))
+  }
   return ids
 })
 // the enemy attacking, as it stands now

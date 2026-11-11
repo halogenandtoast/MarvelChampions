@@ -13,7 +13,7 @@ import Marvel.Game
 import Marvel.Log (idText, sendLog)
 import Marvel.Log.Narrator
 import Marvel.Id
-import Marvel.Ref (Ref (GameRef))
+import Marvel.Ref (Ref (GameRef, ActiveCostRef))
 import Marvel.Message
 import Marvel.Message.Identity ()
 import Marvel.Message.Villain ()
@@ -21,7 +21,7 @@ import Marvel.Window.Types qualified
 
 narrate :: Message -> GameAppT ()
 narrate msg = do
-  when (stepBegins msg) showBoard
+  when (stepBegins msg || handDiscardsComplete msg) showBoard
   for_ (narrationFor msg) \build -> traverse_ sendLog =<< build
   when (intoRiver msg) showBoard
   traverse_ send (cue msg)
@@ -41,6 +41,13 @@ narrate msg = do
     _ -> pure ()
  where
   showBoard = send . Board . toJSON =<< getGame
+
+-- | Show chosen hand discards before their cost callback continues into a draw.
+-- Ordinary draws, including starting hands, remain batched in the final update.
+handDiscardsComplete :: Message -> Bool
+handDiscardsComplete = \case
+  WithDiscarded (ActiveCostRef _) FromHand cards -> notNull cards
+  _ -> False
 
 -- | A step of the round beginning: the board is shown as the step before left it, so each
 -- step is seen on its own whether or not anyone is asked anything during it.
