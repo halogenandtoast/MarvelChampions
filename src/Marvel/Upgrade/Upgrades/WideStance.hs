@@ -50,8 +50,8 @@ instance RunMessage WideStance where
     SearchFoundCards (isTarget attrs -> True) cards -> do
       let looked = [c | EncounterCard c <- cards]
       unless (null looked) do
-        lookingAt ident cards $ chooseOne ident
-          [targeting card do
+        lookingAt ident cards $ chooseOnePromptedAbout ident "$label.wideStanceDiscard" attrs
+          [targetingLabeled card "$label.discard" do
             discardCard card
             cardSpecific attrs "wideStanceOrder" (filter (/= card) looked, [] :: [EncounterCard])
           | card <- looked]
@@ -62,8 +62,8 @@ instance RunMessage WideStance where
           putOnTopOfEncounterDeck ordered
           techniqueResolved ident (upgradeId attrs)
         [card] -> cardSpecific attrs "wideStanceOrder" ([] :: [EncounterCard], ordered <> [card])
-        _ -> chooseOne ident
-          [targeting card $ cardSpecific attrs "wideStanceOrder" (filter (/= card) remaining, ordered <> [card])
+        _ -> chooseOnePromptedAbout ident "$label.wideStanceOrder" attrs
+          [targetingLabeled card "$label.putOnTopOfEncounterDeck" $ cardSpecific attrs "wideStanceOrder" (filter (/= card) remaining, ordered <> [card])
           | card <- remaining]
       pure u
     _ -> WideStance <$> runMessage msg attrs

@@ -6,6 +6,8 @@
   "hexBoltChooseStatus": "Hex Bolt: Choose a status card to give this character",
   "innovationResponse": "Hero response",
   "innovationHealAlly": "Innovation: choose an ally you control to heal 1 damage",
+  "wideStanceDiscard": "Wide Stance: discard 1 card, then return the others to the encounter deck",
+  "wideStanceOrder": "Wide Stance: choose the top card; the other card goes beneath it",
   "childProdigyMentalPayment": "Spend 1 mental resource",
   "childProdigyTwoResourcesPayment": "Spend 2 resources of any type",
   "attackWithoutDiscarding": "Attack without discarding",

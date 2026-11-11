@@ -1,6 +1,8 @@
 module Marvel.Hero.NebulaSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Data.Text qualified as T
 import Marvel.Scenario.Types (Field (ScenarioEncounterDeck))
 import Marvel.Attack (attack)
@@ -581,10 +583,20 @@ spec = describe "Nebula" do
         technique <- putIntoPlay p "22008"
         cards <- stackEncounterDeck [Treacheries.assault, Treacheries.advance, Treacheries.gangUp]
         gamoraSpecial p technique
+        let checkPrompt prompt actionLabel = do
+              view <- liftIO . publicGame =<< getGame
+              let questions = [q | Object obj <- [view], Just (Object qs) <- [KeyMap.lookup "question" obj], Object q <- KeyMap.elems qs]
+                  choices = [choice | q <- questions, Just (Array cs) <- [KeyMap.lookup "choices" q], Object choice <- toList cs]
+              map (KeyMap.lookup "prompt") questions `shouldBe` [Just $ String prompt]
+              choices `shouldSatisfy` notNull
+              map (KeyMap.lookup "label") choices `shouldSatisfy` all (== Just (String actionLabel))
+              map (KeyMap.lookup "target") choices `shouldSatisfy` all (/= Just Null)
+        checkPrompt "$label.wideStanceDiscard" "$label.discard"
         let (a, b, c) = case cards of
               [first, second, third] -> (first, second, third)
               _ -> error "Gamora fixture: expected exactly three encounter cards"
         choose "discard the middle card" (isTargetChoice b)
+        checkPrompt "$label.wideStanceOrder" "$label.putOnTopOfEncounterDeck"
         choose "return the last card first" (isTargetChoice c)
         deck <- encounterDeckNow
         liftIO $ take 2 deck `shouldBe` [c, a]

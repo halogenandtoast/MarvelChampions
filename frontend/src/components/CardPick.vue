@@ -52,6 +52,10 @@ onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
 type Pick = { key: string | number; code: string; index: number | null }
+const action = (index: number | null) => {
+  const choice = choices.find(choice => choice.index === index)
+  return choice && (choice.label || !['card', 'target'].includes(choice.kind)) ? label(choice) : null
+}
 // a searched card is picked by the choice on it, if any; searched in several places, the
 // cards are grouped under where they were
 const groups = computed<{ place: string | null; picks: Pick[] }[]>(() =>
@@ -82,6 +86,7 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
                 @focus="preview(c.code, $event.currentTarget as HTMLElement)" @blur="overlay.hide()">
                 <span class="face" :class="{ sideways: cards.landscape(c.code) }"><span class="scan"><CardFace :code="c.code" eager /></span></span>
                 <span class="name">{{ cards.name(c.code, c.code) }}</span>
+                <span v-if="action(c.index)" class="action">{{ action(c.index) }}</span>
               </button>
             </div>
           </section>
@@ -135,6 +140,7 @@ h3 { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; te
 .card:not(:disabled):focus-visible .face { outline: 2px solid var(--interactive); outline-offset: 4px; }
 .card:not(:disabled):hover .face { border-color: var(--interactive); transform: translateY(-3px); box-shadow: 0 0 12px var(--interactive-glow); }
 .name { font-size: 0.9rem; font-weight: 700; }
+.action { font-size: 0.8rem; font-weight: 700; color: var(--interactive); }
 footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
 footer:empty { display: none; }
 .waiting { margin: 0 auto 0 0; color: var(--text-muted); font-style: italic; }
