@@ -32,7 +32,7 @@ instance RunMessage RunningInterference where
   runMessage msg e@(RunningInterference attrs) = runQueueT $ case msg of
     EventMessage ident (PlayedEvent you _ _) | ident == eventId attrs -> do
       stage <- maybe (pure 0) getVillainStage =<< selectOne ActiveVillain
-      mains <- filter isMain <$> selectList ThwartableScheme
+      mains <- filter isMain <$> selectList SchemeYouCanThwart
       -- none to remove it from (a crisis icon in play): nothing happens
       unless (null mains) $ chooseOrRunOne you
         [targeting (schemeRef scheme) (thwartScheme scheme attrs (2 + min 3 stage)) | scheme <- mains]

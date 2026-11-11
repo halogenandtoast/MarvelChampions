@@ -1062,7 +1062,13 @@ effectivePlayerCardDef ident card
         pure def {cdAbilitySubTypes = labels, cdAbilityCost = cost}
   | otherwise = pure def
  where
-  def = getCardDef card
+  -- A saved card can predate printed target restrictions. Preserve its custom
+  -- restrictions while also enforcing the current implementation's requirements.
+  stored = getCardDef card
+  def = case lookup (toCardCode card) MGPlayer.allPlayerCards of
+    Just current | cdCriteria current /= cdCriteria stored ->
+      stored {cdCriteria = cdCriteria stored <> cdCriteria current}
+    _ -> stored
 
 getWindowPlayableCards ::
   ( MonadThrow m

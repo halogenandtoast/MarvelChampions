@@ -3314,6 +3314,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.NoirAttachmentsSpec
       Marvel.Rules.NovaMechanicsSpec
       Marvel.Rules.PhoenixControlSpec
+      Marvel.Rules.PlayerCardTargetsSpec
       Marvel.Rules.PlayerSideSchemesSpec
       Marvel.Rules.PrintedCostSpec
       Marvel.Rules.PrintedXSpec

@@ -673,6 +673,7 @@ crisisInterdiction = (identityEvent
                     [Energy]
                   )
   { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
   }
 
 photonicBlast :: CardDef
@@ -692,6 +693,7 @@ gammaSlam =
   (identityEvent "01021" "Gamma Slam" 4 HeroAction [Attack, Superpower] [Mental]
     )
     { cdAbilitySubTypes = [Ability.Attack]
+    , cdCriteria = AnyCriteria [SelfMatches StunnedIdentity, SelfMatches IdentityWithAnyDamage <> EnemyExists AttackableEnemy]
     }
 
 groundStomp :: CardDef
@@ -708,6 +710,7 @@ legalPractice = (identityEvent
                   [Physical]
                 )
   { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
   , cdAbilityCost = DiscardHandCardsCost 1 (Just 5)
   }
 
@@ -715,6 +718,7 @@ oneTwoPunch :: CardDef
 oneTwoPunch =
   (identityEvent "01024" "One-Two Punch" 1 Response [Skill] [Physical])
     { cdResponseWindow = Just (MakesBasicAttack After You)
+    , cdCriteria = SelfMatches IdentityCanReady
     }
 
 splitPersonality :: CardDef
@@ -953,6 +957,7 @@ subOrbitalLeap :: CardDef
 subOrbitalLeap =
   (identityEvent "10004" "Sub-Orbital Leap" 3 HeroAction [Superpower, Thwart] [Physical])
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
     }
 
 thunderclap :: CardDef
@@ -984,6 +989,7 @@ toTheRescue :: CardDef
 toTheRescue =
   (basicEvent "10019" "To the Rescue!" 2 HeroAction [Thwart] [Physical])
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
     }
 
 inspiringPresence :: CardDef
@@ -1011,6 +1017,7 @@ defenderOfTheNineRealms :: CardDef
 defenderOfTheNineRealms =
   (identityEvent "06003" "Defender of the Nine Realms" 0 HeroAction [Thwart] [Physical])
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
     , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     }
 
@@ -1049,7 +1056,8 @@ meanSwing =
     }
 
 invulnerability :: CardDef
-invulnerability = basicEvent "06021" "Invulnerability" 3 HeroAction [Superpower] [Physical]
+invulnerability = (basicEvent "06021" "Invulnerability" 3 HeroAction [Superpower] [Physical])
+  { cdCriteria = CharacterExists (IdentityCharacters You <> CharacterCanGainTough) }
 
 -- | "Exhaust an ally you control" is part of its cost.
 teamwork :: CardDef
@@ -1067,6 +1075,7 @@ astralProjection :: CardDef
 astralProjection =
   (identityEvent "09003" "Astral Projection" 2 HeroAction [Spell, Thwart] [Mental])
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
     }
 
 magicBlast :: CardDef
@@ -1350,13 +1359,19 @@ surpriseAttack =
     }
 
 athleticConditioning :: CardDef
-athleticConditioning = reprintedAs ["19021"] $ basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental]
+athleticConditioning = reprintedAs ["19021"] $
+  (basicEvent "13034" "Athletic Conditioning" 1 HeroAction [] [Mental])
+    { cdCriteria = AnyCriteria
+        [ CharacterExists (IdentityCharacters You <> CharacterWithStatus StunnedStatus)
+        , CharacterExists (IdentityCharacters You <> CharacterWithStatus ConfusedStatus)
+        ]
+    }
 
 runningInterference :: CardDef
 runningInterference =
   (event "13031" "Running Interference" 2 HeroAction [Thwart] [Physical] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
-    , cdCriteria = SelfMatches (IdentityWithTrait Avenger)
+    , cdCriteria = SelfMatches (IdentityWithTrait Avenger) <> canThwartScheme (MainScheme <> SchemeYouCanThwart)
     }
 
 allForOne :: CardDef
@@ -1370,6 +1385,7 @@ perseverance :: CardDef
 perseverance = reprintedAs ["32016"] $
   (event "13033" "Perseverance" 1 HeroResponse [Tactic] [Mental] Protection)
     { cdResponseWindow = Just (IdentityChangedAnyForm After You)
+    , cdCriteria = CharacterExists (IdentityCharacters You <> CharacterCanGainTough)
     }
 
 -- Quicksilver
@@ -1459,6 +1475,7 @@ crisisAverted :: CardDef
 crisisAverted =
   (event "15012" "Crisis Averted" 3 HeroAction [Thwart] [Mental] Justice)
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme (MainScheme <> SchemeYouCanThwartIgnoringCrisis)
     }
 
 multitasking :: CardDef
@@ -1659,6 +1676,9 @@ fruition = identityEvent "16002" "Fruition" 0 Action [Superpower] [Mental]
 iAmGroot :: CardDef
 iAmGroot =
   (identityEvent "16003" "\"I am Groot\"" 3 HeroAction [Superpower, Thwart] [Mental])
+    { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = AnyCriteria [SelfMatches ConfusedIdentity, SelfMatches (IdentityWithCounters $ AtLeast $ Static 1) <> SchemeExists SchemeYouCanThwart]
+    }
 -- Drax
 
 fightMeCoward :: CardDef
@@ -1712,7 +1732,8 @@ iveGotAPlan =
     }
 
 reload :: CardDef
-reload = identityEvent "16031" "Reload" 1 HeroAction [Skill] [Energy]
+reload = (identityEvent "16031" "Reload" 1 HeroAction [Skill] [Energy])
+  { cdCriteria = UpgradeExists (UpgradeControlledBy You <> UpgradeWithTrait Tech <> UpgradeCanBeReadied) }
 
 schadenfreude :: CardDef
 schadenfreude = identityEvent "16032" "Schadenfreude" 2 HeroAction [] [Physical]
@@ -1723,6 +1744,7 @@ lookingForTrouble :: CardDef
 lookingForTrouble =
   reprintedAs ["46017"] ((event "16043" "Looking for Trouble" 0 HeroAction [Thwart] [Physical] Aggression)
     { cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme (MainScheme <> SchemeYouCanThwart)
     , cdAbilityCost = DiscardEncounterCardsUntilMinionCost
     })
 
@@ -1901,7 +1923,8 @@ lockedAndLoaded :: CardDef
 lockedAndLoaded = identityEvent "20004" "Locked and Loaded" 0 Action [] [Mental]
 
 runAndGun :: CardDef
-runAndGun = identityEvent "20005" "Run and Gun" 3 HeroAction [Skill] [Energy]
+runAndGun = (identityEvent "20005" "Run and Gun" 3 HeroAction [Skill] [Energy])
+  { cdCriteria = AnyCriteria [SelfMatches IdentityCanReady, UpgradeExists (UpgradeControlledBy You <> UpgradeWithTrait Weapon <> UpgradeCanBeReadied)] }
 
 savageAttack :: CardDef
 savageAttack =
@@ -2683,6 +2706,7 @@ airwalk :: CardDef
 airwalk = (identityEvent "32039" "Airwalk" 1 HeroAction [Superpower, Thwart] [Mental])
   { cdDeckLimit = Just 2
   , cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart
   }
 
 -- Mutant Genesis
@@ -2716,7 +2740,8 @@ lungingStrike :: CardDef
 lungingStrike = (identityEvent "35010" "Lunging Strike" 3 HeroAction [Attack] [Physical]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Attack]}
 
 trackByScent :: CardDef
-trackByScent = (identityEvent "35011" "Track by Scent" 2 HeroAction [Superpower, Thwart] [Mental]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart]}
+trackByScent = (identityEvent "35011" "Track by Scent" 2 HeroAction [Superpower, Thwart] [Mental]) {cdDeckLimit = Just 2, cdAbilitySubTypes = [Ability.Thwart]
+    , cdCriteria = canThwartScheme SchemeYouCanThwart}
 
 regenerativeHealing :: CardDef
 regenerativeHealing = (identityEvent "35012" "Regenerative Healing" 1 Action [Superpower] [Energy]) {cdDeckLimit = Just 2, cdCriteria = AnyCriteria [SelfMatches (IdentityWithAnyDamage <> IdentityCanBeHealed), CharacterExists (IdentityCharacters You <> CharacterWithStatus StunnedStatus), CharacterExists (IdentityCharacters You <> CharacterWithStatus ConfusedStatus)]}
@@ -2855,7 +2880,7 @@ cable40002 :: CardDef
 cable40002 = (identityEvent "40002" "Bodyslide" 0 NEAbility.Action [] [NE.Energy]) { cdUnique = False, cdDeckLimit = Just 1 }
 
 cable40003 :: CardDef
-cable40003 = (identityEvent "40003" "Mind Scan" 2 NEAbility.HeroAction [NE.Psionic, NE.Superpower, NE.Thwart] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3 , cdAbilitySubTypes = [NEAbility.Thwart] }
+cable40003 = (identityEvent "40003" "Mind Scan" 2 NEAbility.HeroAction [NE.Psionic, NE.Superpower, NE.Thwart] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 3 , cdAbilitySubTypes = [NEAbility.Thwart], cdCriteria = canThwartScheme SchemeYouCanThwart }
 
 cable40004 :: CardDef
 cable40004 = (identityEvent "40004" "Precognition" 0 NEAbility.HeroAction [NE.Psionic, NE.Superpower] [NE.Mental]) { cdUnique = False, cdDeckLimit = Just 1 }

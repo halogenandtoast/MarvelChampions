@@ -165,7 +165,11 @@ canAttackVillain = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists (Villai
 
 -- | What an attack on a minion needs: a minion, or a stun for the attempt to remove.
 canAttackMinion :: Criteria
-canAttackMinion = AnyCriteria [SelfMatches StunnedIdentity, MinionExists AnyMinion]
+canAttackMinion = AnyCriteria [SelfMatches StunnedIdentity, EnemyExists (AttackableEnemy <> MinionEnemy)]
+
+-- | A thwart needs a scheme it can affect, unless confusion cancels the attempt.
+canThwartScheme :: SchemeMatcher -> Criteria
+canThwartScheme matcher = AnyCriteria [SelfMatches ConfusedIdentity, SchemeExists matcher]
 
 -- | What a thwart needs of the player making it.
 abilitySubTypeCriteria :: AbilitySubType -> Criteria

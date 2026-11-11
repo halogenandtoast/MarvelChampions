@@ -2,6 +2,7 @@ module Marvel.Event.Events.GodlikeStamina (godlikeStamina, GodlikeStamina (..)) 
 
 import Marvel.Prelude
 import Marvel.Card
+import Marvel.Id (CharacterId (IdentityCharacter))
 import Marvel.Entity
 import Marvel.Event.Cards qualified as Cards
 import Marvel.Event.Types
@@ -24,7 +25,7 @@ instance IsEvent GodlikeStamina where
     let you = eventController attrs
     damaged <- identityMatches healableIdentity you
     statuses <- selectList $ IdentityCharacters (IdentityWithId you) <> CharacterWithStatus StunnedStatus
-    confused <- identityMatches ConfusedIdentity you
+    confused <- characterMatches (CharacterWithStatus ConfusedStatus) (IdentityCharacter you)
     tough <- not <$> identityMatches IdentityWithoutToughStatus you
     pure $ if damaged || not (null statuses) || confused || tough then Nothing else Just []
 
@@ -36,8 +37,8 @@ instance RunMessage GodlikeStamina where
       pure e
     CardSpecific (isTarget attrs -> True) "discardStatus" _ -> do
       let you = eventController attrs
-      stunned <- identityMatches StunnedIdentity you
-      confused <- identityMatches ConfusedIdentity you
+      stunned <- characterMatches (CharacterWithStatus StunnedStatus) (IdentityCharacter you)
+      confused <- characterMatches (CharacterWithStatus ConfusedStatus) (IdentityCharacter you)
       tough <- not <$> identityMatches IdentityWithoutToughStatus you
       when (stunned || confused || tough) $ chooseOne you $
         [labeled (statusLabel StunnedStatus) (removeStatus you StunnedStatus) | stunned]

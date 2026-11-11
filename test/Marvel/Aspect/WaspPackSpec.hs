@@ -399,7 +399,7 @@ spec = describe "The Wasp pack's aspect and basic cards" do
         -- Rhino I: 2 + 1
         mainSchemeThreatNow `shouldReturn` before - 3
 
-    it "removes no threat while a crisis icon is in play" do
+    it "is not offered while a crisis icon prevents removing main-scheme threat" do
       tg <- wasp
       let p = player1 tg
       inGame tg do
@@ -407,11 +407,9 @@ spec = describe "The Wasp pack's aspect and basic cards" do
         placeMainThreat 6
         _ <- revealNow p SideSchemes.crowdControl
         pass
-        before <- mainSchemeThreatNow
         running <- putInHand p "13031"
-        playPaying p running ["01088"]
-        pass
-        mainSchemeThreatNow `shouldReturn` before
+        _ <- putInHand p "01088"
+        offers (isPlay running) `shouldReturn` False
 
     it "cannot be played without the Avenger trait" do
       tg <- testGame ["ms-marvel"]
@@ -484,6 +482,28 @@ spec = describe "The Wasp pack's aspect and basic cards" do
         isTough p `shouldReturn` False
 
   describe "Athletic Conditioning (13034)" do
+    it "is not offered when the hero has neither status card" do
+      tg <- wasp
+      let p = player1 tg
+      inGame tg do
+        asHero p
+        conditioning <- putInHand p "13034"
+        _ <- putInHand p "01089"
+        offers (isPlay conditioning) `shouldReturn` False
+
+    it "discards a single stun card from a steady hero" do
+      tg <- testGame ["drax"]
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        pass
+        clearHand p
+        _ <- putIntoPlay p "31024"
+        resolve [IdentityMessage p IdentityStunned]
+        conditioning <- putInHand p "19021"
+        playPaying p conditioning ["01089"]
+        (.playerIdentityStunned) <$> playerAttrs p >>= (`shouldBe` False)
+
     it "discards a stun status card from your hero" do
       tg <- wasp
       let p = player1 tg

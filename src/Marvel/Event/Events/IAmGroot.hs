@@ -4,6 +4,7 @@ module Marvel.Event.Events.IAmGroot (
 ) where
 
 import Marvel.Prelude
+import Marvel.Ability.Types qualified as Ability
 
 import Marvel.Card.Code
 import Marvel.Entity
@@ -20,8 +21,11 @@ iAmGroot :: EventCard IAmGroot
 iAmGroot = event IAmGroot Cards.iAmGroot
 
 newtype IAmGroot = IAmGroot (Attrs Event)
-  deriving anyclass (IsEvent, HasModifiersFor)
+  deriving anyclass (HasModifiersFor)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
+
+instance IsEvent IAmGroot where
+  eventAbilitySubTypes _ = pure [Ability.Thwart]
 
 -- | Hero Action (thwart): remove threat from a scheme equal to Groot's growth counters.
 instance RunMessage IAmGroot where
