@@ -1,5 +1,7 @@
 module Marvel.Hero.WaspSpec (spec) where
 
+import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Game.Public (publicGame)
 import Marvel.Ally.Types qualified as Ally
 import Marvel.Hero.Runner qualified as Hero
 import Marvel.Identity ( currentIdentity )
@@ -48,6 +50,11 @@ deckOf p = unDeck . (.playerIdentityDeck) <$> playerAttrs p
 
 isSmallButMighty :: Choice -> Bool
 isSmallButMighty = isNamedAbility "Small but Mighty"
+
+picksLeft :: Value -> [Value]
+picksLeft (Object obj) | Just (Object questions) <- KeyMap.lookup "question" obj =
+  [count | Object q <- KeyMap.elems questions, Just count <- [KeyMap.lookup "remainingPicks" q]]
+picksLeft _ = []
 
 spec :: Spec
 spec = describe "Wasp" do
@@ -198,14 +205,34 @@ spec = describe "Wasp" do
         offers (isLabel "$label.divideDamage") `shouldReturn` False
 
   describe "G.I.R.L. (Nadia Van Dyne)" do
+    it "needs a card with a printed mental resource in Nadia's own discard pile" do
+      tg <- wasp
+      let p = player1 tg
+      inGame tg do
+        offers (isNamedAbility "G.I.R.L.") `shouldReturn` False
+        _ <- stackDiscard p ["01088", "01090", "01055"]
+        offers (isNamedAbility "G.I.R.L.") `shouldReturn` False
+        _ <- stackDiscard p ["01089"]
+        offers (isNamedAbility "G.I.R.L.") `shouldReturn` True
+
+    it "cannot use a mental resource card in another player's discard pile" do
+      tg <- testGame ["wasp", "spider-man"]
+      inGame tg do
+        _ <- stackDiscard (player2 tg) ["01089"]
+        offers (isNamedAbility "G.I.R.L.") `shouldReturn` False
+
     it "shuffles up to 2 cards with a printed [mental] resource from the discard pile into the deck, once a round" do
       tg <- wasp
       let p = player1 tg
       inGame tg do
         [genius, chase, energy] <- stackDiscard p ["01089", "01052", "01088"]
         choose "G.I.R.L." (isNamedAbility "G.I.R.L.")
+        before <- liftIO . publicGame =<< getGame
+        picksLeft before `shouldBe` [toJSON (2 :: Int)]
         offers (isTargetChoice energy) `shouldReturn` False
         choose "Genius" (isTargetChoice genius)
+        after <- liftIO . publicGame =<< getGame
+        picksLeft after `shouldBe` [toJSON (1 :: Int)]
         offers (isTargetChoice genius) `shouldReturn` False
         choose "Chase Them Down" (isTargetChoice chase)
         discardOf p >>= (`shouldSatisfy` (\d -> genius `notElem` d && chase `notElem` d && energy `elem` d))

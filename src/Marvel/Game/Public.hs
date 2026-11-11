@@ -1112,7 +1112,7 @@ questionView asked = \case
   described cs = [(describeChoice asked c) {index = n} | (n, c) <- zip [0 ..] cs]
   -- Some selections (Serval Industries, for example) ask for the next card
   -- inside each choice. Count the shared continuation so a pile stays open.
-  extraCardPicks cs = case L.nub (map cardContinuation cs) of
+  extraCardPicks cs = case L.nub [cardContinuation c | c <- cs, not (isDone c)] of
     [n] -> n
     _ -> 0
   cardContinuation = \case
@@ -1127,9 +1127,15 @@ questionView asked = \case
       ]
     _ -> 0
   isCardQuestion = \case
-    ChooseOne cs -> notNull cs && all (\case TargetLabel (CardIdRef _) _ -> True; _ -> False) cs
+    ChooseOne cs -> any isCardPick cs && all (\c -> isCardPick c || isDone c) cs
     QuestionLabel _ _ q -> isCardQuestion q
     Searched _ q -> isCardQuestion q
+    _ -> False
+  isCardPick = \case
+    TargetLabel (CardIdRef _) _ -> True
+    _ -> False
+  isDone = \case
+    Label "$label.done" _ -> True
     _ -> False
   -- Every allocation choice carries the continuation with its new point prepended.
   -- Remove that point to describe the current state, including targets now full.

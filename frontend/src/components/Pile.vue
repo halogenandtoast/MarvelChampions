@@ -25,7 +25,7 @@ const { label, back = null, count = null, cards = null, pile = null, groups = nu
 
 const overlay = useCardOverlay()
 const faces = useCards()
-const { byTarget, choose, remainingPicks } = useChoices()
+const { byTarget, choose, remainingPicks, finishChoice } = useChoices()
 const mode = ref<'browse' | 'pick'>('browse')
 const picksLeft = ref<number | null>(null)
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
@@ -54,6 +54,10 @@ const onClose = () => { skipViewTransitions(); overlay.hide() }
 const close = () => {
   onClose()
   dialog.value?.close()
+}
+const finish = (index: number) => {
+  close()
+  choose(index)
 }
 provideChoiceHandler(index => {
   if (dialog.value?.open && mode.value === 'pick' && picksLeft.value !== null) {
@@ -89,7 +93,7 @@ provideChoiceHandler(index => {
         <h2>{{ label }} <small>{{ total }}</small></h2>
         <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
       </header>
-      <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t('game.piles.chooseCards', { count: picksLeft }) }}</p>
+      <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t(finishChoice ? 'game.piles.chooseUpToCards' : 'game.piles.chooseCards', { count: picksLeft }) }}</p>
       <template v-if="groups">
         <section v-for="group in groups" :key="group.label" class="pile-group">
           <h3>{{ group.label }} <small>{{ group.cards.length }}</small></h3>
@@ -101,6 +105,9 @@ provideChoiceHandler(index => {
       <div v-else class="cards">
         <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
       </div>
+      <footer v-if="mode === 'pick' && finishChoice">
+        <button type="button" class="btn" @click="finish(finishChoice.index)">{{ $t('label.done') }}</button>
+      </footer>
     </dialog>
   </div>
 </template>

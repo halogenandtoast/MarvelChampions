@@ -18,6 +18,7 @@ export interface Choices {
   /** the card the open question is about */
   sourceId: ComputedRef<string | null>
   remainingPicks: ComputedRef<number | null>
+  finishChoice: ComputedRef<ChoiceView | null>
 }
 
 const key: InjectionKey<Choices> = Symbol.for('marvel.choices')
@@ -31,12 +32,12 @@ export const provideChoices = (choices: () => ChoiceView[], choose: (index: numb
     }
     return map
   })
-  const provided = { hoveredTarget: ref<string | null>(null), assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source), remainingPicks: computed(remainingPicks) }
+  const provided = { hoveredTarget: ref<string | null>(null), assignedDamage: computed(assignedDamage), byTarget, choose, sourceId: computed(source), remainingPicks: computed(remainingPicks), finishChoice: computed(() => choices().find(choice => choice.label === '$label.done') ?? null) }
   provide(key, provided)
   return provided
 }
 
-export const useChoices = () => inject(key, { hoveredTarget: ref<string | null>(null), assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null), remainingPicks: computed(() => null) })
+export const useChoices = () => inject(key, { hoveredTarget: ref<string | null>(null), assignedDamage: computed<Record<string, number>>(() => ({})), byTarget: computed(() => new Map()), choose: () => {}, sourceId: computed(() => null), remainingPicks: computed(() => null), finishChoice: computed(() => null) })
 
 /** A pile intercepts its cards' answers while retaining the board's choice context. */
 export const provideChoiceHandler = (choose: (index: number) => void) => {

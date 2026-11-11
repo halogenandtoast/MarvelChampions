@@ -16,6 +16,7 @@ import Marvel.Entity
 import Marvel.GameValue
 import Marvel.Hand
 import Marvel.Identity.Types (Field (PlayerIdentityDiscard))
+import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Obligation.Cards qualified as Cards
@@ -44,7 +45,9 @@ newtype NadiaVanDyne = NadiaVanDyne (Attrs AlterEgo)
 instance HasAbilities NadiaVanDyne where
   getAbilities a =
     [ label "G.I.R.L." $
-        limitedAbility a 1 (PerRound 1) Action IsSelf NoCost $ runAbility a 1
+        limitedAbility a 1 (PerRound 1) Action
+          (IsSelf <> ExtendedCardExists (InDiscardOf You $ BasicCardMatches $ CardWithResource Mental))
+          NoCost $ runAbility a 1
     ]
 
 instance RunMessage NadiaVanDyne where

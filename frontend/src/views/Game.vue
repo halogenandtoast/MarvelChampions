@@ -360,7 +360,7 @@ const picking = computed(() => Object.entries(game.value?.question ?? {}).find((
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
 
-provideChoices(() => boardChoices.value, choose, () => question.value?.prompt === '$label.revealBoostCards'
+provideChoices(() => [...boardChoices.value, ...choices.value.filter(choice => !choice.target && choice.label === '$label.done')], choose, () => question.value?.prompt === '$label.revealBoostCards'
   ? choices.value.find(choice => choice.label === '$label.revealBoostCards')?.target ?? null
   : question.value?.source ?? null, () => question.value?.assignedDamage ?? {},
   () => question.value?.remainingPicks ?? (question.value?.kind === 'chooseOne' ? 1 : null))

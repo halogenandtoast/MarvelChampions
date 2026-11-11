@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const mount = async (page: Page, picks: number | null) => {
+const mount = async (page: Page, picks: number | null, optional = false) => {
   await page.goto('/#/cards/01001a')
-  await page.evaluate(async picks => {
+  await page.evaluate(async ({ picks, optional }) => {
     const load = (path: string) => import(/* @vite-ignore */ path)
     const { createApp, h, reactive } = await load('/node_modules/.vite/deps/vue.js')
     const { createI18n } = await load('/node_modules/.vite/deps/vue-i18n.js')
@@ -14,7 +14,7 @@ const mount = async (page: Page, picks: number | null) => {
     const { loadLocaleMessages } = await load('/src/locales/messages.ts')
     const { messages } = await loadLocaleMessages('en')
     const cards = [{ id: 'first', code: '56035', name: 'Imitation Shape' }, { id: 'second', code: '56034', name: 'Armored Shape' }, { id: 'third', code: '56033', name: 'Hulk Shape' }]
-    const state = reactive({ cards, remaining: picks, updates: 0, choices: picks === null ? [] : cards.map((card, index) => ({ index, kind: 'target', target: card.id })) })
+    const state = reactive({ cards, remaining: picks, updates: 0, choices: picks === null ? [] : [...cards.map((card, index) => ({ index, kind: 'target', target: card.id })), ...(optional ? [{ index: 99, kind: 'label', label: '$label.done' }] : [])] })
     const host = document.createElement('div')
     host.id = 'pile-host'
     host.style.cssText = '--card-width:100px;display:flex;gap:50px;padding:100px'
@@ -41,7 +41,7 @@ const mount = async (page: Page, picks: number | null) => {
       }, () => null, () => ({}), () => state.remaining)
       return () => [h(Pile, { label: 'Discard', cards: state.cards, pile: 'discard-test' }), h(Pile, { label: 'Deck', back: 'player', count: 8, pile: 'deck-target' }), h('span', String(state.updates)), h(CardOverlay)]
     } }).use(createI18n({ legacy: false, locale: 'en', messages: { en: messages } })).mount(host)
-  }, picks)
+  }, { picks, optional })
 }
 
 for (const picks of [1, 2]) {
@@ -82,4 +82,20 @@ test('browsing a pile stays open through board transitions without becoming a se
   await expect(page.locator('#pile-host')).toHaveAttribute('data-transitions-allowed', 'false')
   await dialog.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(dialog).toHaveCount(0)
+})
+
+test('an optional second pick stays open and can finish from inside the discard window', async ({ page }) => {
+  await mount(page, 2, true)
+  await page.getByRole('button', { name: 'Discard', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('button', { name: 'Done', exact: true })).toBeVisible()
+  await expect(dialog.locator('.pick-instruction')).toHaveText('Choose up to 2 cards')
+  await dialog.locator('[data-card-id="first"] .chip').click()
+  await expect(page.locator('#pile-host')).toHaveAttribute('data-finished', '0')
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toHaveAttribute('data-remaining-picks', '1')
+  await dialog.getByRole('button', { name: 'Done', exact: true }).click()
+  await expect(page.locator('#pile-host')).toHaveAttribute('data-open-at-answer', 'false')
+  await expect(page.locator('.pile-dialog[open]')).toHaveCount(0)
+  await expect(page.locator('#pile-host')).toHaveAttribute('data-finished', '99')
 })

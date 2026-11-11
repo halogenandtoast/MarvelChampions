@@ -87,6 +87,7 @@
     "setAside": "Set aside",
     "encounterSource": "Encounter",
     "chooseCards": "Choose {count} card | Choose {count} cards",
+    "chooseUpToCards": "Choose up to {count} card | Choose up to {count} cards",
     "encounterDeck": "Encounter",
     "encounterDiscard": "Discard",
     "victoryDisplay": "Victory display",

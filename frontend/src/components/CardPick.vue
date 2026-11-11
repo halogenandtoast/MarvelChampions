@@ -41,7 +41,7 @@ const press = (event: PointerEvent, code: string) => {
 const choose = (index: number | null) => {
   if (index === null) return
   overlay.hide()
-  const finalPick = remainingPicks === 1
+  const finalPick = remainingPicks === 1 || choices.find(choice => choice.index === index)?.label === '$label.done'
   if (finalPick) skipViewTransitions()
   emit('choose', index)
   if (finalPick) emit('close')

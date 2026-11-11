@@ -33,7 +33,7 @@ An attack with the piercing keyword discards any tough status cards from the tar
 ## Readings taken in implementation (not yet ruled on)
 
 - Bio-Synthetic Wings: "Wasp gains the Aerial trait" is the hero, in either form; Nadia Van Dyne does not.
-- G.I.R.L.: "up to 2" allows none, and then the deck is not shuffled.
+- G.I.R.L. needs at least one card with a printed mental resource in your discard pile to initiate (RR Initiating Abilities). Once initiated, "up to 2" allows none, and then the deck is not shuffled.
 - Athletic Conditioning requires a stun or confuse status card to discard, including one card on a steady hero (RR v1.8 Target and Valid Target, pp.42–43).
 - Into the Fray requires an attackable minion, unless stun cancels the attack attempt; removing threat is a secondary effect and is not required. Running Interference requires removable main-scheme threat, except when confusion cancels the thwart attempt.
 - Wasp (Janet Van Dyne): what was paid beyond her cost is the overpay, energy resources (a wild one declared as energy) counted first.
