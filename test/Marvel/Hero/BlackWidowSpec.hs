@@ -1,11 +1,21 @@
 module Marvel.Hero.BlackWidowSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Marvel.Effect.Types (Attrs (..), Effect (..), IsEffect)
+import Marvel.Matchers.Types (EntityMatcher (IdentityEntity), IdentityMatcher (IdentityWithId))
+import Marvel.Modifier (Modifier (CannotReady, CannotBeReadiedByPlayerCards))
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
 import TestImport
+
+newtype SynthSuitTestModifiers = SynthSuitTestModifiers (Attrs Effect)
+  deriving anyclass IsEffect
+  deriving newtype (Show, Eq, ToJSON, FromJSON)
+
+instance RunMessage SynthSuitTestModifiers where
+  runMessage msg (SynthSuitTestModifiers attrs) = SynthSuitTestModifiers <$> runMessage msg attrs
 
 blackWidow :: IO TestGame
 blackWidow = testGame ["black-widow"]
@@ -314,6 +324,29 @@ spec = describe "Black Widow" do
       choose "defend" isDefend
       pass
       damageOf p `shouldReturn` 1
+
+  for_ ["already ready", "cannot ready", "cannot be readied by player cards"] $ \condition ->
+    it ("does not offer Synth-Suit when " <> condition) do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        suit <- putIntoPlay p "08009"
+        bite <- putIntoPlay p "08010"
+        unless (condition == "already ready") $ runNow [IdentityMessage p ExhaustedIdentity]
+        unless (condition == "already ready") do
+          eid <- getRandom
+          let restriction = if condition == "cannot ready" then CannotReady else CannotBeReadiedByPlayerCards
+          withGame_ $ entitiesL . effectsL . at eid ?~ Effect (SynthSuitTestModifiers EffectAttrs
+            { effectId = eid, effectCardCode = "01039", effectSource = GameRef
+            , effectMatcher = IdentityEntity $ IdentityWithId p, effectModifiers = [restriction], effectEnds = Nothing })
+        mercenary <- encounterCard Minions.hydraMercenary
+        runNow [RevealEncounterCard p mercenary]
+        choose "use Widow's Bite" (isAbilityOfCard bite)
+        offers (isAbilityOfCard suit) `shouldReturn` False
+        map upgradeExhausted <$> upgradesWith "08009" `shouldReturn` [False]
+        isExhaustedNow p `shouldReturn` (condition /= "already ready")
 
   it "Widow's Bite deals 2 damage to a minion entering play and stuns it" do
     tg <- blackWidow

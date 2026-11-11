@@ -40,7 +40,7 @@ instance HasAbilities SynthSuit where
         1
         (ResolvesAbility After (IdentityWithId $ upgradeController attrs) (CardWithTrait Preparation))
         HeroResponse
-        OwnsThis
+        (OwnsThis <> SelfMatches IdentityCanReady)
         ExhaustCost
         (Run [IdentityMessage (upgradeController attrs) ReadiedIdentity])
     ]
