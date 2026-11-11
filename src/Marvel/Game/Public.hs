@@ -1168,9 +1168,12 @@ describeChoice asked = \case
     plain "label" (Just $ countLabel "aosMoveThreat" n)
   Label l _ -> plain "label" (Just l)
   TargetLabel t body ->
-    let selected = headMay [card | Run messages <- body, message <- concatMap flat messages, card <- cardsInMessage message, refId t == Just (idText $ toCardId card)]
-        kind = fromMaybe (if isJust selected then "card" else "target") (doneTo t body)
-     in withCode (toCardCode <$> selected) $ withKind kind (on "target" t)
+    let (actionLabel, effects) = case body of
+          [Label l cs] -> (Just l, cs)
+          _ -> (Nothing, body)
+        selected = headMay [card | Run messages <- effects, message <- concatMap flat messages, card <- cardsInMessage message, refId t == Just (idText $ toCardId card)]
+        kind = fromMaybe (if isJust selected then "card" else "target") (doneTo t effects)
+     in (withCode (toCardCode <$> selected) $ withKind kind (on "target" t)) {label = actionLabel}
   EndTurn -> plain "endTurn" (Just "$label.endTurn")
   UseAbility a ->
     (on "ability" (usedFrom a))

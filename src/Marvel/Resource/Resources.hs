@@ -31,7 +31,7 @@ afterSpent recipient you spent card
   -- Adam Warlock
   | getCardDef card `sameCard` Cards.audacity = audacitySpent you
   | getCardDef card `sameCard` Cards.determination = determinationSpent you
-  | getCardDef card `sameCard` Cards.innovation = innovationSpent you
+  | getCardDef card `sameCard` Cards.innovation = innovationSpent you card
   | getCardDef card `sameCard` Cards.preservation = preservationSpent you
   | Just trait <- cdCanPayForOthersWithTrait (getCardDef card) = do
       civilian <- identityMatches (IdentityWithTrait trait) you

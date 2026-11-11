@@ -46,6 +46,11 @@ spendOnVest p code = do
   res <- putInHand p code
   playWith vest [res]
 
+isInnovationResponse :: Choice -> Bool
+isInnovationResponse = \case
+  TargetLabel _ [choice] -> isLabel "$label.innovationResponse" choice
+  _ -> False
+
 spec :: Spec
 spec = describe "The Mad Titan's Shadow aspect cards" do
   describe "reprints" do
@@ -426,9 +431,45 @@ spec = describe "The Mad Titan's Shadow aspect cards" do
         mv <- allyIn "21053"
         resolve [AllyMessage (allyId mv) (AllyDamaged (toSource p) (toDamage 1 FromAbility))]
         spendOnVest p "21058"
+        offers (isTargetChoice (AllyRef $ allyId mv)) `shouldReturn` False
+        choose "trigger Innovation" isInnovationResponse
         choose "Major Victory" (isTargetChoice (AllyRef $ allyId mv))
         pass
         (.allyDamage) <$> allyIn "21053" `shouldReturn` 0
+
+    for_ ["23021", "62016"] $ \code ->
+      it ("offers the response before selecting Quake with reprint " <> show code) do
+        tg <- testGame ["spider-man"]
+        let p = player1 tg
+        inGame tg do
+          asHero p
+          clearHand p
+          _ <- putIntoPlay p "08012"
+          quake <- allyIn "08012"
+          resolve [AllyMessage (allyId quake) (AllyDamaged (toSource p) (toDamage 1 FromAbility))]
+          spendOnVest p code
+          offers isInnovationResponse `shouldReturn` True
+          offers (isTargetChoice (AllyRef $ allyId quake)) `shouldReturn` False
+          (.allyDamage) <$> allyIn "08012" `shouldReturn` 1
+          choose "trigger Innovation" isInnovationResponse
+          choose "heal Quake" (isTargetChoice (AllyRef $ allyId quake))
+          pass
+          (.allyDamage) <$> allyIn "08012" `shouldReturn` 0
+
+    it "can decline the response without healing or asking for a target" do
+      tg <- testGame ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        asHero p
+        clearHand p
+        _ <- putIntoPlay p "08012"
+        quake <- allyIn "08012"
+        resolve [AllyMessage (allyId quake) (AllyDamaged (toSource p) (toDamage 1 FromAbility))]
+        spendOnVest p "21058"
+        offers isInnovationResponse `shouldReturn` True
+        choose "decline Innovation" isNoResponse
+        offers (isTargetChoice (AllyRef $ allyId quake)) `shouldReturn` False
+        (.allyDamage) <$> allyIn "08012" `shouldReturn` 1
 
   describe "Charlie-27 (21059)" do
     it "has retaliate 1 and toughness" do

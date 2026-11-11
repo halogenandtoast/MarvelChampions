@@ -10,6 +10,7 @@ module Marvel.Resource.Resources.AdamWarlock (
 import Marvel.Prelude
 
 import Marvel.Damage
+import Marvel.Card.PlayerCard.Types (PlayerCard)
 import Marvel.GameValue
 import Marvel.Id (CharacterId (..), IdentityId)
 import Marvel.Matchers
@@ -39,10 +40,16 @@ determinationSpent you = do
   heroResponse you [labeled (countLabel "removeThreatFromMainScheme" 1) (removeThreat you (IdentityRef you) 1 withThreat) | available]
 
 -- | Innovation: heal 1 damage from an ally you control.
-innovationSpent :: (ReverseQueue m) => IdentityId -> m ()
-innovationSpent you = do
+innovationSpent :: (ReverseQueue m) => IdentityId -> PlayerCard -> m ()
+innovationSpent you card = do
   allies <- filterM (\aid -> characterMatches healableCharacter (AllyCharacter aid)) =<< selectList (AllyControlledBy (IdentityWithId you))
-  heroResponse you [targeting (AllyRef a) (heal a 1) | a <- allies]
+  hero <- identityMatches HeroIdentity you
+  when (hero && notNull allies) $ chooseOnePromptedAbout you "$label.respond" card
+    [ targetingLabeled card "$label.innovationResponse" $
+        chooseOnePromptedAbout you "$label.innovationHealAlly" card
+          [targeting (AllyRef a) (heal a 1) | a <- allies]
+    , labeled "$label.noResponse" (pure ())
+    ]
 
 -- | Preservation: heal 1 damage from your hero.
 preservationSpent :: (ReverseQueue m) => IdentityId -> m ()

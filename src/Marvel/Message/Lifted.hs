@@ -233,6 +233,10 @@ chooseOrRunOneAs you asked choices = do
 targeting :: (ReverseQueue m, IsRef a) => a -> m () -> m Choice
 targeting a body = TargetLabel (toTarget a) . pure . Run <$> capture body
 
+-- | Keep the physical target while naming what choosing it does.
+targetingLabeled :: (ReverseQueue m, IsRef a) => a -> Text -> m () -> m Choice
+targetingLabeled a label body = TargetLabel (toTarget a) . pure . Label label . pure . Run <$> capture body
+
 -- | A choice by its label (an i18n key under @$label.@), doing what the body does.
 labeled :: (ReverseQueue m) => Text -> m () -> m Choice
 labeled l body = Label l . pure . Run <$> capture body
