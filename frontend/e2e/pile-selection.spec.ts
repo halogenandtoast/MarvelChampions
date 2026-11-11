@@ -44,6 +44,20 @@ const mount = async (page: Page, picks: number | null, optional = false) => {
   }, { picks, optional })
 }
 
+test('closed piles release their card components and can be browsed again after Escape', async ({ page }) => {
+  await mount(page, null)
+  const cards = page.locator('.pile-dialog [data-card-id]')
+  await expect(cards).toHaveCount(0)
+  await page.getByRole('button', { name: 'Discard', exact: true }).click()
+  await expect(cards).toHaveCount(3)
+  await page.keyboard.press('Escape')
+  await expect(cards).toHaveCount(0)
+  await page.getByRole('button', { name: 'Discard', exact: true }).click()
+  await expect(cards).toHaveCount(3)
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click()
+  await expect(cards).toHaveCount(0)
+})
+
 for (const picks of [1, 2]) {
   test(`pile selection closes before the final shuffle and stays closed through transitions (${picks} picks)`, async ({ page }) => {
     await mount(page, picks)

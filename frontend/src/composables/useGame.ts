@@ -73,9 +73,15 @@ export const useGame = (gameId: string, spectate = false) => {
     })
   }
   const sleep = (ms: number) => {
+    if (document.hidden) return Promise.resolve()
     let timer: ReturnType<typeof setTimeout>
-    return waitForAnimation(new Promise<void>(resolve => { timer = setTimeout(resolve, ms) }))
-      .finally(() => clearTimeout(timer))
+    let stopListening = () => {}
+    return waitForAnimation(new Promise<void>(resolve => {
+      const onVisibility = () => { if (document.hidden) resolve() }
+      document.addEventListener('visibilitychange', onVisibility)
+      stopListening = () => document.removeEventListener('visibilitychange', onVisibility)
+      timer = setTimeout(resolve, ms)
+    })).finally(() => { clearTimeout(timer); stopListening() })
   }
 
   // the pile each encounter card dealt to a player lies on, until it is revealed from it
@@ -102,9 +108,10 @@ export const useGame = (gameId: string, spectate = false) => {
       await nextTick()
       if (epoch === animationEpoch) dealing?.land()
     }
-    if (animate && before) await withViewTransition(applyState)
-    else await applyState()
-    dealing?.done()
+    try {
+      if (animate && before) await withViewTransition(applyState)
+      else await applyState()
+    } finally { dealing?.done() }
   }
 
   // the river emptied, quickly, before the next card comes into it
@@ -117,13 +124,14 @@ export const useGame = (gameId: string, spectate = false) => {
       textContent: `::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: ${CLEAR_MS}ms !important; }`,
     })
     document.head.append(quick)
-    await withViewTransition(() => {
-      if (epoch !== animationEpoch) return
-      river.value = []
-      riverCleared.value = true
-      canceledEvent.value = null
-    })
-    quick.remove()
+    try {
+      await withViewTransition(() => {
+        if (epoch !== animationEpoch) return
+        river.value = []
+        riverCleared.value = true
+        canceledEvent.value = null
+      })
+    } finally { quick.remove() }
   }
   // a card into the river: a boost off the encounter deck face down, or a card turned up
   const toRiver = async (card: RiverCard, faceUp: boolean, flipInPlace = false) => {
@@ -217,7 +225,7 @@ export const useGame = (gameId: string, spectate = false) => {
     if (draining) return
     draining = true
     try {
-      while (queue.length) {
+      while (!closed && queue.length) {
         try { await apply(queue.shift() as ServerMessage) }
         catch (error) { if (!(error instanceof AnimationCancelled)) throw error }
       }
@@ -276,11 +284,12 @@ export const useGame = (gameId: string, spectate = false) => {
   const connect = () => {
     socket = new WebSocket(socketUrl(gamePath))
     socket.addEventListener('open', () => {
+      if (closed) return
       error.value = null
       void refresh()
     })
     socket.addEventListener('message', (event: MessageEvent<string>) => {
-      if (undoing) return
+      if (closed || undoing) return
       try {
         const message = JSON.parse(event.data) as ServerMessage
         if (message.tag === 'Update') socketUpdates++
@@ -299,11 +308,17 @@ export const useGame = (gameId: string, spectate = false) => {
   // socket's open handler reconciles again to cover updates missed meanwhile.
   void refresh()
   connect()
+  const onVisibility = () => { if (document.hidden) skipViewTransitions() }
+  document.addEventListener('visibilitychange', onVisibility)
 
   onScopeDispose(() => {
     clearTimeout(statusNoticeTimer)
     closed = true
+    animationEpoch++
+    queue.length = 0
     animationController.abort()
+    skipViewTransitions()
+    document.removeEventListener('visibilitychange', onVisibility)
     window.clearTimeout(reconnect)
     socket?.close()
     cancelHeldRiverSources()

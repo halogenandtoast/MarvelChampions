@@ -1,6 +1,7 @@
 import { nextTick } from 'vue'
 
 type StartViewTransition = (callback: () => void | Promise<void>) => {
+  ready: Promise<void>
   finished: Promise<void>
   updateCallbackDone: Promise<void>
   skipTransition: () => void
@@ -33,7 +34,7 @@ const supported = (): StartViewTransition | null => {
  * while a picker or river banner is open, so its live animation cannot be
  * captured as a frozen rectangle and replayed by the snapshot. */
 export const transitionsOn = () =>
-  supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  document.visibilityState === 'visible' && supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
     && !document.querySelector('dialog:modal, .pick-backdrop, .activation-alert')
 
 export const withViewTransition = async (apply: () => void | Promise<void>): Promise<void> => {
@@ -49,7 +50,14 @@ export const withViewTransition = async (apply: () => void | Promise<void>): Pro
     await apply()
     await nextTick()
   })
+  // A skipped capture (including a tab hidden after starting) rejects ready even
+  // when the state callback and finished both succeed.
+  void transition.ready.catch(() => undefined)
+  const finished = transition.finished.catch(() => undefined)
   active.add(transition)
-  try { await transition.finished.catch(() => undefined) }
+  try {
+    await transition.updateCallbackDone
+    await finished
+  }
   finally { active.delete(transition) }
 }

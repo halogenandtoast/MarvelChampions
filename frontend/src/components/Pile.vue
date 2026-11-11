@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // A deck, face down with its count, or a discard pile, its top card showing; a discard
 // pile opens to show every card in it, where a choice about one of them can be made.
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import { provideChoiceHandler, useChoices } from '../composables/useChoices'
 import { useCards, type Back } from '../cards'
@@ -29,13 +29,14 @@ const { byTarget, choose, remainingPicks, finishChoice } = useChoices()
 const mode = ref<'browse' | 'pick'>('browse')
 const picksLeft = ref<number | null>(null)
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
+const isOpen = ref(false)
 const total = computed(() => (pile ? dealtPileCounts.get(pile) : undefined) ?? count ?? cards?.length ?? 0)
 const emptyDealt = computed(() => pile?.startsWith('dealt-') && total.value === 0)
 const top = computed(() => cards?.[0] ?? null)
 // a choice about a card in it lights the pile, so the player knows to look
 const deckChoice = computed(() => pile ? byTarget.value.get(pile)?.[0] : undefined)
 const active = computed(() => !!deckChoice.value || (cards ?? []).some((c) => byTarget.value.has(c.id)))
-const open = () => {
+const open = async () => {
   if (deckChoice.value) {
     overlay.hide()
     choose(deckChoice.value.index)
@@ -48,12 +49,20 @@ const open = () => {
   mode.value = (cards ?? []).some(card => byTarget.value.has(card.id)) ? 'pick' : 'browse'
   picksLeft.value = mode.value === 'pick' ? remainingPicks.value ?? 1 : null
   skipViewTransitions()
+  isOpen.value = true
+  await nextTick()
   dialog.value?.showModal()
 }
-const onClose = () => { skipViewTransitions(); overlay.hide() }
+const onClose = () => {
+  // A queued close event may arrive after the reader has reopened the dialog.
+  if (dialog.value?.open) return
+  isOpen.value = false
+  skipViewTransitions()
+  overlay.hide()
+}
 const close = () => {
-  onClose()
   dialog.value?.close()
+  onClose()
 }
 const finish = (index: number) => {
   close()
@@ -89,25 +98,27 @@ provideChoiceHandler(index => {
     </button>
     <span class="label">{{ label }}</span>
     <dialog ref="dialog" class="pile-dialog" :data-mode="mode" :data-remaining-picks="picksLeft ?? undefined" @close="onClose" @click="$event.target === dialog && close()">
-      <header>
-        <h2>{{ label }} <small>{{ total }}</small></h2>
-        <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
-      </header>
-      <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t(finishChoice ? 'game.piles.chooseUpToCards' : 'game.piles.chooseCards', { count: picksLeft }) }}</p>
-      <template v-if="groups">
-        <section v-for="group in groups" :key="group.label" class="pile-group">
-          <h3>{{ group.label }} <small>{{ group.cards.length }}</small></h3>
-          <div class="cards">
-            <BoardCard v-for="card in group.cards" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
-          </div>
-        </section>
+      <template v-if="isOpen">
+        <header>
+          <h2>{{ label }} <small>{{ total }}</small></h2>
+          <button type="button" class="btn ghost" @click="close">{{ $t('common.close') }}</button>
+        </header>
+        <p v-if="mode === 'pick' && picksLeft !== null" class="pick-instruction">{{ $t(finishChoice ? 'game.piles.chooseUpToCards' : 'game.piles.chooseCards', { count: picksLeft }) }}</p>
+        <template v-if="groups">
+          <section v-for="group in groups" :key="group.label" class="pile-group">
+            <h3>{{ group.label }} <small>{{ group.cards.length }}</small></h3>
+            <div class="cards">
+              <BoardCard v-for="card in group.cards" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
+            </div>
+          </section>
+        </template>
+        <div v-else class="cards">
+          <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
+        </div>
+        <footer v-if="mode === 'pick' && finishChoice">
+          <button type="button" class="btn" @click="finish(finishChoice.index)">{{ $t('label.done') }}</button>
+        </footer>
       </template>
-      <div v-else class="cards">
-        <BoardCard v-for="card in cards ?? []" :id="card.id" :key="card.id" :code="card.code" :name="card.name" :morph="false" />
-      </div>
-      <footer v-if="mode === 'pick' && finishChoice">
-        <button type="button" class="btn" @click="finish(finishChoice.index)">{{ $t('label.done') }}</button>
-      </footer>
     </dialog>
   </div>
 </template>
