@@ -141,6 +141,41 @@ spec = describe "Protection" do
         villainIsTough <$> getVillain `shouldReturn` False
         damageOf p >>= (`shouldSatisfy` (> 0))
 
+    it "cancels Stampede's stun along with its attack" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        pass
+        behind <- putInHand p "01078"
+        genius <- putInHand p "01089"
+        _ <- stackEncounterDeck [Cards.advance]
+        card <- encounterCard Cards.stampede
+        runNow [RevealEncounterCard p card]
+        choose "play Get Behind Me!" (isPlay behind)
+        choose "pay" (isPayWith genius)
+        chooseIf isFinishPayment
+        choose "take the attack" (isLabel "$label.noDefender")
+        pass
+        damageOf p >>= (`shouldSatisfy` (> 0))
+        isStunned p `shouldReturn` False
+
+    it "still stuns a hero damaged by an uncanceled Stampede attack" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        pass
+        _ <- stackEncounterDeck [Cards.advance]
+        card <- encounterCard Cards.stampede
+        runNow [RevealEncounterCard p card]
+        choose "take the attack" (isLabel "$label.noDefender")
+        pass
+        damageOf p >>= (`shouldSatisfy` (> 0))
+        isStunned p `shouldReturn` True
+
   describe "The Power of Protection (01079)" do
     it "pays 2 for a Protection card" do
       tg <- testGame ["black-panther"]

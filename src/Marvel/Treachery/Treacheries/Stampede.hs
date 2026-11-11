@@ -28,13 +28,16 @@ instance RunMessage Stampede where
         if isHero
           then do
             traverse_ (\villainId -> enemyAttacks villainId identityId) =<< selectOne ActiveVillain
-            pure t
+            cardSpecific attrs "afterAttack" ()
+            pure . Stampede $ attrs & resolverL ?~ identityId
           else pure . Stampede $ attrs & surgeL .~ True
       _ -> Stampede <$> runMessage msg attrs
-    AllyMessage aid (AllyDamaged _ _) -> do
+    CardSpecific (isTarget attrs -> True) "afterAttack" _ ->
+      pure . Stampede $ attrs & resolverL .~ Nothing
+    AllyMessage aid (AllyDamaged _ _) | isJust (treacheryResolver attrs) -> do
       stunAlly aid
       pure t
-    IdentityMessage aid (IdentityDamaged _ _) -> do
+    IdentityMessage aid (IdentityDamaged _ _) | isJust (treacheryResolver attrs) -> do
       stunIdentity aid
       pure t
     _ -> Stampede <$> runMessage msg attrs
