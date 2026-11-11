@@ -48,7 +48,7 @@ export interface RiverSchemer {
   boostCards?: number
 }
 
-const { cards, revealedCards = [], resolvingEvents = [], label = null, reactionCards = [], reactionLabel = null, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
+const { cards, revealedCards = [], resolvingEvents = [], discardedCards = [], label = null, reactionCards = [], reactionLabel = null, activationAlert = null, activationBanner = false, activationKind = 'attack', actions = [], attacker = null, schemer = null, scheme = null, canceledEvent = null, elsewhere, shared = false } = defineProps<{
   activationKind?: 'attack' | 'scheme' | 'playerPhase' | 'villainPhase' | 'stunned' | 'confused'
   schemer?: RiverSchemer | null
   activationBanner?: boolean
@@ -56,6 +56,7 @@ const { cards, revealedCards = [], resolvingEvents = [], label = null, reactionC
   activationAlert?: string | null
   canceledEvent?: { code: string; statuses: readonly ('stunned' | 'confused')[] } | null
   cards: readonly RiverCard[]
+  discardedCards?: readonly RiverCard[]
   resolvingEvents?: readonly RiverCard[]
   revealedCards?: readonly RiverCard[]
   label?: string | null
@@ -84,7 +85,7 @@ const enemy = computed(() => attacker ?? schemer)
 const enemyPower = computed(() => attacker ? attacker.attack : schemer?.scheme)
 const displayedCards = computed(() => cards.filter(card => card.id !== enemy.value?.id && !reactionCards.some(reaction => reaction.id === card.id)))
 const advances = computed(() => !!scheme && scheme.threshold !== null && scheme.from + scheme.amount >= scheme.threshold)
-const hasMainLane = computed(() => !!(cards.length || label || enemy.value || scheme || canceledEvent || (!shared && !reactionLabel && !revealedCards.length && !resolvingEvents.length)))
+const hasMainLane = computed(() => !!(cards.length || label || enemy.value || scheme || canceledEvent || (!shared && !reactionLabel && !revealedCards.length && !resolvingEvents.length && !discardedCards.length)))
 </script>
 
 <template>
@@ -92,19 +93,25 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
     <Transition name="activation" :css="!skipAnimation">
       <div v-if="activationAlert" class="activation-alert" :class="{ 'fight-banner': activationBanner, 'scheme-banner': activationKind === 'scheme' || activationKind === 'playerPhase', 'stunned-banner': activationKind === 'stunned', 'confused-banner': activationKind === 'confused' }" role="status"><span>{{ activationAlert }}</span></div>
     </Transition>
-    <section v-if="reactionLabel" class="lane live reaction" :class="{ compact: hasMainLane || shared || revealedCards.length || resolvingEvents.length }" :aria-label="reactionLabel">
+    <section v-if="reactionLabel" class="lane live reaction" :class="{ compact: hasMainLane || shared || revealedCards.length || resolvingEvents.length || discardedCards.length }" :aria-label="reactionLabel">
       <div class="what"><p>{{ reactionLabel }}</p></div>
       <div class="cards">
         <BoardCard v-for="card in reactionCards" :id="card.id" :key="card.id" :code="card.code ?? ''" :name="card.name || names.name(card.code)" :morph="false" />
       </div>
     </section>
-    <section v-if="resolvingEvents.length" class="lane live resolving" :class="{ compact: hasMainLane || shared || reactionLabel || revealedCards.length }" :aria-label="t('game.river.resolving')">
+    <section v-if="resolvingEvents.length" class="lane live resolving" :class="{ compact: hasMainLane || shared || reactionLabel || revealedCards.length || discardedCards.length }" :aria-label="t('game.river.resolving')">
       <div class="what"><p>{{ t('game.river.resolving') }}</p></div>
       <div class="cards">
         <BoardCard v-for="card in resolvingEvents" :id="card.id" :key="card.id" :code="card.code ?? ''" :name="card.name || names.name(card.code)" :morph="!elsewhere.has(card.id)" />
       </div>
     </section>
-    <section v-if="revealedCards.length" class="lane live revealed" :class="{ compact: hasMainLane || shared || reactionLabel || resolvingEvents.length }" :aria-label="t('game.river.revealed')">
+    <section v-if="discardedCards.length" class="lane live discarded" :class="{ compact: hasMainLane || shared || reactionLabel || resolvingEvents.length || revealedCards.length }" :aria-label="t('game.river.discarded')">
+      <div class="what"><p>{{ t('game.river.discarded') }}</p></div>
+      <div class="cards">
+        <BoardCard v-for="card in discardedCards" :id="card.id" :key="card.id" :code="card.code ?? ''" :name="card.name || names.name(card.code)" :morph="false" />
+      </div>
+    </section>
+    <section v-if="revealedCards.length" class="lane live revealed" :class="{ compact: hasMainLane || shared || reactionLabel || resolvingEvents.length || discardedCards.length }" :aria-label="t('game.river.revealed')">
       <div class="what"><p>{{ t('game.river.revealed') }}</p></div>
       <div class="cards">
         <BoardCard
@@ -217,6 +224,12 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
 }
 .lane.reaction .what { align-self: center; justify-self: start; }
 .lane.reaction .what p { color: var(--interactive); }
+.lane.discarded {
+  --discarded-accent: #d4d7dc;
+  background: color-mix(in oklab, var(--discarded-accent) 8%, var(--ink-2));
+  border-color: color-mix(in oklab, var(--discarded-accent) 55%, var(--ink-2));
+}
+.lane.discarded .what p { color: var(--discarded-accent); }
 .lane.compact { flex: 0 1 auto; grid-template-columns: auto auto; }
 .lane.compact .what { max-width: 110px; }
 .what p {

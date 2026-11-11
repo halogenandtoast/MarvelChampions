@@ -3287,6 +3287,7 @@ test-suite MarvelChampions-test
       Marvel.Rules.DeckBuildingMetadataSpec
       Marvel.Rules.DeckSpec
       Marvel.Rules.DefenseSpec
+      Marvel.Rules.DiscardDisplaySpec
       Marvel.Rules.DividedSpec
       Marvel.Rules.EliminationSpec
       Marvel.Rules.EncounterDeckClickSpec

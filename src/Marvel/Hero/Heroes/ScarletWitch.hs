@@ -57,7 +57,8 @@ instance RunMessage ScarletWitch where
         [] -> changeBoostIconCount card (const 0)
         top : _ -> do
           n <- getBoostIcons top
-          discardTopOfEncounterDeck 1
-          changeBoostIconCount card (const n)
+          discardTopOfEncounterDeckThen 1 $ \_ -> do
+            changeBoostIconCount card (const n)
+            replaceCountedBoostCard card top
       pure h
     _ -> ScarletWitch <$> runMessage msg attrs

@@ -201,6 +201,9 @@ export const useGame = (gameId: string, spectate = false) => {
         return transitionsOn() ? riffle(message.pile) : undefined
       case 'BoostDealt':
         return toRiver({ id: message.cardId, code: null, boost: true }, false)
+      case 'DiscardsShown':
+        await sleep(HOLD_MS)
+        return
       case 'Revealing':
         // an encounter card revealed has the river to itself; a boost turns up beside its fellows
         if (!message.boost) await clearRiver()

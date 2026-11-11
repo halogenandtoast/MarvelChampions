@@ -47,7 +47,7 @@ instance RunMessage Fw53004 where
       chooseOne you [targeting (schemeRef scheme) $
         chooseOne you $
           [labeled "$label.doNotDiscard" $ thwartSchemeAs you scheme attrs (3)]
-          <> [labeled "$label.discardTopEncounterCard" (discardTopOfEncounterDeck 1 >> countFalconIcons attrs "birdBonus" (you, scheme) top) | notNull top, not visible || countNow > 0]
+          <> [labeled "$label.discardTopEncounterCard" (discardTopOfEncounterDeckThen 1 $ \_ -> countFalconIcons attrs "birdBonus" (you, scheme) top) | notNull top, not visible || countNow > 0]
         | scheme <- targets]
       pure a
     WithBoostIcons (isTarget attrs -> True) value counts -> a <$ resolveFalconIcons attrs value counts

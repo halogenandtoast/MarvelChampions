@@ -47,7 +47,7 @@ instance RunMessage Fw53003 where
       chooseOne you [targeting (enemyRef enemy) $
         chooseOne you $
           [labeled "$label.doNotDiscard" $ dealDamage enemy attrs (toDamage (4) $ FromPlayerAttack you)]
-          <> [labeled "$label.discardTopEncounterCard" (discardTopOfEncounterDeck 1 >> countFalconIcons attrs "birdBonus" (you, enemy) top) | notNull top, not visible || countNow > 0]
+          <> [labeled "$label.discardTopEncounterCard" (discardTopOfEncounterDeckThen 1 $ \_ -> countFalconIcons attrs "birdBonus" (you, enemy) top) | notNull top, not visible || countNow > 0]
         | enemy <- targets]
       pure a
     WithBoostIcons (isTarget attrs -> True) value counts -> a <$ resolveFalconIcons attrs value counts

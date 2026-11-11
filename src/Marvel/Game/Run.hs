@@ -57,6 +57,7 @@ stepBegins = \case
 -- | A card dealt into the river, which waits for the board to show what came before it.
 intoRiver :: Message -> Bool
 intoRiver = \case
+  CardSpecific GameRef "discardDisplayReady" _ -> True
   VillainMessage _ (VillainDealtBoost _) -> True
   msg -> isJust $ revealingCard msg
 
@@ -70,6 +71,7 @@ cue = \case
   IdentityMessage ident ShuffleDeck -> Just $ Shuffled ("deck-" <> idText ident)
   IdentityMessage ident (ShuffleIntoIdentityDeck _) -> Just $ Shuffled ("deck-" <> idText ident)
   IdentityMessage ident ShuffleIdentityDiscardBackIntoDeck -> Just $ Shuffled ("deck-" <> idText ident)
+  CardSpecific GameRef "discardDisplayReady" _ -> Just DiscardsShown
   VillainMessage _ (VillainDealtBoost card) -> Just $ BoostDealt (ecCardId card)
   CardSpecific GameRef "flipBoostAfterWould" (fromJSON -> Success (_ :: Bool, card :: EncounterCard, _ :: EnemyId)) ->
     Just $ Revealing (ecCardId card) (toCardCode card) True

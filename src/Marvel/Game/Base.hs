@@ -166,6 +166,16 @@ data FriendlyBoostContext = FriendlyBoostContext
   }
   deriving stock (Show, Eq, Generic)
 
+-- | Public discarded cards an effect is still using, innermost scope first.
+-- Legacy scopes are recovered from old pending callbacks and cleared at completion.
+data DiscardDisplay = DiscardDisplay
+  { discardDisplaySource :: Maybe Target
+  , discardDisplayCards :: [Card]
+  , discardDisplayLegacy :: Bool
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (ToJSON, FromJSON)
+
 data Game = Game
   { gamePrintedPlayerCounts :: [(Target, Int)]
   , gamePlayerCountContext :: Maybe Int
@@ -202,6 +212,8 @@ data Game = Game
   , gameDepth :: Int
   , gameWindows :: [[Window]]
   , gameScenario :: Scenario
+  , gameDiscardDisplays :: Maybe [DiscardDisplay]
+  , gameBoostIconReplacements :: Maybe [(CardId, EncounterCard)]
   , gameFocusedCards :: [Card]
   , gamePrivateCards :: HashMap IdentityId [Card]
   -- ^ cards shown to one player only, as they look at them

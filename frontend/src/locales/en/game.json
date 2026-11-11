@@ -65,6 +65,7 @@
   },
   "river": {
     "resolving": "Resolving",
+    "discarded": "Discarded",
     "stunned": "Stunned: attack canceled",
     "confused": "Confused: thwart canceled",
     "revealed": "Revealed",

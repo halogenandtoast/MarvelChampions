@@ -1912,7 +1912,7 @@ discardTopOfEncounterDeckThen :: (ReverseQueue m) => Natural -> ([EncounterCard]
 discardTopOfEncounterDeckThen n body = do
   cards <- take (fromIntegral n) <$> getEncounterDeck
   discardTopOfEncounterDeck n
-  body cards
+  withDisplayedDiscards Nothing (map EncounterCard cards) (body cards)
 
 -- | The boost icons on the cards are counted, the target told the counts
 -- ('WithBoostIcons') with the value.
@@ -2388,13 +2388,25 @@ revealedAsBoost target = push . RevealedAsBoost target . toEnemy
 
 -- * Telling a card what it asked for
 
+-- | Keep the cards an effect inspects in the river through all of its follow-up
+-- messages and questions. Nested discard effects retain the outer cards.
+withDisplayedDiscards :: ReverseQueue m => Maybe Target -> [Card] -> m () -> m ()
+withDisplayedDiscards _ [] body = body
+withDisplayedDiscards source cards body = do
+  cardSpecific GameRef "beginDiscardDisplay" (source, cards)
+  cardSpecific GameRef "discardDisplayReady" ()
+  body
+  cardSpecific GameRef "endDiscardDisplay" ()
+
 -- | The target is told the cards discarded from the zone.
 withDiscarded :: (ReverseQueue m, IsRef target) => target -> FromZone -> [Card] -> m ()
-withDiscarded target zone = push . WithDiscarded (toTarget target) zone
+withDiscarded target zone cards = withDisplayedDiscards (Just $ toTarget target) cards $
+  push $ WithDiscarded (toTarget target) zone cards
 
 -- | The target is told the card discarded from the zone matched.
 withDiscardedMatch :: (ReverseQueue m, IsRef target) => target -> FromZone -> Card -> m ()
-withDiscardedMatch target zone = push . WithDiscardedMatch (toTarget target) zone
+withDiscardedMatch target zone card = withDisplayedDiscards (Just $ toTarget target) [card] $
+  push $ WithDiscardedMatch (toTarget target) zone card
 
 -- | The target is told the cards chosen from the zone.
 withChosen :: (ReverseQueue m, IsRef target) => target -> FromZone -> [Card] -> m ()
@@ -2585,6 +2597,11 @@ cancelBoostIconsOnCard card = do
     CountBoostIcons target value cards -> [CountBoostIcons target value remaining | let remaining = filter (/= card) cards, notNull remaining]
     WithBoostIcons target value counts -> [WithBoostIcons target value remaining | let remaining = filter ((/= card) . fst) counts, notNull remaining]
     other -> [other]
+
+-- | Record which physical card supplies a replaced count. The pending callback
+-- keeps its original key so subsequent modifiers still adjust that same count.
+replaceCountedBoostCard :: ReverseQueue m => EncounterCard -> EncounterCard -> m ()
+replaceCountedBoostCard original replacement = cardSpecific GameRef "replaceCountedBoostCard" (original, replacement)
 
 -- | The count of the boost icons on the card, as its window answers it ("count ...
 -- instead", "increase or decrease ... for this count"), is changed.

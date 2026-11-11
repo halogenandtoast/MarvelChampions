@@ -123,6 +123,7 @@ data GameView = GameView
   -- ^ The Collection (Infiltrate the Museum): its player and encounter cards, faceup,
   -- the first added first
   , focusedCards :: [CardView]
+  , discardedCards :: [CardView]
   , resolvingEvents :: [CardView]
   , attack :: Maybe AttackView
   -- ^ an enemy's attack, while it is made
@@ -381,7 +382,6 @@ data MinionView = MinionView
   , id :: MinionId
   , code :: CardCode
   , name :: Text
-  , heldCards :: [CardView]
   , facedownCards :: Int
   , attachedToMinion :: Maybe MinionId
   , attachedToEnvironment :: Maybe EnvironmentId
@@ -656,6 +656,7 @@ gameView seesHand g = do
             <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid]
             <> mapMaybe (cardInPlay g) (concatMap revealingSources $ HashMap.elems $ gameQuestion g)
             <> concat [inspectedCards q | (pid, q) <- HashMap.toList (gameQuestion g), seesHand pid]
+      , discardedCards = map cardView displayedDiscards
       , resolvingEvents =
           [ cardView $ toCard (toAttrs event)
           | eid <- reverse $ fromMaybe [] (gameResolvingEvents g)
@@ -694,6 +695,14 @@ gameView seesHand g = do
               }
       }
  where
+  displayedDiscards = L.nubBy (\a b -> toCardId a == toCardId b) $
+    concatMap discardDisplayCards (reverse $ fromMaybe [] $ gameDiscardDisplays g)
+      <> map (EncounterCard . snd) (fromMaybe [] $ gameBoostIconReplacements g)
+  countingDiscard = headMay
+    [ idText (ecCardId counted) | W.Window _ (W.CountingBoostIcons card) <- concat (gameWindows g)
+    , let counted = fromMaybe card $ L.lookup (ecCardId card) (fromMaybe [] $ gameBoostIconReplacements g)
+    , ecCardId counted `elem` map toCardId displayedDiscards
+    ]
   -- Flipped cards are public as soon as their interrupt window opens, before
   -- RevealBoostCard registers them. Retain them through nested response windows.
   faceupBoostCards = L.nubBy (\a b -> ecCardId a == ecCardId b) $
@@ -789,7 +798,7 @@ gameView seesHand g = do
           | otherwise = choice
         view = raw
           { choices = map onResource raw.choices
-          , source = raw.source <|> (if raw.prompt == Just "$label.respond"
+          , source = raw.source <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
               then idText . ecCardId <$> headMay pendingBoostCards else Nothing)
           }
      in if isJust (gameCompetition g) && not (seesHand asked)

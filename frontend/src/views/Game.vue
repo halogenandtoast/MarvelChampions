@@ -165,7 +165,7 @@ const riverCards = computed<RiverCard[]>(() => {
     const index = boostOrder.value.indexOf(card.id)
     return index < 0 ? -1 : index
   }
-  const resolving = new Set((game.value?.resolvingEvents ?? []).map(card => card.id))
+  const resolving = new Set([...(game.value?.resolvingEvents ?? []), ...(game.value?.discardedCards ?? [])].map(card => card.id))
   return [...cards.values()].filter(card => !resolving.has(card.id)).sort((a, b) => rank(a) - rank(b))
 })
 const activationCards = computed(() => riverCards.value.filter(card => card.boost || card.id === attacker.value?.id || card.id === schemer.value?.id))
@@ -258,6 +258,7 @@ const onBoard = computed(() => {
   add(g.collection ?? [])
   add(riverCards.value)
   add(g.resolvingEvents)
+  add(g.discardedCards)
   add(reactionCards.value)
   for (const p of shownSeats.value) {
     ids.add(`dealt-${p.id}`)
@@ -330,6 +331,7 @@ const things = computed(() => {
   add(g.collection ?? [])
   add(g.focusedCards)
   add(g.resolvingEvents)
+  add(g.discardedCards)
   if (g.activeCost) {
     add(g.activeCost.card ? [g.activeCost.card] : [])
     add(g.activeCost.spent)
@@ -484,7 +486,7 @@ const resetGame = () => restartDialog.value?.open()
             <MissionArea v-if="game.mission" :mission="game.mission" />
           </div>
 
-          <River class="river" :actions="riverActions" @choose="choose" :activation-alert="activationAlert" :activation-banner="activationBanner" :activation-kind="activationKind" :cards="activationCards" :revealed-cards="revealedCards" :resolving-events="game.resolvingEvents ?? []" :reaction-cards="reactionCards" :reaction-label="reactionLabel" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :schemer="schemer" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
+          <River class="river" :actions="riverActions" @choose="choose" :activation-alert="activationAlert" :activation-banner="activationBanner" :activation-kind="activationKind" :cards="activationCards" :revealed-cards="revealedCards" :resolving-events="game.resolvingEvents ?? []" :discarded-cards="game.discardedCards ?? []" :reaction-cards="reactionCards" :reaction-label="reactionLabel" :canceled-event="canceledEvent" :label="riverLabel" :attacker="attacker" :schemer="schemer" :scheme="riverScheme" :elsewhere="elsewhere" :shared="!!game.activeCost">
             <PayingTray v-if="game.activeCost" :cost="game.activeCost" :things="things" :player="playerName[game.activeCost.player] ?? null" :elsewhere="elsewhere" :declares="declares" @choose="choose" />
           </River>
 

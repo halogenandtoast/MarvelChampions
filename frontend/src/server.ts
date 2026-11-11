@@ -367,6 +367,7 @@ export interface GameView {
   /** The Collection (Infiltrate the Museum): player and encounter cards, faceup, the first added first */
   collection?: CardView[]
   focusedCards: CardView[]
+  discardedCards?: CardView[]
   resolvingEvents?: CardView[]
   /** an enemy's attack, while it is made: ids of who attacks and who is attacked */
   attack?: { attacker: string; target: string } | null
@@ -419,6 +420,7 @@ export type ServerMessage =
   | { tag: 'Shuffled'; pile: string }
   | { tag: 'BoostDealt'; cardId: string }
   | { tag: 'Revealing'; cardId: string; code: string; boost: boolean }
+  | { tag: 'DiscardsShown' }
   | { tag: 'EventCanceled'; code: string; statuses: ('stunned' | 'confused')[] }
 
 export interface SeatSummary {

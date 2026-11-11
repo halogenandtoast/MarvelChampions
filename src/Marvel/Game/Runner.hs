@@ -147,6 +147,8 @@ import Marvel.Window qualified as W
 
 runPreGameMessage :: (HasGame m, HasQueue m, MonadThrow m, MonadRandom m) => Message -> Game -> m Game
 runPreGameMessage msg g = runQueueT $ case msg of
+  WithBoostIcons _ _ counts ->
+    pure g {gameBoostIconReplacements = filter (\(cid, _) -> cid `notElem` map (ecCardId . fst) counts) <$> gameBoostIconReplacements g}
   CheckWindows windows -> do
     startedBlanking <- attackBlankingStarts windows
     let pending = [(aid,enemy) | W.Window W.When (W.DefeatedAlly aid (Just enemy)) <- windows]
@@ -323,8 +325,22 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     AttachmentRef ident -> g & entitiesL . attachmentsL . ix ident %~ debugPatch "attachment" values
     EnvironmentRef ident -> g & entitiesL . environmentsL . ix ident %~ debugPatch "environment" values
     _ -> g
+  CardSpecific GameRef "beginDiscardDisplay" (fromJSON -> Success (source, cards)) ->
+    pure g {gameDiscardDisplays = Just $ DiscardDisplay source cards False : fromMaybe [] gameDiscardDisplays}
+  CardSpecific GameRef "replaceCountedBoostCard" (fromJSON -> Success (original, replacement)) ->
+    pure g {gameBoostIconReplacements = Just $ (ecCardId original, replacement) : filter ((/= ecCardId original) . fst) (fromMaybe [] gameBoostIconReplacements)}
+  CardSpecific GameRef "discardDisplayReady" _ -> pure g
+  CardSpecific GameRef "endDiscardDisplay" _ ->
+    pure g {gameDiscardDisplays = Just $ case fromMaybe [] gameDiscardDisplays of
+      child : parent : rest -> parent {discardDisplayCards = nubBy (\a b -> toCardId a == toCardId b) (discardDisplayCards parent <> discardDisplayCards child)} : rest
+      _ -> []}
+  IdentityMessage _ PlayerTurnOption ->
+    pure g {gameDiscardDisplays = filter (not . discardDisplayLegacy) <$> gameDiscardDisplays}
   EventMessage eid ResolvedEvent ->
-    pure g {gameResolvingEvents = Just $ filter (/= eid) $ fromMaybe [] gameResolvingEvents}
+    pure g
+      { gameResolvingEvents = Just $ filter (/= eid) $ fromMaybe [] gameResolvingEvents
+      , gameDiscardDisplays = filter (\frame -> discardDisplaySource frame /= Just (EventRef eid)) <$> gameDiscardDisplays
+      }
   CardSpecific GameRef "resolveKeywordRetaliate" (fromJSON -> Success (enemy,attacker)) -> do
     amount <- retaliationAmount enemy
     when (amount > 0) $ retaliate (characterRef enemy) attacker amount
@@ -2324,7 +2340,8 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
         eventOwnedBy (toId event) (fromMaybe ident $ pcOwner card)
         eventStep (toId event) (EventPaidWith payment)
         played When
-        resolveEventEffect ident (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
+        withDisplayedDiscards (Just $ EventRef $ toId event) (paymentEncounterDiscards payment <> paymentDiscards payment) $
+          resolveEventEffect ident (toId event) (PlayedEvent ident payment (W.windowType <$> mWindow))
         eventStep (toId event) ResolvedEvent
         played After
         reserved <- echoReservedReplay ident
@@ -3007,7 +3024,9 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
           pure $ g & (entitiesL . minionsL %~ deleteMap mid) & (entitiesL . alliesL %~ insertMap aid ally)
             & \game -> game {gameCharacterThreat=[(if character == MinionCharacter mid then AllyCharacter aid else character,n) | (character,n) <- game.gameCharacterThreat]}
         _ -> pure g
-  EndCheckWindows -> pure g
+  EndCheckWindows -> pure g {gameDiscardDisplays =
+    if null gameWindows && null (fromMaybe [] gameResolvingEvents)
+      then filter (not . discardDisplayLegacy) <$> gameDiscardDisplays else gameDiscardDisplays}
   EntersPlayUnlessUnique ident revealed target rest -> do
     let def = case target of
           MinionRef k -> getCardDef <$> lookup k (gameMinions g)
