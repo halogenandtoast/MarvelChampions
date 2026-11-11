@@ -76,3 +76,57 @@ test('refresh fits cards before paint and clips hand overhang without a scrollba
 
   }
 })
+
+test('updating preserves facedown shading and clips card snapshots at the player boundary', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('marvel-session', JSON.stringify({ token: 'test', user: { id: 1, username: 'Tester' } })))
+  const data = structuredClone(snapshot)
+  Object.assign(data.game.players[0], { upgrades: [{ id: 'inactive-form', code: '01087', name: 'Inactive form', facedown: true }] })
+  await page.route('**/api/games/footer', route => route.fulfill({ json: data }))
+  await page.route('**/api/scenarios', route => route.fulfill({ json: { scenarios: [], modulars: [] } }))
+  await page.route('**/api/whoami', route => route.fulfill({ json: { id: 1, username: 'Tester' } }))
+  await page.routeWebSocket('**/api/games/footer?*', () => {})
+  await page.goto('/#/games/footer')
+  const card = page.locator('[data-card-id="inactive-form"]')
+  await expect(card).toBeVisible()
+  await page.waitForFunction(() => [...document.querySelectorAll('img')].every(image => image.complete))
+  await page.evaluate(() => document.fonts.ready)
+  const bounds = await page.evaluate(() => {
+    const area = document.querySelector('.player-half')!.getBoundingClientRect()
+    const card = document.querySelector('[data-card-id="inactive-form"] .card-face')!.getBoundingClientRect()
+    return {
+      shade: { x: Math.floor(card.x + card.width / 2 - 10), y: Math.floor(card.y + card.height / 2 - 10), width: 20, height: 20 },
+      below: { x: Math.ceil(area.x), y: Math.ceil(area.bottom) + 1, width: Math.floor(area.width) - 2, height: 8 },
+    }
+  })
+  const shadeBefore = await page.screenshot({ clip: bounds.shade })
+  const belowBefore = await page.screenshot({ clip: bounds.below })
+  await page.evaluate(async () => {
+    const transition = document.startViewTransition(() => { document.querySelector<HTMLElement>('.player-area')!.dataset.update = '1' })
+    await transition.ready
+    for (const animation of document.getAnimations()) {
+      animation.pause()
+      animation.currentTime = 140
+    }
+  })
+  expect(await card.locator('.card-face').evaluate(element => getComputedStyle(element).filter)).toContain('brightness(0.55)')
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement, '::view-transition-group-children(player-half)').overflow)).toBe('clip')
+  const shadeDuring = await page.screenshot({ clip: bounds.shade })
+  const belowDuring = await page.screenshot({ clip: bounds.below })
+  const difference = async (before: Buffer, after: Buffer) => page.evaluate(async ([a, b]) => {
+    const pixels = async (data: string) => {
+      const image = new Image()
+      image.src = `data:image/png;base64,${data}`
+      await image.decode()
+      const canvas = document.createElement('canvas')
+      canvas.width = image.width; canvas.height = image.height
+      const context = canvas.getContext('2d')!
+      context.drawImage(image, 0, 0)
+      return context.getImageData(0, 0, image.width, image.height).data
+    }
+    const [left, right] = await Promise.all([pixels(a), pixels(b)])
+    return left.reduce((sum, value, n) => sum + Math.abs(value - right[n]!), 0) / left.length
+  }, [before.toString('base64'), after.toString('base64')])
+  expect(await difference(shadeBefore, shadeDuring)).toBeLessThan(2)
+  expect(await difference(belowBefore, belowDuring)).toBeLessThan(0.5)
+  await page.evaluate(() => { for (const animation of document.getAnimations()) animation.finish() })
+})

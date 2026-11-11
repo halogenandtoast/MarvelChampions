@@ -353,6 +353,9 @@ select {
 .stat-rec { --stat-bg: color-mix(in oklab, var(--stat-rec) 62%, black); }
 :is(.stat-thw, .stat-sch, .stat-atk, .stat-def, .stat-rec) { --stat-fg: #fff; --stat-label: rgb(255 255 255 / 0.8); }
 
+/* Nested card snapshots must obey the same bounds as the player area. */
+::view-transition-group-children(player-half) { overflow: clip; border-radius: 14px; }
+
 /* Cards morph between zones as the state changes; a card from a deck turns face up. */
 ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.28s; }
 @keyframes deal-turn-away { from { transform: rotateY(0deg); } 50%, to { transform: rotateY(90deg); } }

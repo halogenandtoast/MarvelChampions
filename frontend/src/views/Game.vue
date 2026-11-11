@@ -618,7 +618,7 @@ const resetGame = () => restartDialog.value?.open()
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
 /* the hand floats over the foot of the player area */
-.board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; overflow: clip; }
+.board > .player-half { display: flex; flex-direction: column; min-height: 0; position: relative; overflow: clip; border-radius: 14px; view-transition-name: player-half; view-transition-group: contain; }
 .floating-hand { position: absolute; z-index: 0; inset: auto 0 0; pointer-events: none; }
 .floating-hand :deep(.in-hand) { pointer-events: auto; }
 /* beneath what you are asked, but a card pointed at comes in front of it */
@@ -640,7 +640,7 @@ const resetGame = () => restartDialog.value?.open()
   .layout { padding: 8px; gap: 8px; }
   .board { display: flex; flex-direction: column; gap: 12px; scrollbar-gutter: auto; padding: 2px 2px 16px; }
   .board > .half, .player-half > .half { flex: none; overflow: visible; min-height: auto; }
-  .board > .player-half { flex: none; gap: 12px; overflow: visible; }
+  .board > .player-half { flex: none; gap: 12px; overflow: visible; view-transition-name: none; }
   .floating-hand { position: relative; inset: auto; pointer-events: auto; }
   .side { max-height: 32dvh; overflow: auto; }
   .mobile-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 6px 12px; border-bottom: 1px solid var(--line); }

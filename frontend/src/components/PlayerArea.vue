@@ -247,7 +247,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
     linear-gradient(100deg, rgb(91 141 184 / 0.12), transparent 50%),
     linear-gradient(var(--ink-2), var(--ink-2));
   border: 1px solid rgb(91 141 184 / 0.2);
-  overflow-x: auto;
+  overflow: clip;
 }
 .player-tableau { display: flex; align-items: flex-start; gap: 14px; width: max-content; }
 .player-tableau > .zone, .player-tableau > .zone.allies { flex: none; }
@@ -282,7 +282,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   flex: 0 1 auto;
 }
 /* an energy form she is not in: turned down, still hers to read */
-.facedown-upgrade { opacity: 0.55; filter: grayscale(0.6); }
+/* Keep the shade inside the card snapshot, rather than on its uncaptured holder. */
+.facedown-upgrade :deep(.card-face) { filter: grayscale(0.6) brightness(0.55); }
 .zone-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .cards { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 .zone.empty .cards {

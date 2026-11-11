@@ -42,7 +42,7 @@ export const useGame = (gameId: string, spectate = false) => {
   const activationKind = ref<'attack' | 'scheme' | 'playerPhase' | 'villainPhase' | 'stunned' | 'confused'>('attack')
   const cards = useCards()
   const hasOlder = ref(false)
-  const queue: ServerMessage[] = []
+  const queue: (ServerMessage | { tag: 'Snapshot'; contents: GameData })[] = []
   let draining = false
   let socket: WebSocket | null = null
   let reconnect: number | undefined
@@ -151,7 +151,7 @@ export const useGame = (gameId: string, spectate = false) => {
   }
 
   // Log entries arrive while the server works; the state that follows is applied in order.
-  const apply = async (message: ServerMessage) => {
+  const apply = async (message: ServerMessage | { tag: 'Snapshot'; contents: GameData }) => {
     switch (message.tag) {
       case 'EventCanceled':
         await clearRiver()
@@ -160,6 +160,8 @@ export const useGame = (gameId: string, spectate = false) => {
           showStatusNotice(t(`game.river.${status}`), status)
         }
         return
+      case 'Snapshot':
+        return update(message.contents, false)
       case 'Update':
         return update(message.contents)
       case 'Logged':
@@ -239,7 +241,7 @@ export const useGame = (gameId: string, spectate = false) => {
       // A broadcast received during this request is newer than its snapshot.
       // Applying the snapshot afterwards can rewind a deal and replay it.
       if (closed || epoch !== animationEpoch || socketUpdates !== updatesAtStart) return
-      queue.push({ tag: 'Update', contents })
+      queue.push({ tag: 'Snapshot', contents })
       void drain()
     } else if (response) {
       error.value = (await response.text()) || response.statusText
