@@ -68,6 +68,12 @@ export const useCardStore = defineStore('cards', () => {
     return index
   })
   const cardByCode = (code: string | null | undefined): Card | undefined => (code ? byCode.value.get(code) : undefined)
+  const bySet = computed(() => {
+    const index = new Map<string, Card>()
+    for (const card of all.value) if (card.setCode && !index.has(card.setCode)) index.set(card.setCode, card)
+    return index
+  })
+  const cardBySet = (code: string): Card | undefined => bySet.value.get(code)
 
   /** A card's errata, by its own code or the face it was printed with (01029a beside 01029). */
   const errataFor = (code: string | null | undefined): Errata | undefined => {
@@ -125,5 +131,5 @@ export const useCardStore = defineStore('cards', () => {
     else list.splice(i, 1)
   }
 
-  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, errataFor, thirdFace, results, facets, hasFilters, filterCount, resetFilters, toggle }
+  return { all, cards, packs, state, error, filters, sortField, sortDescending, showHidden, load, cardByCode, cardBySet, errataFor, thirdFace, results, facets, hasFilters, filterCount, resetFilters, toggle }
 })

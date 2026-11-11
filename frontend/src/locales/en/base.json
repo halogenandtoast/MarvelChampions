@@ -76,6 +76,7 @@
     "Expert": "Expert"
   },
   "home": {
+    "modularSets": "Modular sets: {sets}",
     "waitingForPlayers": "Waiting for players",
     "yourGames": "Your games",
     "games": "Games",

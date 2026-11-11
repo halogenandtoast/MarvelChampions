@@ -20,6 +20,7 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (mfilter)
 import Control.Monad.Random (evalRand, mkStdGen, randomIO, randomRIO)
 import Data.Aeson (Result (..))
+import Data.Aeson.Types (Parser)
 import Data.Aeson.Diff qualified as Diff
 import Data.Char (isAlphaNum)
 import Data.HashMap.Strict qualified as HashMap
@@ -38,8 +39,8 @@ import Marvel.Card.Def (cdAspect, cdName)
 import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Card.Def qualified as CardDef
 import Marvel.Decklist
-import Marvel.EncounterSet (modularSets)
-import Marvel.Entity (toAttrs,toId)
+import Marvel.EncounterSet (EncounterSet, modularSets)
+import Marvel.Entity (toId)
 import Marvel.Frontend (FrontendMessage (..))
 import Marvel.Game
 import Marvel.Game.Public (publicGameFor)
@@ -47,8 +48,8 @@ import Marvel.Game.Refresh (refreshTurnQuestions)
 import Marvel.Game.Run (answerQuestion, runDebug, runGame)
 import Marvel.I18n (ikey, ikeyWith, textVar)
 import Marvel.Id (IdentityId)
-import Marvel.Identity (identityDamage, setName)
-import Marvel.Identity.Types (Attrs (..))
+import Marvel.Identity (setName)
+import Marvel.Identity.Types (PlayerIdentitySide (..))
 import Marvel.Log (chat)
 import Marvel.Log.Entry
 import Marvel.Message (FinishedStatus (..), Message (StartGame))
@@ -182,6 +183,7 @@ data GameSummary = GameSummary
   , scenario :: Text
   , villain :: CardCode
   , difficulty :: Text
+  , modulars :: [EncounterSet]
   , round :: Int
   , phase :: Phase
   , outcome :: Maybe FinishedStatus
@@ -464,71 +466,143 @@ villainOf :: ScenarioSetup -> (Text, CardCode)
 -- a scenario of several villains (Breakout) is set up by, and named for, its main scheme
 villainOf setup = (fromMaybe (maybe (unCardCode setup.scenarioCode) (display . cdName) (HashMap.lookup setup.scenarioCode allVillainsMap <|> HashMap.lookup (toBaseCardCode setup.scenarioCode) MainSchemes.allMainSchemes)) (lookup setup.scenarioCode [("60121a","Art Museum Heist"),("60128a","The Getaway"),("60134a","Protection Racket"),("60142a","The Raft Breakout"),("60151a","Stop the Presses!"),("60161a","Kingpin"),("65001a","Shadows in the Night"),("65038a","Shadow Labyrinth"),("65060a","Heart of Shadow")]), setup.scenarioCode)
 
+data SummarySource = SummarySource
+  { summaryId :: MarvelGameId
+  , summaryName :: Text
+  , summaryPlayerName :: Text
+  , summaryCampaignId :: Maybe MarvelCampaignId
+  , summaryScenario :: Value
+  , summaryDeck :: Maybe Value
+  , summaryWithFriends :: Bool
+  , summarySnapshot :: Value
+  }
+
+summarySource :: Entity MarvelGame -> SummarySource
+summarySource (Entity gid row) = SummarySource gid row.marvelGameName row.marvelGamePlayerName row.marvelGameCampaignId row.marvelGameScenario row.marvelGameDeck row.marvelGameWithFriends row.marvelGameCurrentData
+
 summaries :: MonadIO m => [Entity MarvelGame] -> ReaderT SqlBackend m [GameSummary]
-summaries games = do
-  seats <- selectList [MarvelSeatGameId <-. [gid | Entity gid row <- games, row.marvelGameWithFriends]] [Asc MarvelSeatPosition]
+summaries = summarizeSources . map summarySource
+
+summarizeSources :: MonadIO m => [SummarySource] -> ReaderT SqlBackend m [GameSummary]
+summarizeSources games = do
+  seats <- selectList [MarvelSeatGameId <-. [game.summaryId | game <- games, game.summaryWithFriends]] [Asc MarvelSeatPosition]
   let decks = Map.fromListWith (flip (<>)) [(seat.marvelSeatGameId, [seat.marvelSeatDeck]) | Entity _ seat <- seats]
-  pure $ mapMaybe (\game -> summary (Map.findWithDefault [] (entityKey game) decks) game) games
+  pure $ mapMaybe (\game -> summarizeSource (Map.findWithDefault [] game.summaryId decks) game) games
+
+-- Listing games must not decode every card, ability and window in each saved engine.
+-- In particular, Game's compatibility reader walks all nested cards to resolve costs.
+data SummaryIdentity = SummaryIdentity Text CardCode Int
+
+instance FromJSON SummaryIdentity where
+  parseJSON = withObject "SummaryIdentity" $ \o -> do
+    name <- o .: "name"
+    damage <- o .: "damage"
+    side <- o .: "side"
+    sides <- o .: "sides" :: Parser [(Text, Value)]
+    value <- maybe (fail "Missing identity side") pure $ lookup side sides
+    identity <- parseJSON value
+    let code = case identity of
+          HeroSide hero -> CardDef.cdCardCode $ CardDef.getCardDef hero
+          AlterEgoSide alterEgo -> CardDef.cdCardCode $ CardDef.getCardDef alterEgo
+    pure $ SummaryIdentity name code damage
+
+data SummarySnapshot = SummarySnapshot Int Phase GameState [IdentityId] (HashMap IdentityId SummaryIdentity) (HashMap IdentityId SummaryIdentity)
+
+instance FromJSON SummarySnapshot where
+  parseJSON = withObject "SummarySnapshot" $ \o -> do
+    let players = withObject "SummaryEntities" $ \entities -> entities .:? "entitiesPlayers" .!= mempty
+    SummarySnapshot
+      <$> o .: "round"
+      <*> o .: "phase"
+      <*> o .: "state"
+      <*> o .: "seats"
+      <*> (o .: "entities" >>= players)
+      <*> (o .:? "removedEntities" .!= object [] >>= players)
 
 summary :: [Maybe Value] -> Entity MarvelGame -> Maybe GameSummary
-summary friendDecks (Entity gid row) = do
-  setup <- case fromJSON row.marvelGameScenario of
+summary friendDecks = summarizeSource friendDecks . summarySource
+
+summarizeSource :: [Maybe Value] -> SummarySource -> Maybe GameSummary
+summarizeSource friendDecks source = do
+  setup <- case fromJSON source.summaryScenario of
     Success s -> Just s
     Error _ -> Nothing
   let (villainName, villainCode) = villainOf setup
       base =
         GameSummary
-          { id = gid
-          , name = row.marvelGameName
-          , playerName = row.marvelGamePlayerName
-          , campaignId = row.marvelGameCampaignId
+          { id = source.summaryId
+          , name = source.summaryName
+          , playerName = source.summaryPlayerName
+          , campaignId = source.summaryCampaignId
           , scenario = villainName
           , villain = villainCode
           , difficulty = tshow setup.difficulty
+          , modulars = setup.modulars
           , round = 0
           , phase = PlayerPhase
           , outcome = Nothing
           , waiting = True
           , seats = []
           }
-  if awaitingPlayers row
+  if source.summarySnapshot == Null
     then pure base
-    else case fromJSON row.marvelGameCurrentData of
+    else case fromJSON source.summarySnapshot of
       Error _ -> Nothing
-      Success (g :: Game) ->
+      Success (SummarySnapshot round phase state seatOrder players removedPlayers) ->
         Just
           base
-            { round = gameRound g
-            , phase = gamePhase g
-            , outcome = case gameState g of
+            { round = round
+            , phase = phase
+            , outcome = case state of
                 Finished status -> Just status
                 _ -> Nothing
             , waiting = False
             , seats =
-                [ case HashMap.lookup pid (gamePlayers g) of
-                    Just p -> SeatSummary (toAttrs p).playerIdentityName (CardDef.cdCardCode $ CardDef.getCardDef p) (fromIntegral $ identityDamage p) False
-                    Nothing -> case HashMap.lookup pid (entitiesPlayers $ gameRemovedEntities g) of
-                      Just p -> SeatSummary (toAttrs p).playerIdentityName (CardDef.cdCardCode $ CardDef.getCardDef p) (fromIntegral $ identityDamage p) True
-                      Nothing -> SeatSummary row.marvelGamePlayerName (fromMaybe "" hero) 0 True
-                | (pid, hero) <- zip (gameSeats g) (map (Just . (.hero)) dealt <> repeat Nothing)
+                [ case HashMap.lookup pid players of
+                    Just (SummaryIdentity name identity damage) -> SeatSummary name identity damage False
+                    Nothing -> case HashMap.lookup pid removedPlayers of
+                      Just (SummaryIdentity name identity damage) -> SeatSummary name identity damage True
+                      Nothing -> SeatSummary source.summaryPlayerName (fromMaybe "" hero) 0 True
+                | (pid, hero) <- zip seatOrder (map (Just . (.hero)) dealt <> repeat Nothing)
                 ]
             }
  where
   -- Older saves discarded eliminated identities; their original decks still name them.
   dealt :: [DeckList]
-  dealt = case if row.marvelGameWithFriends
+  dealt = case if source.summaryWithFriends
     then traverse (maybe (Error "missing deck") fromJSON) friendDecks
-    else maybe (Error "missing decks") fromJSON row.marvelGameDeck of
+    else maybe (Error "missing decks") fromJSON source.summaryDeck of
       Success decks -> decks
       Error _ -> []
 
 getGamesR :: Handler Value
 getGamesR = do
   userId <- requireUserId
-  games <- runDB do
-    seatedAt <- map ((.marvelSeatGameId) . entityVal) <$> selectList [MarvelSeatUserId ==. userId] []
-    selectList ([MarvelGameUserId ==. userId] ||. [MarvelGameId <-. seatedAt]) [Desc MarvelGameUpdatedAt]
-  toJSON <$> runDB (summaries games)
+  -- Project in Postgres too: fetching every complete JSON snapshot still spends
+  -- time transferring and decoding decks and encounter cards the list never uses.
+  games <- runDB $ rawSql
+    "SELECT g.id, g.name, g.player_name, g.campaign_id, g.scenario, g.deck, g.with_friends, \
+    \CASE WHEN g.current_data = 'null'::jsonb THEN g.current_data ELSE \
+    \jsonb_build_object('round', snapshot.round, 'phase', snapshot.phase, \
+    \'state', snapshot.state, 'seats', snapshot.seats) || \
+    \(SELECT jsonb_object_agg(part.name, jsonb_build_object('entitiesPlayers', \
+    \  (SELECT COALESCE(jsonb_object_agg(player.key, jsonb_build_object( \
+    \    'name', player.value->'name', 'damage', player.value->'damage', \
+    \    'side', player.value->'side', 'sides', player.value->'sides')), '{}'::jsonb) \
+    \   FROM jsonb_each(CASE WHEN jsonb_typeof(part.data->'entitiesPlayers') = 'object' \
+    \     THEN part.data->'entitiesPlayers' ELSE '{}'::jsonb END) AS player))) \
+    \ FROM (VALUES ('entities', snapshot.entities), \
+    \              ('removedEntities', snapshot.\"removedEntities\")) AS part(name, data)) END \
+    \FROM marvel_games g CROSS JOIN LATERAL jsonb_to_record( \
+    \ CASE WHEN jsonb_typeof(g.current_data) = 'object' THEN g.current_data ELSE '{}'::jsonb END) \
+    \AS snapshot(round jsonb, phase jsonb, state jsonb, seats jsonb, entities jsonb, \"removedEntities\" jsonb) \
+    \WHERE g.user_id = ? OR EXISTS \
+    \(SELECT 1 FROM marvel_seats s WHERE s.game_id = g.id AND s.user_id = ?) \
+    \ORDER BY g.updated_at DESC"
+    [toPersistValue userId, toPersistValue userId]
+  let sources = [SummarySource gid name playerName campaignId scenario deck withFriends snapshot
+        | (Single gid, Single name, Single playerName, Single campaignId, Single scenario, Single deck, Single withFriends, Single snapshot) <- games]
+  toJSON <$> runDB (summarizeSources sources)
 
 -- | A starter, one of your decks, or a deck loaded for this game alone and not kept.
 data DeckChoice = StarterDeck Text | ImportedDeck MarvelDeckId | ListedDeck DeckList

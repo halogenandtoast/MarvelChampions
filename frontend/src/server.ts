@@ -441,6 +441,8 @@ export interface GameSummary {
   /** The villain's name. */
   scenario: string
   villain: string
+  /** Included encounter sets, using the engine's names; absent in older exports. */
+  modulars?: string[]
   difficulty: 'Normal' | 'Expert' | string
   round: number
   phase: string

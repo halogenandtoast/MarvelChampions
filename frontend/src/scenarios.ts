@@ -5,6 +5,7 @@ import { computed, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCards } from './cards'
 import type { ScenarioOption } from './server'
+import type { Card } from '@browser/types/card'
 
 // Releases, scenarios and modular sets are named by the card data, so a new box needs only
 // its cards: a scenario by its villain's card, a modular set by any card in it.
@@ -13,6 +14,8 @@ const NO_RELEASE: Release = { code: '', name: '', order: Infinity }
 // the engine's BombScare is MarvelCDB's bomb_scare, save for the sets MarvelCDB abbreviates
 const SET_CODES: Record<string, string> = { EnchantressScenario: 'enchantress_villain', ExtremeRiskSet: 'extreme_risk', GrowingStrongSet: 'growing_strong', TechnoSet: 'techno', WhiteoutSet: 'whiteout', AosAimAbduction: 'a.i.m._abduction', AosAimScience: 'a.i.m._science', AosBatrocsBrigade: 'batrocs_brigade', AosScientistSupreme: 'scientist_supreme', AosGravitationalPull: 'gravitational_pull', AosHardSound: 'hard_sound', AosPaleLittleSpider: 'pale_little_spider', AosPowerOfTheAtom: 'power_of_the_atom', AosSupersonic: 'supersonic', AosTheLeaper: 'the_leaper', SauronSet: 'sauron', ArcadeSet: 'arcade', CrazyGangSet: 'crazy_gang', HellfireSet: 'hellfire', StandardIII: 'standard_iii', AoaUnus: 'unus', AoaInfinites: 'infinites', AoaDystopianNightmare: 'dystopian_nightmare', AoaFourHorsemen: 'four_horsemen', AoaHounds: 'hounds', AoaApocalypse: 'apocalypse', AoaPrelates: 'prelates', AoaDarkRiders: 'dark_riders', AoaDarkBeast: 'dark_beast', AoaBlueMoon: 'blue_moon', AoaGenosha: 'genosha', AoaSavageLand: 'savage_land', AoaEnSabahNur: 'en_sabah_nur', AoaCelestialTech: 'celestial_tech', AoaClanAkkaba: 'clan_akkaba', CrossfiresCrew: 'crossfire_crew', MisterHydeSet: 'mister_hyde', WreckingCrewModular: 'wrecking_crew_modular', StandardII: 'standard_ii', ExpertII: 'expert_ii', ShadowKingSet: 'shadow_king', ZzzaxSet: 'zzzax', BlackOrderSet: 'black_order', ExperimentalWeapons: 'exper_weapon', WeaponMaster: 'weap_master', MasterOfTime: 'mot', ExpertKang: 'exp_kang', ExpertCampaign: 'expcamp', KreeMilitants: 'kree_militant', ShieldTech: 'shield_tech', IronSpiderSinisterSix: 'ironspider_sinister', LadyDeathstrikeSet: 'deathstrike', ExodusSet: 'exodus', ReaversSet: 'reavers', SciFi: 'sci-fi', LongshotSet: 'longshot', NeMarauders: 'marauders', NeJuggernaut: 'juggernaut', NeStryfe: 'stryfe', HopeSummersSet: 'hope_summers', FlightSet: 'flight', SuperStrengthSet: 'super_strength', TelepathySet: 'telepathy', NextEvolutionCampaign: 'next_evol_campaign' }
 const setCode = (set: string) => SET_CODES[set] ?? set.replace(/^Cw/, '').replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+export const modularSetName = (set: string, cardBySet: (code: string) => Card | undefined) =>
+  cardBySet(setCode(set))?.setName ?? set
 // Product rulebooks, paired with the summaries under newGame.modularRules.
 // The scenario's named recommendations remain the server's printed setup contents.
 const RULEBOOK_ROOT = assetUrl('/rulebooks/')
@@ -67,11 +70,6 @@ export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
 
   const releaseOf = (code: string | null | undefined, card = cards.card(code)): Release =>
     card ? { code: card.packCode, name: card.packName ?? card.packCode, order: card.packOrder ?? Infinity } : NO_RELEASE
-  const setCards = computed(() => {
-    const bySet = new Map<string, (typeof cards.store.all)[number]>()
-    for (const c of cards.store.all) if (c.setCode && !bySet.has(c.setCode)) bySet.set(c.setCode, c)
-    return bySet
-  })
   const modularRules = (code: string) => {
     const release = releaseOf(code)
     return {
@@ -81,8 +79,8 @@ export const useScenarios = (scenarios: Ref<ScenarioOption[]>) => {
       usesModulars: release.code !== 'twc',
     }
   }
-  const modularName = (set: string) => setCards.value.get(setCode(set))?.setName ?? set
-  const modularRelease = (set: string) => releaseOf(null, setCards.value.get(setCode(set)))
+  const modularName = (set: string) => modularSetName(set, cards.store.cardBySet)
+  const modularRelease = (set: string) => releaseOf(null, cards.store.cardBySet(setCode(set)))
 
   const portraits = scenarioPortraits
   const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')

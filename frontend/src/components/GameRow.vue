@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { computed, useTemplateRef } from 'vue'
-import { ChevronRight, Trash2 } from 'lucide-vue-next'
+import { ChevronRight, Layers3, Trash2 } from 'lucide-vue-next'
 import ConfirmDelete from './ConfirmDelete.vue'
 import HeroPortrait from './HeroPortrait.vue'
 import CampaignBar from './CampaignBar.vue'
 import { useCards } from '../cards'
-import { scenarioPortraits } from '../scenarios'
+import { modularSetName, scenarioPortraits } from '../scenarios'
 import type { CampaignView, GameSummary } from '../server'
 
 const props = defineProps<{ game: GameSummary; campaign?: CampaignView | null; deleteCampaign?: () => void; deleteGame?: () => void; spectate?: boolean; preview?: boolean }>()
@@ -16,6 +16,7 @@ const title = computed(() => {
 })
 const confirm = useTemplateRef<InstanceType<typeof ConfirmDelete>>('confirm')
 const cards = useCards()
+const modulars = computed(() => (props.game.modulars ?? []).map(set => modularSetName(set, cards.store.cardBySet)))
 const portraitCode = computed(() => scenarioPortraits(props.game.villain)[0]!)
 const villainArt = computed(() => cards.sources(portraitCode.value).map((s) => `url('${s}')`).join(', '))
 const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate` : `/games/${props.game.id}`))
@@ -38,6 +39,12 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
             <template v-if="game.waiting"> · {{ $t('home.waitingForPlayers') }}</template>
             <template v-else> · {{ $t('game.round', { round: game.round }) }} · {{ $t(`game.phases.${game.phase}`) }}</template>
           </p>
+          <div v-if="modulars.length" class="modulars" role="group" :aria-label="$t('home.modularSets', { sets: modulars.join(', ') })">
+            <Layers3 class="modular-icon" aria-hidden="true" />
+            <ul class="modular-list">
+              <li v-for="(set, n) in modulars" :key="n" class="modular-set">{{ set }}</li>
+            </ul>
+          </div>
           <ul v-if="game.seats?.length" class="seats">
             <li v-for="(seat, n) in game.seats" :key="n" class="seat" :class="{ eliminated: seat.eliminated }">
               <HeroPortrait class="face square" :code="seat.identity" />
@@ -100,6 +107,10 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
 .badge.lost { background: var(--ink-4); color: var(--text-muted); }
 .badge.expert { background: var(--crimson-deep); color: #ffb3b7; }
 .meta { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+.modulars { display: flex; align-items: flex-start; gap: 7px; margin-top: 5px; }
+.modular-icon { flex: none; width: 14px; height: 14px; margin-top: 5px; color: var(--text-muted); stroke-width: 1.5; }
+.modular-list { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.modular-set { max-width: 100%; padding: 3px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--ink-3); color: var(--text-muted); font-size: 0.72rem; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
 .vs { color: var(--text); font-weight: 600; }
 .seats { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 6px 0 0; padding: 0; list-style: none; }
 .seat { display: flex; align-items: center; gap: 7px; }

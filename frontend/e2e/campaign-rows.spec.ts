@@ -13,7 +13,7 @@ const waitingCampaign = {
   campaign: { kind: 'ShadowlandCampaign', mode: 'StandardCampaign', scenarios: ['65001a', '65038a', '65060a'], completed: 0, lost: false, campaignLog: {} },
 }
 const games = [
-  { id: 'current-scenario', campaignId, name: `${campaign.name} – Art Museum Heist`, scenario: 'Art Museum Heist', villain: '60121a', outcome: null },
+  { id: 'current-scenario', campaignId, name: `${campaign.name} – Art Museum Heist`, scenario: 'Art Museum Heist', villain: '60121a', outcome: null, modulars: ['BombScare', 'MastersOfEvil'] },
   { id: 'older-scenario', campaignId, name: `${campaign.name} – Protection Racket`, scenario: 'Protection Racket', villain: '60134a', outcome: 'Lost' },
   { id: 'standalone', campaignId: null, name: 'Just Rhino', scenario: 'Rhino', villain: '01094', outcome: null },
 ].map(game => ({ ...game, playerName: 'Matt', difficulty: 'Normal', round: 2, phase: 'PlayerPhase', waiting: false, seats: [] }))
@@ -39,6 +39,8 @@ for (const width of [1280, 390]) {
     await expect(row.locator('.campaign-bar')).toContainText('Expert campaign')
     await expect(row.locator('.campaign-bar')).toContainText('1 of 6 resolved')
     await expect(row.locator('.title')).toHaveText('Art Museum Heist')
+    await expect(row.locator('.modulars')).toHaveAttribute('aria-label', 'Modular sets: Bomb Scare, Masters of Evil')
+    await expect(row.locator('.modular-set')).toHaveText(['Bomb Scare', 'Masters of Evil'])
     await expect(row.locator('.campaign-bar .lucide-chevron-right')).toHaveCount(0)
     await expect(row.locator('.scenario-link .select-chevron')).toHaveCount(1)
     await expect(row.locator('.game-content').getByRole('button', { name: 'Delete game' })).toHaveCount(0)
@@ -59,6 +61,7 @@ test('finished scenarios keep their campaign bar and standalone games keep game 
   await setup(page)
   const standalone = page.locator('.game-row').filter({ hasText: 'Just Rhino' })
   await expect(standalone.locator('.campaign-bar')).toHaveCount(0)
+  await expect(standalone.locator('.modulars')).toHaveCount(0)
   await expect(standalone.getByRole('button', { name: 'Delete game' })).toBeVisible()
   await page.locator('.tabs label').filter({ hasText: 'Finished' }).click()
   const old = page.locator('.game-row')
