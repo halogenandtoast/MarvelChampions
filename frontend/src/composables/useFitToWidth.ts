@@ -19,7 +19,9 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
     // Ignore distributed free space: only the groups' natural widths determine scale.
     const naturalWidth = groups.reduce((total, group) => total + group.offsetWidth, 0) + gap * Math.max(0, groups.length - 1)
     if (available > 0 && naturalWidth > 0) {
-      const fitted = Math.min(1, Math.max(0.45, available / naturalWidth))
+      const fitted = container.value.closest('[data-fit-board]')
+        ? 1
+        : Math.min(1, Math.max(0.45, available / naturalWidth))
       // Round down so fractional layout pixels cannot alternate across the fit boundary.
       scale.value = Math.floor(fitted * 1000) / 1000
       width.value = available / scale.value

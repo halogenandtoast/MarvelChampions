@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, useTemplateRef } from 'vue'
+import { useFitBoard } from '../composables/useFitBoard'
 import { useRoute } from 'vue-router'
 import { useMediaQuery, useStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
@@ -35,6 +36,7 @@ import MissionArea from '../components/MissionArea.vue'
 import VillainArea from '../components/VillainArea.vue'
 
 const mobile = useMediaQuery('(max-width: 760px)')
+useFitBoard(useTemplateRef<HTMLElement>('board'))
 const mobileCardSize = useStorage('marvel.mobileCardSize', 108)
 const mobileActionsOpen = ref(true)
 const jumpTo = (selector: string) => document.querySelector(selector)?.scrollIntoView({ block: 'start' })
@@ -471,7 +473,7 @@ const resetGame = () => restartDialog.value?.open()
       <label>{{ t('game.mobile.cardSize') }}<input v-model.number="mobileCardSize" type="range" min="88" max="160" step="4" /></label>
     </div>
     <div class="layout" :class="{ 'no-side': !showSidebar }">
-      <main class="board" :class="{ waiting: inLobby }">
+      <main ref="board" class="board" data-fit-board :class="{ waiting: inLobby }">
         <Lobby v-if="inLobby && table" :table="table" @join="join" @leave="leave" @start="start">
           <SetupBar
             v-if="data?.setup"
@@ -602,13 +604,12 @@ const resetGame = () => restartDialog.value?.open()
   padding-bottom: 2px;
 }
 .layout.no-side { grid-template-columns: minmax(0, 1fr); }
-/* the villain's side and the river a quarter of the board each, at least a card high, the
-   players' side the rest */
+/* Reserve the river's actual content height; give the hero the remaining room. */
 .board {
   --row: calc(var(--card-width) / var(--card-aspect) + 14px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(min-content, 25%) minmax(var(--row), 25%) minmax(0, 1fr);
+  grid-template-rows: minmax(min-content, 25%) minmax(var(--row), max-content) minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
   min-height: 0;
@@ -617,10 +618,15 @@ const resetGame = () => restartDialog.value?.open()
   padding-right: 2px;
 }
 .board > * { flex: none; }
+/* Measure candidate sizes without sampling an in-progress CSS width transition. */
+.board[data-fit-board] :deep(.slot),
+.board[data-fit-board] :deep(.card),
+.board[data-fit-board] :deep(.identity-column) { transition-property: transform, box-shadow; }
 .board > .notice { grid-row: 1 / -1; }
 /* the lobby is as tall as it needs, the board scrolling it */
 .board.waiting { display: block; }
 .board > .half, .player-half > .half { flex: 1 1 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden auto; }
+.player-half > .half { scrollbar-gutter: stable; }
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
 /* the hand floats over the foot of the player area */

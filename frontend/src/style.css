@@ -1,6 +1,7 @@
 :root {
   /* Board metrics: a card shrinks with the screen so a laptop still fits the table. */
-  --card-width: clamp(58px, min(7.4vw, 12.4vh), 124px);
+  --preferred-card-width: clamp(58px, min(7.4vw, 12.4vh), 124px);
+  --card-width: var(--preferred-card-width);
   --card-aspect: 0.716;
   --gap: 10px;
   --nav-height: 46px;

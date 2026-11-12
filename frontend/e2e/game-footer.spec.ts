@@ -22,6 +22,57 @@ const snapshot = {
   },
 }
 
+test('crowded encounters share a fitted card size and grow again when space returns', async ({ page }) => {
+  const crowded = structuredClone(snapshot)
+  crowded.game.players[0]!.supports = crowded.game.players[0]!.supports.slice(0, 3)
+  crowded.game.villains = Array.from({ length: 4 }, (_, index) => ({ ...snapshot.game.villains[0]!, id: `villain-${index}` }))
+  crowded.game.mainSchemes = Array.from({ length: 3 }, (_, index) => ({ ...snapshot.game.mainSchemes[0]!, id: `scheme-${index}` }))
+  await page.addInitScript(() => localStorage.setItem('marvel-session', JSON.stringify({ token: 'test', user: { id: 1, username: 'Tester' } })))
+  await page.route('**/api/games/fitting', route => route.fulfill({ json: crowded }))
+  await page.route('**/api/scenarios', route => route.fulfill({ json: { scenarios: [], modulars: [] } }))
+  await page.route('**/api/whoami', route => route.fulfill({ json: { id: 1, username: 'Tester' } }))
+  await page.routeWebSocket('**/api/games/fitting?*', () => {})
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/#/games/fitting')
+  await expect(page.locator('.player-area')).toBeVisible()
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise(requestAnimationFrame)
+    await new Promise(requestAnimationFrame)
+  })
+  const measure = () => page.evaluate(() => {
+    const board = document.querySelector<HTMLElement>('.board')!
+    const content = document.querySelector<HTMLElement>('.player-half > .half')!
+    return {
+      width: parseFloat(board.style.getPropertyValue('--card-width')),
+      overflow: content.scrollHeight - content.clientHeight,
+      boardOverflow: board.scrollHeight - board.clientHeight,
+      cardWidths: [...document.querySelectorAll<HTMLElement>('.villain .card, .in-hand .card')].map(card => card.offsetWidth),
+    }
+  })
+  await expect.poll(async () => (await measure()).overflow).toBeLessThanOrEqual(1)
+  const small = await measure()
+  expect(small.width).toBeLessThan(124)
+  expect(small.boardOverflow).toBeLessThanOrEqual(1)
+  expect(Math.max(...small.cardWidths) - Math.min(...small.cardWidths)).toBeLessThanOrEqual(1)
+  await page.setViewportSize({ width: 2200, height: 1500 })
+  await expect.poll(async () => (await measure()).width).toBe(124)
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await expect.poll(async () => (await measure()).width).toBe(small.width)
+  await expect.poll(async () => (await measure()).overflow).toBeLessThanOrEqual(1)
+  const widths = await page.evaluate(async () => {
+    const values = []
+    for (let n = 0; n < 30; n++) {
+      await new Promise(requestAnimationFrame)
+      values.push(document.querySelector<HTMLElement>('.board')!.style.getPropertyValue('--card-width'))
+    }
+    return [...new Set(values)]
+  })
+  expect(widths).toHaveLength(1)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect.poll(() => page.locator('.board').evaluate(el => (el as HTMLElement).style.getPropertyValue('--card-width'))).toBe('')
+})
+
 test('refresh fits cards before paint and clips hand overhang without a scrollbar or extra gap', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('marvel-session', JSON.stringify({ token: 'test', user: { id: 1, username: 'Tester' } }))
