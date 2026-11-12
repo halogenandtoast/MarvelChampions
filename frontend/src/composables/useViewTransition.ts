@@ -32,10 +32,12 @@ const supported = (): StartViewTransition | null => {
  */
 /** Native modals sit below view-transition snapshots. Keep board updates plain
  * while a picker or river banner is open, so its live animation cannot be
- * captured as a frozen rectangle and replayed by the snapshot. */
+ * captured as a frozen rectangle and replayed by the snapshot. A fight banner
+ * is already invisible during its leave step; Vue removes it a few frames later.
+ * That leftover element must not suppress the next draw or encounter animation. */
 export const transitionsOn = () =>
   document.visibilityState === 'visible' && supported() !== null && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    && !document.querySelector('dialog:modal, .pick-backdrop, .activation-alert')
+    && !document.querySelector('dialog:modal, .pick-backdrop, .activation-alert:not(.fight-banner.activation-leave-active)')
 
 export const withViewTransition = async (apply: () => void | Promise<void>): Promise<void> => {
   const startedAt = revision
