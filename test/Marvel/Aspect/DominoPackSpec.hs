@@ -213,11 +213,44 @@ spec = describe "Domino pack" do
       resolve [SideSchemeMessage scheme (SideSchemePlaceThreat 8)]
       before <- sideSchemeThreat scheme
       card <- putInHand p "40053"
-      pay <- putInHand p "01089"
-      playWith card [pay]
+      cdCost (getCardDef card) `shouldBe` Just 4
+      genius <- putInHand p "01089"
+      strength <- putInHand p "01090"
+      playWith card [genius, strength]
       choose "side scheme" (isTargetChoice scheme)
       pass
       sideSchemeThreat scheme `shouldReturn` (before - 6)
+  it "Team Investigation costs two per player and other players may help pay for it" do
+    tg <- testGame ["domino", "spider-man"]
+    inGame tg do
+      let p = player1 tg
+          other = player2 tg
+      asHero p
+      clearHand p
+      clearHand other
+      scheme <- sideSchemeOf <$> revealNow p Schemes.crowdControl
+      pass
+      resolve [SideSchemeMessage scheme (SideSchemePlaceThreat 8)]
+      before <- sideSchemeThreat scheme
+      card <- putInHand p "40053"
+      own <- putInHand p "01089"
+      theirs <- putInHand other "01090"
+      choose "play Team Investigation" (isPlay card)
+      choose "invite the other player" (isTargetChoice other)
+      fmap fst <$> asked `shouldReturn` Just other
+      choose "contribute Strength" (isPayWith theirs)
+      fmap fst <$> asked `shouldReturn` Just p
+      payWith [own]
+      choose "side scheme" (isTargetChoice scheme)
+      pass
+      sideSchemeThreat scheme `shouldReturn` (before - 6)
+      discardOf other >>= (`shouldSatisfy` elem theirs)
+      discardOf p >>= (`shouldSatisfy` any ((== pcCardId card) . pcCardId))
+  it "Team Investigation costs two in a solo game" do
+    tg <- testGame ["domino"]
+    inGame tg do
+      card <- putInHand (player1 tg) "40053"
+      cdCost (getCardDef card) `shouldBe` Just 2
   it "Team Investigation is not playable without a side scheme to remove threat from" do
     tg <- testGame ["domino", "spider-man"]
     inGame tg do
