@@ -250,6 +250,7 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
         <CardFace :code="faces[1]" eager class="reverse" />
       </div>
       <CardFace v-else :code="code" :back="back" :name="name" />
+      <slot name="overlay" />
       <span v-if="flag" class="flag"><GameIcon v-if="flagIcon" :name="flagIcon" :label="flag" /> {{ flag }}</span>
       <span v-if="tuckedBoostIcons != null" class="boost-badge" role="img" :aria-label="$t(tuckedBoostStar ? 'game.tuckedBoostIconsWithStar' : 'game.tuckedBoostIcons', { count: tuckedBoostIcons })">
         <span aria-hidden="true" class="boost-badge-content"><GameIcon name="boost" /> <span>{{ tuckedBoostIcons }}</span><GameIcon v-if="tuckedBoostStar" name="star" /></span>

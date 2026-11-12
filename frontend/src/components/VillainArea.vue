@@ -121,7 +121,6 @@ const escalation = (scheme: SchemeView) => {
       <Meter :label="t('game.threat')" :value="game.trickster.worldsCollideThreat" :max="2" tone="villain" />
     </div>
     <div v-for="villain in villains" :key="villain.id" class="villain" :class="{ active: villains.length > 1 && villain.active }">
-      <span v-if="villains.length > 1 && villain.active" class="active-flag">{{ t('game.activeVillain') }}</span>
       <div class="body">
         <dl class="stats">
           <div class="stat-sch"><dt>{{ t('game.stats.sch') }}</dt><dd>{{ villain.scheme }}</dd></div>
@@ -140,7 +139,11 @@ const escalation = (scheme: SchemeView) => {
           :confused="villain.confused"
           :tough="villain.tough"
           :bomb-counters="villain.bombCounters"
-        />
+        >
+          <template #overlay>
+            <span v-if="villains.length > 1 && villain.active" class="active-flag">{{ t('game.activeVillain') }}</span>
+          </template>
+        </BoardCard>
         <Pile v-if="villain.boostCards && !riverEnemyIds.includes(villain.id)" class="boost-pile" :label="t('game.boost')" back="encounter" :count="villain.boostCards" />
       </div>
       <!-- infinite hit points (Escape the Museum): a full bar, ∞ -->
