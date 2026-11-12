@@ -3068,6 +3068,7 @@ test-suite MarvelChampions-test
       Marvel.Encounter.JuggernautSpec
       Marvel.Encounter.KangSpec
       Marvel.Encounter.KeywordsSpec
+      Marvel.Encounter.KlawSpec
       Marvel.Encounter.KreeFanaticSpec
       Marvel.Encounter.LokiSpec
       Marvel.Encounter.LongshotEncounterSpec

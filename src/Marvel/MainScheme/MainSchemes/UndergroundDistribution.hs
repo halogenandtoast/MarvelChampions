@@ -25,7 +25,10 @@ instance RunMessage UndergroundDistribution where
   runMessage msg ms@(UndergroundDistribution attrs) = runQueueT $ case msg of
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
-        RevealMainScheme -> ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
+        RevealMainScheme -> do
+          firstPlayer <- selectJust FirstPlayer
+          askToResolveWhenRevealed firstPlayer attrs
+          ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         _ -> UndergroundDistribution <$> runMessage msg attrs
     SetupMainScheme -> ms <$ searchForAndRevealScheme Cards.defenseNetwork
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)

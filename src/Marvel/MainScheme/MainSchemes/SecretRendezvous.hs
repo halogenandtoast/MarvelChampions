@@ -24,7 +24,10 @@ instance RunMessage SecretRendezvous where
   runMessage msg ms@(SecretRendezvous attrs) = runQueueT $ case msg of
     MainSchemeMessage ident msg' | ident == mainSchemeId attrs ->
       case msg' of
-        RevealMainScheme -> ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
+        RevealMainScheme -> do
+          firstPlayer <- selectJust FirstPlayer
+          askToResolveWhenRevealed firstPlayer attrs
+          ms <$ discardUntil FromEncounterDeck (CardWithType MinionType) attrs
         _ -> SecretRendezvous <$> runMessage msg attrs
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ gameOver Lost
     WithDiscardedMatch (isTarget attrs -> True) _ (EncounterCard card) -> do
