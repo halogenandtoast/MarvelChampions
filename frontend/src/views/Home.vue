@@ -21,8 +21,26 @@ const games = ref<GameSummary[] | null>(null)
 const watchable = ref<GameSummary[]>([])
 const error = ref<string | null>(null)
 
-const activeGames = computed(() => (games.value ?? []).filter((g) => g.outcome === null))
-const finishedGames = computed(() => (games.value ?? []).filter((g) => g.outcome !== null))
+// The API orders games by most recently updated. Prefer the campaign's current
+// game when present; otherwise keep only its most recent scenario.
+const listedGames = computed(() => {
+  const seen = new Set<string>()
+  return (games.value ?? []).filter(game => {
+    const campaign = campaignFor(game)
+    const id = campaign?.id ?? game.campaignId
+    if (!id) return true
+    if (seen.has(id)) return false
+    if (campaign?.currentGame && games.value?.some(g => g.id === campaign.currentGame) && game.id !== campaign.currentGame) return false
+    seen.add(id)
+    return true
+  })
+})
+const isFinished = (game: GameSummary) => {
+  const campaign = campaignFor(game)
+  return campaign ? campaign.won || campaign.campaign.lost : game.outcome !== null
+}
+const activeGames = computed(() => listedGames.value.filter(game => !isFinished(game)))
+const finishedGames = computed(() => listedGames.value.filter(isFinished))
 
 // null until the player picks a tab, so they land on whichever has something in it
 const chosenTab = ref<Tab | null>(null)
@@ -48,7 +66,7 @@ const campaignsById = computed(() => new Map(campaigns.value.map(c => [c.id, c])
 const campaignsByGame = computed(() => new Map(campaigns.value.filter(c => c.currentGame).map(c => [c.currentGame!, c])))
 const campaignFor = (game: GameSummary) => (game.campaignId ? campaignsById.value.get(game.campaignId) : undefined) ?? campaignsByGame.value.get(game.id)
 const unlistedCampaigns = computed(() => {
-  const listed = new Set(shown.value.map(game => campaignFor(game)?.id))
+  const listed = new Set(listedGames.value.map(game => campaignFor(game)?.id))
   return campaigns.value.filter(c => !listed.has(c.id))
 })
 

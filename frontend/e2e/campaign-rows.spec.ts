@@ -18,12 +18,12 @@ const games = [
   { id: 'standalone', campaignId: null, name: 'Just Rhino', scenario: 'Rhino', villain: '01094', outcome: null },
 ].map(game => ({ ...game, playerName: 'Matt', difficulty: 'Normal', round: 2, phase: 'PlayerPhase', waiting: false, seats: [] }))
 
-async function setup(page: import('@playwright/test').Page, owner = true) {
+async function setup(page: import('@playwright/test').Page, owner = true, campaignView = campaign, gameList = games) {
   await page.addInitScript(user => localStorage.setItem('marvel-session', JSON.stringify({ token: 'fixture', user })), user)
   await page.route('**/api/whoami', route => route.fulfill({ json: user }))
-  await page.route('**/api/games', route => route.fulfill({ json: games }))
+  await page.route('**/api/games', route => route.fulfill({ json: gameList }))
   await page.route('**/api/campaigns', route => route.fulfill({ json: [
-    { ...campaign, table: { ...campaign.table, owner: owner ? user.id : 456 } }, waitingCampaign,
+    { ...campaignView, table: { ...campaignView.table, owner: owner ? user.id : 456 } }, waitingCampaign,
   ] }))
   await page.route('**/api/spectatable', route => route.fulfill({ json: [] }))
   await page.goto('/#/')
@@ -57,18 +57,28 @@ for (const width of [1280, 390]) {
   })
 }
 
-test('finished scenarios keep their campaign bar and standalone games keep game deletion', async ({ page }) => {
-  await setup(page)
+test('only the current campaign scenario appears across both tabs', async ({ page }) => {
+  await setup(page, true, campaign, [...games].reverse())
   const standalone = page.locator('.game-row').filter({ hasText: 'Just Rhino' })
   await expect(standalone.locator('.campaign-bar')).toHaveCount(0)
-  await expect(standalone.locator('.modulars')).toHaveCount(0)
   await expect(standalone.getByRole('button', { name: 'Delete game' })).toBeVisible()
+  await expect(page.locator('.game-row')).toHaveCount(2)
+  await expect(page.locator('.scenario-link[href="#/games/older-scenario"]')).toHaveCount(0)
   await page.locator('.tabs label').filter({ hasText: 'Finished' }).click()
-  const old = page.locator('.game-row')
-  await expect(old.locator('.title')).toHaveText('Protection Racket')
-  await expect(old.locator('.campaign-link')).toHaveAttribute('href', `#/campaigns/${campaignId}`)
-  await expect(page.locator('.campaign-link strong').filter({ hasText: campaign.name })).toHaveCount(1)
+  await expect(page.locator('.game-row')).toHaveCount(0)
+  await expect(page.locator('.campaign-link strong').filter({ hasText: campaign.name })).toHaveCount(0)
 })
+
+for (const won of [false, true]) {
+  test(`campaign shows its last scenario when ${won ? 'finished' : 'between scenarios'}`, async ({ page }) => {
+    await setup(page, true, { ...campaign, currentGame: null, won }, games.filter(g => g.id !== 'current-scenario'))
+    if (won) await page.locator('.tabs label').filter({ hasText: 'Finished' }).click()
+    const row = page.locator('.game-row').filter({ hasText: 'Protection Racket' })
+    await expect(row).toHaveCount(1)
+    await expect(row.locator('.campaign-link')).toHaveAttribute('href', `#/campaigns/${campaignId}`)
+    await expect(page.locator('.campaign-link strong').filter({ hasText: campaign.name })).toHaveCount(1)
+  })
+}
 
 test('campaign deletion confirms and removes every related scenario without a game-delete request', async ({ page }) => {
   await setup(page)
