@@ -22,7 +22,8 @@ newtype WiccanWilliamKaplan = WiccanWilliamKaplan (Attrs Ally)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode, IsRef)
 
 -- | Response: after Wiccan thwarts, discard the top card of the encounter deck; for
--- each boost icon discarded, deal 1 damage to an enemy, each point chosen on its own.
+-- each boost icon discarded, deal 1 damage to an enemy. With no "choose" in it, the
+-- "for each" is one enemy taking one instance of damage (RR "For Each").
 instance HasAbilities WiccanWilliamKaplan where
   getAbilities (WiccanWilliamKaplan a) =
     [ limitedWindowAbility a 1 (W.AllyThwarted W.After (AllyWithId $ allyId a) AnyScheme) Response OwnsThis NoCost $
@@ -35,11 +36,6 @@ instance RunMessage WiccanWilliamKaplan where
       discardTopOfEncounterDeckThen 1 (countBoostIcons attrs ())
       pure w
     WithBoostIcons (isTarget attrs -> True) _ (sum . map snd -> n) -> do
-      when (n > 0) $ cardSpecific attrs "damage" n
-      pure w
-    -- each point its own step: the enemy chosen sees the game after the one before
-    CardSpecific (isTarget attrs -> True) "damage" (fromJSON -> Success (n :: Natural)) -> do
-      chooseDamage (allyController attrs) attrs (toDamage 1 FromAbility) AnyEnemy
-      when (n > 1) $ cardSpecific attrs "damage" (n - 1)
+      when (n > 0) $ chooseDamage (allyController attrs) attrs (toDamage n FromAbility) AnyEnemy
       pure w
     _ -> WiccanWilliamKaplan <$> runMessage msg attrs

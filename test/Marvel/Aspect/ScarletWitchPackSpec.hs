@@ -44,7 +44,7 @@ spec = describe "The Scarlet Witch pack's aspect and basic cards" do
         (.allyExhausted) <$> allyIn "15010" `shouldReturn` True
 
   describe "Wiccan (15011)" do
-    it "deals 1 damage to an enemy for each boost icon discarded, each point chosen" do
+    it "deals 1 damage per boost icon discarded to one enemy, as one instance" do
       tg <- scarletWitch
       let p = player1 tg
       inGame tg do
@@ -59,12 +59,11 @@ spec = describe "The Scarlet Witch pack's aspect and basic cards" do
         chooseMainScheme
         choose "Wiccan's response" (isAbilityOfCard wiccan)
         pass
-        choose "the mercenary" (isTargetChoice mercenary)
-        pass
         chooseVillain
         pass
-        minionDamageOf mercenary `shouldReturn` Just 1
-        villainDamageNow `shouldReturn` 1
+        offers (isTargetChoice mercenary) `shouldReturn` False
+        minionDamageOf mercenary `shouldReturn` Just 0
+        villainDamageNow `shouldReturn` 2
         map toCardCode <$> encounterDiscardNow >>= (`shouldSatisfy` elem (toCardCode Treacheries.shadowOfThePast))
 
     it "deals no damage for a card without boost icons" do
