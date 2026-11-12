@@ -55,6 +55,7 @@ import Marvel.Hero.Types qualified as HeroTypes ()
 import Marvel.Environment.Types qualified as Environment
 import Marvel.Hp
 import Marvel.Id
+import Marvel.I18n (ikeyWith, textVar)
 import Marvel.Identity
 import Marvel.MainScheme.Types (Attrs (..), MainScheme)
 import Marvel.MainScheme.Types qualified as MainScheme
@@ -815,6 +816,14 @@ gameView seesHand g = do
 
   visibleQuestion asked question =
     let raw = questionView asked $ contextualQuestion question
+        -- The ally has already left play when Rapid Response and similar cards
+        -- are offered. Read the current window, including in saved questions,
+        -- rather than guessing from surviving allies or the top of a discard pile.
+        defeatedAlly = if raw.prompt /= Just "$label.respond" then Nothing else
+          case L.nubBy (\a b -> pcCardId a == pcCardId b)
+            [card | W.Window W.After (W.AllyCardDefeated _ card) <- concat (headMay $ gameWindows g)] of
+              [card] -> Just card
+              _ -> Nothing
         -- A spent resource remains on the paying tray while its response is offered,
         -- including questions already stored before card targeting was displayed.
         onResource choice
@@ -823,10 +832,11 @@ gameView seesHand g = do
               choice {kind = "ability", target = raw.source <|> Just (idText $ pcCardId card), abilityType = Just Ability.Response}
           | otherwise = choice
         view = raw
-          { prompt = raw.prompt <|> (if any discardOnlyAbility (gameActiveCost g) && not (null raw.choices) && all ((== "discard") . (.kind)) raw.choices
+          { prompt = (defeatedAlly <&> \card -> ikeyWith "label.respondToDefeatedAlly" [textVar "ally" (display $ cdName $ getCardDef card)])
+              <|> raw.prompt <|> (if any discardOnlyAbility (gameActiveCost g) && not (null raw.choices) && all ((== "discard") . (.kind)) raw.choices
               then Just "$label.chooseHandDiscard" else Nothing)
           , choices = map onResource raw.choices
-          , source = raw.source <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
+          , source = raw.source <|> (idText . pcCardId <$> defeatedAlly) <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
               then idText . ecCardId <$> headMay pendingBoostCards else Nothing)
           }
      in if isJust (gameCompetition g) && not (seesHand asked)

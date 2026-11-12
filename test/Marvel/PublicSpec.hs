@@ -24,6 +24,30 @@ import TestImport
 
 spec :: Spec
 spec = describe "the game as the client sees it" do
+  it "names the defeated ally in a saved Rapid Response question, rather than another ally still in play" do
+    tg <- testGame ["doctor-strange"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      response <- putIntoPlay p "08031"
+      _ <- putIntoPlay p "01083"
+      maria <- putIntoPlay p "01067"
+      start [AllyMessage (allyIdOf maria) (AllyDamaged (toSource p) (toDamage 2 FromAbility))]
+      offers (isAbilityOfCard response) `shouldReturn` True
+      -- The engine's stored prompt is still generic; its public projection supplies
+      -- context even for existing games saved before the client could name the ally.
+      openQuestion >>= \case
+        Just (_, QuestionLabel "$label.respond" _ _) -> pure ()
+        other -> error $ "expected the ally defeat response window, got " <> show other
+      view <- liftIO . publicGame =<< getGame
+      let questions = [question | Object root <- [view], Just (Object qs) <- [KeyMap.lookup "question" root], Object question <- KeyMap.elems qs]
+      map (KeyMap.lookup "prompt") questions `shouldBe` [Just $ String "$label.respondToDefeatedAlly ally=s:\"Maria Hill\""]
+      map (KeyMap.lookup "source") questions `shouldBe` [Just $ toJSON $ pcCardId maria]
+      choose "use Rapid Response" (isAbilityOfCard response)
+      pass
+      [returned] <- alliesWith "01067"
+      returned.allyDamage `shouldBe` 1
+
   it "applies direct debug tokens and statuses without losing the waiting question" do
     tg <- testGame ["gambit"]
     inGame tg do

@@ -1,4 +1,5 @@
 {
+  "respondToDefeatedAlly": "Respond to {ally}'s defeat",
   "chooseHandDiscard": "Choose a card to discard from your hand",
   "discardMoreFromHand": "Discard {count} more cards from your hand",
   "hexBoltChooseEffect": "Hex Bolt: Choose the next effect to resolve",
