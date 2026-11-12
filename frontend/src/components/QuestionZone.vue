@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ActionLabel from './ActionLabel.vue'
+import IconText from './IconText.vue'
 // The open question: choices as buttons, who is being waited on, or how the game ended.
 import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
@@ -73,7 +74,7 @@ const tone = (choice: ChoiceView) =>
     <template v-else-if="popOut">
       <header>
         <span class="eyebrow">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
-        <h2 v-if="!waitingOn">{{ prompt }}</h2>
+        <h2 v-if="!waitingOn"><IconText :text="prompt" /></h2>
       </header>
       <p v-if="explanation" class="explanation">{{ explanation }}</p>
       <div v-if="popOut === 'closed'" class="options">
@@ -83,7 +84,7 @@ const tone = (choice: ChoiceView) =>
     <template v-else-if="buttons.length || onBoard">
       <header>
         <span class="eyebrow">{{ asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
-        <h2>{{ prompt }}</h2>
+        <h2><IconText :text="prompt" /></h2>
       </header>
       <p v-if="explanation" class="explanation">{{ explanation }}</p>
       <div class="options">
@@ -98,7 +99,7 @@ const tone = (choice: ChoiceView) =>
         >
           <span v-if="about(choice) && choice.kind !== 'player'" class="thumb"><CardFace :code="about(choice)!.code" /></span>
           <span v-if="mobile" class="mobile-choice">
-            {{ text(choice) }}<template v-if="actionName(choice, about(choice)?.code) && !text(choice).includes(actionName(choice, about(choice)?.code))"> · {{ actionName(choice, about(choice)?.code) }}</template>
+            <IconText :text="text(choice)" /><template v-if="actionName(choice, about(choice)?.code) && !text(choice).includes(actionName(choice, about(choice)?.code))"> · <IconText :text="actionName(choice, about(choice)?.code)" /></template>
           </span>
           <ActionLabel v-else :text="text(choice)" :name="actionName(choice, about(choice)?.code)" />
         </button>

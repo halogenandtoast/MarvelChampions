@@ -3,6 +3,7 @@
 // ability, attacking or thwarting with an ally.
 import { onMounted, ref, useTemplateRef } from 'vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
+import IconText from './IconText.vue'
 import { useChoiceLabel } from '../composables/useChoices'
 import type { ChoiceView } from '../server'
 
@@ -38,7 +39,7 @@ onKeyStroke('Escape', () => emit('close'))
     <div ref="menu" class="choice-menu" role="menu" :style="{ top: `${place.top}px`, left: `${place.left}px` }">
       <p v-if="cardName" class="title">{{ cardName }}</p>
       <button v-for="option in options" :key="option.index" type="button" role="menuitem" @click="emit('choose', option.index)">
-        {{ label(option.paymentLabel ? { ...option, label: option.paymentLabel } : option, cardName) }}
+        <IconText :text="label(option.paymentLabel ? { ...option, label: option.paymentLabel } : option, cardName)" />
       </button>
     </div>
   </Teleport>

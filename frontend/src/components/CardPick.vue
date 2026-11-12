@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconText from './IconText.vue'
 // A question answered by picking a card that is in no play area, as a campaign's Tech
 // upgrade or a card searched for is: the cards side by side (all those searched, the ones
 // that cannot be picked dimmed) in the middle of the screen, any other answer
@@ -92,7 +93,7 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
           </section>
         </div>
         <footer>
-          <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="choose(c.index)">{{ label(c) }}</button>
+          <button v-for="c in others" :key="c.index" type="button" class="btn" :disabled="!canChoose" @click="choose(c.index)"><IconText :text="label(c)" /></button>
           <p v-if="!canChoose" class="waiting">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : t('game.prompt.waiting') }}</p>
         </footer>
       </article>

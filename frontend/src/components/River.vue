@@ -9,6 +9,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCards } from '../cards'
 import BoardCard from './BoardCard.vue'
+import IconText from './IconText.vue'
 import Meter from './Meter.vue'
 import TokenStack from './TokenStack.vue'
 import { useChoiceLabel } from '../composables/useChoices'
@@ -145,7 +146,7 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
           <div class="enemy-card">
             <BoardCard :id="enemy.id" :code="enemy.code" :name="enemy.name" :morph="false" />
             <div v-if="actions.length" class="river-actions">
-              <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)">{{ choiceLabel(action) }}</button>
+              <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)"><IconText :text="choiceLabel(action)" /></button>
             </div>
           </div>
         </div>
@@ -168,7 +169,7 @@ const hasMainLane = computed(() => !!(cards.length || label || enemy.value || sc
         />
       </div>
       <div v-if="actions.length && !enemy" class="river-actions">
-        <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)">{{ choiceLabel(action) }}</button>
+        <button v-for="action in actions" :key="action.index" type="button" class="btn primary" @click="emit('choose', action.index)"><IconText :text="choiceLabel(action)" /></button>
       </div>
     </div>
     <slot />

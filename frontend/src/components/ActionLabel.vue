@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch, nextTick } from 'vue'
+import IconText from './IconText.vue'
 
 const { text, name = '' } = defineProps<{ text: string; name?: string }>()
 const short = useTemplateRef<HTMLElement>('short')
@@ -23,10 +24,10 @@ onBeforeUnmount(() => observer?.disconnect())
 
 <template>
   <span v-if="expands" class="action-label" :style="heights ? { '--short-height': `${heights.short}px`, '--named-height': `${heights.named}px` } : undefined">
-    <span ref="short" class="short" aria-hidden="true">{{ text }}</span>
-    <span ref="named" class="named">{{ name }}</span>
+    <span ref="short" class="short" aria-hidden="true"><IconText :text="text" /></span>
+    <span ref="named" class="named"><IconText :text="name" /></span>
   </span>
-  <span v-else>{{ text }}</span>
+  <span v-else><IconText :text="text" /></span>
 </template>
 
 <style scoped>
