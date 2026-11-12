@@ -245,6 +245,49 @@ spec = describe "Black Widow's aspect and basic cards" do
         villainDamageNow `shouldReturn` 0
 
   describe "Rapid Response (08031)" do
+    it "returns Shang-Chi after consequential damage discards him and Inspired" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        response <- putIntoPlay p "08031"
+        shang <- putIntoPlay p "04098"
+        inspired <- putInHand p "01074"
+        genius <- putInHand p "01089"
+        playOn inspired (allyIdOf shang) [genius]
+        start [AllyMessage (allyIdOf shang) (AllyDamaged (toSource p) (toDamage 2 FromAbility))]
+        pass
+        start [AllyMessage (allyIdOf shang) AllyAttackConsequential]
+        offers (isAbilityOfCard response) `shouldReturn` True
+        discardOf p >>= (`shouldSatisfy` elem shang)
+        choose "use Rapid Response" (isAbilityOfCard response)
+        pass
+        [returned] <- alliesWith "04098"
+        returned.allyDamage `shouldBe` 1
+        returned.allyExhausted `shouldBe` False
+        returned.allyUpgrades `shouldBe` mempty
+        discardOf p >>= (`shouldSatisfy` all ((/= "04098") . toCardCode))
+
+    it "still defeats an ally in play when discarding an upgrade removes its extra hit point" do
+      tg <- blackWidow
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        clearHand p
+        response <- putIntoPlay p "08031"
+        shang <- putIntoPlay p "04098"
+        honorary <- putInHand p "03025"
+        playOn honorary (allyIdOf shang) []
+        start [AllyMessage (allyIdOf shang) (AllyDamaged (toSource p) (toDamage 3 FromAbility))]
+        pass
+        start [UpgradeMessage (upgradeIdOf honorary) DiscardUpgrade]
+        offers (isAbilityOfCard response) `shouldReturn` True
+        choose "return Shang-Chi" (isAbilityOfCard response)
+        pass
+        [returned] <- alliesWith "04098"
+        returned.allyDamage `shouldBe` 1
+
     it "puts a defeated ally back into play with 1 damage" do
       tg <- blackWidow
       let p = player1 tg

@@ -380,8 +380,12 @@ instance RunMessage (Attrs Ally) where
     -- that ally is defeated"
     UpgradeMessage uid UpgradeDetached -> pure $ a & upgradesL %~ HashSet.delete uid
     UpgradeRemoved upgradeId | HashSet.member upgradeId (allyUpgrades a) -> do
+      -- Departing allies remain as snapshots for response abilities. Discarding
+      -- their attachments must not defeat them again before their card lands in
+      -- the discard pile and opens the real after-defeat window.
+      present <- selectAny (AllyWithId $ allyId a)
       hitPoints <- getModifiedHitPoints a
-      when (allyDamage a > 0 && allyDamage a >= hitPoints) $ allyStep (allyId a) AllyDefeatedByDamage
+      when (present && allyDamage a > 0 && allyDamage a >= hitPoints) $ allyStep (allyId a) AllyDefeatedByDamage
       pure $ a & upgradesL %~ HashSet.delete upgradeId
     -- counters on the ally, the uses its abilities spend (Jack Flag's ammo)
     PlaceCounters (AllyRef ident) n | ident == allyId a -> pure $ a & countersL +~ n
