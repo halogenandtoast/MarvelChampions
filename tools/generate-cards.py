@@ -142,6 +142,9 @@ def card(c, pack_order):
         out["text"] = out["text"].replace("Hero Interrupt", "Hero Action")
     if c["code"] == "57065" and "Limit once per phase" not in out["text"]:
         out["text"] += " (Limit once per phase.)"
+    # MarvelCDB misprints Green Goblin (II)'s When Revealed; the printed card reads 4.
+    if c["code"] == "02002b":
+        out["text"] = out["text"].replace("Deal 3 indirect damage", "Deal 4 indirect damage")
     return {k: v for k, v in out.items() if v not in (None, {}, [])} | {"traits": out["traits"]}
 
 

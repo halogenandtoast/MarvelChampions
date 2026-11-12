@@ -113,9 +113,10 @@ instance RunMessage NormanOsborn where
         1 -> do
           heroes <- selectList HeroIdentity
           for_ heroes \p -> dealIndirectDamage p attrs 3
+        -- the printed card reads 4; MarvelCDB misprints it as 3
         2 -> do
           players <- getPlayers
-          for_ players \p -> dealIndirectDamage p attrs 3
+          for_ players \p -> dealIndirectDamage p attrs 4
         _ -> do
           players <- getPlayers
           for_ players \p -> damageIdentity p attrs (toDamage 4 FromAbility)

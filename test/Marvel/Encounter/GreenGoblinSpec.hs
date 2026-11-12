@@ -59,6 +59,19 @@ spec = describe "The Green Goblin" do
         villainCodeNow `shouldReturn` "02001a"
         environmentNow `shouldReturn` ("02006a", 2)
 
+    it "Green Goblin (II)'s When Revealed deals 4 indirect damage to each player" do
+      tg <- testGameAgainst "02001a" ["spider-man"]
+      let you = player1 tg
+      inGame tg do
+        changeForm you
+        damageVillain you 5
+        villainCodeNow `shouldReturn` "02001b"
+        before <- damageOf you
+        damageVillain you 14
+        villainCodeNow `shouldReturn` "02002b"
+        -- all of it to the hero, who has no allies
+        damageOf you `shouldReturn` (before + 4)
+
     it "Norman Osborn places infamy in place of attacking" do
       tg <- testGameAgainst "02001a" ["spider-man"]
       let you = player1 tg
