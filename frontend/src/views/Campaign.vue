@@ -14,6 +14,9 @@ import DeckPicker from '../components/DeckPicker.vue'
 import Lobby from '../components/Lobby.vue'
 import StoryReading from '../components/StoryReading.vue'
 import ScenarioCard from '../components/ScenarioCard.vue'
+import HeroPortrait from '../components/HeroPortrait.vue'
+import CampaignCards from '../components/CampaignCards.vue'
+import CardOverlay from '../components/CardOverlay.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
 import type { CampaignView, StarterDeck, TitanMark } from '../server'
@@ -133,7 +136,6 @@ const details = computed(() => {
 })
 const name = (code: string | null | undefined) => (code ? cards.name(code, code) : t('campaign.none'))
 const names = (codes: string[]) => (codes.length ? codes.map((c) => name(c)).join(', ') : t('campaign.none'))
-const art = (code: string) => cards.sources(code).map((s) => `url('${s}')`).join(', ')
 const campaignScenarios = computed(() => (view.value?.campaign.scenarios ?? []).map(code => ({ code, name: '', modulars: [] })))
 const { tileName: scenarioTitle } = useScenarios(campaignScenarios)
 const stage = (i: number) => {
@@ -218,10 +220,11 @@ const remove = async () => {
         <div class="players">
           <article v-for="(p, i) in log.players" :key="p.identity" class="player">
             <header>
-              <span class="portrait" :style="{ backgroundImage: art(p.identity) }" />
+              <HeroPortrait class="player-portrait square" :code="p.identity" aria-hidden="true" />
               <div>
-                <small>{{ $t('campaign.player', { n: p.number }) }}<template v-if="seatOf(i)"> · {{ $t('campaign.seatedBy', { name: seatOf(i)!.username }) }}</template></small>
+                <small>{{ $t('campaign.player', { n: p.number }) }}</small>
                 <strong>{{ name(p.identity) }}</strong>
+                <span v-if="seatOf(i)" class="played-by">{{ $t('campaign.seatedBy', { name: seatOf(i)!.username }) }}</span>
               </div>
             </header>
             <dl v-if="galaxy">
@@ -230,9 +233,9 @@ const remove = async () => {
               <dt>{{ $t('campaign.units') }}</dt>
               <dd>{{ galaxyPlayer(p.identity)?.units ?? 0 }}</dd>
               <dt>{{ $t('campaign.marketCards') }}</dt>
-              <dd>{{ names(galaxyPlayer(p.identity)?.marketCards ?? []) }}</dd>
+              <dd><CampaignCards :codes="galaxyPlayer(p.identity)?.marketCards ?? []" /></dd>
               <dt>{{ $t('campaign.collection') }}</dt>
-              <dd>{{ names(galaxyPlayer(p.identity)?.collection ?? []) }}</dd>
+              <dd><CampaignCards :codes="galaxyPlayer(p.identity)?.collection ?? []" /></dd>
             </dl>
             <dl v-else-if="mutant">
               <dt>{{ $t('campaign.role') }}</dt>
@@ -244,11 +247,11 @@ const remove = async () => {
               <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
               <dt>{{ $t('campaign.shieldTech') }}</dt>
-              <dd>{{ name(sinisterPlayer(p.identity)?.shieldTech) }}</dd>
+              <dd><CampaignCards :codes="[sinisterPlayer(p.identity)?.shieldTech]" /></dd>
               <dt>{{ $t('campaign.aspectAdvantage') }}</dt>
-              <dd>{{ name(sinisterPlayer(p.identity)?.aspectAdvantage?.[0]) }}<template v-if="sinisterPlayer(p.identity)?.aspectAdvantage"> ×{{ sinisterPlayer(p.identity)!.aspectAdvantage![1] }}</template></dd>
+              <dd><CampaignCards :codes="[sinisterPlayer(p.identity)?.aspectAdvantage?.[0]]" /><template v-if="sinisterPlayer(p.identity)?.aspectAdvantage"> ×{{ sinisterPlayer(p.identity)!.aspectAdvantage![1] }}</template></dd>
               <dt>{{ $t('campaign.planningAhead') }}</dt>
-              <dd>{{ name(sinisterPlayer(p.identity)?.planningAhead) }}</dd>
+              <dd><CampaignCards :codes="[sinisterPlayer(p.identity)?.planningAhead]" /></dd>
             </dl>
             <dl v-else-if="titan && expert">
               <dt>{{ $t('campaign.hitPoints') }}</dt>
@@ -258,7 +261,7 @@ const remove = async () => {
               <dt v-if="expert">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="expert">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
               <dt>{{ $t('campaign.shadowlandPrepared') }}</dt>
-              <dd>{{ names(log.shadowland.preparedCards.find(([hero]) => hero === p.identity)?.[1] ?? []) }}</dd>
+              <dd><CampaignCards :codes="log.shadowland.preparedCards.find(([hero]) => hero === p.identity)?.[1] ?? []" /></dd>
               <dt>{{ $t('campaign.shadowlandCorruption') }}</dt>
               <dd>{{ log.shadowland.overpoweringHistory.find(([hero]) => hero === p.identity)?.[1] ?? 0 }}</dd>
             </dl>
@@ -266,13 +269,13 @@ const remove = async () => {
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.hitPoints') }}</dt>
               <dd v-if="view.campaign.mode === 'ExpertCampaign'">{{ p.hitPoints ?? $t('campaign.none') }}</dd>
               <dt v-if="view.campaign.mode === 'ExpertCampaign'">{{ $t('campaign.obligations') }}</dt>
-              <dd v-if="view.campaign.mode === 'ExpertCampaign'">{{ names(p.obligations) }}</dd>
+              <dd v-if="view.campaign.mode === 'ExpertCampaign'"><CampaignCards :codes="p.obligations" /></dd>
               <dt>{{ $t('campaign.techUpgrade') }}</dt>
-              <dd>{{ name(p.techUpgrade) }}</dd>
+              <dd><CampaignCards :codes="[p.techUpgrade]" /></dd>
               <dt>{{ $t('campaign.basicUpgrade') }}</dt>
-              <dd>{{ name(p.conditionUpgrade) }}</dd>
+              <dd><CampaignCards :codes="[p.conditionUpgrade]" /></dd>
               <dt>{{ $t('campaign.rescuedAllies') }}</dt>
-              <dd>{{ names(p.rescuedAllies) }}</dd>
+              <dd><CampaignCards :codes="p.rescuedAllies" /></dd>
             </dl>
             <p v-if="short(i) > 0" class="short">{{ $t('campaign.deckShort', short(i)) }}</p>
             <button v-if="yours(i) && between" type="button" class="btn ghost" @click="changeDeck(i)">{{ $t('campaign.changeDeck') }}</button>
@@ -401,6 +404,7 @@ const remove = async () => {
     </div>
     <div v-else-if="error" class="page-content"><p class="error">{{ tr(error) }}</p></div>
 
+    <CardOverlay />
     <Teleport to="body">
       <StoryReading v-if="guideOpen && view" :sections="campaignGuideSections(view.campaign.kind, view.campaign.mode)" :can-continue="false" reference :source-url="campaignGuides[view.campaign.kind].source" @close="guideOpen = false" />
     </Teleport>
@@ -435,12 +439,17 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(
 .result.good { color: var(--amber); }
 .result.bad { color: var(--danger); }
 
-.players { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
-.player { display: grid; gap: 10px; padding: 12px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line); }
-.player header { display: flex; align-items: center; gap: 10px; }
-.player header div { display: grid; }
-.player small { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); }
-.player .portrait { width: 44px; height: 44px; flex: none; border-radius: 50%; background-size: cover; background-position: center top; }
+.players { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; }
+.player { display: grid; align-content: start; gap: 16px; min-width: 0; padding: 16px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line); }
+.player header { display: flex; align-items: center; gap: 14px; }
+.player header div { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.player small { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.player header strong { font-size: 1.1rem; line-height: 1.2; color: var(--title); }
+.played-by { font-size: 0.75rem; line-height: 1.4; color: var(--text-muted); }
+.player .player-portrait { width: 64px; height: 64px; flex: none; border-radius: 50%; overflow: hidden; border: 2px solid var(--line-strong); }
+.player .player-portrait::after { display: none; }
+.player dl { padding-top: 14px; border-top: 1px solid var(--line); row-gap: 10px; }
+.player dd { overflow-wrap: anywhere; }
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
 dt { color: var(--text-muted); }
 dd { margin: 0; }
