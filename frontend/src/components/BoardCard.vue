@@ -415,7 +415,8 @@ const transitionName = computed(() => (props.morph && props.id ? `c${props.id.re
 .space-token { position: absolute; inset: 0; display: grid; place-items: center; color: var(--amber); text-shadow: 0 1px 2px var(--ink-1); font-size: 1.35em; }
 
 /* tokens: the printed ones, lifted off the art */
-.token { position: absolute; --token-size: max(22px, calc(var(--control-unit, 1cqi) * 26)); }
+/* above the status cards tucked under the corner, which can hang over the counters */
+.token { position: absolute; z-index: 1; --token-size: max(22px, calc(var(--control-unit, 1cqi) * 26)); }
 .token.damage { top: 4%; right: 4%; }
 .token.threat { top: 50%; left: 50%; translate: -50% -50%; --token-size: max(30px, calc(var(--control-unit, 1cqi) * 22)); }
 .card:not(.landscape) .token.threat, .card.unfolded .token.threat { --token-size: max(28px, calc(var(--control-unit, 1cqi) * 34)); }
