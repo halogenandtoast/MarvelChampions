@@ -87,6 +87,34 @@ spec = describe "The Rise of Red Skull" do
       after <- damageOf you
       liftIO $ (tough, after > before) `shouldBe` (False, True)
 
+  it "Crossbones' Machine Gun, a forced interrupt, resolves before Spider-Sense on the same attack" do
+    tg <- testGameAgainst "04058" ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      vid <- villainIdNow
+      -- only the gun on him: the Experimental Weapon 1B gave him goes
+      starting <- getsGame (filter ((== Just (EnemyVillainId vid)) . attachmentEnemy) . map toAttrs . HashMap.elems . gameAttachments)
+      for_ starting \a -> resolve [RemoveFromPlay (AttachmentRef $ attachmentId a)]
+      _ <- revealNow you AttachmentCards.crossbonesMachineGun
+      let gun = getsGame (map toAttrs . filter ((== "04064") . toCardCode . attachmentCardDef . toAttrs) . HashMap.elems . gameAttachments)
+          -- answer what comes between the gun and Spider-Sense, until Spider-Sense is offered
+          untilSpiderSense :: Int -> GameAppT Bool
+          untilSpiderSense 0 = pure False
+          untilSpiderSense n = asked >>= \case
+            Just (_, cs)
+              | any (isAbilityOf you) cs -> pure True
+              | EndTurn `notElem` cs -> choose "first" (const True) >> untilSpiderSense (n - 1)
+            _ -> pure False
+      [g] <- gun
+      start [VillainMessage vid (VillainAttacks you)]
+      Just (_, first) <- asked
+      liftIO $ (any (isAbilityOf (AttachmentRef $ attachmentId g)) first, any (isAbilityOf you) first) `shouldBe` (True, False)
+      choose "Machine Gun" (isAbilityOf (AttachmentRef $ attachmentId g))
+      offered <- untilSpiderSense 10
+      after <- map attachmentCounters <$> gun
+      liftIO $ (offered, after) `shouldBe` (True, [attachmentCounters g - 1])
+
   it "None Shall Pass keeps one environment in play, Absorbing Man has its trait, and a delay counter follows step one" do
     tg <- testGameAgainst "04076" ["spider-man"]
     let you = player1 tg
