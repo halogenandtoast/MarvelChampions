@@ -140,10 +140,18 @@ const shown = (view: GameView) => {
   for (const p of view.players ?? []) {
     add(p.hand)
     add(p.allies)
-    p.allies?.forEach((a) => add(a.upgrades))
+    p.allies?.forEach((a) => {
+      add(a.upgrades)
+      add(a.attachments)
+    })
     add(p.supports)
     add(p.upgrades)
+    // encounter cards in their area: Frozen in Time on the identity, their obligations
+    add(p.attachments)
+    add(p.obligations)
   }
+  for (const s of [...(view.mainSchemes ?? []), ...(view.sideSchemes ?? [])]) add(s.attachments)
+  for (const e of view.environments ?? []) add(e.attachments)
   for (const v of view.villains ?? []) {
     add(v.attachments)
     add(v.upgrades)
