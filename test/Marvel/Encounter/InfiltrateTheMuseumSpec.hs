@@ -142,6 +142,24 @@ collector = describe "Collector" do
       liftIO $ ids `shouldBe` [CardId (unMinionId m)]
       encounterDiscardCodes >>= (`shouldSatisfy` notElem (toCardCode Minions.servantBot))
 
+  it "names and displays the card Collector's interrupt would put in The Collection" do
+    tg <- museum ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      m <- addMinion you Minions.servantBot
+      start [RemoveFromPlay (MinionRef m)]
+      view <- liftIO . publicGame =<< getGame
+      let questions = [q | Object o <- [view], Just (Object qs) <- [KeyMap.lookup "question" o], Object q <- KeyMap.elems qs]
+          focused = [c | Object o <- [view], Just (Array cs) <- [KeyMap.lookup "focusedCards" o], Object c <- toList cs]
+      liftIO do
+        map (KeyMap.lookup "source") questions `shouldSatisfy` elem (Just $ toJSON m)
+        map (KeyMap.lookup "id") focused `shouldSatisfy` elem (Just $ toJSON m)
+      -- A question saved before sources were attached gets the same context.
+      withGame_ $ questionL %~ fmap (\case QuestionLabel label _ q -> QuestionLabel label Nothing q; q -> q)
+      saved <- liftIO . publicGame =<< getGame
+      let savedQuestions = [q | Object o <- [saved], Just (Object qs) <- [KeyMap.lookup "question" o], Object q <- KeyMap.elems qs]
+      liftIO $ map (KeyMap.lookup "source") savedQuestions `shouldSatisfy` elem (Just $ toJSON m)
+
   it "I: a defeated minion and a defeated ally go into The Collection" do
     tg <- museum ["spider-man"]
     let you = player1 tg

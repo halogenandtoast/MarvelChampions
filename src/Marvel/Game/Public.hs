@@ -659,6 +659,7 @@ gameView seesHand g = do
           gameFocusedCards g
             <> concat [cs | (pid, cs) <- HashMap.toList (gamePrivateCards g), seesHand pid]
             <> mapMaybe (cardInPlay g) (concatMap revealingSources $ HashMap.elems $ gameQuestion g)
+            <> [card | notNull respondingQuestions, card <- pendingDiscardCards]
             <> concat [inspectedCards q | (pid, q) <- HashMap.toList (gameQuestion g), seesHand pid]
       , discardedCards = map cardView displayedDiscards
       , resolvingEvents =
@@ -743,6 +744,15 @@ gameView seesHand g = do
         W.FlippedBoostCard c _ | ecCardId c `elem` legacyDefianceBoosts -> [c]
         _ -> []
     ]
+  -- The physical card about to leave play is the subject of Collector's interrupt.
+  -- Keep it visible even after its entity has been removed, including saved questions.
+  respondingQuestions = [q | q <- HashMap.elems (gameQuestion g), questionResponds q]
+  questionResponds = \case
+    QuestionLabel label _ _ | label `elem` ["$label.respond", "$label.resolveForced"] -> True
+    QuestionLabel _ _ q -> questionResponds q
+    _ -> False
+  pendingDiscardCards = L.nub
+    [either PlayerCard EncounterCard card | W.Window _ (W.WouldBeDiscardedFromPlay card) <- concat (headMay $ gameWindows g)]
   faceupBoostIds = map ecCardId faceupBoostCards
   -- A newly revealed attachment may have no host yet, and therefore no board
   -- location. Its resolution prompt must still show the physical source card.
@@ -836,7 +846,9 @@ gameView seesHand g = do
               <|> raw.prompt <|> (if any discardOnlyAbility (gameActiveCost g) && not (null raw.choices) && all ((== "discard") . (.kind)) raw.choices
               then Just "$label.chooseHandDiscard" else Nothing)
           , choices = map onResource raw.choices
-          , source = raw.source <|> (idText . pcCardId <$> defeatedAlly) <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
+          , source = raw.source <|> (if raw.prompt `elem` [Just "$label.respond", Just "$label.resolveForced"]
+              then case pendingDiscardCards of [card] -> Just $ idText $ toCardId card; _ -> Nothing
+              else Nothing) <|> (idText . pcCardId <$> defeatedAlly) <|> countingDiscard <|> (if raw.prompt == Just "$label.respond"
               then idText . ecCardId <$> headMay pendingBoostCards else Nothing)
           }
      in if isJust (gameCompetition g) && not (seesHand asked)

@@ -154,10 +154,10 @@ const riverCards = computed<RiverCard[]>(() => {
     const enemy = [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])].find(enemy => enemy.id === id)
     if (enemy) cards.set(id, { id, code: enemy.code, name: enemy.name })
   }
-  if (['$label.resolveEnemyAttack', '$label.resolveEnemyScheme'].includes(question.value?.prompt ?? '') && question.value?.source) {
+  if (question.value?.source) {
     const id = question.value.source
-    const enemy = things.value[id]
-    if (enemy && id !== attacker.value?.id) cards.set(id, { id, ...enemy })
+    const source = things.value[id]
+    if (source && id !== attacker.value?.id && id !== game.value?.activeCost?.source && id !== game.value?.activeCost?.card?.id) cards.set(id, { id, ...source })
   }
   if (Object.values(game.value?.question ?? {}).some(q => q?.prompt === '$label.revealBoostCards')) {
     for (const enemy of [...(game.value?.villains ?? []), ...(game.value?.minions ?? [])]) {
@@ -532,6 +532,7 @@ const resetGame = () => restartDialog.value?.open()
                 <template v-if="seat.id === viewed?.id">
                   <QuestionZone
                     v-if="!mobile"
+                    :source="question?.source ?? null"
                     :kind="question?.kind ?? null"
                     :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
                     :buttons="askedElsewhere ? [] : buttons"
@@ -588,6 +589,7 @@ const resetGame = () => restartDialog.value?.open()
       </nav>
       <div v-show="mobileActionsOpen" id="mobile-decisions">
         <QuestionZone
+          :source="question?.source ?? null"
           :kind="question?.kind ?? null"
           :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
           :buttons="choices"

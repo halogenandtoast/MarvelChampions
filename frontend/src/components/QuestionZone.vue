@@ -12,7 +12,8 @@ import { useCards } from '../cards'
 import CardFace from './CardFace.vue'
 import type { ChoiceView } from '../server'
 
-const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, elsewhere = null, outcome = null, things = {}, popOut = null } = defineProps<{
+const { source = null, kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, elsewhere = null, outcome = null, things = {}, popOut = null } = defineProps<{
+  source?: string | null
   kind?: string | null
   /** what is asked, as the engine says it */
   prompt?: string | null
@@ -43,6 +44,10 @@ const prompt = computed(() => (asked ? keyed(asked) : kind && te(`game.prompt.${
 const explanation = computed(() => {
   const key = asked?.startsWith('$') ? `${asked.slice(1).split(' ')[0]}Explanation` : null
   return key && te(key) ? t(key) : null
+})
+const sourceCard = computed(() => {
+  const card = source ? things[source] : null
+  return card ? { ...card, name: cards.name(card.code, card.name) } : null
 })
 const overlay = useCardOverlay()
 const about = (choice: ChoiceView) => {
@@ -75,6 +80,7 @@ const tone = (choice: ChoiceView) =>
     </template>
     <template v-else-if="popOut">
       <header>
+        <span v-if="sourceCard" class="source-name">{{ sourceCard.name }}</span>
         <span class="eyebrow">{{ waitingOn ? t('game.waitingOn', { name: waitingOn }) : asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
         <h2 v-if="!waitingOn"><IconText :text="prompt" /></h2>
       </header>
@@ -85,6 +91,7 @@ const tone = (choice: ChoiceView) =>
     </template>
     <template v-else-if="elsewhere">
       <header>
+        <span v-if="sourceCard" class="source-name">{{ sourceCard.name }}</span>
         <span class="eyebrow">{{ t('game.prompt.asking', { name: elsewhere }) }}</span>
       </header>
       <div class="options">
@@ -93,6 +100,7 @@ const tone = (choice: ChoiceView) =>
     </template>
     <template v-else-if="buttons.length || onBoard">
       <header>
+        <span v-if="sourceCard" class="source-name">{{ sourceCard.name }}</span>
         <span class="eyebrow">{{ asking ? t('game.prompt.asking', { name: asking }) : t('game.prompt.yourMove') }}</span>
         <h2><IconText :text="prompt" /></h2>
       </header>
@@ -121,6 +129,7 @@ const tone = (choice: ChoiceView) =>
 </template>
 
 <style scoped>
+.source-name { display: block; color: var(--title); font-weight: 700; margin-bottom: 4px; }
 .question {
   display: flex;
   flex-direction: column;

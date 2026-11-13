@@ -3304,16 +3304,20 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     again <- Run <$> capture (checkWindowsFor order windows)
     let forcedAbiltiies = filter isForcedAbility validAbilities
         respond a = pure $ UseAbility (a & choicesL <>~ [again])
+        windowSources = nub [CardIdRef $ either pcCardId ecCardId card | W.Window _ (W.WouldBeDiscardedFromPlay card) <- windows]
+        askWindow prompt = case windowSources of
+          [source] -> chooseOnePromptedAbout ident prompt source
+          _ -> chooseOnePrompted ident prompt
     case (forcedAbiltiies, validAbilities, playableCards) of
       ([], [], []) -> checkWindowsFor rest windows
       ([], as, cs) ->
-        chooseOnePrompted ident "$label.respond" $
+        askWindow "$label.respond" $
           labeled "$label.noResponse" (checkWindowsFor rest windows)
             : map respond as
               <> [pure $ TargetLabel (toRef c) [PlayCard c mwindow, again] | (c, mwindow) <- cs]
       ([keyword],_,_) | engineAttackResponse keyword -> do
         resolveAs ident $ UseAbility (keyword & choicesL <>~ [again])
-      (forced, _, _) -> chooseOnePrompted ident "$label.resolveForced" $ map respond forced
+      (forced, _, _) -> askWindow "$label.resolveForced" $ map respond forced
     let updated window = fromMaybe window $ headMay [new | (old,new) <- zip originalWindows windows,old == window]
     pure g {gameWindows = case gameWindows of [] -> []; current : older -> map updated current : older}
   DeclareDefense ident enemyId defensePriority -> do
