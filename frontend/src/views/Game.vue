@@ -362,6 +362,11 @@ const choose = (index: number) => {
 const reading = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q?.reading?.length) ?? null)
 // a question answered by picking a card in no play area, as a campaign's Tech upgrade
 const picking = computed(() => Object.entries(game.value?.question ?? {}).find(([, q]) => q && (searchedCards(game.value, q).length || q.choices.some((c) => c.kind === 'card'))) ?? null)
+// the hero asked to pick, named over the cards
+const pickingSeat = computed(() => {
+  const seat = picking.value && players.value.find((p) => p.id === picking.value![0])
+  return seat ? { name: seat.name, code: seat.code } : null
+})
 // either pops out over the board; closed, the question box opens it again
 const closedAt = ref<number | null>(null)
 const popOut = computed(() => (reading.value || picking.value ? (closedAt.value === game.value?.questionVersion ? 'closed' : 'open') : null))
@@ -468,6 +473,7 @@ const resetGame = () => restartDialog.value?.open()
       :can-choose="answering === picking[0]"
       :remaining-picks="picking[1].remainingPicks ?? (picking[1].kind === 'chooseOne' ? 1 : null)"
       :waiting-on="playerName[picking[0]] ?? null"
+      :asking="pickingSeat"
       @choose="choose"
       @close="closedAt = game?.questionVersion ?? null"
     />

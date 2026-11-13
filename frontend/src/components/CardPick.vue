@@ -12,10 +12,13 @@ import { useChoiceLabel, useKeyed } from '../composables/useChoices'
 import { skipViewTransitions } from '../composables/useViewTransition'
 import { useCardOverlay } from '../composables/useCardOverlay'
 import CardFace from './CardFace.vue'
+import HeroPortrait from './HeroPortrait.vue'
 import type { ChoiceView, SearchedView } from '../server'
 
-const { prompt = null, choices, searched = [], canChoose, waitingOn = null, remainingPicks = 1 } = defineProps<{
+const { prompt = null, choices, searched = [], canChoose, waitingOn = null, remainingPicks = 1, asking = null } = defineProps<{
   prompt?: string | null
+  /** the hero whose question this is */
+  asking?: { name: string; code: string } | null
   choices: ChoiceView[]
   searched?: SearchedView[]
   canChoose: boolean
@@ -52,6 +55,7 @@ onMounted(skipViewTransitions)
 onBeforeUnmount(() => { cancelPress(); overlay.hide() })
 
 const title = computed(() => (prompt ? keyed(prompt) : t('game.prompt.chooseOne')))
+const dialogLabel = computed(() => (asking ? `${asking.name}: ${title.value}` : title.value))
 type Pick = { key: string | number; code: string; index: number | null }
 // a searched card is picked by the choice on it, if any; searched in several places, the
 // cards are grouped under where they were
@@ -67,9 +71,13 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 <template>
   <Teleport to="body">
     <div class="pick-backdrop" @click.self="close">
-      <article class="pick" role="dialog" aria-modal="true" :aria-label="title">
+      <article class="pick" role="dialog" aria-modal="true" :aria-label="dialogLabel">
         <header>
-          <h2>{{ title }}</h2>
+          <HeroPortrait v-if="asking" :code="asking.code" class="asker square" aria-hidden="true" />
+          <div class="heading">
+            <span v-if="asking" class="eyebrow">{{ t('game.prompt.asking', { name: asking.name }) }}</span>
+            <h2>{{ title }}</h2>
+          </div>
           <button type="button" class="close" :title="t('common.close')" :aria-label="t('common.close')" @click="close"><X aria-hidden="true" /></button>
         </header>
         <div class="pick-content" @scroll="overlay.hide()">
@@ -117,7 +125,10 @@ const others = computed(() => choices.filter((c) => !picked.value.has(c.index)))
 .pick-content .group + .group { margin-top: 16px; }
 header, footer { flex-shrink: 0; }
 header { display: flex; align-items: center; gap: 12px; }
-h2 { overflow-wrap: anywhere; min-width: 0; margin: 0 auto 0 0; font-size: 1.4rem; text-transform: uppercase; color: var(--title); }
+.asker { flex-shrink: 0; width: 48px; height: 48px; border-radius: 8px; }
+.heading { display: flex; flex-direction: column; gap: 2px; min-width: 0; margin-right: auto; }
+.eyebrow { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--interactive); }
+h2 { overflow-wrap: anywhere; min-width: 0; margin: 0; font-size: 1.4rem; text-transform: uppercase; color: var(--title); }
 .close { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
 .close:hover { background: var(--hover-tint); color: var(--text); }
 .close svg { width: 20px; height: 20px; }
