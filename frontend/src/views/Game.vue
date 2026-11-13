@@ -45,8 +45,9 @@ const { t } = useI18n()
 const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
+const animationArea = ref<number | null>(null)
 const { error, game, data, log, river, riverCleared, canceledEvent, activationAlert, activationBanner, activationKind, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
-  useGame(gameId, spectate)
+  useGame(gameId, spectate, () => animationArea.value)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
 const playerName = computed(() => Object.fromEntries(players.value.map((p) => [p.id, p.name])))
@@ -102,6 +103,7 @@ const pickedArea = ref<number | null>(null)
 watch(() => viewed.value?.id, () => (pickedArea.value = null))
 const splitAreas = computed(() => areas.value.length > 1)
 const shownArea = computed(() => (splitAreas.value ? (areas.value.find((a) => a.id === (pickedArea.value ?? areaOf(viewed.value?.id)?.id ?? ownArea.value)) ?? null) : null))
+watch(shownArea, area => { animationArea.value = area?.id ?? null }, { immediate: true, flush: 'sync' })
 const orderedAreas = computed(() => [...areas.value].sort((a, b) => Number(b.id === ownArea.value) - Number(a.id === ownArea.value)))
 // everything in an area, by id: its villains and schemes, its players and their cards
 const idsIn = (area: AreaView) => {

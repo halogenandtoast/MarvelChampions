@@ -180,8 +180,25 @@ const discardsOf = (view: GameView) => {
  * The moves from one state to the next. `lift` goes inside the transition before the new
  * state is applied, `land` after it renders, `done` once the transition is over.
  */
-export const dealFrom = (before: GameView | null, after: GameView, sources: Sources, extra: ReadonlyMap<string, string | null> = new Map()) => {
+export const dealFrom = (before: GameView | null, after: GameView, sources: Sources, extra: ReadonlyMap<string, string | null> = new Map(), areaId: number | null = null) => {
   if (!before) return null
+  // Hidden areas still update in the full game state. They must not create ghosts
+  // at pile positions cached when the viewer previously visited those areas.
+  const local = (view: GameView): GameView => {
+    const area = view.areas?.find(a => a.id === areaId)
+    if (!area || (view.areas?.length ?? 0) <= 1) return view
+    return {
+      ...view,
+      players: view.players.filter(p => area.players.includes(p.id)),
+      villains: view.villains.filter(v => area.villains.includes(v.id)),
+      minions: view.minions.filter(m => area.players.includes(m.engagedWith)),
+      mainSchemes: view.mainSchemes.filter(s => area.mainSchemes.includes(s.id)),
+      sideSchemes: view.sideSchemes.filter(s => area.sideSchemes.includes(s.id)),
+      environments: view.environments?.filter(e => area.environments.includes(e.id)),
+    }
+  }
+  before = local(before)
+  after = local(after)
   const leaving: Move[] = []
   const arriving: Move[] = []
   const dealtPiles = new Map<string, number>()

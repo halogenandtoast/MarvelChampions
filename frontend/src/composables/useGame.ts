@@ -25,7 +25,7 @@ const socketUrl = (path: string) => {
 }
 
 /** A game to play, or with `spectate` to watch: the same updates, read only. */
-export const useGame = (gameId: string, spectate = false) => {
+export const useGame = (gameId: string, spectate = false, animationArea: () => number | null = () => null) => {
   const gamePath = `/api/games/${gameId}${spectate ? '/spectate' : ''}`
   const { t } = useI18n()
   let closed = false
@@ -97,7 +97,7 @@ export const useGame = (gameId: string, spectate = false) => {
     }
     // cards morph between zones, as a hand card going into play, or fly from and to piles
     const before = data.value?.game ?? null
-    const dealing = animate && transitionsOn() && next.game ? dealFrom(before, next.game, cards.sources, new Map(river.value.map((c) => [c.id, c.code]))) : null
+    const dealing = animate && transitionsOn() && next.game ? dealFrom(before, next.game, cards.sources, new Map(river.value.map((c) => [c.id, c.code])), animationArea()) : null
     const applyState = async () => {
       if (epoch !== animationEpoch) return
       dealing?.lift()
@@ -206,6 +206,12 @@ export const useGame = (gameId: string, spectate = false) => {
         }
         return
       case 'Shuffled':
+        if (message.pile.startsWith('deck-') && message.pile !== 'deck-encounter') {
+          const areas = data.value?.game?.areas ?? []
+          const area = animationArea()
+          const ownerArea = areas.find(a => a.players.includes(message.pile.slice(5)))
+          if (areas.length > 1 && area !== null && ownerArea && ownerArea.id !== area) return
+        }
         return transitionsOn() ? riffle(message.pile) : undefined
       case 'BoostDealt':
         return toRiver({ id: message.cardId, code: null, boost: true }, false)
