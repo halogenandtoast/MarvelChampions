@@ -22,7 +22,7 @@ newtype Loki = Loki (Attrs Minion)
 
 instance HasAbilities Loki where
   getAbilities (Loki a) =
-    [ windowAbility a 1 (W.MinionDefeated W.When $ MinionWithId $ minionId a) ForcedInterrupt NoCost $
+    [ windowAbility a 1 (W.MinionWouldBeDefeated $ MinionWithId $ minionId a) ForcedInterrupt NoCost $
         RunAbility (toTarget a) 1
     ]
 

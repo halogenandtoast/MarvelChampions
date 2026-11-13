@@ -497,8 +497,9 @@ spec = describe "Civil War Dangerous Recruits" do
       fmap (any ((== ecCardId runner) . ecCardId)) getEncounterDiscard `shouldReturn` False
 
 
-  for_ [False,True] $ \recruitsFirst ->
-    it ("a cancelled defeat does not move Loki or leave a boost destination behind: recruits first " <> show recruitsFirst) do
+  -- RR "Would": Loki's "would be defeated" comes before Dangerous Recruits' "is
+  -- defeated", and once it replaces the defeat the latter cannot answer it
+  it "a cancelled defeat does not move Loki or leave a boost destination behind" do
       tg <- testGame ["spider-man"]
       inGame tg do
         let you = player1 tg
@@ -509,7 +510,7 @@ spec = describe "Civil War Dangerous Recruits" do
         _ <- stackEncounterDeck [C.cw56089]
         damage <- L.runQueueT $ L.capture $ L.dealDamage mid you (toDamage 10 FromAbility)
         start damage
-        choose "order forced defeat interrupts" (if recruitsFirst then isAbilityOf sid else isAbilityOf mid)
+        offers (isAbilityOf sid) `shouldReturn` False
         whenM (offers $ isAbilityOf mid) $ choose "resolve Loki" (isAbilityOf mid)
         whenM (offers $ isAbilityOf sid) $ choose "resolve Dangerous Recruits" (isAbilityOf sid)
         pass

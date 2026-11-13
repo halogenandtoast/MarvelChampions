@@ -117,6 +117,8 @@ data WindowMatcher
   | -- | after a player matching's hero thwarts and removes all threat from a scheme
     HeroThwartsAllThreat IdentityMatcher
   | VillainWouldBeDefeatedMatching VillainMatcher
+  | -- | a minion matching would be defeated: before "when … is defeated" (RR "Would")
+    MinionWouldBeDefeated MinionMatcher
   | EnemyAttacksPlayerOrAlly WindowTiming EnemyMatcher IdentityMatcher
   | EnemyWouldScheme EnemyMatcher IdentityMatcher
   | VillainWouldGainStatus VillainMatcher [StatusCard]
@@ -360,6 +362,8 @@ data WindowType
     EnemyWasDealtDamage EnemyId Damage Source
   | EnemyTookDamageFrom EnemyId Damage Source
   | VillainDefeatWouldOccur VillainId
+  | -- | as 'DefeatedMinion', before its "would be defeated" interrupts
+    MinionDefeatWouldOccur MinionId Damage Source Natural
   | EnemyAttackAlly EnemyId AllyId IdentityId
   | EnemyAttack EnemyId IdentityId
   | EnemyAttackOnEnemy EnemyId EnemyId

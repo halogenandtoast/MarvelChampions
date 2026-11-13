@@ -25,6 +25,9 @@ data MinionMessage
   | -- | the damage defeats it, with this much past its hit points: past the window in
     -- which the excess of a hero's attack may be increased
     MinionDefeatedWithExcess Source Damage Natural
+  | -- | past its "would be defeated" interrupts: the defeat itself, with its "when" and
+    -- "after" windows and overkill
+    MinionResolveDefeat Source Damage Natural
   | MinionHealed Natural
   | MinionHealAllDamage
   | MinionAttacksWithChange IdentityId Int [Keyword]

@@ -2,6 +2,7 @@ module Marvel.Hero.SpiderManSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Marvel.Ability.Types (AbilityType (..))
+import Marvel.Attachment.Cards qualified as Attachments
 import Marvel.Damage
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Obligation.Cards qualified as Obligations
@@ -187,6 +188,38 @@ spec = describe "Spider-Man" do
       mainScheme <- getsGame (HashMap.keys . gameMainSchemes)
       runNow [MainSchemeMessage m (MainSchemePlaceThreat 4) | m <- mainScheme]
       before <- mainSchemeThreat
+      runNow [MinionMessage (minionOf mercenary) (MinionDamaged GameRef (toDamage 10 FromAbility))]
+      choose "resolve Spider-Tracer" (isAbilityOfCard tracer)
+      chooseMainScheme
+      pass
+      mainSchemeThreat `shouldReturn` (before - 3)
+      upgradeCodes `shouldReturn` []
+
+  -- RR "Would": "when … would be defeated" comes before "when … is defeated", and once it
+  -- replaces the defeat the latter cannot answer it (#27)
+  it "Spider-Tracer waits while Biomechanical Upgrades replaces the minion's defeat" do
+    tg <- testGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      changeForm p
+      clearHand p
+      tracer <- putInHand p "01007"
+      energy <- putInHand p "01088"
+      mercenary <- revealNow p Minions.hydraMercenary
+      pass
+      playOn tracer (minionOf mercenary) [energy]
+      _ <- revealNow p Attachments.biomechanicalUpgrades
+      mainScheme <- getsGame (HashMap.keys . gameMainSchemes)
+      runNow [MainSchemeMessage m (MainSchemePlaceThreat 4) | m <- mainScheme]
+      before <- mainSchemeThreat
+      runNow [MinionMessage (minionOf mercenary) (MinionDamaged GameRef (toDamage 10 FromAbility))]
+      offers (isAbilityOfCard tracer) `shouldReturn` False
+      choose "resolve Biomechanical Upgrades" isAnyAbility
+      minionDamageOf (minionOf mercenary) `shouldReturn` Just 0
+      getsGame (HashMap.size . gameAttachments) `shouldReturn` 0
+      upgradeCodes `shouldReturn` ["01007"]
+      mainSchemeThreat `shouldReturn` before
+      -- defeated for real the next time
       runNow [MinionMessage (minionOf mercenary) (MinionDamaged GameRef (toDamage 10 FromAbility))]
       choose "resolve Spider-Tracer" (isAbilityOfCard tracer)
       chooseMainScheme

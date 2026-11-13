@@ -30,7 +30,7 @@ newtype BiomechanicalUpgrades = BiomechanicalUpgrades (Attrs Attachment)
 instance HasAbilities BiomechanicalUpgrades where
   getAbilities (BiomechanicalUpgrades a) = case attachmentEnemy a of
     Just (EnemyMinionId mid) ->
-      [ windowAbility a 1 (W.MinionDefeated W.When $ MinionWithId mid) ForcedInterrupt NoCost $
+      [ windowAbility a 1 (W.MinionWouldBeDefeated $ MinionWithId mid) ForcedInterrupt NoCost $
           RunAbility (toTarget a) 1
       ]
     _ -> []

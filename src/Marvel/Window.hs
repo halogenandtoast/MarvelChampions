@@ -378,6 +378,9 @@ windowMatches matcher w source = case matcher of
   VillainWouldBeDefeatedMatching matcher' -> case windowType w of
     VillainDefeatWouldOccur vid | windowTiming w == Would -> villainMatches matcher' vid
     _ -> pure False
+  MinionWouldBeDefeated matcher' -> case windowType w of
+    MinionDefeatWouldOccur mid _ _ _ | windowTiming w == Would -> minionMatches matcher' mid
+    _ -> pure False
   EnemyAttacksPlayerOrAlly timing enemyMatcher identityMatcher -> case windowType w of
     EnemyAttack enemy ident | windowTiming w == timing ->
       (&&) <$> enemyMatches enemyMatcher enemy <*> identityMatches identityMatcher ident

@@ -47,7 +47,10 @@ instance RunMessage NoQuarter where
       pure e
     _ -> NoQuarter . (`With` meta) <$> runMessage msg attrs
    where
+    -- the excess is the damage's, whether or not a "would be defeated" interrupt
+    -- then replaces the defeat
     defeat = \case
+      W.MinionDefeatWouldOccur _ _ source excess -> [(source, excess)]
       W.DefeatedMinion _ _ source excess -> [(source, excess)]
       W.DefeatedVillain _ _ source excess -> [(source, excess)]
       _ -> []

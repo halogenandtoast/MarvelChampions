@@ -145,10 +145,13 @@ cancelWhenRevealed tid = do
 -- would deal past it, and the window after its defeat are cancelled.
 cancelMinionDefeat :: (HasQueue m) => MinionId -> m ()
 cancelMinionDefeat mid = withQueue_ \q -> case break isDefeat q of
+  -- from its "would be defeated" window: nothing of the defeat has opened yet
+  (pre, MinionMessage _ MinionResolveDefeat {} : rest) -> pre <> rest
   (pre, _ : rest) -> pre <> cancelAfter (dropOverkill rest)
   _ -> q
  where
   isDefeat = \case
+    MinionMessage mid' MinionResolveDefeat {} -> mid' == mid
     MinionMessage mid' MinionDefeated -> mid' == mid
     ResolveMinionLeavingPlay mid' _ -> mid' == mid
     _ -> False

@@ -119,14 +119,20 @@ runMinionMessage msg attrs = case msg of
     -- overkill follows the defeat: a minion that is not defeated after all deals none
     -- past it ('cancelMinionDefeat')
     blocked <- elem CannotBeDefeated <$> getModifiers attrs
+    -- "would be defeated" interrupts come first (RR "Would"); one that replaces the
+    -- defeat cancels the step resolving it, so "when defeated" ones never open
     unless blocked do
-      attached <- enemyDefeatUpgrades (toEnemyId attrs)
-      checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
-      minionStep (minionId attrs) MinionDefeated
-      when (overkill > 0 && damageOverkill damage) do
-        traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
-      checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+      checkWindows [W.Window W.Would $ W.MinionDefeatWouldOccur (minionId attrs) damage source overkill]
+      minionStep (minionId attrs) (MinionResolveDefeat source damage overkill)
     pure attrs {minionDefeatedBaseScheme = if blocked then Nothing else Just baseScheme}
+  MinionResolveDefeat source damage overkill -> do
+    attached <- enemyDefeatUpgrades (toEnemyId attrs)
+    checkWindows [W.Window W.When $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.When $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+    minionStep (minionId attrs) MinionDefeated
+    when (overkill > 0 && damageOverkill damage) do
+      traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
+    checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
+    pure attrs
   -- retaliate answers the attack whether or not a tough status card took its damage
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
