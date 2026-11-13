@@ -674,23 +674,17 @@ refuseLeaderHero setup total position deckList = for_ (setupCompetition setup) \
       leaderTitle = title . cdName <$> HashMap.lookup leader allVillainsMap
   when (isJust heroTitle && heroTitle == leaderTitle) $ sendResponseStatus status400 (ikey "error.cwLeaderHero")
 
--- | Your seats in multi-handed solo, numbered when there are several.
+-- | Your seats in multi-handed solo.
 soloSeats :: Text -> NonEmpty DeckList -> NonEmpty (Text, DeckList)
-soloSeats name = \case
-  deckList :| [] -> (name, deckList) :| []
-  deckLists -> NE.zipWith (\n deckList -> (name <> " (" <> tshow n <> ")", deckList)) (NE.iterate (+ 1) (1 :: Int)) deckLists
+soloSeats name = fmap (name,)
 
 -- | The seats of a game with friends, in order, with who sits there and their deck.
--- Someone sitting in several seats is numbered in each, as in multi-handed solo.
 friendSeats :: MarvelGameId -> Handler [(Text, DeckList)]
 friendSeats gid = do
   seats <- runDB $ selectList [MarvelSeatGameId ==. gid] [Asc MarvelSeatPosition]
-  let users = map ((.marvelSeatUserId) . entityVal) seats
-  for (zip [0 :: Int ..] seats) \(n, Entity _ seat) -> do
+  for seats \(Entity _ seat) -> do
     name <- maybe "" (.userUsername) <$> runDB (get seat.marvelSeatUserId)
-    let theirs = filter (== seat.marvelSeatUserId) users
-        name' = if length theirs > 1 then name <> " (" <> tshow (1 + length (filter (== seat.marvelSeatUserId) (take n users))) <> ")" else name
-    (name',) <$> maybe (sendResponseStatus status400 ("a seat has no deck" :: Text)) (decodeOrFail "deck") seat.marvelSeatDeck
+    (name,) <$> maybe (sendResponseStatus status400 ("a seat has no deck" :: Text)) (decodeOrFail "deck") seat.marvelSeatDeck
 
 -- | Deal a new game from a seed and play it up to its first question, with a seat for
 -- each named deck.
@@ -1109,13 +1103,11 @@ campaignSeats cid row = do
     then zip3 [0 ..] (repeat row.marvelCampaignUserId) <$> decodeOrFail @[DeckList] "decks" row.marvelCampaignDecks
     else for seats \(Entity _ s) -> (s.marvelCampaignSeatPosition,s.marvelCampaignSeatUserId,) <$> decodeOrFail "deck" s.marvelCampaignSeatDeck
 
--- | Each seat's player by name, numbered when someone sits in several, as at a game.
+-- | Each seat's player by name.
 seatNames :: [(Int, UserId, DeckList)] -> Handler [(UserId, Text, DeckList)]
-seatNames seats = for (zip [0 :: Int ..] seats) \(n, (_, userId, deck)) -> do
+seatNames seats = for seats \(_, userId, deck) -> do
   name <- maybe "" (.userUsername) <$> runDB (get userId)
-  let theirs = [u | (_, u, _) <- seats, u == userId]
-      before = length [u | (_, u, _) <- take n seats, u == userId]
-  pure (userId, if length theirs > 1 then name <> " (" <> tshow (before + 1) <> ")" else name, deck)
+  pure (userId, name, deck)
 
 -- | The campaign is waiting for friends to take its open seats: before its first game.
 awaitingCampaignPlayers :: MarvelCampaign -> Campaign -> Int -> Bool

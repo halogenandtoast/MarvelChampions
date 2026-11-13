@@ -49,7 +49,6 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
             <li v-for="(seat, n) in game.seats" :key="n" class="seat" :class="{ eliminated: seat.eliminated }">
               <HeroPortrait class="face square" :code="seat.identity" />
               <span class="seat-name">{{ seat.name }}</span>
-              <span v-if="seat.damage" class="seat-damage">−{{ seat.damage }}</span>
             </li>
           </ul>
           <p v-else class="meta">{{ game.playerName }}</p>
@@ -118,7 +117,6 @@ const link = computed(() => (props.spectate ? `/games/${props.game.id}/spectate`
 .face { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; }
 .face::after { height: 0; }
 .seat-name { font-size: 0.82rem; font-weight: 600; }
-.seat-damage { font-size: 0.75rem; font-weight: 700; color: #f0a4a9; }
 .delete { align-self: center; margin-right: 14px; padding: 8px; border: 0; border-radius: 8px; background: none; color: var(--text-faint); cursor: pointer; }
 .delete:hover { color: var(--danger); background: rgb(214 80 88 / 0.1); }
 .delete svg { width: 18px; height: 18px; }
