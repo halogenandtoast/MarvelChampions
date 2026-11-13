@@ -337,6 +337,7 @@ export const useGame = (gameId: string, spectate = false, animationArea: () => n
     data: shallowReadonly(data),
     game,
     canUndo: computed(() => data.value?.canUndo ?? false),
+    locked: computed(() => data.value?.locked ?? false),
     started: computed(() => data.value?.started ?? false),
     table: computed(() => data.value?.table ?? null),
     log: shallowReadonly(log),

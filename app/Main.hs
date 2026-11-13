@@ -164,6 +164,8 @@ data GameData = GameData
   , game :: Maybe Value
   , playerId :: Maybe IdentityId
   , canUndo :: Bool
+  , locked :: Bool
+  -- ^ a campaign game over, its result in the log: looked back on, never undone or restarted
   , table :: Table
   , setup :: Value
   -- ^ the scenario as it was chosen, for the lobby to show before it is dealt
@@ -433,15 +435,29 @@ tableFor gid row = do
 -- the log entries meant for whoever sees it.
 gameData :: (MonadIO m) => Maybe UserId -> MarvelGame -> Table -> Maybe Game -> Maybe [LogEntry] -> m GameData
 gameData viewer row table g entries = do
+  let locked = isJust row.marvelGameCampaignId && maybe False (isFinished . gameState) g
   view <- liftIO $ for g \g' -> publicGameFor (seesHand table viewer (gameSeats g')) g'
   pure $ GameData
     (isJust g)
     view
     (gameActivePlayer <$> g)
-    (row.marvelGameStep > 0)
+    (row.marvelGameStep > 0 && not locked)
+    locked
     table
     row.marvelGameScenario
     (filter (readsEntry $ seesHand table viewer (maybe [] gameSeats g)) <$> entries)
+
+-- | A campaign game over: its result is in the campaign's log, so it is only looked back
+-- on, never undone or restarted.
+finishedCampaignGame :: MarvelGame -> Bool
+finishedCampaignGame row = isJust row.marvelGameCampaignId && case fromJSON row.marvelGameCurrentData of
+  Success (SummarySnapshot _ _ state _ _ _) -> isFinished state
+  Error _ -> False
+
+isFinished :: GameState -> Bool
+isFinished = \case
+  Finished _ -> True
+  _ -> False
 
 -- | Whether a viewer sees a player's hand: with friends, only their own seat's.
 seesHand :: Table -> Maybe UserId -> [IdentityId] -> IdentityId -> Bool
@@ -1087,11 +1103,35 @@ data CampaignView = CampaignView
   , nextName :: Maybe Text
   , currentGame :: Maybe MarvelGameId
   -- ^ the game of it being played, not yet over
+  , played :: [PlayedGame]
+  -- ^ its games over, oldest first, to look back on
   , won :: Bool
   , updatedAt :: UTCTime
   }
   deriving stock (Generic)
   deriving anyclass (ToJSON)
+
+-- | A campaign's game over, as its overview lists it.
+data PlayedGame = PlayedGame
+  { id :: MarvelGameId
+  , scenario :: CardCode
+  -- ^ the code the scenario is set up with, as the campaign lists it
+  , outcome :: FinishedStatus
+  , finishedAt :: UTCTime
+  }
+  deriving stock (Generic)
+  deriving anyclass (ToJSON)
+
+-- | The campaign's games over, oldest first.
+playedGames :: MarvelCampaignId -> Handler [PlayedGame]
+playedGames cid = do
+  games <- runDB $ selectList [MarvelGameCampaignId ==. Just cid] [Asc MarvelGameCreatedAt]
+  pure
+    [ PlayedGame gid setup.scenarioCode status row.marvelGameUpdatedAt
+    | Entity gid row <- games
+    , Success (SummarySnapshot _ _ (Finished status) _ _ _) <- [fromJSON row.marvelGameCurrentData]
+    , Success setup <- [fromJSON @ScenarioSetup row.marvelGameScenario]
+    ]
 
 -- | The campaign's seats in order: who sits there and the deck they began it with. One
 -- made before campaigns had seats has its owner in a seat for each of its decks.
@@ -1156,6 +1196,7 @@ campaignView (Entity cid row) = do
   seated <- for seats \(position, userId, deck) -> do
     name <- maybe "" (.userUsername) <$> runDB (get userId)
     pure $ SeatView position userId name (Just deck.hero)
+  played <- playedGames cid
   let next = currentScenario c
   pure
     CampaignView
@@ -1171,6 +1212,7 @@ campaignView (Entity cid row) = do
       , next
       , nextName = fst . villainOf . (\code -> ScenarioSetup code [] difficulty) <$> next
       , currentGame = current
+      , played
       , won = campaignWon c
       , updatedAt = row.marvelCampaignUpdatedAt
       }
@@ -1431,6 +1473,7 @@ stepsToUndo target latestFirst = case (target, latestFirst) of
 postUndoR :: MarvelGameId -> Handler ()
 postUndoR gid = do
   row <- requirePlayableGame gid
+  when (finishedCampaignGame row) $ sendResponseStatus status409 (ikey "error.campaignGameOver")
   stepParam <- (readMaybe . unpack =<<) <$> lookupGetParam "step"
   target <-
     lookupGetParam "to" <&> \case
@@ -1472,6 +1515,7 @@ postResetR :: MarvelGameId -> Handler ()
 postResetR gid = do
   row <- requireOwnedGame gid
   when (awaitingPlayers row) $ sendResponseStatus status409 (ikey "error.notDealtYet")
+  when (finishedCampaignGame row) $ sendResponseStatus status409 (ikey "error.campaignGameOver")
   players <-
     if row.marvelGameWithFriends
       then maybe (error "no seats") pure . nonEmpty =<< friendSeats gid

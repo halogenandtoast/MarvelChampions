@@ -13,6 +13,8 @@ const { round = null, phase = null } = defineProps<{
   showSidebar: boolean
   spectate: boolean
   guest?: boolean
+  /** a campaign game over: looked back on, never undone or restarted */
+  locked?: boolean
   round?: number | null
   phase?: string | null
   /** whose turn it is, by name */
@@ -46,7 +48,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
           <template #items>
             <RouterLink v-if="campaignId" :to="`/campaigns/${campaignId}`" class="mobile-menu-item"><BookOpen aria-hidden="true" />{{ $t('common.campaign') }}</RouterLink>
             <button type="button" class="mobile-menu-item" @click="emit('fileBug')"><Bug aria-hidden="true" />{{ $t('game.bar.fileBug') }}</button>
-            <template v-if="!guest">
+            <template v-if="!guest && !locked">
               <div class="menu-section">{{ $t('common.scenario') }}</div>
               <button type="button" @click="emit('reset')"><FlagTriangleRight aria-hidden="true" />{{ $t('game.bar.restartScenario') }}</button>
             </template>
@@ -59,7 +61,7 @@ const phases = ['PlayerPhase', 'VillainPhase']
             </template>
           </template>
         </GameMenu>
-        <GameMenu>
+        <GameMenu v-if="!locked">
           <Undo2 aria-hidden="true" />
           {{ $t('game.bar.undo') }}
           <template #items>

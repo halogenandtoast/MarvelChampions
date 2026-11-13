@@ -46,7 +46,7 @@ const tr = useServerText()
 const spectate = route.meta.spectate === true
 const gameId = route.params.id as string
 const animationArea = ref<number | null>(null)
-const { error, game, data, log, river, riverCleared, canceledEvent, activationAlert, activationBanner, activationKind, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, debug, join, leave, start } =
+const { error, game, data, log, river, riverCleared, canceledEvent, activationAlert, activationBanner, activationKind, hasOlder, loadOlder, say, undoTo, started, table, answer, reset, undo, canUndo, locked, debug, join, leave, start } =
   useGame(gameId, spectate, () => animationArea.value)
 
 const players = computed<PlayerView[]>(() => game.value?.players ?? [])
@@ -434,6 +434,7 @@ const resetGame = () => restartDialog.value?.open()
       :show-sidebar="showSidebar"
       :spectate="spectate"
       :guest="guest || !owner"
+      :locked="locked"
       :debug-mode="debugEnabled"
       @toggle-debug-mode="debugMode = !debugMode"
       :round="game?.round ?? null"

@@ -409,6 +409,8 @@ export interface GameData {
   game: GameView | null
   playerId: string | null
   canUndo: boolean
+  /** a campaign game over, its result in the log: looked back on, never undone or restarted */
+  locked: boolean
   table: Table
   /** the scenario as it was chosen, for the lobby to show before it is dealt */
   setup: { scenarioCode: string; modulars: string[]; difficulty: 'Normal' | 'Expert' }
@@ -647,6 +649,15 @@ export interface Campaign {
   campaignLog: CampaignLog
 }
 
+/** A campaign's game over, as its overview lists it. */
+export interface PlayedGame {
+  id: string
+  /** the code the scenario is set up with, as the campaign lists it */
+  scenario: string
+  outcome: 'Won' | 'Lost'
+  finishedAt: string
+}
+
 /** A campaign as its overview shows it. */
 export interface CampaignView {
   id: string
@@ -666,6 +677,8 @@ export interface CampaignView {
   nextName: string | null
   /** the game of it being played, not yet over */
   currentGame: string | null
+  /** its games over, oldest first, to look back on */
+  played: PlayedGame[]
   won: boolean
   updatedAt: string
 }
