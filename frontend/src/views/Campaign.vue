@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { BookOpen, Play, Trash2 } from 'lucide-vue-next'
+import { BookOpen, Check, Eye, Layers, Play, Store, Trash2 } from 'lucide-vue-next'
 import { buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
 import { currentUser } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
@@ -127,6 +127,8 @@ const buy = async (i: number, card: string) => {
   if (!seat) return
   await attempt(() => buyMarketCard(id, seat.position, card).then(() => undefined))
 }
+// a scenario's game over, its latest attempt, opened from its card to look back on
+const playedGame = (code: string) => view.value?.played.findLast((g) => g.scenario === code) ?? null
 // said once: the campaign's own title only when its players named it something else
 const details = computed(() => {
   const v = view.value
@@ -187,7 +189,13 @@ const remove = async () => {
 
       <ol v-if="!fearNoEvil" class="track">
         <li v-for="(code, i) in view.campaign.scenarios" :key="`${code}-${i}`" class="stop" :class="stage(i)">
-          <ScenarioCard :code="code" :title="scenarioTitle(code)" :subtitle="$t('campaign.scenario', { n: i + 1 })" :selected="stage(i) === 'current'" :completed="stage(i) === 'won'" :lost="stage(i) === 'lost'" />
+          <ScenarioCard :code="code" :title="scenarioTitle(code)" :subtitle="$t('campaign.scenario', { n: i + 1 })" :selected="stage(i) === 'current'" :completed="stage(i) === 'won'" :lost="stage(i) === 'lost'">
+            <template #action>
+              <RouterLink v-if="playedGame(code)" :to="`/games/${playedGame(code)!.id}`" class="btn"><Eye aria-hidden="true" />{{ $t('campaign.viewGame') }}</RouterLink>
+              <button v-if="i === view.campaign.completed && action" type="button" class="btn primary" :disabled="working" @click="play"><Play aria-hidden="true" />{{ $t(view.currentGame ? 'campaign.resumeGame' : 'campaign.play') }}</button>
+              <button v-else-if="!playedGame(code)" type="button" class="btn" disabled>{{ $t('campaign.upcoming') }}</button>
+            </template>
+          </ScenarioCard>
         </li>
       </ol>
 
@@ -207,11 +215,10 @@ const remove = async () => {
 
       <Lobby v-if="view.waitingForPlayers" :table="view.table" @join="join" @leave="leave" @start="begin" />
 
-      <div v-else class="next box">
-        <p class="progress">{{ $t('campaign.progress', { done: fearNoEvil ? (log.fearNoEvil?.resolved.length ?? 0) + (log.fearNoEvil?.victorious ? 1 : 0) : view.campaign.completed, total: fearNoEvil ? 6 : view.campaign.scenarios.length }) }}</p>
+      <div v-else-if="view.won || view.campaign.lost || (action && fearNoEvil)" class="next box">
         <p v-if="view.won" class="result good">{{ $t(mutant ? 'campaign.mutantWon' : galaxy ? 'campaign.galaxyWon' : titan ? 'campaign.titanWon' : sinister ? 'campaign.sinisterWon' : 'campaign.won') }}</p>
         <p v-else-if="view.campaign.lost" class="result bad">{{ $t(mutant ? 'campaign.mutantLost' : galaxy ? 'campaign.galaxyLost' : titan ? 'campaign.titanLost' : sinister ? 'campaign.sinisterLost' : 'campaign.lost') }}</p>
-        <button v-if="action" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
+        <button v-if="action && fearNoEvil" type="button" class="btn primary big" :disabled="working" @click="play"><Play aria-hidden="true" />{{ action }}</button>
       </div>
       <p v-if="error" class="error">{{ tr(error) }}</p>
 
@@ -222,9 +229,8 @@ const remove = async () => {
             <header>
               <HeroPortrait class="player-portrait square" :code="p.identity" aria-hidden="true" />
               <div>
-                <small>{{ $t('campaign.player', { n: p.number }) }}</small>
                 <strong>{{ name(p.identity) }}</strong>
-                <span v-if="seatOf(i)" class="played-by">{{ $t('campaign.seatedBy', { name: seatOf(i)!.username }) }}</span>
+                <span v-if="seatOf(i)" class="played-by">{{ seatOf(i)!.username }}</span>
               </div>
             </header>
             <dl v-if="galaxy">
@@ -278,9 +284,11 @@ const remove = async () => {
               <dd><CampaignCards :codes="p.rescuedAllies" /></dd>
             </dl>
             <p v-if="short(i) > 0" class="short">{{ $t('campaign.deckShort', short(i)) }}</p>
-            <button v-if="yours(i) && between" type="button" class="btn ghost" @click="changeDeck(i)">{{ $t('campaign.changeDeck') }}</button>
+            <div v-if="yours(i) && between" class="player-actions">
+              <button type="button" class="btn" @click="changeDeck(i)"><Layers aria-hidden="true" />{{ $t('campaign.changeDeck') }}</button>
+              <button v-if="galaxy" type="button" class="btn" :aria-expanded="shopping === i" @click="shopping = shopping === i ? null : i"><Store aria-hidden="true" />{{ $t('campaign.theMarket') }}</button>
+            </div>
             <template v-if="galaxy && yours(i) && between">
-              <button type="button" class="btn ghost" :aria-expanded="shopping === i" @click="shopping = shopping === i ? null : i">{{ $t('campaign.theMarket') }}</button>
               <ul v-if="shopping === i" class="market">
                 <li v-for="[card, cost] in affordable(p.identity)" :key="card">
                   <button type="button" class="btn ghost" :disabled="working" @click="buy(i, card)">{{ $t('campaign.buy', { card: name(card), count: cost }, cost) }}</button>
@@ -293,22 +301,34 @@ const remove = async () => {
         </div>
       </section>
 
-      <section class="box">
-        <h2>{{ $t('campaign.log') }}</h2>
+      <section class="box log-box">
+        <header class="log-head">
+          <h2>{{ $t('campaign.log') }}</h2>
+          <div class="progress">
+            <ol v-if="!fearNoEvil" class="pips" aria-hidden="true">
+              <li v-for="(code, i) in view.campaign.scenarios" :key="`${code}-${i}`" :class="stage(i)" :title="scenarioTitle(code)" />
+            </ol>
+            <span>{{ $t('campaign.progress', { done: fearNoEvil ? (log.fearNoEvil?.resolved.length ?? 0) + (log.fearNoEvil?.victorious ? 1 : 0) : view.campaign.completed, total: fearNoEvil ? 6 : view.campaign.scenarios.length }) }}</span>
+          </div>
+        </header>
         <dl v-if="fearNoEvil && log.fearNoEvil" class="scenario-log">
           <dt>{{ $t('campaign.fneTrust') }}</dt><dd>{{ $t(log.fearNoEvil.trustEstablished ? 'campaign.fneYes' : 'campaign.fneNo') }}</dd>
           <dt>{{ $t('campaign.fneMaryDefeated') }}</dt><dd>{{ $t(log.fearNoEvil.maryDefeated ? 'campaign.fneYes' : 'campaign.fneNo') }}</dd>
           <dt>{{ $t('campaign.fneRemoved') }}</dt><dd>{{ log.fearNoEvil.removedTitles.join(', ') || $t('campaign.none') }}</dd>
         </dl>
         <dl v-else-if="galaxy" class="scenario-log">
-          <dt>{{ $t('campaign.scenario', { n: 3 }) }} · {{ $t('campaign.galacticArtifacts') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 3 }) }}</span>{{ $t('campaign.galacticArtifacts') }}</dt>
           <dd>{{ names(log.galaxy.galacticArtifacts) }}</dd>
-          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.powerStoneControl') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 4 }) }}</span>{{ $t('campaign.powerStoneControl') }}</dt>
           <dd>{{ name(log.galaxy.powerStoneControl) }}</dd>
-          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.evasionCounters') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 4 }) }}</span>{{ $t('campaign.evasionCounters') }}</dt>
           <dd>{{ log.galaxy.evasionCounters ?? $t('campaign.none') }}</dd>
           <dt>{{ $t('campaign.headhunterDefeated') }}</dt>
-          <dd>{{ [1, 2, 3, 4].map((n) => $t('campaign.scenario', { n }) + (log!.galaxy.headhunterDefeated.includes(n) ? ' ✓' : ' —')).join(', ') }}</dd>
+          <dd class="marks">
+            <span v-for="n in [1, 2, 3, 4]" :key="n" class="mark" :class="{ on: log!.galaxy.headhunterDefeated.includes(n) }">
+              <Check v-if="log!.galaxy.headhunterDefeated.includes(n)" aria-hidden="true" />{{ $t('campaign.scenario', { n }) }}
+            </span>
+          </dd>
         </dl>
         <dl v-else-if="shadowland" class="scenario-log">
           <dt>{{ $t('campaign.shadowlandProteges') }}</dt>
@@ -336,7 +356,7 @@ const remove = async () => {
         </dl>
         <dl v-else-if="nextEvolution && log.nextEvolution" class="scenario-log">
           <template v-for="[n, code] in log.nextEvolution.chosenSchemes" :key="n">
-            <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t('campaign.chosenSideScheme') }}</dt>
+            <dt><span class="log-tag">{{ $t('campaign.scenario', { n }) }}</span>{{ $t('campaign.chosenSideScheme') }}</dt>
             <dd>{{ name(code) }}</dd>
           </template>
           <dt>{{ $t('campaign.earnedEnvironments') }}</dt>
@@ -346,13 +366,13 @@ const remove = async () => {
           <dt>{{ $t('campaign.morlocksSaved') }}</dt>
           <dd>{{ log.nextEvolution.morlocksSaved }}</dd>
           <template v-for="[n, damage] in log.nextEvolution.hopeDamage" :key="n">
-            <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t('campaign.hopeDamage') }}</dt>
+            <dt><span class="log-tag">{{ $t('campaign.scenario', { n }) }}</span>{{ $t('campaign.hopeDamage') }}</dt>
             <dd>{{ damage }}</dd>
           </template>
         </dl>
         <dl v-else-if="mutant" class="scenario-log">
           <template v-for="(code, i) in mutantSchemes" :key="code">
-            <dt>{{ $t('campaign.scenario', { n: i + 1 }) }} · {{ name(code) }}</dt>
+            <dt><span class="log-tag">{{ $t('campaign.scenario', { n: i + 1 }) }}</span>{{ name(code) }}</dt>
             <dd>{{ log.mutantGenesis.defeatedSchemes.includes(code) ? '✓' : '—' }}</dd>
           </template>
           <dt>{{ $t('campaign.futurePastActive') }}</dt>
@@ -385,22 +405,23 @@ const remove = async () => {
         <dl v-else-if="titan" class="scenario-log">
           <template v-for="[n, marks] in titanMarks" :key="n">
             <template v-for="m in marks" :key="m">
-              <dt>{{ $t('campaign.scenario', { n }) }} · {{ $t(`campaign.titanMarks.${m}`) }}</dt>
+              <dt><span class="log-tag">{{ $t('campaign.scenario', { n }) }}</span>{{ $t(`campaign.titanMarks.${m}`) }}</dt>
               <dd>{{ marked(m) ? '✓' : '—' }}</dd>
             </template>
           </template>
         </dl>
         <dl v-else class="scenario-log">
-          <dt>{{ $t('campaign.scenario', { n: 1 }) }} · {{ $t('campaign.experimentalWeapons') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 1 }) }}</span>{{ $t('campaign.experimentalWeapons') }}</dt>
           <dd>{{ names(log.experimentalWeapons) }}</dd>
-          <dt>{{ $t('campaign.scenario', { n: 2 }) }} · {{ $t('campaign.delayCounters') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 2 }) }}</span>{{ $t('campaign.delayCounters') }}</dt>
           <dd>{{ log.delayCounters ?? $t('campaign.none') }}</dd>
-          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.engagedWithMinions') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 4 }) }}</span>{{ $t('campaign.engagedWithMinions') }}</dt>
           <dd>{{ names(log.engagedWithMinions) }}</dd>
-          <dt>{{ $t('campaign.scenario', { n: 4 }) }} · {{ $t('campaign.alliesRemoved') }}</dt>
+          <dt><span class="log-tag">{{ $t('campaign.scenario', { n: 4 }) }}</span>{{ $t('campaign.alliesRemoved') }}</dt>
           <dd>{{ names(log.alliesRemoved) }}</dd>
         </dl>
       </section>
+
     </div>
     <div v-else-if="error" class="page-content"><p class="error">{{ tr(error) }}</p></div>
 
@@ -434,27 +455,44 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(
 .stop { min-width: 0; }
 
 .next { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.progress { margin: 0 auto 0 0; color: var(--text-muted); }
+.log-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 12px; }
+.log-head h2 { margin: 0; }
+.progress { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.pips { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.pips li { width: 22px; height: 6px; border-radius: 3px; background: var(--ink-4); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.pips li.won { background: var(--success); box-shadow: none; }
+.pips li.lost { background: var(--danger); box-shadow: none; }
+.pips li.current { background: var(--amber); box-shadow: none; }
+.log-box .scenario-log { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; font-size: 0.9rem; }
+.log-box .scenario-log dt, .log-box .scenario-log dd { padding: 10px 0; border-top: 1px solid var(--line); }
+.log-box .scenario-log dt:first-of-type, .log-box .scenario-log dt:first-of-type + dd { border-top: 0; }
+.log-box .scenario-log dt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding-right: 16px; }
+.log-box .scenario-log dd { font-weight: 600; color: var(--title); }
+.log-tag { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--amber) 14%, transparent); color: var(--amber); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.marks { display: flex; flex-wrap: wrap; gap: 6px; }
+.mark { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line-strong); font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+.mark.on { border-color: var(--success); background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--title); }
+.mark svg { width: 13px; height: 13px; color: var(--success); }
 .result { margin: 0; font-weight: 700; }
 .result.good { color: var(--amber); }
 .result.bad { color: var(--danger); }
 
 .players { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; }
-.player { display: grid; align-content: start; gap: 16px; min-width: 0; padding: 16px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line); }
-.player header { display: flex; align-items: center; gap: 14px; }
-.player header div { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
-.player small { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.player { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 12px 16px; border-radius: 12px; background: var(--ink-3); border: 1px solid var(--line); }
+.player header { display: flex; align-items: center; gap: 10px; }
+.player header div { display: grid; min-width: 0; overflow-wrap: anywhere; }
 .player header strong { font-size: 1.1rem; line-height: 1.2; color: var(--title); }
-.played-by { font-size: 0.75rem; line-height: 1.4; color: var(--text-muted); }
-.player .player-portrait { width: 64px; height: 64px; flex: none; border-radius: 50%; overflow: hidden; border: 2px solid var(--line-strong); }
+.played-by { font-size: 0.75rem; line-height: 1.3; color: var(--text-muted); }
+.player .player-portrait { width: 40px; height: 40px; flex: none; border-radius: 50%; overflow: hidden; border: 2px solid var(--line-strong); }
 .player .player-portrait::after { display: none; }
-.player dl { padding-top: 14px; border-top: 1px solid var(--line); row-gap: 10px; }
+.player dl { padding-top: 10px; border-top: 1px solid var(--line); row-gap: 10px; }
 .player dd { overflow-wrap: anywhere; }
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
 dt { color: var(--text-muted); }
 dd { margin: 0; }
 .market { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .market .hint { font-size: 0.8rem; color: var(--text-muted); }
+.player-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 8px; }
 .pending { margin: 0; font-size: 0.8rem; color: var(--amber); }
 .short { margin: 0; font-size: 0.8rem; color: var(--danger); }
 .picker-dialog { width: min(62rem, 100vw - 2rem); max-height: min(48rem, 100dvh - 2rem); padding: 0; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--ink-2); color: var(--text); }

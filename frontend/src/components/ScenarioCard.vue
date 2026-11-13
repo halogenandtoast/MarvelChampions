@@ -24,6 +24,7 @@ const art = (code: string) => cards.sources(code).map(source => `url('${source}'
     <span class="villain-name">{{ title }}</span>
     <span v-if="subtitle" class="villain-sets">{{ subtitle }}</span>
     <Check v-if="completed || (selectable && selected)" class="tick" :class="{ completed }" aria-hidden="true" />
+    <span v-if="$slots.action" class="card-action"><slot name="action" /></span>
   </component>
 </template>
 
@@ -47,6 +48,8 @@ const art = (code: string) => cards.sources(code).map(source => `url('${source}'
   cursor: default;
   transition: border-color 0.15s, transform 0.15s;
 }
+.card-action { display: flex; gap: 8px; align-self: stretch; margin-top: auto; padding: 12px 12px 0; }
+.card-action > * { flex: 1; justify-content: center; }
 .scenario-card.selectable:hover { transform: translateY(-2px); border-color: var(--line-strong); }
 .scenario-card.selected { border-color: var(--crimson); box-shadow: 0 0 0 4px rgb(184 50 58 / 0.2), 0 12px 30px rgb(184 50 58 / 0.15); }
 .art { position: relative; width: 100%; aspect-ratio: 16 / 10; }
