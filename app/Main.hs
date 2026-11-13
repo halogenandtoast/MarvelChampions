@@ -24,7 +24,6 @@ import Data.Aeson.Types (Parser)
 import Data.Aeson.Diff qualified as Diff
 import Data.Char (isAlphaNum)
 import Data.HashMap.Strict qualified as HashMap
-import Data.List.NonEmpty qualified as NE
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
 import Data.Time.Clock (addUTCTime, nominalDay)
