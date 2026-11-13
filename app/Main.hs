@@ -137,7 +137,7 @@ mkYesod
   /campaigns/#MarvelCampaignId/leave LeaveCampaignR POST
   /campaigns/#MarvelCampaignId/start StartCampaignR POST
   /campaigns/#MarvelCampaignId/seats/#Int CampaignSeatR PUT
-  /campaigns/#MarvelCampaignId/seats/#Int/market CampaignMarketR POST
+  /campaigns/#MarvelCampaignId/seats/#Int/market CampaignMarketR POST DELETE
   /decks DecksR GET POST
   /decks/#MarvelDeckId DeckR GET DELETE
   /starter-decks StarterDecksR GET
@@ -1384,6 +1384,24 @@ postCampaignMarketR cid position = do
   MarketPurchase code <- requireCheckJsonBody
   unless (canBuy deck.hero code c) $ sendResponseStatus status400 (ikey "error.cannotBuy")
   let c' = recordInLog (BuyMarketCard deck.hero code) c
+  now <- liftIO getCurrentTime
+  runDB $ update cid [MarvelCampaignCampaign =. toJSON c', MarvelCampaignUpdatedAt =. now]
+  toJSON <$> campaignView (Entity cid row {marvelCampaignCampaign = toJSON c'})
+
+-- | Correct a market purchase between games, restoring its full unit cost.
+deleteCampaignMarketR :: MarvelCampaignId -> Int -> Handler Value
+deleteCampaignMarketR cid position = do
+  userId <- requireUserId
+  row <- requireCampaignMember cid
+  (c, current) <- campaignNow row
+  when (isJust current) $ sendResponseStatus status409 (ikey "error.campaignGameInProgress")
+  when (isNothing (currentScenario c)) $ sendResponseStatus status409 (ikey "error.campaignOver")
+  seats <- campaignSeats cid row
+  (_, owner, deck) <- maybe notFound pure $ find (\(p, _, _) -> p == position) seats
+  unless (owner == userId) notFound
+  MarketPurchase code <- requireCheckJsonBody
+  let c' = recordInLog (UndoMarketPurchase deck.hero code) c
+  when (c' == c) $ sendResponseStatus status400 (ikey "error.cannotUndoMarket")
   now <- liftIO getCurrentTime
   runDB $ update cid [MarvelCampaignCampaign =. toJSON c', MarvelCampaignUpdatedAt =. now]
   toJSON <$> campaignView (Entity cid row {marvelCampaignCampaign = toJSON c'})

@@ -116,3 +116,8 @@ export const changeCampaignDeck = (id: string, position: number, deck: DeckChoic
 /** Between The Galaxy's Most Wanted's games, the seat's player spends units on a card of The Market. */
 export const buyMarketCard = (id: string, position: number, card: string) =>
   post(`/api/campaigns/${id}/seats/${position}/market`, { card }).then((r) => json<CampaignView>(r))
+
+export const undoMarketPurchase = (id: string, position: number, card: string) =>
+  apiFetch(`/api/campaigns/${id}/seats/${position}/market`, {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ card }),
+  }).then((r) => json<CampaignView>(r))

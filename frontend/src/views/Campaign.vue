@@ -3,7 +3,7 @@ import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { BookOpen, Check, Eye, Layers, Play, Store, Trash2 } from 'lucide-vue-next'
-import { buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
+import { undoMarketPurchase, buyMarketCard, changeCampaignDeck, continueCampaign, deleteCampaign, fetchCampaign, fetchStarterDecks, joinCampaign, leaveCampaign, startCampaign, type DeckChoice } from '../api'
 import { currentUser } from '../auth'
 import { fetchDecks } from '../browser/lib/api'
 import type { DeckList, DeckSummary } from '../browser/types/deck'
@@ -16,6 +16,7 @@ import StoryReading from '../components/StoryReading.vue'
 import ScenarioCard from '../components/ScenarioCard.vue'
 import HeroPortrait from '../components/HeroPortrait.vue'
 import CampaignCards from '../components/CampaignCards.vue'
+import CampaignMarket from '../components/CampaignMarket.vue'
 import CardOverlay from '../components/CardOverlay.vue'
 import { toDeckChoice, type DeckFace, type DeckKey } from '../deckChoice'
 import { useServerText } from '../i18n'
@@ -121,10 +122,14 @@ const galaxyPlayer = (identity: string) => log.value?.galaxy.galaxyPlayers.find(
 // between games, a player spends their units on The Market's cards (rulebook p.5)
 const between = computed(() => !!view.value && !view.value.currentGame && !view.value.waitingForPlayers && !!view.value.next)
 const shopping = ref<number | null>(null)
-const affordable = (identity: string) => (view.value?.market ?? []).filter(([, cost]) => cost <= (galaxyPlayer(identity)?.units ?? 0))
+const undoPurchase = (i: number, card: string) => {
+  const seat = seatOf(i)
+  if (!seat || working.value) return
+  return attempt(() => undoMarketPurchase(id, seat.position, card).then(() => undefined))
+}
 const buy = async (i: number, card: string) => {
   const seat = seatOf(i)
-  if (!seat) return
+  if (!seat || working.value) return
   await attempt(() => buyMarketCard(id, seat.position, card).then(() => undefined))
 }
 // a scenario's game over, its latest attempt, opened from its card to look back on
@@ -286,15 +291,10 @@ const remove = async () => {
             <p v-if="short(i) > 0" class="short">{{ $t('campaign.deckShort', short(i)) }}</p>
             <div v-if="yours(i) && between" class="player-actions">
               <button type="button" class="btn" @click="changeDeck(i)"><Layers aria-hidden="true" />{{ $t('campaign.changeDeck') }}</button>
-              <button v-if="galaxy" type="button" class="btn" :aria-expanded="shopping === i" @click="shopping = shopping === i ? null : i"><Store aria-hidden="true" />{{ $t('campaign.theMarket') }}</button>
+              <button v-if="galaxy" type="button" class="btn" aria-haspopup="dialog" @click="shopping = i"><Store aria-hidden="true" />{{ $t('campaign.theMarket') }}</button>
             </div>
             <template v-if="galaxy && yours(i) && between">
-              <ul v-if="shopping === i" class="market">
-                <li v-for="[card, cost] in affordable(p.identity)" :key="card">
-                  <button type="button" class="btn ghost" :disabled="working" @click="buy(i, card)">{{ $t('campaign.buy', { card: name(card), count: cost }, cost) }}</button>
-                </li>
-                <li v-if="!affordable(p.identity).length" class="hint">{{ $t('campaign.nothingAffordable') }}</li>
-              </ul>
+              <CampaignMarket v-if="shopping === i" :available="view.market" :owned="galaxyPlayer(p.identity)?.marketCards ?? []" :units="galaxyPlayer(p.identity)?.units ?? 0" :working="working" :error="error" @close="shopping = null" @buy="buy(i, $event)" @undo="undoPurchase(i, $event)" />
             </template>
             <p v-if="p.pending.length" class="pending">{{ $t('campaign.toChoose') }}: {{ p.pending.map((c) => $t(`campaign.${c}`)).join(', ') }}</p>
           </article>
@@ -490,8 +490,6 @@ h2 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; color: var(
 dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0; font-size: 0.88rem; }
 dt { color: var(--text-muted); }
 dd { margin: 0; }
-.market { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
-.market .hint { font-size: 0.8rem; color: var(--text-muted); }
 .player-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 8px; }
 .pending { margin: 0; font-size: 0.8rem; color: var(--amber); }
 .short { margin: 0; font-size: 0.8rem; color: var(--danger); }

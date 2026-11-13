@@ -137,6 +137,15 @@ spec = describe "The Galaxy's Most Wanted campaign" do
       (.units) <$> galaxyPlayer groot bought `shouldBe` Just 1
       (.marketCards) <$> galaxyPlayer groot bought `shouldBe` Just ["16158"]
 
+    check "undoes a purchase and refunds its units exactly once" do
+      let c = withUnits groot 4 (campaignAt StandardCampaign 1)
+          bought = recordInLog (BuyMarketCard groot "16158") c
+          undone = recordInLog (UndoMarketPurchase groot "16158") bought
+      undone `shouldBe` c
+      recordInLog (UndoMarketPurchase groot "16158") undone `shouldBe` c
+      recordInLog (UndoMarketPurchase rocket "16158") bought `shouldBe` bought
+      canBuy groot "16158" undone `shouldBe` True
+
     check "does not buy a card that costs more than the units unspent" do
       let c = withUnits groot 4 (campaignAt StandardCampaign 1)
       canBuy groot "16166" c `shouldBe` False

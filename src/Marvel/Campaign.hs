@@ -480,6 +480,7 @@ data CampaignRecord
     SpendUnits CardCode Natural
   | -- | a card of The Market bought with its unit cost
     BuyMarketCard CardCode CardCode
+  | UndoMarketPurchase CardCode CardCode
   | RecordCollection CardCode [CardCode]
   | RecordGalacticArtifacts [CardCode]
   | RecordPowerStoneControl CardCode
@@ -780,6 +781,14 @@ recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis =
   BuyMarketCard ident code
     | canBuy ident code c ->
         galaxyP ident \p -> p {units = p.units - fromMaybe 0 (List.lookup code marketUnitCosts), marketCards = p.marketCards <> [code]}
+    | otherwise -> c
+  UndoMarketPurchase ident code
+    | c.kind == GalaxysMostWanted
+    , Just cost <- List.lookup code marketUnitCosts ->
+        galaxyP ident \p ->
+          if code `elem` p.marketCards
+            then p {units = p.units + cost, marketCards = filter (/= code) p.marketCards}
+            else p
     | otherwise -> c
   RecordCollection ident codes -> galaxyP ident \p -> p {collection = p.collection <> codes}
   RecordGalacticArtifacts codes -> galaxyL \g -> g {galacticArtifacts = nub (g.galacticArtifacts <> codes)}
