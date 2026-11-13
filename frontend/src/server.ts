@@ -331,6 +331,7 @@ export interface GameView {
       area: number
       leader: string | null
       enemyLeader: string | null
+      firstPlayer: string
       roster: { id: string; name: string; code: string; eliminated: boolean }[]
       outcome: 'EnemyLeaderDefeated' | 'MainSchemeCompleted' | 'AllHeroesDefeated' | null
       advancedMainScheme: boolean

@@ -416,6 +416,10 @@ const scenarioName = computed(() => {
   return (game.value?.villains ?? []).find((v) => v.id === first)?.name ?? game.value?.villains?.[0]?.name ?? null
 })
 const active = computed(() => game.value?.activePlayer ?? null)
+// who holds a first-player token: one a table, one a team at a Civil War competition
+const firstPlayers = computed(() =>
+  game.value?.competition ? game.value.competition.teams.map((team) => team.firstPlayer) : game.value?.playerOrder.slice(0, 1) ?? [],
+)
 const restartDialog = ref<InstanceType<typeof ConfirmDelete> | null>(null)
 const resetGame = () => restartDialog.value?.open()
 </script>
@@ -508,6 +512,7 @@ const resetGame = () => restartDialog.value?.open()
                 :viewing="viewed?.id ?? null"
                 :asked="asked"
                 :active="active"
+                :first="firstPlayers"
                 :mine="withFriends ? mySeats : []"
                 :all="allSeats"
                 @view="(id) => ((viewing = id), (allSeats = false))"

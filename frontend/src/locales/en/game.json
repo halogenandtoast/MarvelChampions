@@ -194,6 +194,7 @@
     "label": "Seats",
     "asked": "Being asked",
     "turn": "Turn",
+    "first": "First player",
     "hand": "{count} in hand",
     "all": "All seats"
   },

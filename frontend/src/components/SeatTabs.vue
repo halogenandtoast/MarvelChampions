@@ -2,6 +2,7 @@
 // A tab a seat, for looking at another player's side of the table: each with its hero's
 // portrait, hit points and hand, whose turn it is, and who is being asked.
 import { LoaderCircle, Rows3 } from 'lucide-vue-next'
+import { assetUrl } from '../assets'
 import { useCards } from '../cards'
 import type { PlayerView } from '../server'
 
@@ -10,6 +11,8 @@ defineProps<{
   viewing: string | null
   asked: string[]
   active: string | null
+  /** who holds a first-player token */
+  first: string[]
   /** your own seats at a game with friends */
   mine: string[]
   all: boolean
@@ -35,7 +38,9 @@ const portrait = (player: PlayerView) => {
       :aria-selected="!all && player.id === viewing"
       @click="emit('view', player.id)"
     >
-      <span class="portrait square" :style="{ backgroundImage: portrait(player) }" />
+      <span class="portrait square" :style="{ backgroundImage: portrait(player) }">
+        <img v-if="first.includes(player.id)" class="first" :src="assetUrl('/images/tokens/first-player.avif')" :title="$t('game.seats.first')" :alt="$t('game.seats.first')" draggable="false" />
+      </span>
       <span class="who">
         <span class="name">{{ player.name }}<span v-if="mine.includes(player.id)" class="you">{{ $t('game.lobby.you') }}</span></span>
         <span class="meta">
@@ -71,9 +76,20 @@ const portrait = (player: PlayerView) => {
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
+/* the board clips its corner at 14px, so the first tab rounds to match */
+.tab:first-child { border-top-left-radius: 14px; }
 .tab:hover { background: var(--ink-3); color: var(--text); }
 .tab.viewing { border-color: var(--steel); background: linear-gradient(rgb(91 141 184 / 0.16), rgb(91 141 184 / 0.06)), var(--ink-2); color: var(--text); }
-.portrait { width: 34px; height: 34px; border-radius: 8px; }
+.portrait { position: relative; width: 34px; height: 34px; border-radius: 8px; }
+/* the first-player token, on the portrait's corner */
+.first {
+  position: absolute;
+  right: -7px;
+  bottom: -6px;
+  width: 22px;
+  height: auto;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.6));
+}
 .who { display: flex; flex-direction: column; line-height: 1.2; }
 .name { font-weight: 700; font-size: 0.85rem; color: var(--text); }
 .you { margin-left: 6px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel-bright); }
