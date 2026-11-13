@@ -2,7 +2,6 @@ module Marvel.Hero.ScarletWitchSignatureSpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
 import Marvel.Game.Public (publicGame)
-import Marvel.Message.Lifted (countLabel)
 import Marvel.Minion.Cards qualified as Minions
 import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types qualified as V
