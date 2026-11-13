@@ -1,4 +1,7 @@
 {
+  "chooseAbilityCost": "Choose how to pay for this ability",
+  "discardFromCollection": "Choose a card to discard from The Collection",
+  "exhaustYourHero": "Exhaust your hero",
   "respondToDefeatedAlly": "Respond to {ally}'s defeat",
   "chooseHandDiscard": "Choose a card to discard from your hand",
   "discardMoreFromHand": "Discard {count} more cards from your hand",

@@ -213,8 +213,6 @@ printed cards.
 
 ## Open rulings
 
-- **The Grand Collection's "either" cost** is two equal abilities (the same card and index, so one "once per round per
-  player" limit covers both): exhaust your hero, or spend 2 resources. The client shows the action twice, one per cost.
 - **The Beyonder's Blazer's "2 resources of the same type"** is one ability per resource type (a wild resource being
   any), labeled with the type; the 2 threat, part of the cost, is placed as the ability resolves, before the card is
   discarded.

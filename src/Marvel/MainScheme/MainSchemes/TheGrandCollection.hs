@@ -24,12 +24,12 @@ newtype TheGrandCollection = TheGrandCollection (Attrs MainScheme)
 
 -- | 1B: "Hero Action: Choose to either exhaust your hero or spend 2 resources of any type
 -- → discard 1 card from The Collection (to its owner's discard pile). (Limit once per
--- round per player.)" One ability with either cost: the two are equal abilities (the
--- same card and index), so the one limit holds for both.
+-- round per player.)" Choose how to pay after taking the single action.
 instance IsMainScheme TheGrandCollection where
   mainSchemeAbilities (TheGrandCollection a) =
-    [ limited (EachPlayer (PerRound 1)) $ ability a 1 HeroAction CollectionHasCards cost (runAbility a 1)
-    | cost <- [ExhaustCost, MultiResourceCost [Nothing, Nothing]]
+    [ limited (EachPlayer (PerRound 1)) $ ability a 1 HeroAction CollectionHasCards
+        (AlternativeCost [("$label.exhaustYourHero", ExhaustCost), ("$label.spendResources 2", MultiResourceCost [Nothing, Nothing])])
+        (runAbility a 1)
     ]
 
 instance RunMessage TheGrandCollection where
@@ -42,7 +42,7 @@ instance RunMessage TheGrandCollection where
       pure ms
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       cards <- getCollection
-      chooseOne you [targeting (CardIdRef $ toCardId c) (discardFromCollection c) | c <- cards]
+      chooseOnePromptedAbout you "$label.discardFromCollection" attrs [targeting (CardIdRef $ toCardId c) (discardFromCollection c) | c <- cards]
       pure ms
     -- "If there are at least 5[per_hero] cards in The Collection or if this stage is
     -- completed, the players lose the game."

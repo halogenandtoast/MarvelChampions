@@ -13,6 +13,8 @@ import Marvel.Trait.Types (Trait)
 
 data Cost
   = Costs [Cost]
+  | -- | Choose one payable, labeled cost before beginning payment.
+    AlternativeCost [(Text, Cost)]
   | ResourceCost (Maybe Resource)
   | DynamicResourceCost (Maybe Resource)
   | -- | printed X cost: minimum meaningful X, and an effect bound only when its
@@ -170,6 +172,7 @@ instance Semigroup Cost where
 
 costResources :: Cost -> [Maybe Resource]
 costResources NoCost = []
+costResources (AlternativeCost _) = []
 costResources (PlaceThreatOnMainSchemeCost _) = []
 costResources (ExhaustAllIdentitiesAndDamageCost _) = []
 costResources ExhaustAttachmentCost = []

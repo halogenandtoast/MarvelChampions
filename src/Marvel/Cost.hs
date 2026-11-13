@@ -133,6 +133,7 @@ canAffordCost identityId source cost = do
  where
   go = \case
     NoCost -> pure True
+    AlternativeCost options -> anyM (go . snd) options
     -- a tough status card would prevent the damage, so it cannot be paid (RR FAQ, Focused
     -- Rage)
     IndirectDamageCost n -> (>= n) . sum . map snd <$> indirectCostCandidates identityId source

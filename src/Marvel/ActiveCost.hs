@@ -123,6 +123,7 @@ payCostPartAs contributing activeCost cost = do
   acid = activeCostId activeCost
   go = \case
     NoCost -> pure ()
+    AlternativeCost _ -> createdActiveCost acid
     PlaceIdentityCountersCost n -> placeCounters iid n
     DiscardHandCardsCost n m -> do
       inHand <- projectMap PlayerIdentityHand (fromIntegral . length . unHand) iid
@@ -828,6 +829,10 @@ condenseResourceCosts xs = go xs False
     | isResourceCost c = if paying then go cs True else c : go cs True
     | otherwise = c : go cs paying
 
+isAlternative :: Cost -> Bool
+isAlternative (AlternativeCost _) = True
+isAlternative _ = False
+
 isResourceCost :: Cost -> Bool
 isResourceCost (ResourceCost _) = True
 isResourceCost (MultiResourceCost _) = True
@@ -952,8 +957,20 @@ runActiveCostWithCurrentCost msg activeCost = runQueueT $ case msg of
     if taken >= n then paid (DamagePayment n) else abortPayment acid
     pure activeCost {activeCostPayment = mconcat $ filter keep receipts}
   CreatedActiveCost ident | ident == activeCostId activeCost -> do
-    checkPayment ident
+    case break isAlternative (flattenCosts $ activeCostCost activeCost) of
+      (before, AlternativeCost options : after) -> do
+        payable <- filterM (canAffordCost (activeCostIdentityId activeCost) (activeCostSource activeCost) . (\(_, cost) -> mconcat $ before <> [cost] <> after)) options
+        let selectCost cost = cardSpecific (ActiveCostRef ident) "selectAlternativeCost" (mconcat $ before <> [cost] <> after)
+        case payable of
+          [] -> abortPayment ident
+          [(_, cost)] -> selectCost cost
+          _ -> chooseOnePromptedAbout (activeCostIdentityId activeCost) "$label.chooseAbilityCost" (activeCostSource activeCost)
+            [labeled text (selectCost cost) | (text, cost) <- payable]
+      _ -> checkPayment ident
     pure activeCost
+  CardSpecific (ActiveCostRef ident) "selectAlternativeCost" (fromJSON -> Success cost) | ident == activeCostId activeCost -> do
+    createdActiveCost ident
+    pure activeCost {activeCostCost = cost}
   ContributeResources ident contributor | ident == activeCostId activeCost -> do
     allowed <- resourceCostPayers (activeCostIdentityId activeCost) $ case activeCostTarget activeCost of
       ForCard card -> Just card

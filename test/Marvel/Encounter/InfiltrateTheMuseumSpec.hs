@@ -283,6 +283,7 @@ grandCollection = describe "The Grand Collection" do
       changeForm you
       clearHand you
       choose "the main scheme's action" (isMainSchemeAbility m)
+      chooseIf (isLabel "$label.exhaustYourHero")
       choose "Black Cat" (isTargetChoice (CardIdRef $ pcCardId cat))
       exhaustedNow you `shouldReturn` True
       ids <- collectionIds
@@ -301,12 +302,14 @@ grandCollection = describe "The Grand Collection" do
       m <- mainSchemeIdNow
       changeForm you
       choose "the main scheme's action" (isMainSchemeAbility m)
+      chooseIf (isLabel "$label.exhaustYourHero")
       choose "Black Cat" (isTargetChoice (CardIdRef $ pcCardId cat))
       offers (isMainSchemeAbility m) `shouldReturn` False
       endTurn
       changeForm them
       pass
       choose "the main scheme's action, the other player's" (isMainSchemeAbility m)
+      chooseIf (isLabel "$label.exhaustYourHero")
       choose "the last card" (isTargetChoice (CardIdRef $ pcCardId flip'))
       collectionNow `shouldReturn` []
 
@@ -323,9 +326,34 @@ grandCollection = describe "The Grand Collection" do
       offers (isMainSchemeAbility m) `shouldReturn` False -- exhausted, nothing to spend
       strength <- putInHand you "01090"
       choose "the main scheme's action" (isMainSchemeAbility m)
+      chooseIf (isLabel "$label.exhaustYourHero")
       payWith [strength]
       chooseIf (isTargetChoice (CardIdRef $ pcCardId cat))
       collectionNow `shouldReturn` []
+
+  it "offers one Hero Action and chooses its cost afterwards when both are payable" do
+    tg <- museum ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      emptyCollection
+      [cat] <- collect you ["01002"]
+      m <- mainSchemeIdNow
+      changeForm you
+      clearHand you
+      strength <- putInHand you "01090"
+      refreshTurn
+      options <- asked
+      liftIO $ length [c | Just (_, cs) <- [options], c <- cs, isMainSchemeAbility m c] `shouldBe` 1
+      choose "the main scheme's action" (isMainSchemeAbility m)
+      offers (isLabel "$label.exhaustYourHero") `shouldReturn` True
+      offers (isLabel "$label.spendResources 2") `shouldReturn` True
+      exhaustedNow you `shouldReturn` False
+      choose "spend two resources" (isLabel "$label.spendResources 2")
+      payWith [strength]
+      chooseIf (isTargetChoice (CardIdRef $ pcCardId cat))
+      collectionNow `shouldReturn` []
+      exhaustedNow you `shouldReturn` False
+      offers (isMainSchemeAbility m) `shouldReturn` False
 
   it "Hero Action: not offered with The Collection empty" do
     tg <- museum ["spider-man"]
