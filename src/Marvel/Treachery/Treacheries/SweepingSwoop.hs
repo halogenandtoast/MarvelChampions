@@ -26,7 +26,9 @@ instance RunMessage SweepingSwoop where
     TreacheryMessage ident msg' | treacheryId attrs == ident -> case msg' of
       RevealTreachery identityId -> do
         vultureInPlay <- selectAny $ MinionIs Cards.vulture
-        stunIdentity identityId
+        -- "your hero": an alter-ego is not stunned (RR Form)
+        hero <- identityMatches HeroIdentity identityId
+        when hero $ stunIdentity identityId
         pure . SweepingSwoop $ attrs & surgeL .~ vultureInPlay
       _ -> SweepingSwoop <$> runMessage msg attrs
     -- [star] Boost: if this activation deals damage to a friendly character, stun it

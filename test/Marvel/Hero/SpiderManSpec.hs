@@ -353,6 +353,7 @@ spec = describe "Spider-Man" do
     tg <- testGame ["spider-man"]
     let p = player1 tg
     inGame tg do
+      changeForm p
       [next] <- stackEncounterDeck [Minions.hydraMercenary]
       swoop <- revealNow p Treacheries.sweepingSwoop
       pass
@@ -365,6 +366,22 @@ spec = describe "Spider-Man" do
       _ <- revealNow p Treacheries.sweepingSwoop
       pass
       dealtTo p >>= (`shouldSatisfy` (ecCardId next' `elem`) . map ecCardId)
+
+  it "Sweeping Swoop does not stun an alter-ego, but still surges while Vulture is in play" do
+    tg <- testGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      swoop <- revealNow p Treacheries.sweepingSwoop
+      pass
+      isStunned p `shouldReturn` False
+      (map ecCardId <$> encounterDiscard) >>= (`shouldSatisfy` elem (ecCardId swoop))
+      _ <- revealNow p Minions.vulture
+      pass
+      [next] <- stackEncounterDeck [Minions.hydraMercenary]
+      _ <- revealNow p Treacheries.sweepingSwoop
+      pass
+      isStunned p `shouldReturn` False
+      dealtTo p >>= (`shouldSatisfy` (ecCardId next `elem`) . map ecCardId)
 
   it "Sweeping Swoop as a boost stuns the character the attack damages" do
     tg <- testGame ["spider-man"]
