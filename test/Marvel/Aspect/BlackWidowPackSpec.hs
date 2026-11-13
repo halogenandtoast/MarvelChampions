@@ -25,6 +25,14 @@ spec = describe "Black Widow's aspect and basic cards" do
         payment <- traverse (putInHand p) ["01088", "01089"]
         playWith coulson payment
         choose "use Agent Coulson" (isAbilityOfCard coulson)
+        -- every card of both piles is shown, under the pile it is in
+        deck <- unDeck . (.playerIdentityDeck) . toAttrs <$> getPlayer p
+        discard <- discardOf p
+        openQuestion >>= \case
+          Just (_, QuestionLabel "$label.searchDeckAndDiscard" _ (Searched places _)) ->
+            [(place, map toCardId cards) | (place, cards) <- places] `shouldBe`
+              [(Just "$game.piles.deck", map toCardId deck), (Just "$game.piles.discard", map toCardId discard)]
+          _ -> liftIO $ expectationFailure "expected the deck and the discard pile searched"
         offers (isTargetChoice hook) `shouldReturn` True
         choose "Widow's Bite" (isTargetChoice bite)
         handOf p `shouldReturn` [bite]

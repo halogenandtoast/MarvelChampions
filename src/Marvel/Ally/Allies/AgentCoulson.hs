@@ -10,10 +10,6 @@ import Marvel.Ally.Cards qualified as Cards
 import Marvel.Ally.Runner
 import Marvel.Cost
 import Marvel.Criteria
-import Marvel.Deck
-import Marvel.Discard
-import Marvel.Identity.Types (Field (..))
-import Marvel.Projection
 import Marvel.Trait
 import Marvel.Window
 
@@ -35,14 +31,6 @@ instance HasAbilities AgentCoulson where
 instance RunMessage AgentCoulson where
   runMessage msg a@(AgentCoulson attrs) = runQueueT $ case msg of
     RanAbility ident (isTarget a -> True) 1 _ _ -> do
-      deck <- projectMap PlayerIdentityDeck unDeck ident
-      discard <- projectMap PlayerIdentityDiscard unDiscard ident
-      let found = filter (cardMatch $ CardWithTrait Preparation) (deck <> discard)
-      focusing (map PlayerCard found) $
-        chooseOne ident $
-          if null found
-            then [labeled "$label.noMatchingCardsFound" (pure ())]
-            else [targeting c $ addToHand ident c | c <- found]
-      shuffleDeck ident
+      search ident (SearchIdentityDeckAndDiscardPile ident) (CardWithTrait Preparation) SearchDrawOne ShuffleBackIn
       pure a
     _ -> AgentCoulson <$> runMessage msg attrs
