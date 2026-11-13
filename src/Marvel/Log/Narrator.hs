@@ -241,6 +241,10 @@ narrationFor = \case
     locked <- elem CannotFlipPsiEnergy <$> getModifiers (UpgradeRef uid)
     if locked then pure [] else simply "log.flips" (UpgradeRef uid)
   CardSpecific (AttachmentRef aid) "cwFlipMass" _ -> Just $ simply "log.flips" (AttachmentRef aid)
+  -- Frozen in Time: the identity would ready, and the card is discarded instead
+  CardSpecific (AttachmentRef aid) "discardInsteadOfReady" (fromJSON -> Success ident) -> Just $
+    whenRef (AttachmentRef aid) \card -> whenRef (IdentityRef ident) \who ->
+      one $ mechanic [ikeyPart "log.discardedInsteadOfReadying" ["card" ~> card, "target" ~> who]]
   CardSpecific (UpgradeRef uid) "flipMassForm" _ -> Just $ whenRef (UpgradeRef uid) \_form ->
     getSourceController (UpgradeRef uid) >>= \case
       Just p -> do

@@ -55,6 +55,9 @@ instance RunMessage FrozenInTime where
             if step == ReadiedIdentity
               then (&&) <$> (elem CannotBeReadiedByPlayerCards <$> getModifiers (IdentityRef ident)) <*> identityMatches HeroIdentity ident
               else pure False
-          when (exhausted && not blocked) $ removeFromPlay attrs
+          when (exhausted && not blocked) $ cardSpecific attrs "discardInsteadOfReady" ident
           pure a
+    CardSpecific (isTarget attrs -> True) "discardInsteadOfReady" _ -> do
+      removeFromPlay attrs
+      pure a
     _ -> FrozenInTime <$> runMessage msg attrs

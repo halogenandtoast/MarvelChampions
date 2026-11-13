@@ -4,6 +4,7 @@ module Marvel.Encounter.KangSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (nub, sort)
+import Data.Text qualified as T
 import Marvel.Attack ( attackValue )
 import Marvel.Area
 import Marvel.Attachment.Cards qualified as Attachments
@@ -235,6 +236,22 @@ spec = describe "The Once and Future Kang" do
         villainCodesIn a1 >>= (`shouldSatisfy` ((== 1) . length))
 
   describe "cards" do
+    it "Frozen in Time: when the hero would ready, it is discarded instead, and the log says so" do
+      tg <- kang ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        changeForm p
+        _ <- revealNow p Attachments.frozenInTime
+        resolve [IdentityMessage p TestImport.ExhaustedIdentity]
+        liftIO $ writeIORef (logged tg) []
+        runNow [IdentityMessage p ReadiedIdentity]
+        gone <- elem (toCardCode Attachments.frozenInTime) <$> encounterDiscardCodes
+        stillExhausted <- isExhaustedNow p
+        text <- liftIO $ T.concat . map entryText <$> readIORef (logged tg)
+        liftIO do
+          (gone, stillExhausted) `shouldBe` (True, True)
+          text `shouldSatisfy` T.isInfixOf "$log.discardedInsteadOfReadying"
+
     it "Kang (I): when he attacks you, place 1 threat on the main scheme or he gets +2 ATK" do
       tg <- kang ["spider-man"]
       let p = player1 tg

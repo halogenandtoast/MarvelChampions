@@ -53,6 +53,7 @@
   "toughRemoved": "{target} loses its tough status",
   "stunnedInstead": "{enemy} is stunned: no attack this time",
   "confusedInstead": "{enemy} is confused: no scheme this time",
+  "discardedInsteadOfReadying": "{card} is discarded instead: {target} stays exhausted",
   "threatPlaced": "{count} threat on {scheme}",
   "threatRemoved": "{count} threat removed from {scheme}",
   "mainSchemeAdvances": "The main scheme advances",
