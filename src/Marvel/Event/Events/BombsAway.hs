@@ -38,6 +38,7 @@ instance RunMessage BombsAway where
       pure e
     CardSpecific (isTarget attrs -> True) "bomb" (fromJSON -> Success (you, player :: IdentityId)) -> do
       minions <- selectList $ MinionEngagedWith $ IdentityWithId player
-      withTheVillain you $ \villain -> dealDamageToEach (EnemyVillainId villain : map EnemyMinionId minions) attrs (toDamage 3 FromAbility)
+      -- with no villain in play (as between one Kang and the next), only the minions
+      withTheVillainIfAny you $ \villain -> dealDamageToEach (map EnemyVillainId (maybe [] pure villain) <> map EnemyMinionId minions) attrs (toDamage 3 FromAbility)
       pure e
     _ -> BombsAway <$> runMessage msg attrs

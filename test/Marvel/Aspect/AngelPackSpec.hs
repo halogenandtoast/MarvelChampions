@@ -294,6 +294,21 @@ spec = describe "Angel pack" do
       minionDamageOf mine `shouldReturn` Just 0
       minionDamageOf theirs `shouldReturn` Just 3
 
+  it "Bombs Away still damages the minions with no villain in play (between one Kang and the next)" do
+    tg <- testGame ["angel", "spider-man"]
+    inGame tg do
+      let p = player1 tg
+      asAngel p
+      let other = player2 tg
+      theirs <- addMinion other Minions.hydraSoldier
+      withGame_ $ entitiesL . villainsL .~ mempty
+      bomb <- putInHand p "42029"
+      payment <- putInHand p "01088"
+      playOn bomb other [payment]
+      choose "exhaust Angel" (isTargetChoice p)
+      pass
+      minionDamageOf theirs `shouldReturn` Just 3
+
   it "Soaring Acrobatics adds one to an Aerial hero's basic attack once exhausted" do
     tg <- testGame ["angel"]
     inGame tg do

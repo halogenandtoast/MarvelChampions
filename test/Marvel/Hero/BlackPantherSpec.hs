@@ -224,6 +224,20 @@ spec = describe "Black Panther" do
       villainDamageNow `shouldReturn` 2
       minionDamages `shouldReturn` [2]
 
+  it "Energy Daggers still damage the minions with no villain in play (between one Kang and the next)" do
+    tg <- testGame ["black-panther"]
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      mercenary <- encounterCard Cards.hydraMercenary
+      resolve [RevealEncounterCard p mercenary]
+      withGame_ $ entitiesL . villainsL .~ mempty
+      daggers <- putIntoPlay p "01046"
+      wakandaForever p "01043a" [daggers]
+      maybeChoose "you" (isTargetChoice p)
+      minionDamages `shouldReturn` [2]
+
   it "Energy Daggers' damage to the villain opens the window any damage does" do
     tg <- testGame ["black-panther"]
     let p = player1 tg

@@ -83,6 +83,18 @@ spec = describe "SHIELD player cards" do
       villainDamageNow `shouldReturn` 3
       getCountersOn (supportIdOf ship) `shouldReturn` 2
 
+  it "the Bellerophon still damages the minions with no villain in play (between one Kang and the next)" do
+    tg <- testGame ["maria-hill"]
+    inGame tg do
+      let p = player1 tg
+      ship <- putIntoPlay p "50018"
+      mid <- addMinion p Minions.hydraSoldier
+      withGame_ $ entitiesL . villainsL .~ mempty
+      choose "Bellerophon" (onCard ship 1)
+      choose "player" (isTargetChoice p)
+      pass
+      minionDamageOf mid `shouldReturn` Just 3
+
   it "Safe House 221 can add suit threat in alter ego" do
     tg <- testGame ["nick-fury"]
     inGame tg do

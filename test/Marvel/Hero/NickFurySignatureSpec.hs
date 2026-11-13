@@ -92,6 +92,23 @@ spec = describe "Nick Fury signature cards" do
       minionDamageOf target `shouldReturn` Nothing
       minionDamageOf other `shouldReturn` Just 0
 
+  it "Spray Fire still damages the minions with no villain in play (between one Kang and the next)" do
+    tg <- testGame ["nick-fury"]
+    inGame tg do
+      let p = player1 tg
+      changeForm p
+      pass
+      target <- addMinion p Minions.hydraSoldier
+      withGame_ $ entitiesL . villainsL .~ mempty
+      clearHand p
+      event <- putInHand p "50039"
+      r1 <- putInHand p "01088"
+      r2 <- putInHand p "01089"
+      playWith event [r1,r2]
+      chooseIf (isTargetChoice p)
+      pass
+      minionDamageOf target `shouldReturn` Just 3
+
   it "Flying Car spends one suit threat to ready Nick and grant Aerial" do
     tg <- testGame ["nick-fury"]
     inGame tg do

@@ -169,6 +169,21 @@ spec = describe "Black Widow" do
       mainSchemeThreatNow `shouldReturn` (threat - 4)
       (V.villainConfused . toAttrs <$> getVillain) `shouldReturn` True
 
+  it "Covert Ops still removes 4 threat with no villain in play (between one Kang and the next)" do
+    tg <- blackWidow
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      placeMainThreat 6
+      threat <- mainSchemeThreatNow
+      withGame_ $ entitiesL . villainsL .~ mempty
+      ops <- putInHand p "08003"
+      [a, b, c] <- traverse (putInHand p) ["01088", "01089", "01090"]
+      playWith ops [a, b, c]
+      mid <- mainSchemeId
+      choose "the target" (isTargetChoice mid)
+      mainSchemeThreatNow `shouldReturn` (threat - 4)
+
   it "Dance of Death makes 3 attacks, of 1, 2 and 3 damage" do
     tg <- blackWidow
     let p = player1 tg

@@ -43,9 +43,10 @@ instance RunMessage AosP50018 where
     RanAbility you (isTarget attrs -> True) 1 _ _ -> do
       players <- getPlayers
       chooseOne you [targeting p do
-        withTheVillain you $ \villain -> do
+        -- with no villain in play (as between one Kang and the next), only the minions
+        withTheVillainIfAny you $ \villain -> do
           minions <- selectList (MinionEngagedWith $ IdentityWithId p)
-          let enemies = EnemyVillainId villain : map EnemyMinionId minions
+          let enemies = map EnemyVillainId (maybe [] pure villain) <> map EnemyMinionId minions
           for_ enemies removeAllTough
           dealDamageToEach enemies attrs (toDamage 3 FromAbility)
         | p <- players]

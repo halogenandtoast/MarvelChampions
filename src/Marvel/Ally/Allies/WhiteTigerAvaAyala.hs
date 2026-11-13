@@ -35,8 +35,10 @@ instance HasAbilities WhiteTigerAvaAyala where
 instance RunMessage WhiteTigerAvaAyala where
   runMessage msg a@(WhiteTigerAvaAyala attrs) = runQueueT $ case msg of
     RanAbility you (isTarget a -> True) 1 _ _ -> do
-      withTheVillain you \villain -> do
-        stage <- getVillainStage villain
+      -- with no villain in play (as between one Kang and the next), there is no stage
+      -- number: 1 card
+      withTheVillainIfAny you \villain -> do
+        stage <- maybe (pure 0) getVillainStage villain
         drawCards you (if stage == 0 then 1 else min 3 stage)
       pure a
     _ -> WhiteTigerAvaAyala <$> runMessage msg attrs

@@ -199,6 +199,23 @@ spec = describe "Doctor Strange" do
       mainSchemeThreatNow `shouldReturn` (threat - 4)
       (V.villainConfused . toAttrs <$> getVillain) `shouldReturn` True
 
+  it "Images of Ikonn still removes 4 threat with no villain in play (between one Kang and the next)" do
+    tg <- doctorStrange
+    let p = player1 tg
+    inGame tg do
+      clearHand p
+      changeForm p
+      placeMainThreat 6
+      threat <- mainSchemeThreatNow
+      withGame_ $ entitiesL . villainsL .~ mempty
+      stackInvocation p ["09033"]
+      genius <- putInHand p "01089"
+      choose "Spell Mastery" spellMastery
+      choose "pay" (isPayWith genius)
+      chooseIf isFinishPayment
+      chooseIf \case TargetLabel {} -> True; _ -> False
+      mainSchemeThreatNow `shouldReturn` (threat - 4)
+
   it "Seven Rings of Raggadorr gives up to 3 characters a tough status card" do
     tg <- doctorStrange
     let p = player1 tg

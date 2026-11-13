@@ -141,6 +141,25 @@ spec = describe "Protection" do
         villainIsTough <$> getVillain `shouldReturn` False
         damageOf p >>= (`shouldSatisfy` (> 0))
 
+    it "still cancels the when revealed effects with no villain in play (between one Kang and the next)" do
+      tg <- testGame ["black-panther"]
+      let p = player1 tg
+      inGame tg do
+        clearHand p
+        changeForm p
+        pass
+        threat <- mainSchemeThreatNow
+        withGame_ $ entitiesL . villainsL .~ mempty
+        behind <- putInHand p "01078"
+        genius <- putInHand p "01089"
+        card <- encounterCard Cards.advance
+        runNow [RevealEncounterCard p card]
+        choose "play Get Behind Me!" (isPlay behind)
+        choose "pay" (isPayWith genius)
+        chooseIf isFinishPayment
+        pass
+        mainSchemeThreatNow `shouldReturn` threat
+
     it "cancels Stampede's stun along with its attack" do
       tg <- testGame ["black-panther"]
       let p = player1 tg

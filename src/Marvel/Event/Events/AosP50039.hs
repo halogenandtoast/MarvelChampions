@@ -39,9 +39,10 @@ instance RunMessage AosP50039 where
     EventMessage eid (PlayedEvent you _ _) | eid == eventId attrs -> do
       players <- getPlayers
       chooseOne you [targeting target do
-        withTheVillain you $ \villain -> do
+        -- with no villain in play (as between one Kang and the next), only the minions
+        withTheVillainIfAny you $ \villain -> do
           minions <- selectList (MinionEngagedWith $ IdentityWithId target)
-          let candidates = EnemyVillainId villain : map EnemyMinionId minions
+          let candidates = map EnemyVillainId (maybe [] pure villain) <> map EnemyMinionId minions
           enemies <- filterM (selectAny . (AttackableBy (IdentityWithId you) <>) . EnemyWithId) candidates
           dealDamageToEach enemies attrs (withRanged $ toDamage 3 $ FromPlayerAttack you)
         | target <- players]
