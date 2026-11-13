@@ -29,7 +29,7 @@ const show = (ref: LogRef, event: PointerEvent) => {
   overlay.show(
     { code: ref.faceDown ? null : ref.cardCode, name: ref.name, back: ref.faceDown ? 'encounter' : null },
     event.currentTarget as HTMLElement,
-    false,
+    undefined,
     event.pointerType === 'touch',
   )
 }
