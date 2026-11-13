@@ -177,6 +177,7 @@
     "asking": "{name}'s move",
     "waiting": "Nothing to decide right now.",
     "showAgain": "Show again",
+    "showSeat": "Go to {name}",
     "read": "Read before going on"
   },
   "outcome": {

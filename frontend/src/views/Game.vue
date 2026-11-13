@@ -80,6 +80,8 @@ const choices = computed<ChoiceView[]>(() => {
   const first = game.value?.boostCards?.find(card => !card.code)?.id
   return first ? options.map(choice => choice.label === '$label.revealBoostCards' ? { ...choice, target: first } : choice) : options
 })
+// another of your seats is asked: its choices are answered from its own area, not this one
+const askedElsewhere = computed(() => (answering.value && !allSeats.value && viewed.value && viewed.value.id !== answering.value ? answering.value : null))
 const waitingOn = computed(() => (answering.value ? null : (asked.value.map((id) => playerName.value[id]).find(Boolean) ?? null)))
 
 // the seat shown: yours at first, then whoever of yours is asked
@@ -526,7 +528,8 @@ const resetGame = () => restartDialog.value?.open()
                     v-if="!mobile"
                     :kind="question?.kind ?? null"
                     :prompt="reading && popOut ? '$game.prompt.read' : (question?.prompt ?? null)"
-                    :buttons="buttons"
+                    :buttons="askedElsewhere ? [] : buttons"
+                    :elsewhere="askedElsewhere ? playerName[askedElsewhere] ?? null : null"
                     :on-board="boardChoices.length"
                     :asking="answering && mySeats.length > 1 ? playerName[answering] : null"
                     :waiting-on="waitingOn"
@@ -535,6 +538,7 @@ const resetGame = () => restartDialog.value?.open()
                     :pop-out="popOut"
                     @choose="choose"
                     @reopen="closedAt = null"
+                    @view-asked="askedElsewhere && (viewing = askedElsewhere)"
                   />
                   <RouterLink v-if="game.outcome && table?.campaign" :to="`/campaigns/${table.campaign}`" class="btn primary big">{{ t('game.outcome.toCampaign') }}</RouterLink>
                   <p v-if="error" class="error">

@@ -12,7 +12,7 @@ import { useCards } from '../cards'
 import CardFace from './CardFace.vue'
 import type { ChoiceView } from '../server'
 
-const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, outcome = null, things = {}, popOut = null } = defineProps<{
+const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = null, waitingOn = null, elsewhere = null, outcome = null, things = {}, popOut = null } = defineProps<{
   kind?: string | null
   /** what is asked, as the engine says it */
   prompt?: string | null
@@ -23,13 +23,15 @@ const { kind = null, prompt: asked = null, buttons = [], onBoard = 0, asking = n
   asking?: string | null
   /** the seat being asked, when it is someone else's */
   waitingOn?: string | null
+  /** another of your seats being asked, while this one is shown: answered over there */
+  elsewhere?: string | null
   outcome?: 'Won' | 'Lost' | 'RegistrationWon' | 'ResistanceWon' | 'CompetitiveDraw' | 'BothTeamsLost' | null
   /** everything in the game by id, to name and show what a choice is about */
   things?: Record<string, { code: string; name: string }>
   /** the question is answered in a window over the board: only a button to open it here */
   popOut?: 'open' | 'closed' | null
 }>()
-const emit = defineEmits<{ choose: [index: number]; reopen: [] }>()
+const emit = defineEmits<{ choose: [index: number]; reopen: []; viewAsked: [] }>()
 const { t, te } = useI18n()
 const mobile = useMediaQuery('(max-width: 760px)')
 const label = useChoiceLabel()
@@ -79,6 +81,14 @@ const tone = (choice: ChoiceView) =>
       <p v-if="explanation" class="explanation">{{ explanation }}</p>
       <div v-if="popOut === 'closed'" class="options">
         <button type="button" class="go" @click="emit('reopen')">{{ t('game.prompt.showAgain') }}</button>
+      </div>
+    </template>
+    <template v-else-if="elsewhere">
+      <header>
+        <span class="eyebrow">{{ t('game.prompt.asking', { name: elsewhere }) }}</span>
+      </header>
+      <div class="options">
+        <button type="button" class="go" @click="emit('viewAsked')">{{ t('game.prompt.showSeat', { name: elsewhere }) }}</button>
       </div>
     </template>
     <template v-else-if="buttons.length || onBoard">
