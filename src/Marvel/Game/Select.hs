@@ -763,7 +763,7 @@ gameSelectMinion m = do
 gameSelectTreachery :: (HasGame m) => TreacheryMatcher -> m (HashSet TreacheryId)
 gameSelectTreachery = \case
   AnyTreachery -> do
-    treacheries <- HashMap.elems <$> getsGame gameTreacheries
+    treacheries <- inYourAreaOnly (TreacheryRef . toId) . HashMap.elems =<< getsGame gameTreacheries
     pure $ HashSet.fromList $ map toId treacheries
 
 gameSelectScheme :: (HasGame m) => SchemeMatcher -> m (HashSet SchemeId)

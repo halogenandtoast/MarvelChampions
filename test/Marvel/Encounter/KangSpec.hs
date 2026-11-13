@@ -16,6 +16,7 @@ import Marvel.Modifier (Modifier (CannotTakeDamage))
 import Marvel.Obligation.Cards qualified as Obligations
 import Marvel.Obligation.Types qualified as Obligation
 import Marvel.SideScheme.Cards qualified as SideSchemes
+import Marvel.Treachery.Cards qualified as Treacheries
 import Marvel.Villain.Types (villainIsTough)
 import Marvel.Query
 import Marvel.Phase (Phase (VillainPhase))
@@ -80,6 +81,20 @@ spec = describe "The Once and Future Kang" do
         liftIO $ all (>= 1) dealt `shouldBe` True
 
   describe "stage 2: separate game areas" do
+    for_ [False, True] \separate ->
+      it (if separate then "Protective Ward cannot cancel a treachery in another game area" else "Protective Ward can cancel another player's treachery in the same game area") do
+        tg <- kang ["doctor-strange", "groot"]
+        let p = player1 tg
+        inGame tg do
+          when separate $ toStage2 tg
+          clearHand p
+          changeForm p
+          ward <- putInHand p "09007"
+          _ <- putInHand p "01090"
+          card <- encounterCard Treacheries.advance
+          runNow [RevealEncounterCard (player2 tg) card]
+          offers (isPlay ward) `shouldReturn` not separate
+
     it "Kang (I) defeated, the main scheme advances at the end of the phase, not before" do
       tg <- kang ["spider-man"]
       inGame tg do

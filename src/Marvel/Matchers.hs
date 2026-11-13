@@ -54,7 +54,8 @@ villainMatches matcher ident = member ident <$> matchingArea (case matcher of Vi
 
 treacheryMatches ::
   (HasGame m) => TreacheryMatcher -> TreacheryId -> m Bool
-treacheryMatches matcher ident = member ident <$> matchingArea False (gameSelectTreachery matcher)
+treacheryMatches matcher ident =
+  member ident <$> (getGame >>= runReaderT (gameSelectTreachery matcher))
 
 schemeMatches :: (HasGame m) => SchemeMatcher -> SchemeId -> m Bool
 schemeMatches matcher ident = member ident <$> matchingArea (case matcher of SchemeWithId _ -> True; _ -> False) (gameSelectScheme matcher)

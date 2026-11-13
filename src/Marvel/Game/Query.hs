@@ -446,6 +446,11 @@ areaOfTarget g = \case
   SchemeRef (SchemeMainSchemeId s) -> areaOfTarget g (MainSchemeRef s)
   SchemeRef (SchemeSideSchemeId s) -> areaOfTarget g (SideSchemeRef s)
   EnvironmentRef e -> listing (elem e . areaEnvironments)
+  -- A treachery belongs to the player revealing it, including its interrupt
+  -- window before RevealTreachery has recorded the resolver on the entity.
+  TreacheryRef tid -> player =<<
+    (headMay [you | (you, other) <- gameTreacheriesRevealedThisPhase g, other == tid]
+      <|> (Treachery.treacheryResolver . toAttrs =<< lookup tid (gameTreacheries g)))
   MinionRef m -> player . getMinionEngagedIdentity =<< lookup m (gameMinions g)
   AllyRef a -> player . getAllyController =<< lookup a (gameAllies g)
   SupportRef s -> player . getSupportController =<< lookup s (gameSupports g)
