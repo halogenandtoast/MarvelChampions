@@ -363,6 +363,9 @@
     "spectators": "Spectators",
     "spectatorsHint": "Whether new games are open to spectators unless you say otherwise when you make one.",
     "allowByDefault": "Allow spectators by default",
+    "board": "Game board",
+    "autoScale": "Scale cards to fit the screen",
+    "autoScaleHint": "Shrinks the cards so the whole table fits without scrolling. Turn it off to keep cards at full size and scroll the board instead. Kept in this browser.",
     "saved": "Saved"
   },
   "watch": {

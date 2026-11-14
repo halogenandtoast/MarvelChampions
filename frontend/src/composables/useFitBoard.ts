@@ -1,5 +1,6 @@
-import { onBeforeUnmount, onMounted, onUpdated, type Ref } from 'vue'
+import { onBeforeUnmount, onMounted, onUpdated, watch, type Ref } from 'vue'
 import { tableauWidth } from './useFitToWidth'
+import { autoScale } from '../preferences'
 
 /** Keep one card size across the board, reserving enough height for the hero. */
 export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
@@ -17,6 +18,12 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     const player = el.querySelector<HTMLElement>('.player-half')
     const content = player?.querySelector<HTMLElement>('.half')
     if (!player || !content || !el.clientHeight) return
+    if (!autoScale.value) {
+      // cards at their preferred size; only the hand's space is still kept
+      el.style.removeProperty('--card-width')
+      el.style.setProperty('--hand-height', `${player.querySelector<HTMLElement>('.floating-hand')?.offsetHeight ?? 0}px`)
+      return
+    }
     const preferred = parseFloat(getComputedStyle(probe).width)
     if (!Number.isFinite(preferred)) return
     const fits = (width: number) => {
@@ -65,6 +72,7 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     for (const element of elements) if (!observed.has(element)) resize.observe(element)
     observed = elements
   }
+  watch(autoScale, schedule)
   onMounted(() => {
     document.body.append(probe)
     observe()

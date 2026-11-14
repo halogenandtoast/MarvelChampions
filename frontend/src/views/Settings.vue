@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { currentUser, updateSettings } from '../auth'
+import { autoScale } from '../preferences'
 import { loadLocaleMessages, normalizeLocale, supportedLocales } from '../locales/messages'
 
 // The language is kept in this browser, its messages loaded the first time it is chosen.
@@ -41,6 +42,15 @@ const saveSpectators = async () => {
           </select>
         </label>
         <p class="hint">{{ $t('settings.languageHint') }}</p>
+      </section>
+      <section class="box panel">
+        <span class="title">{{ $t('settings.board') }}</span>
+        <label class="switch">
+          <input v-model="autoScale" type="checkbox" role="switch" />
+          <span class="track" aria-hidden="true" />
+          {{ $t('settings.autoScale') }}
+        </label>
+        <p class="hint">{{ $t('settings.autoScaleHint') }}</p>
       </section>
       <section v-if="currentUser" class="box panel">
         <span class="title">{{ $t('settings.spectators') }}</span>

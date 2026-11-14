@@ -1,5 +1,6 @@
-import { onMounted, onUpdated, ref, type Ref } from 'vue'
+import { onMounted, onUpdated, ref, watch, type Ref } from 'vue'
 import { useMutationObserver, useResizeObserver } from '@vueuse/core'
+import { autoScale } from '../preferences'
 
 // Ignore distributed free space: only the groups' natural widths count. A group of
 // rows stacked one over another (marked data-fit-rows) is as wide as its widest row.
@@ -21,7 +22,7 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
   const width = ref<number | undefined>()
   const fit = () => {
     if (!container.value || !content.value) return
-    if (matchMedia('(max-width: 760px)').matches) {
+    if (!autoScale.value || matchMedia('(max-width: 760px)').matches) {
       scale.value = 1
       width.value = undefined
       return
@@ -41,6 +42,7 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
   // Fit in Vue's render cycle, before a view transition captures the new board.
   // ResizeObserver alone runs after that snapshot and briefly exposes full-size cards.
   onMounted(fit)
+  watch(autoScale, fit)
   onUpdated(fit)
   useResizeObserver([container, content], fit)
   useResizeObserver(() => [...(content.value?.children ?? [])].flatMap((child) =>
