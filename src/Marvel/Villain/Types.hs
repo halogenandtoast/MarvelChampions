@@ -520,8 +520,15 @@ runVillainMessage msg attrs = case msg of
   VillainAttacksWithBonus ident bonus keywords -> do
     updated <- attacks (VillainBeginAttack ident) ident keywords
     pure $ updated & attackingL . _Just %~ \attack -> attack {attackChange = attackChange attack + bonus}
-  VillainBeginAttack ident -> beginAttack True ident
-  VillainBeginAttackWithoutBoost ident -> beginAttack False ident
+  -- a player eliminated partway through an attack against them ends it (RR Player
+  -- Elimination): nothing more of it resolves, and its boost cards are discarded
+  -- facedown as it ends
+  VillainBeginAttack ident -> do
+    gone <- not <$> selectAny (IdentityWithId ident)
+    if gone then pure attrs else beginAttack True ident
+  VillainBeginAttackWithoutBoost ident -> do
+    gone <- not <$> selectAny (IdentityWithId ident)
+    if gone then pure attrs else beginAttack False ident
   VillainEndAttack -> pure $ attrs {villainActivationPlayer = Nothing, villainAttackGrantedKeywords = [], villainAttackTarget = Nothing, villainPendingAttackBoostCards = 0, villainPendingSchemeBoostCards = 0, villainAttackAdditionalBoostCards = 0} & attackingL .~ Nothing
   VillainAttackGains k -> do
     lost <- elem (LoseKeyword k) <$> getModifiers attrs
@@ -547,7 +554,9 @@ runVillainMessage msg attrs = case msg of
       Just (you, source) -> thwartSchemeAs you s source (sch + villainBoost attrs)
     cardSpecific attrs "villainSchemeResult" (0 :: Natural)
     pure $ attrs {villainActivationPlayer = Nothing, villainSchemeRemoval = Nothing} & boostL .~ 0
-  VillainAttacked -> do
+  VillainAttacked -> attackEnded >>= \case
+   True -> pure $ attrs & boostL .~ 0
+   False ->
     case villainAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
@@ -573,7 +582,8 @@ runVillainMessage msg attrs = case msg of
   -- each boost card is turned face up in turn, and its icons counted and added, which
   -- an interrupt to its turning face up may cancel
   VillainFlipBoostCards -> do
-    for_ (headMay $ reverse $ villainBoostCards attrs) $ \card -> do
+    ended <- attackEnded
+    for_ (guard (not ended) *> headMay (reverse $ villainBoostCards attrs)) $ \card -> do
       you <- getYou
       chooseOnePromptedAbout you "$label.revealBoostCards" card
         [targeting card $ cardSpecific attrs "flipBoostCards" ()]
@@ -585,12 +595,17 @@ runVillainMessage msg attrs = case msg of
         & (boostL +~ n)
         & (attackingL . _Just . attackDamageL +~ n)
   VillainCheckAdditionalBoosts -> do
-    unless (null $ villainBoostCards attrs) $ villainStep vid VillainFlipBoostCards
+    ended <- attackEnded
+    unless (ended || null (villainBoostCards attrs)) $ villainStep vid VillainFlipBoostCards
     pure attrs
   -- a double-sided villain answers this itself, with flipVillainTo
   FlipVillain -> error $ "No other face for villain " <> show (toCardCode $ villainCardDef attrs)
  where
   vid = villainId attrs
+  -- the attack under way is against a player no longer in the game
+  attackEnded = case (villainAttacking attrs, villainActivationPlayer attrs) of
+    (Just _, Just ident) -> not <$> selectAny (IdentityWithId ident)
+    _ -> pure False
   attacks begin ident keywords = do
     stunned <- isStunned attrs
     if stunned

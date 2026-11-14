@@ -249,7 +249,12 @@ runMinionMessage msg attrs = case msg of
         -- the attack is under way from when it is declared, as its would windows open
         attack' <- newAttack ident
         pure $ attrs {minionActivationPlayer = Just ident} & attackingL ?~ attack'
-  MinionBeginAttack ident -> do
+  -- a player eliminated partway through an attack against them ends it (RR Player
+  -- Elimination): nothing more of it resolves, and its boost cards are discarded
+  -- facedown as it ends
+  MinionBeginAttack ident -> selectAny (IdentityWithId ident) >>= \case
+   False -> pure attrs
+   True -> do
     attack' <- keepingGains (minionAttacking attrs) <$> newAttack ident
     villainous <- isVillainous
     checkWindows [attackWindow W.When ident]
@@ -292,7 +297,9 @@ runMinionMessage msg attrs = case msg of
   MinionAttackBecomesIndirect -> pure $ attrs & attackingL . _Just %~ \a -> a {attackIndirect = True}
   MinionAttackChanged n -> pure $ attrs & attackingL . _Just %~ \a -> a {attackChange = attackChange a + n}
   MinionAttackDamagePrevented -> pure $ attrs & attackingL . _Just %~ \a -> a {attackPrevented = True}
-  MinionAttacked -> do
+  MinionAttacked -> attackEnded >>= \case
+   True -> pure $ attrs & boostL .~ 0
+   False ->
     case minionAttacking attrs of
       Nothing -> error "No current attack"
       Just attack0 -> do
@@ -309,7 +316,8 @@ runMinionMessage msg attrs = case msg of
   -- each boost card is turned faceup in turn, and its icons added; one it is given as
   -- they are ("give this enemy another boost card") is turned up after them
   MinionFlipBoostCards -> do
-    for_ (headMay $ minionBoostCards attrs) $ \card -> do
+    ended <- attackEnded
+    for_ (guard (not ended) *> headMay (minionBoostCards attrs)) $ \card -> do
       you <- getYou
       chooseOnePromptedAbout you "$label.revealBoostCards" card
         [targeting card $ cardSpecific attrs "flipBoostCards" ()]
@@ -317,6 +325,10 @@ runMinionMessage msg attrs = case msg of
   MinionAddBoost n -> pure $ attrs & boostL +~ n & attackingL . _Just . attackDamageL +~ n
  where
   isVillainous = elem Villainous <$> getModifiedKeywords attrs
+  -- the attack under way is against a player no longer in the game
+  attackEnded = case (minionAttacking attrs, minionActivationPlayer attrs) of
+    (Just _, Just ident) -> not <$> selectAny (IdentityWithId ident)
+    _ -> pure False
   attackTarget ident = fromMaybe (IdentityCharacter ident) (minionAttackTarget attrs)
   attackWindow timing ident = W.Window timing $ case minionAttackTarget attrs of
     Just (AllyCharacter aid) -> W.EnemyAttackAlly (toEnemyId attrs) aid ident

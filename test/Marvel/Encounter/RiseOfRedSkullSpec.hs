@@ -14,6 +14,7 @@ import Marvel.Keyword (Keyword (Piercing))
 import Marvel.Matchers (EnvironmentMatcher (AnyEnvironment), VillainMatcher (VillainWithTrait))
 import Marvel.Query (selectAny, selectList)
 import Marvel.Trait (Trait (..))
+import Marvel.Treachery.Cards qualified as TreacheryCards
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
 import Marvel.Attack (attack)
@@ -124,6 +125,22 @@ spec = describe "The Rise of Red Skull" do
       offered <- untilSpiderSense 10
       after <- map attachmentCounters <$> gun
       liftIO $ (offered, after) `shouldBe` (True, [attachmentCounters g - 1])
+
+  it "a hero the Machine Gun defeats as Crossbones attacks is out of the game, and the attack ends without them" do
+    tg <- testGameAgainst "04058" ["spider-man", "captain-marvel"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      vid <- villainIdNow
+      _ <- revealNow you AttachmentCards.crossbonesMachineGun
+      -- two boost icons for the gun, one more than Spider-Man has left
+      _ <- stackEncounterDeck [TreacheryCards.fullAuto]
+      hp <- hitPointsOf you
+      setDamage you (hp - 1)
+      start [VillainMessage vid (VillainAttacks you)]
+      undefended
+      players' <- getsGame (HashMap.keys . gamePlayers)
+      liftIO $ (you `elem` players', player2 tg `elem` players') `shouldBe` (False, True)
 
   it "None Shall Pass keeps one environment in play, Absorbing Man has its trait, and a delay counter follows step one" do
     tg <- testGameAgainst "04076" ["spider-man"]
