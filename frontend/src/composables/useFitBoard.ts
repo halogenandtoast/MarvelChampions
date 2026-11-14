@@ -2,7 +2,7 @@ import { onBeforeUnmount, onMounted, onUpdated, watch, type Ref } from 'vue'
 import { tableauWidth } from './useFitToWidth'
 import { autoScale } from '../preferences'
 
-/** Keep one card size across the board, reserving enough height for the hero. */
+/** Zoom the whole board, cards and all around them, so the table fits, reserving enough height for the hero. */
 export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
   let frame = 0
   const probe = document.createElement('div')
@@ -11,7 +11,7 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     const el = board.value
     if (!el) return
     if (matchMedia('(max-width: 760px)').matches || el.classList.contains('waiting')) {
-      el.style.removeProperty('--card-width')
+      el.style.removeProperty('--board-zoom')
       el.style.removeProperty('--hand-height')
       return
     }
@@ -19,15 +19,17 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     const content = player?.querySelector<HTMLElement>('.half')
     if (!player || !content || !el.clientHeight) return
     if (!autoScale.value) {
-      // cards at their preferred size; only the hand's space is still kept
-      el.style.removeProperty('--card-width')
+      // the board at full size; only the hand's space is still kept
+      el.style.removeProperty('--board-zoom')
       el.style.setProperty('--hand-height', `${player.querySelector<HTMLElement>('.floating-hand')?.offsetHeight ?? 0}px`)
       return
     }
     const preferred = parseFloat(getComputedStyle(probe).width)
     if (!Number.isFinite(preferred)) return
+    // cards keep their preferred size inside the board, which is zoomed to the fitted width
+    el.style.removeProperty('--card-width')
     const fits = (width: number) => {
-      el.style.setProperty('--card-width', `${width}px`)
+      el.style.setProperty('--board-zoom', `${width / preferred}`)
       const hand = player.querySelector<HTMLElement>('.floating-hand')
       // the floating hand's space at the foot of the board, at this card size
       el.style.setProperty('--hand-height', `${hand?.offsetHeight ?? 0}px`)

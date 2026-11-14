@@ -626,7 +626,7 @@ const resetGame = () => restartDialog.value?.open()
 .layout.no-side { grid-template-columns: minmax(0, 1fr); }
 /* Reserve the river's actual content height; give the hero the remaining room. */
 .board {
-  --row: calc(var(--card-width) / var(--card-aspect) + 14px);
+  --row: calc((var(--card-width) / var(--card-aspect) + 14px) * var(--board-zoom, 1));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(min-content, 25%) minmax(var(--row), max-content) minmax(0, 1fr);
@@ -638,6 +638,8 @@ const resetGame = () => restartDialog.value?.open()
   padding-right: 2px;
 }
 .board > * { flex: none; }
+/* everything on the board scales with its cards */
+.board[data-fit-board] > * { zoom: var(--board-zoom, 1); }
 /* Measure candidate sizes without sampling an in-progress CSS width transition. */
 .board[data-fit-board] :deep(.slot),
 .board[data-fit-board] :deep(.card),
