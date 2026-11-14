@@ -3,7 +3,6 @@
 // engaged with them, their allies, supports and upgrades, and their deck and discard.
 import { computed, useTemplateRef } from 'vue'
 import { useFitToWidth } from '../composables/useFitToWidth'
-import { autoScale } from '../preferences'
 import { useI18n } from 'vue-i18n'
 import type { CardView, EnvironmentView, MinionView, PlayerView, SupportView, UpgradeView } from '../server'
 import BoardCard from './BoardCard.vue'
@@ -68,7 +67,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 </script>
 
 <template>
-  <section ref="area" class="player-area" :class="{ unscaled: !autoScale, active, compact, hero, unfolded, horizontal, 'alter-ego': !hero, 'separated-identity': !!identityCompanion }">
+  <section ref="area" class="player-area" :class="{ active, compact, hero, unfolded, horizontal, 'alter-ego': !hero, 'separated-identity': !!identityCompanion }">
     <div ref="tableau" class="player-tableau" :style="{ zoom: scale, width: tableauWidth === undefined ? undefined : `${tableauWidth}px` }">
     <div class="identity-column">
       <div class="identity">
@@ -255,10 +254,9 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
     linear-gradient(100deg, rgb(91 141 184 / 0.12), transparent 50%),
     linear-gradient(var(--ink-2), var(--ink-2));
   border: 1px solid rgb(91 141 184 / 0.2);
-  overflow: clip;
+  /* a tableau wider than the area, at full or smallest size, scrolls */
+  overflow: auto clip;
 }
-/* at full size, a tableau wider than the area scrolls */
-.player-area.unscaled { overflow: auto clip; }
 .player-tableau { display: flex; align-items: flex-start; gap: 14px; width: max-content; }
 /* beside the hero, one row over another */
 .tableau-rows { display: flex; flex-direction: column; gap: 14px; flex: 1 1 auto; min-width: 0; }

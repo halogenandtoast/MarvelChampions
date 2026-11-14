@@ -36,9 +36,9 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
         : Math.min(1, Math.max(0.45, available / naturalWidth))
       // Round down so fractional layout pixels cannot alternate across the fit boundary.
       scale.value = Math.floor(fitted * 1000) / 1000
-      // Always as wide as the area, so what sits at the right stays there; unscaled, wider
-      // when the cards need it, and the area scrolls.
-      width.value = Math.max(available / scale.value, autoScale.value ? 0 : naturalWidth)
+      // Always as wide as the area, so what sits at the right stays there; wider when the
+      // cards need it (unscaled, or at the smallest card size), and the area scrolls.
+      width.value = Math.max(available / scale.value, naturalWidth)
     }
   }
   // Fit in Vue's render cycle, before a view transition captures the new board.
