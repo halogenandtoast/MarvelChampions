@@ -20,15 +20,17 @@ import Marvel.Attack (attack)
 import Marvel.Villain.Types (Villain (..), attackingL, getModifiedKeywords, overVillainAttrs)
 import TestImport
 
--- | Answer what is asked, taking no defender, until the turn comes back.
+-- | Answer what is asked, taking no defender, until the turn comes back. Each question
+-- is answered as it is: @choose@ would first press through the boost flip and the
+-- attack's damage on its own, and then take the turn it came back to for the question.
 undefended :: GameAppT ()
 undefended = go (50 :: Int)
  where
   go 0 = pure ()
   go n =
     asked >>= \case
-      Just (_, cs) | EndTurn `notElem` cs -> do
-        if any isNoDefender cs then choose "no defender" isNoDefender else choose "first" (const True)
+      Just (ident, cs) | EndTurn `notElem` cs -> do
+        answerQuestion ident $ maybe 0 fst $ headMay $ filter (isNoDefender . snd) $ zip [0 ..] cs
         go (n - 1)
       _ -> pure ()
 
