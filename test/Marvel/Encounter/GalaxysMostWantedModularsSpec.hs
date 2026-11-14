@@ -208,9 +208,12 @@ shipCommand = describe "Ship Command" do
     tg <- gmwGame [ShipCommand] ["spider-man", "captain-marvel"]
     inGame tg do
       dealt <- length <$> dealtTo (player1 tg)
-      _ <- revealNow (player1 tg) EnvironmentCards.rogueVessel
+      card <- revealNow (player1 tg) EnvironmentCards.rogueVessel
+      let vessel = EnvironmentId (unCardId (ecCardId card))
       surged <- length <$> dealtTo (player1 tg)
       resolve [EndPhase VillainPhase]
+      -- a forced interrupt, resolved from its own button
+      choose "Rogue Vessel's interrupt" (isAbilityOf vessel)
       d1 <- damageOf (player1 tg)
       d2 <- damageOf (player2 tg)
       liftIO $ (surged - dealt, d1, d2) `shouldBe` (1, 1, 1)

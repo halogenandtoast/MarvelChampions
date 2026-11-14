@@ -19,6 +19,7 @@ import Marvel.Modifier
 import Marvel.Phase
 import Marvel.Question (runAbility)
 import Marvel.Ref ()
+import Marvel.Window qualified as W
 
 rogueVessel :: EnvironmentCard RogueVessel
 rogueVessel = environment RogueVessel Cards.rogueVessel
@@ -31,14 +32,16 @@ newtype RogueVessel = RogueVessel (Attrs Environment)
 
 instance HasAbilities RogueVessel where
   getAbilities (RogueVessel a) =
-    [ability a 1 Action (SelfMatches FirstPlayer) (ExhaustMilanoCost <> MultiResourceCost [Nothing, Nothing]) $ runAbility a 1]
+    [ ability a 1 Action (SelfMatches FirstPlayer) (ExhaustMilanoCost <> MultiResourceCost [Nothing, Nothing]) $ runAbility a 1
+    , -- Forced Interrupt: when the villain phase ends, deal 1 damage to each player.
+      windowAbility a 2 (W.PhaseEnds W.When VillainPhase) ForcedInterrupt NoCost $ runAbility a 2
+    ]
 
--- | Forced Interrupt: when the villain phase ends, deal 1 damage to each player.
 instance RunMessage RogueVessel where
   runMessage msg e@(RogueVessel attrs) = runQueueT $ case msg of
-    EndPhase VillainPhase -> do
+    RanAbility _ (isTarget attrs -> True) 1 _ _ -> e <$ removeFromPlay attrs
+    RanAbility _ (isTarget attrs -> True) 2 _ _ -> do
       players <- getPlayers
       for_ players \p -> damageIdentity p attrs (toDamage 1 FromAbility)
       pure e
-    RanAbility _ (isTarget attrs -> True) 1 _ _ -> e <$ removeFromPlay attrs
     _ -> RogueVessel <$> runMessage msg attrs
