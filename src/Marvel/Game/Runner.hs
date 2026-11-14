@@ -2084,6 +2084,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g {gamePrintedPlayerCounts = filter ((/= target) . fst) gamePrintedPlayerCounts}
   CardSpecific GameRef "resolveEncounterWhenRevealed" (fromJSON -> Success (you, card)) -> do
     let treachery = createTreachery card
+    when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef treachery)) $ treacheryStep (toId treachery) (TreacheryKeywordSurge you)
     treacheryStep (toId treachery) (RevealTreachery you)
     cardSpecific GameRef "clearWhenRevealedTreachery" (you,toId treachery)
     pure $ g & entitiesL . treacheriesL %~ insertMap (toId treachery) treachery
@@ -2098,7 +2099,7 @@ runGameMessage msg g@Game {..} = runQueueT $ case msg of
     pure g
   CardSpecific GameRef "clearWhenRevealedTreachery" (fromJSON -> Success (you,tid)) -> do
     for_ (lookup tid $ gameTreacheries g) $ \treachery ->
-      when (Treachery.treacherySurge (toAttrs treachery) || Marvel.Keyword.Surge `member` cdKeywords (getCardDef treachery)) $ surge you
+      when (Treachery.treacherySurge (toAttrs treachery) && not (Marvel.Keyword.Surge `member` cdKeywords (getCardDef treachery))) $ surge you
     pure $ g & entitiesL . treacheriesL %~ deleteMap tid
   CardSpecific GameRef "playerCardSetup" (fromJSON -> Success (you :: IdentityId)) -> do
     let supports = [support | support <- HashMap.elems (gameSupports g), getSupportController support == you]

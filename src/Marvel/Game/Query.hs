@@ -1171,8 +1171,15 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
         when (resolveWhenRevealed && hasEffect && hasWhenRevealed (toCardCode card)) $ askToResolveWhenRevealed ident t
         whenRevealed (incite card)
       revealing = revealingIf True
-  -- surge is resolved after the rest of the card; treacheries surge as they resolve
-  let surges = when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)) (whenRevealed $ surge ident)
+  -- surge, a "When Revealed: Deal yourself 1 facedown encounter card" (RR v1.8), deals
+  -- its card after incite and before the rest of the card; that card is revealed once
+  -- this one is done. Surge given it as it is revealed (Release the Hounds) is the same
+  -- keyword; surge the card gains as it resolves comes after.
+  granted <- isQueued $ grantedSurgeFor $ ecCardId card
+  when granted $ cancelMatchingMessage $ grantedSurgeFor $ ecCardId card
+  let printedSurge = granted || Marvel.Keyword.Surge `member` cdKeywords (getCardDef card)
+      surgesWith modifiers = when (printedSurge || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) (whenRevealed $ surge ident)
+      surges = surgesWith []
   result <- case cdCardType (getCardDef card) of
     AllyType -> do
       let playerCard = MkPlayerCard (ecCardId card) (getCardDef card) (Just ident) (Just ident)
@@ -1181,21 +1188,21 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
         then discardCard card
         else do
           putIntoPlay ident playerCard
+          surges
           when (hasWhenRevealed $ toCardCode card) $ whenRevealed $ do
             askToResolveWhenRevealed ident (AllyRef aid)
             allyStep aid (AllyRevealed ident)
-          surges
       pure g
     AttachmentType -> do
       let attachment = createAttachment card
       modifiers <- runReaderT (getModifiers attachment) (g & entitiesL . attachmentsL %~ insertMap (toId attachment) attachment)
       rest <- capture do
         revealing (toTarget attachment)
+        surgesWith modifiers
         if not resolveWhenRevealed && hasWhenRevealed (toCardCode card)
           then removeFromPlay attachment
           else attachmentStep (toId attachment) (RevealAttachment ident)
         checkWindows [W.Window W.After $ W.EncounterAttachmentEntered $ toId attachment]
-        when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
       push $ EntersPlayUnlessUnique ident True (toTarget attachment) rest
       pure
         $ g
@@ -1205,9 +1212,8 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       unless (getMinionEngagedIdentity minion == ident) $ engageMinion (toId minion) ident
       hasEffect <- case minion of Minion.Minion m -> Minion.minionWhenRevealedHasEffect m
       revealingIf hasEffect (toTarget minion)
+      surgesWith =<< getModifiers minion
       focusing [toCard minion] $ whenRevealed $ minionStep (toId minion) (RevealMinion ident)
-      modifiers <- getModifiers minion
-      when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
       pure g
     MinionType -> do
       let
@@ -1218,12 +1224,11 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       rest <- capture do
         hasEffect <- case minion of Minion.Minion m -> Minion.minionWhenRevealedHasEffect m
         revealingIf hasEffect (toTarget minion)
+        surgesWith =<< runReaderT (getModifiers minion) (g & entitiesL . minionsL %~ insertMap (toId minion) minion)
         cardSpecific (MinionRef $ toId minion) "applyToughness" ()
         focusing [toCard minion] $ whenRevealed $ minionStep (toId minion) (RevealMinion ident)
         engageMinion (toId minion) ident
         checkWindows [W.Window After $ W.MinionEnteredPlay $ toId minion]
-        modifiers <- runReaderT (getModifiers minion) (g & entitiesL . minionsL %~ insertMap (toId minion) minion)
-        when (Marvel.Keyword.Surge `member` cdKeywords (getCardDef card) || KeywordModifier Marvel.Keyword.Surge `elem` modifiers) $ whenRevealed $ surge ident
       push $ EntersPlayUnlessUnique ident True (toTarget minion) rest
       pure
         $ g
@@ -1242,6 +1247,7 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
             checkWindows [W.Window When $ W.RevealTreachery (toId treachery) source]
             askToResolveWhenRevealed ident treachery
             whenRevealed $ treacheryStep (toId treachery) TreacheryIncite
+            when printedSurge $ whenRevealed $ treacheryStep (toId treachery) $ TreacheryKeywordSurge ident
             whenRevealed $ treacheryStep (toId treachery) $ RevealTreachery ident
             treacheryStep (toId treachery) $ CheckTreacheryCondition ident
           treacheryStep (toId treachery) $ ResolvedTreachery ident
@@ -1286,8 +1292,8 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       -- An already-present card cannot cross into play a second time.
       sideSchemeStep (toId scheme) (SideSchemeRevealedBy ident)
       revealing (toTarget scheme)
-      whenRevealed $ sideSchemeStep (toId scheme) RevealSideScheme
       surges
+      whenRevealed $ sideSchemeStep (toId scheme) RevealSideScheme
       pure g
     SideSchemeType -> do
       let sideScheme = createSideScheme card
@@ -1295,8 +1301,8 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       revealing (toTarget sideScheme)
       sideSchemeStep (toId sideScheme) SideSchemePlaceInitialThreat
       checkWindows [W.Window W.After $ W.SideSchemeEnteredPlay (toId sideScheme)]
-      whenRevealed $ sideSchemeStep (toId sideScheme) RevealSideScheme
       surges
+      whenRevealed $ sideSchemeStep (toId sideScheme) RevealSideScheme
       pure
         $ g
         & (entitiesL . sideSchemesL %~ insertMap (toId sideScheme) sideScheme)
@@ -1305,9 +1311,9 @@ resolveEncounterReveal resolveWhenRevealed source ident card g = do
       let environment = createEnvironment card
       revealing (toTarget environment)
       spellOwnedBy ident environment
+      surges
       whenRevealed $ environmentStep (toId environment) (RevealEnvironment ident source)
       environmentStep (toId environment) EnvironmentEntered
-      surges
       pure $ g & environmentIntoPlay ident environment
     -- a player's event shuffled into the encounter deck (a Cosmic Entity, Adam
     -- Warlock's starter deck): its "When Revealed" resolves for the player revealing

@@ -38,8 +38,7 @@ instance RunMessage HuntingtheSpiderBrideSilk where
       let card = MkEncounterCard (CardId $ unTreacheryId $ treacheryId attrs) (getCardDef attrs)
       tuckEncounterCardFromEncounter you card
       pure u
-    TreacheryMessage tid (ResolvedTreachery you) | tid == treacheryId attrs -> do
+    TreacheryMessage tid (ResolvedTreachery _) | tid == treacheryId attrs -> do
       removeFromGame attrs
-      surge you
       pure u
     _ -> HuntingtheSpiderBrideSilk <$> runMessage msg attrs

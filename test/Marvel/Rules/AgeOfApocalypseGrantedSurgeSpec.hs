@@ -12,7 +12,9 @@ spec = describe "Age of Apocalypse granted surge" do
       let p = player1 tg
       _ <- revealNow p Schemes.portalThroughTime
       pass
-      ([next], _) <- setEncounterDeck [Treacheries.advance] []
+      -- surge is dealt before the treachery is discarded: a card left below, so the
+      -- deck does not run out with an empty discard pile
+      (next : _, _) <- setEncounterDeck [Treacheries.advance, Treacheries.advance] []
       temporal <- encounterCard Treacheries.temporalTrickery
       resolve [RevealEncounterCard p temporal]
       dealtTo p `shouldReturn` [next]

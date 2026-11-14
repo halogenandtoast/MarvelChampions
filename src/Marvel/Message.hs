@@ -135,6 +135,7 @@ cancelWhenRevealed tid = do
     TreacheryMessage tid' msg | tid' == tid -> case msg of
       RevealTreachery _ -> Nothing
       TreacheryIncite -> Nothing
+      TreacheryKeywordSurge _ -> Nothing
       CheckTreacheryCondition _ -> Nothing
       ResolvedTreachery who -> Just $ if resolvedPart then TreacheryMessage tid (ResolvedTreacheryAfterCancel who) else RemoveFromPlay (TreacheryRef tid)
       TreacheryMarkResolved -> Nothing

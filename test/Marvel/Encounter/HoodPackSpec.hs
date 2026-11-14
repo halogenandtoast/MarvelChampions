@@ -675,7 +675,8 @@ spec = describe "The Hood pack" do
       tg <- testGame ["spider-man"]
       inGame tg do
         asHero (player1 tg)
-        void $ setEncounterDeck [Attachments.theHoodsMantle,Minions.hydraMercenary,Minions.hydraSoldier] []
+        -- surge deals the top card before the attack takes its boost card (RR v1.8 Surge)
+        (dealt : _, _) <- setEncounterDeck [Minions.hydraMercenary,Attachments.theHoodsMantle,Minions.hydraSoldier] []
         _ <- reveal (player1 tg) Treacheries.hood24054
         damageOf (player1 tg) `shouldReturn` 2
-        length <$> dealtTo (player1 tg) `shouldReturn` 1
+        map ecCardId <$> dealtTo (player1 tg) `shouldReturn` [ecCardId dealt]

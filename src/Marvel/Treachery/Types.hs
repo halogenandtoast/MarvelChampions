@@ -152,6 +152,9 @@ instance RunMessage (Attrs Treachery) where
       TreacheryIncite -> do
         incite attrs
         pure attrs {treacheryResolvedPart = treacheryResolvedPart attrs || any (\case Keyword.Incite _ -> True; _ -> False) (cdKeywords $ getCardDef attrs)}
+      TreacheryKeywordSurge identityId -> do
+        surge identityId
+        pure attrs {treacheryResolvedPart = True}
       ResolvedTreacheryAfterCancel identityId -> do
         removeFromPlay attrs
         when (treacheryResolvedPart attrs) $
@@ -159,8 +162,9 @@ instance RunMessage (Attrs Treachery) where
         pure attrs
       ResolvedTreachery identityId -> do
         removeFromPlay attrs
-        -- surge is a "When Revealed", resolved again as the card's others are
-        when (treacherySurge attrs || Keyword.Surge `member` cdKeywords (getCardDef attrs)) do
+        -- surge the card gained as it resolved; a printed surge was dealt before the rest
+        -- of the card (TreacheryKeywordSurge), and a second instance of it does nothing (RR Keywords)
+        when (treacherySurge attrs && not (Keyword.Surge `member` cdKeywords (getCardDef attrs))) do
           times <- whenRevealedTimes identityId
           replicateM_ times (surge identityId)
         checkWindows [W.Window W.After $ W.ResolvedTreacheryCard identityId (MkEncounterCard (CardId $ unTreacheryId $ treacheryId attrs) $ getCardDef attrs)]
