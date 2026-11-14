@@ -584,6 +584,23 @@ techUpgrades = ["04155", "04156", "04157", "04158"]
 basicUpgrades :: [CardCode]
 basicUpgrades = ["04159a", "04160a", "04161a", "04162a"]
 
+-- | The Tech upgrades no player has taken: the set has one of each.
+techUpgradesLeft :: Campaign -> [CardCode]
+techUpgradesLeft c = filter ((`notElem` heldUpgrades (.techUpgrade) Nothing c) . toBaseCardCode) techUpgrades
+
+-- | The Basic Condition upgrades no player has taken, on either side.
+basicUpgradesLeft :: Campaign -> [CardCode]
+basicUpgradesLeft c = filter ((`notElem` heldUpgrades (.conditionUpgrade) Nothing c) . toBaseCardCode) basicUpgrades
+
+-- | The upgrades players hold in the log, by base code, but the named player's own.
+heldUpgrades :: (CampaignPlayer -> Maybe CardCode) -> Maybe CardCode -> Campaign -> [CardCode]
+heldUpgrades upgrade except c =
+  [ toBaseCardCode code
+  | p <- c.campaignLog.players
+  , Just p.identity /= fmap toHeroCardCode except
+  , code <- maybeToList (upgrade p)
+  ]
+
 -- | The obligations of an Expert Campaign Set: each player has a set of their own.
 expertCampaignObligations :: [CardCode]
 expertCampaignObligations = ["04163", "04164", "04165", "04166"]
@@ -762,8 +779,13 @@ recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis =
         , players = [p {rescuedAllies = filter (`notElem` codes) p.rescuedAllies} | p <- l.players]
         }
   RecordRescuedAllies ident codes -> player ident \p -> p {rescuedAllies = nub (p.rescuedAllies <> codes)}
-  RecordTechUpgrade ident code -> player ident \p -> p {techUpgrade = Just code}
-  RecordConditionUpgrade ident code -> player ident \p -> p {conditionUpgrade = Just code}
+  -- one copy of each: an upgrade another player holds is not theirs to take
+  RecordTechUpgrade ident code
+    | toBaseCardCode code `notElem` heldUpgrades (.techUpgrade) (Just ident) c -> player ident \p -> p {techUpgrade = Just code}
+    | otherwise -> c
+  RecordConditionUpgrade ident code
+    | toBaseCardCode code `notElem` heldUpgrades (.conditionUpgrade) (Just ident) c -> player ident \p -> p {conditionUpgrade = Just code}
+    | otherwise -> c
   RecordObligation ident code -> player ident \p -> p {obligations = p.obligations <> [code]}
   RemoveFromCampaignLog ident code ->
     player ident \p ->

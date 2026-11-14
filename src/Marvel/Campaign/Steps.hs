@@ -51,15 +51,34 @@ runCampaignStep step = getCampaign >>= traverse_ \c -> case c.kind of
     players <- getPlayers
     -- first the scenario's story, the rules it brings and its Campaign Instructions
     for_ (take 1 players) (`readThenContinue` briefing c)
+    -- each player's own step, so theirs sees what those before them took
     for_ players \ident -> do
       code <- getIdentityCode ident
-      for_ (campaignPlayer code c) \p -> for_ p.pending (choose InNextGame ident code p)
+      for_ (campaignPlayer code c) \p -> unless (null p.pending) $ later ("pending:" <> unCardCode code)
   CampaignSetup -> unless (scenarioNumber c == 1) (setup c)
   CampaignVictory -> do
     players <- getPlayers
     for_ (take 1 players) (`readThenContinue` victoryInstructions c)
     victory c
-  CampaignSetupThen _ -> pure ()
+  CampaignSetupThen step -> case T.stripPrefix "redSkull:" step of
+    Just rest
+      | Just code <- T.stripPrefix "pending:" rest -> do
+          players <- getPlayers
+          codes <- traverse getIdentityCode players
+          for_ (List.lookup (CardCode code) (zip codes players)) \ident ->
+            for_ (campaignPlayer (CardCode code) c) \p -> for_ p.pending (choose InNextGame c ident (CardCode code) p)
+      | Just value <- T.stripPrefix "victory:" rest
+      , (key, code) <- T.breakOn ":" value
+      , Just choice <- List.lookup key victoryChoices ->
+          offerAtVictory c choice (CardCode (T.drop 1 code))
+    _ -> pure ()
+
+-- | Each player's part of a victory's instructions, a step of its own.
+later :: (ReverseQueue m) => Text -> m ()
+later = campaignStep . CampaignSetupThen . ("redSkull:" <>)
+
+victoryChoices :: [(Text, CampaignChoice)]
+victoryChoices = [("tech", ChooseTechUpgrade), ("basic", ChooseBasicUpgrade)]
 
 -- * What the players read
 
@@ -93,13 +112,16 @@ expertOnly c xs = if isExpertCampaign c then xs else []
 data Chosen = AtVictory | InNextGame
   deriving stock (Eq)
 
-choose :: (ReverseQueue m) => Chosen -> IdentityId -> CardCode -> CampaignPlayer -> CampaignChoice -> m ()
-choose chosen ident code p choice = case choice of
+choose :: (ReverseQueue m) => Chosen -> Campaign -> IdentityId -> CardCode -> CampaignPlayer -> CampaignChoice -> m ()
+choose chosen c ident code p choice = case choice of
+  -- the set has one of each: what another player took is not offered
   ChooseTechUpgrade -> do
-    cards <- traverse (newCard ident) techUpgrades
-    chooseOnePrompted ident "$label.chooseTechUpgrade" [cardLabeled (toCardCode card) (added card RecordTechUpgrade) | card <- cards]
+    cards <- traverse (newCard ident) (techUpgradesLeft c)
+    if null cards
+      then done
+      else chooseOnePrompted ident "$label.chooseTechUpgrade" [cardLabeled (toCardCode card) (added card RecordTechUpgrade) | card <- cards]
   ChooseBasicUpgrade -> do
-    cards <- traverse (newCard ident) basicUpgrades
+    cards <- traverse (newCard ident) (basicUpgradesLeft c)
     chooseOnePrompted ident "$label.chooseBasicUpgrade" $
       [cardLabeled (toCardCode card) (added card RecordConditionUpgrade) | card <- cards]
         <> [labeled "$label.noUpgrade" done]
@@ -186,11 +208,11 @@ victory c = do
     participants
       | isExpertCampaign c = codes
       | otherwise = map (.identity) c.campaignLog.players
-    -- each player chooses as it is won; one not in the game then, as the next is set up
-    offer choice code = case (List.lookup code (zip codes survivors), campaignPlayer code c) of
-      (Just ident, Just p) -> choose AtVictory ident code p choice
-      _ -> recordInCampaignLog (RecordChoice code choice)
-    each' choice = for_ participants (offer choice)
+    offer = offerAtVictory c
+    -- in turn, each player's choice seeing what those before them took
+    each' choice = for_ participants \code ->
+      for_ (List.find ((== choice) . snd) victoryChoices) \(key, _) ->
+        later ("victory:" <> key <> ":" <> unCardCode code)
   if
     | scenarioNumber c == 1 -> each' ChooseTechUpgrade
     | scenarioNumber c == 2 -> do
@@ -222,3 +244,13 @@ victory c = do
   recordInCampaignLog RecordScenarioWon
  where
   hydraPrison = "04122"
+
+-- | A player's choice as the scenario is won; one not in the game then makes it as the
+-- next is set up.
+offerAtVictory :: (ReverseQueue m) => Campaign -> CampaignChoice -> CardCode -> m ()
+offerAtVictory c choice code = do
+  survivors <- getPlayers
+  codes <- traverse getIdentityCode survivors
+  case (List.lookup code (zip codes survivors), campaignPlayer code c) of
+    (Just ident, Just p) -> choose AtVictory c ident code p choice
+    _ -> recordInCampaignLog (RecordChoice code choice)

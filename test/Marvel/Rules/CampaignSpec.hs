@@ -14,6 +14,9 @@ import TestImport
 spiderMan :: CardCode
 spiderMan = "01001a"
 
+captainMarvel :: CardCode
+captainMarvel = "01010a"
+
 -- | A Rise of Red Skull campaign for Spider-Man with so many scenarios won, the next
 -- played against Rhino (the box's own scenarios are not the test's).
 campaignAt :: CampaignMode -> Int -> Campaign
@@ -113,6 +116,51 @@ spec = describe "The Rise of Red Skull campaign" do
       setDamage p 3
       resolve [GameOver Won]
       (.hitPoints) <$> spiderManNow `shouldReturn` Just (hp - 3)
+
+  it "has each player choose a different Tech upgrade: the set has one of each" do
+    let c = (campaignAt StandardCampaign 0) {campaignLog = (newCampaign StandardCampaign [spiderMan, captainMarvel]).campaignLog}
+    tg <- dealCampaign c [starter "spider-man", starter "captain-marvel"]
+    inGame tg do
+      toFirstTurn
+      win
+      void readStory
+      choose "choose Tactical Scanner" (isCard "04156")
+      Just (who, choices) <- asked
+      liftIO do
+        who `shouldBe` player2 tg
+        length choices `shouldBe` 3
+        any (isCard "04156") choices `shouldBe` False
+      choose "choose Laser Cannon" (isCard "04158")
+      log' <- (.campaignLog.players) <$> campaignNow
+      map (.techUpgrade) log' `shouldMatchList` [Just "04156", Just "04158"]
+
+  it "has each player choose a different Basic upgrade" do
+    let c = (campaignAt StandardCampaign 1) {campaignLog = (newCampaign StandardCampaign [spiderMan, captainMarvel]).campaignLog}
+    tg <- dealCampaign c [starter "spider-man", starter "captain-marvel"]
+    inGame tg do
+      toFirstTurn
+      win
+      void readStory
+      choose "choose Basic Thwart Upgrade" (isCard "04159a")
+      offers (isCard "04159a") `shouldReturn` False
+      offers (isCard "04160a") `shouldReturn` True
+
+  it "offers a choice left for the next game only the Tech upgrades no one has taken" do
+    let c =
+          recordInLog (RecordChoice captainMarvel ChooseTechUpgrade) $
+            recordInLog (RecordTechUpgrade spiderMan "04156") $
+              (campaignAt StandardCampaign 1) {campaignLog = (newCampaign StandardCampaign [spiderMan, captainMarvel]).campaignLog}
+    tg <- dealCampaign c [withCard "04156" (starter "spider-man"), starter "captain-marvel"]
+    inGame tg do
+      offers (isCard "04156") `shouldReturn` False
+      offers (isCard "04155") `shouldReturn` True
+
+  it "won't write in the log a Tech upgrade another player holds" $ id @(IO ()) do
+    let c =
+          recordInLog (RecordTechUpgrade captainMarvel "04156") $
+            recordInLog (RecordTechUpgrade spiderMan "04156") $
+              (campaignAt StandardCampaign 1) {campaignLog = (newCampaign StandardCampaign [spiderMan, captainMarvel]).campaignLog}
+    map (.techUpgrade) c.campaignLog.players `shouldBe` [Just "04156", Nothing]
 
   it "asks a choice a win left a player not then in the game as the next game is set up, the card earned in play from the start" do
     let c = recordInLog (RecordChoice spiderMan ChooseTechUpgrade) (campaignAt StandardCampaign 1)
