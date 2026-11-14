@@ -46,11 +46,9 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     }
     // Wrapping makes height discontinuous. Search actual layout rather than
     // estimating a ratio from the current number of rows.
-    // never below the smallest card still easy to read; past that the board scrolls
-    const smallest = 100
-    let low = smallest
-    let high = Math.max(smallest, preferred)
-    if (fits(high)) low = high
+    let low = Math.min(40, preferred)
+    let high = preferred
+    if (fits(preferred)) low = preferred
     else {
       for (let n = 0; n < 8; n++) {
         const candidate = (low + high) / 2
