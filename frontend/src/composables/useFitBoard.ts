@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted, onUpdated, type Ref } from 'vue'
+import { tableauWidth } from './useFitToWidth'
 
 /** Keep one card size across the board, reserving enough height for the hero. */
 export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
@@ -10,6 +11,7 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     if (!el) return
     if (matchMedia('(max-width: 760px)').matches || el.classList.contains('waiting')) {
       el.style.removeProperty('--card-width')
+      el.style.removeProperty('--hand-height')
       return
     }
     const player = el.querySelector<HTMLElement>('.player-half')
@@ -20,14 +22,13 @@ export const useFitBoard = (board: Readonly<Ref<HTMLElement | null>>) => {
     const fits = (width: number) => {
       el.style.setProperty('--card-width', `${width}px`)
       const hand = player.querySelector<HTMLElement>('.floating-hand')
+      // the floating hand's space at the foot of the board, at this card size
+      el.style.setProperty('--hand-height', `${hand?.offsetHeight ?? 0}px`)
       const tableausFit = [...player.querySelectorAll<HTMLElement>('.player-tableau')].every(tableau => {
         const area = tableau.parentElement!
         const style = getComputedStyle(area)
         const available = area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
-        const groups = [...tableau.children] as HTMLElement[]
-        const gap = parseFloat(getComputedStyle(tableau).columnGap) || 0
-        const natural = groups.reduce((total, group) => total + group.offsetWidth, 0) + gap * Math.max(0, groups.length - 1)
-        return natural <= available + 1
+        return tableauWidth(tableau) <= available + 1
       })
       return el.scrollHeight <= el.clientHeight + 1
         && tableausFit

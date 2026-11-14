@@ -108,10 +108,13 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
         </div>
         <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :subtracting="assignedDamage[player.id] ?? 0" :max="player.hitPoints" />
       </div>
-      <!-- what this player is asked sits beneath them, at the foot of the area -->
+      <!-- what this player is asked, beneath the hero -->
       <div v-if="$slots.default" class="asked"><slot /></div>
     </div>
 
+    <!-- beside the hero: enemies and allies, then supports and upgrades -->
+    <div class="tableau-rows" data-fit-rows>
+    <div class="tableau-row">
     <div v-if="detachedMinions.length" class="zone engaged">
       <span class="zone-label">{{ t('game.zones.engaged') }}</span>
       <div class="cards">
@@ -188,28 +191,6 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
       </div>
     </div>
 
-    <div class="zone supports" :class="{ empty: !supports.length }">
-      <span class="zone-label">{{ t('game.zones.supports') }}</span>
-      <div class="cards">
-        <BoardCard
-          v-for="card in supports"
-          :id="card.id"
-          :key="card.id"
-          :code="card.code"
-          :name="card.name"
-          :exhausted="card.exhausted"
-          :counters="card.uses ?? card.counters ?? null"
-          :resource-slots="card.resourceSlots"
-          :occupied-slots="card.occupiedSlots"
-          :damage="card.damage || 0"
-          :threat="card.threat || null"
-          :attached="facedown(card)"
-          :flag="card.facedown ? t('game.facedownCard') : card.attachedTo ? t('game.attachedTo', { name: card.attachedTo.name }) : null"
-          :class="{ 'facedown-upgrade': card.facedown }"
-        />
-      </div>
-    </div>
-
     <div class="side">
       <div class="piles">
         <Pile :label="t('game.piles.deck')" :back="player.deckTop ? null : 'player'" :cards="player.deckTop ? [player.deckTop] : null" :count="player.deckSize" :pile="`deck-${player.id}`" />
@@ -232,6 +213,32 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
       <Pile v-if="player.dealtEncounterCards" class="dealt" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" :pile="`dealt-${player.id}`" />
     </div>
     </div>
+
+    <div class="tableau-row">
+    <div class="zone supports" :class="{ empty: !supports.length }">
+      <span class="zone-label">{{ t('game.zones.supports') }}</span>
+      <div class="cards">
+        <BoardCard
+          v-for="card in supports"
+          :id="card.id"
+          :key="card.id"
+          :code="card.code"
+          :name="card.name"
+          :exhausted="card.exhausted"
+          :counters="card.uses ?? card.counters ?? null"
+          :resource-slots="card.resourceSlots"
+          :occupied-slots="card.occupiedSlots"
+          :damage="card.damage || 0"
+          :threat="card.threat || null"
+          :attached="facedown(card)"
+          :flag="card.facedown ? t('game.facedownCard') : card.attachedTo ? t('game.attachedTo', { name: card.attachedTo.name }) : null"
+          :class="{ 'facedown-upgrade': card.facedown }"
+        />
+      </div>
+    </div>
+    </div>
+    </div>
+    </div>
   </section>
 </template>
 
@@ -250,8 +257,11 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   overflow: clip;
 }
 .player-tableau { display: flex; align-items: flex-start; gap: 14px; width: max-content; }
-.player-tableau > .zone, .player-tableau > .zone.allies { flex: none; }
-.player-tableau > .zone.supports { margin-left: auto; }
+/* beside the hero, one row over another */
+.tableau-rows { display: flex; flex-direction: column; gap: 14px; flex: 1 1 auto; min-width: 0; }
+.tableau-row { display: flex; align-items: flex-start; gap: 14px; }
+.tableau-row > .zone, .tableau-row > .zone.allies { flex: none; }
+.tableau-row > .side { margin-left: auto; }
 .player-tableau .cards { flex-wrap: nowrap; }
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
@@ -262,7 +272,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .player-area.separated-identity .identity-column { width: calc(2 * var(--card-width) + 170px); }
 .player-area.separated-identity .identity > :deep(.meter) { width: calc(2 * var(--card-width) + 6px); }
 /* above the hand that floats over the foot of the board */
-.asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+.asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
 .identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
 /* a card's stats pinned to its left */
 .body { display: flex; gap: 6px; align-items: flex-start; }
@@ -312,11 +322,13 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 @media (max-width: 760px) {
   .player-area { padding: 12px; overflow: visible; }
   /* Reflow groups at their readable size; desktop fitting must not shrink prompts. */
-  .player-tableau { zoom: 1 !important; width: 100% !important; flex-wrap: wrap; gap: 16px 12px; }
+  .player-tableau { zoom: 1 !important; width: 100% !important; flex-wrap: wrap; gap: 16px; }
+  .tableau-rows { flex: 1 1 100%; gap: 16px; }
+  .tableau-row { flex-wrap: wrap; gap: 16px 12px; }
   .identity-column, .player-area.unfolded .identity-column, .player-area.horizontal .identity-column, .player-area.separated-identity .identity-column { width: 100%; }
-  .player-tableau > .zone, .player-tableau > .zone.allies { flex: 1 1 100%; max-width: 100%; }
+  .tableau-row > .zone, .tableau-row > .zone.allies { flex: 1 1 100%; max-width: 100%; }
   .player-tableau .cards { flex-wrap: wrap; gap: 14px; }
-  .player-tableau > .zone.supports { margin-left: 0; }
+  .tableau-row > .side { margin-left: 0; }
   .zone-label { font-size: 0.75rem; color: var(--text-muted); }
   .zone.empty, .ally-slot { display: none; }
   .side { width: 100%; align-items: flex-start; }

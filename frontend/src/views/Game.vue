@@ -647,6 +647,8 @@ const resetGame = () => restartDialog.value?.open()
 .board.waiting { display: block; }
 .board > .half, .player-half > .half { flex: 1 1 0; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden auto; }
 .player-half > .half { scrollbar-gutter: stable; }
+/* room at the foot for the floating hand, which overlaps the last row a little */
+.board > .player-half > .half { padding-bottom: max(0px, var(--hand-height, 0px) - 0.3 * var(--card-width)); }
 .half > * { flex: none; }
 .half > :deep(.villain-area), .half > :deep(.player-area) { flex: 1 0 auto; }
 /* the hand floats over the foot of the player area */
@@ -672,6 +674,7 @@ const resetGame = () => restartDialog.value?.open()
   .layout { padding: 8px; gap: 8px; }
   .board { display: flex; flex-direction: column; gap: 12px; scrollbar-gutter: auto; padding: 2px 2px 16px; }
   .board > .half, .player-half > .half { flex: none; overflow: visible; min-height: auto; }
+  .board > .player-half > .half { padding-bottom: 0; }
   .board > .player-half { flex: none; gap: 12px; overflow: visible; view-transition-name: none; }
   .floating-hand { position: relative; inset: auto; pointer-events: auto; }
   .side { max-height: 32dvh; overflow: auto; }
