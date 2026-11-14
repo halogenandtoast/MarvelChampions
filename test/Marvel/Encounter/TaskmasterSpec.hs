@@ -30,6 +30,15 @@ spec = describe "Taskmaster" do
         sort (map (toCardCode . pcCardDef) captives) `shouldBe` ["04097", "04098", "04099", "04100" :: CardCode]
         map pcOwner captives `shouldBe` replicate 4 Nothing
 
+    it "keeps the Captive allies out of the encounter deck: each is only set aside" do
+      tg <- taskmaster ["spider-man"]
+      inGame tg do
+        deck <- scenarioEncounterDeckNow
+        filter ((== AllyType) . cdCardType . getCardDef) deck `shouldBe` []
+        filter (cardMatch (CardWithTrait Captive)) deck `shouldBe` []
+        captives <- setAsideCaptives
+        sort (map (canonicalCardCode . pcCardDef) captives) `shouldBe` ["04097", "04098", "04099", "04100" :: CardCode]
+
     it "puts Hydra Patrol into play" do
       tg <- taskmaster ["spider-man"]
       inGame tg do

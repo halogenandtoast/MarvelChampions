@@ -724,10 +724,11 @@ spiderManPeterParker = ally "04045" ("Spider-Man" <:> "Peter Parker") 5 [Avenger
 -- player rescues one
 
 -- | A Captive ally of the Taskmaster encounter set: a player card, cost 0, kept out of
--- the encounter deck (it is not an encounter card) and owned by whoever rescues it.
+-- the encounter deck (it is not an encounter card) and owned by whoever rescues it. None
+-- is dealt with the set; Hunting Down Heroes sets each aside.
 captiveAlly :: CardCode -> Name -> CardDef
 captiveAlly code name =
-  (basicAlly code name 0 [Captive, HeroForHire] [Wild]) {cdEncounterSet = Just EncounterSet.Taskmaster, cdEncounterSetQuantity = Just 1}
+  (basicAlly code name 0 [Captive, HeroForHire] [Wild]) {cdEncounterSet = Just EncounterSet.Taskmaster, cdEncounterSetQuantity = Just 0}
 
 moonKnightMarcSpector :: CardDef
 moonKnightMarcSpector = captiveAlly "04097" ("Moon Knight" <:> "Marc Spector")
@@ -946,14 +947,15 @@ martinexTNaga = basicAlly "21065" ("Martinex" <:> "T'Naga") 3 [Guardian] [Energy
 -- The Mad Titan's Shadow: Hela
 
 -- | Odin's two sides, the scenario's player card: attached to Odin's Torment, Captive
--- side faceup, until Hall of Nastrond is defeated.
+-- side faceup, until Hall of Nastrond is defeated. Neither is dealt with the set; Odin's
+-- Torment attaches him itself.
 odinCaptive :: CardDef
 odinCaptive =
-  (basicAlly "21139a" ("Odin" <:> "All-Father") 0 [Asgard, Captive] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 1}
+  (basicAlly "21139a" ("Odin" <:> "All-Father") 0 [Asgard, Captive] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 0}
 
 odinKing :: CardDef
 odinKing =
-  (basicAlly "21139b" ("Odin" <:> "All-Father") 0 [Asgard, King] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 1}
+  (basicAlly "21139b" ("Odin" <:> "All-Father") 0 [Asgard, King] []) {cdEncounterSet = Just EncounterSet.Hela, cdEncounterSetQuantity = Just 0}
 
 -- The Mad Titan's Shadow: the campaign set, cards no deck may hold
 

@@ -175,6 +175,9 @@ setupSpec = describe "Hela: setup" do
         deck `shouldSatisfy` elem (toCardCode MinionCards.draugr)
         deck `shouldSatisfy` elem (toCardCode MinionCards.laufey)
         deck `shouldSatisfy` notElem (toCardCode SideSchemeCards.gnipahellir)
+        -- Odin is the scheme's, never dealt into the encounter deck
+        deck `shouldSatisfy` notElem (toCardCode AllyCards.odinCaptive)
+        deck `shouldSatisfy` notElem (toCardCode AllyCards.odinKing)
 
   it "expert: Hela (B1), 9 hit points per player" do
     tg <- helaExpert ["spider-man"]
