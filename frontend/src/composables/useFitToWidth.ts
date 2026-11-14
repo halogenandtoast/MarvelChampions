@@ -22,7 +22,7 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
   const width = ref<number | undefined>()
   const fit = () => {
     if (!container.value || !content.value) return
-    if (!autoScale.value || matchMedia('(max-width: 760px)').matches) {
+    if (matchMedia('(max-width: 760px)').matches) {
       scale.value = 1
       width.value = undefined
       return
@@ -31,12 +31,14 @@ export const useFitToWidth = (container: Readonly<Ref<HTMLElement | null>>, cont
     const available = container.value.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
     const naturalWidth = tableauWidth(content.value)
     if (available > 0 && naturalWidth > 0) {
-      const fitted = container.value.closest('[data-fit-board]')
+      const fitted = !autoScale.value || container.value.closest('[data-fit-board]')
         ? 1
         : Math.min(1, Math.max(0.45, available / naturalWidth))
       // Round down so fractional layout pixels cannot alternate across the fit boundary.
       scale.value = Math.floor(fitted * 1000) / 1000
-      width.value = available / scale.value
+      // Always as wide as the area, so what sits at the right stays there; unscaled, wider
+      // when the cards need it, and the area scrolls.
+      width.value = Math.max(available / scale.value, autoScale.value ? 0 : naturalWidth)
     }
   }
   // Fit in Vue's render cycle, before a view transition captures the new board.
