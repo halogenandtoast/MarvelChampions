@@ -328,7 +328,7 @@
   "chooseTechniqueToDiscard": "Choose a Technique attachment to discard",
   "removeTopCardToDiscardTechnique": "You may remove the top card of your deck from the game to discard a Technique attachment",
   "doNotRemoveTopCard": "Do not remove the top card of your deck",
-  "shootTheThrusters": "Shoot the Thrusters!: exhaust the Milano and spend a resource to remove an evasion counter | Shoot the Thrusters!: exhaust the Milano and spend {count} resources to remove {count} evasion counters",
+  "shootTheThrusters": "Shoot the Thrusters!: exhaust the Milano and spend up to 2 resources to remove that many evasion counters",
   "-- The Galaxy's Most Wanted: campaign --": "",
   "placeOnTopOfDeck": "Place it on top of your deck",
   "placeOnBottomOfDeck": "Place it on the bottom of your deck",

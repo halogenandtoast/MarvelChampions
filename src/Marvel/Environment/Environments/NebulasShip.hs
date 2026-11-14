@@ -18,6 +18,7 @@ import Marvel.Matchers
 import Marvel.Message.Lifted
 import Marvel.Modifier
 import Marvel.Phase
+import Marvel.Payment.Types (paymentX)
 import Marvel.Query
 import Marvel.Question (runAbility)
 import Marvel.Ref ()
@@ -32,20 +33,18 @@ newtype NebulasShip = NebulasShip (Attrs Environment)
 
 -- | Shoot the Thrusters! — First Player Action: exhaust the Milano and spend up to 2
 -- resources of any type → remove 1 evasion counter from here for each resource spent.
--- One ability for each number of resources (spending none would remove nothing), labeled
--- by it.
+-- One action, its resources counted as they are paid (spending none would remove nothing).
 instance HasAbilities NebulasShip where
   getAbilities (NebulasShip a) =
-    [ label (countLabel "shootTheThrusters" n) $
-        ability a n Action (SelfMatches FirstPlayer) (ExhaustMilanoCost <> MultiResourceCost (replicate (fromIntegral n) Nothing)) $ runAbility a n
-    | n <- [1, 2]
+    [ label "$label.shootTheThrusters" $
+        ability a 1 Action (SelfMatches FirstPlayer) (ExhaustMilanoCost <> UpToResourcesCost 2) $ runAbility a 1
     ]
 
 -- | Forced Interrupt: when the villain phase begins, place 1 evasion counter here.
 instance RunMessage NebulasShip where
   runMessage msg e@(NebulasShip attrs) = runQueueT $ case msg of
     BeginPhase VillainPhase -> e <$ placeCounters attrs 1
-    RanAbility _ (isTarget attrs -> True) n _ _ -> e <$ removeCounters attrs n
+    RanAbility _ (isTarget attrs -> True) 1 _ payment -> e <$ removeCounters attrs (paymentX payment)
     _ -> NebulasShip <$> runMessage msg attrs
 
 -- | "Place n evasion counters on Nebula's Ship": none without it in play.

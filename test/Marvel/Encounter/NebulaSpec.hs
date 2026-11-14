@@ -172,11 +172,8 @@ shipSpec = describe "Nebula's Ship" do
       clearHand you
       strength <- putInHand you "01090" -- Strength: two physical resources
       offered <- asked
-      let twoOf = \case
-            UseAbility ab -> abilitySource ab == toSource s && abilityIndex ab == 2
-            _ -> False
-      liftIO $ fmap (length . filter (isAbilityOf s) . snd) offered `shouldBe` Just 2
-      choose "shoot the thrusters, 2" twoOf
+      liftIO $ fmap (length . filter (isAbilityOf s) . snd) offered `shouldBe` Just 1
+      choose "shoot the thrusters" (isAbilityOf s)
       payWith [strength]
       counters <- getEvasionCounters
       [m] <- supportsWith (toCardCode SupportCards.milano)
@@ -190,11 +187,10 @@ shipSpec = describe "Nebula's Ship" do
       s <- ship
       clearHand you
       shooter <- putInHand you "01008" -- Web-Shooter: one physical resource
-      let oneOf = \case
-            UseAbility ab -> abilitySource ab == toSource s && abilityIndex ab == 1
-            _ -> False
-      choose "shoot the thrusters, 1" oneOf
-      payWith [shooter]
+      _ <- putInHand you "01089" -- another resource, left unspent
+      choose "shoot the thrusters" (isAbilityOf s)
+      choose "spend one" (isPayWith shooter)
+      choose "stop after one" isFinishPayment
       counters <- getEvasionCounters
       offeredAgain <- offers (isAbilityOf s)
       liftIO $ (counters, offeredAgain) `shouldBe` (2, False)
