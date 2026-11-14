@@ -35,6 +35,18 @@ spec = describe "encounter cards that count what is in play" do
       -- its starting 3, then 2 for each Hydra enemy
       sideSchemeThreat (sideSchemeOf card) `shouldReturn` fromIntegral (3 + 2 * hydra)
 
+  it "Legions of Hydra counts a Hydra villain as a Hydra enemy" do
+    tg <- testGameAgainst "04058" ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      _ <- stackEncounterDeck [Minions.madameHydra]
+      card <- revealNow p SideSchemes.legionsOfHydra
+      pass
+      hydraMinions <- getsGame $ length . filter ((Hydra `elem`) . cdTraits . getCardDef) . HashMap.elems . gameMinions
+      hydraMinions `shouldSatisfy` (>= 1)
+      -- its starting 3, then 2 for Crossbones and 2 for each Hydra minion
+      sideSchemeThreat (sideSchemeOf card) `shouldReturn` fromIntegral (3 + 2 * (1 + hydraMinions))
+
   it "Swarm Attack puts a Drone into play when every Drone is stunned" do
     tg <- testGameAgainst "01134" ["spider-man"]
     let p = player1 tg
