@@ -1,6 +1,7 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.List qualified as List
 import Marvel.Area (Pile (..), experimentalWeaponsDeck)
 import Marvel.Campaign
 import Marvel.Game.Public (publicGameFor)
@@ -174,14 +175,16 @@ spec = describe "The Rise of Red Skull campaign" do
     tg <- dealScenario (newCampaign StandardCampaign [spiderMan]) [starter "spider-man"]
     inGame tg do
       toFirstTurn
+      -- Attack on Mount Athena 1B has revealed one already
       Pile before _ <- getPile experimentalWeaponsDeck
       resolve [UsingDeck experimentalWeaponsDeck (DrawAndRevealEncounterCard (player1 tg))]
       Pile after _ <- getPile experimentalWeaponsDeck
-      let entered = [toCardCode w | w <- before, w `notElem` after]
-      length entered `shouldBe` 1
+      -- Laser Rifle, Energy Shield, Power Gauntlets, Exo-Suit: those no longer in the deck
+      let entered = filter (`notElem` map toCardCode after) ["04072", "04073", "04074", "04075"]
+      (length before, length entered) `shouldBe` (3, 2)
       resolve [GameOver Won]
       c <- campaignNow
-      c.campaignLog.experimentalWeapons `shouldBe` entered
+      List.sort c.campaignLog.experimentalWeapons `shouldBe` List.sort entered
       -- the next scenario's setup finds the card by its code
       tg2 <- liftIO $ dealScenario c [starter "spider-man"]
       liftIO $ inGame tg2 do

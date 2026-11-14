@@ -3,6 +3,7 @@
 module Marvel.Encounter.RiseOfRedSkullSpec (spec) where
 
 import Data.HashMap.Strict qualified as HashMap
+import Data.List qualified as List
 import Marvel.Area (Pile (..), experimentalWeaponsDeck)
 import Marvel.Attachment.Cards qualified as AttachmentCards
 import Marvel.Attachment.Types (Attrs (..))
@@ -33,23 +34,27 @@ undefended = go (50 :: Int)
 
 spec :: Spec
 spec = describe "The Rise of Red Skull" do
-  it "Attack on Mount Athena makes the Experimental Weapons deck; its cards discard to the encounter discard pile" do
+  it "Attack on Mount Athena makes the Experimental Weapons deck, 1B reveals its top card; its cards discard to the encounter discard pile" do
     tg <- testGameAgainst "04058" ["spider-man"]
     let you = player1 tg
     inGame tg do
+      vid <- villainIdNow
+      let onCrossbones = getsGame (filter ((== Just (EnemyVillainId vid)) . attachmentEnemy) . map toAttrs . HashMap.elems . gameAttachments)
+      -- 1B's When Revealed has already put one Experimental Weapon on Crossbones
       Pile weapons _ <- getPile experimentalWeaponsDeck
       deck <- scenarioEncounterDeckNow
       let experimental = (== Just EncounterSet.ExperimentalWeapons) . cdEncounterSet . getCardDef
-      liftIO $ (length weapons, any experimental deck) `shouldBe` (4, False)
+      atSetup <- onCrossbones
+      liftIO $ (length weapons, any experimental deck, map (cdEncounterSet . attachmentCardDef) atSetup)
+        `shouldBe` (3, False, [Just EncounterSet.ExperimentalWeapons])
       resolve [UsingDeck experimentalWeaponsDeck (DrawAndRevealEncounterCard you)]
-      vid <- villainIdNow
-      attached <- getsGame (filter ((== Just (EnemyVillainId vid)) . attachmentEnemy) . map toAttrs . HashMap.elems . gameAttachments)
+      attached <- onCrossbones
       Pile left _ <- getPile experimentalWeaponsDeck
-      liftIO $ (length left, map (cdEncounterSet . attachmentCardDef) attached) `shouldBe` (3, [Just EncounterSet.ExperimentalWeapons])
+      liftIO $ (length left, map (cdEncounterSet . attachmentCardDef) attached) `shouldBe` (2, replicate 2 (Just EncounterSet.ExperimentalWeapons))
       for_ attached \a -> resolve [RemoveFromPlay (AttachmentRef $ attachmentId a)]
       discard <- encounterDiscardCodes
       Pile _ weaponDiscard <- getPile experimentalWeaponsDeck
-      liftIO $ (map (toCardCode . attachmentCardDef) attached, weaponDiscard) `shouldBe` (take 1 discard, [])
+      liftIO $ (List.sort (map (toCardCode . attachmentCardDef) attached), weaponDiscard) `shouldBe` (List.sort (take 2 discard), [])
 
   it "Crossbones' Armor takes the damage Crossbones would take, and is discarded with 5 or more" do
     tg <- testGameAgainst "04058" ["spider-man"]
@@ -75,6 +80,9 @@ spec = describe "The Rise of Red Skull" do
     inGame tg do
       changeForm you
       vid <- villainIdNow
+      -- the Experimental Weapon 1B gave him is a Weapon too: start unarmed
+      starting <- getsGame (filter ((== Just (EnemyVillainId vid)) . attachmentEnemy) . map toAttrs . HashMap.elems . gameAttachments)
+      for_ starting \a -> resolve [RemoveFromPlay (AttachmentRef $ attachmentId a)]
       unarmed <- getModifiedKeywords . toAttrs =<< getVillain
       _ <- revealNow you AttachmentCards.combatKnife
       armed <- getModifiedKeywords . toAttrs =<< getVillain

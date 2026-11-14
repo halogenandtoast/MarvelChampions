@@ -11,7 +11,9 @@ import Marvel.Game.Source
 import Marvel.GameValue
 import Marvel.MainScheme.Cards qualified as Cards
 import Marvel.MainScheme.Types
+import Marvel.Matchers
 import Marvel.Message.Lifted
+import Marvel.Query
 
 attackOnMountAthena :: MainSchemeCard AttackOnMountAthena
 attackOnMountAthena =
@@ -22,12 +24,16 @@ newtype AttackOnMountAthena = AttackOnMountAthena (Attrs MainScheme)
   deriving newtype (Show, Eq, ToJSON, FromJSON, HasCardCode)
 
 -- | 1A: the Experimental Weapons set is made a deck of its own, next to the main scheme
--- (rulebook p.5).
+-- (rulebook p.5). 1B, When Revealed: reveal the top card of the Experimental Weapons deck.
 instance RunMessage AttackOnMountAthena where
   runMessage msg ms@(AttackOnMountAthena attrs) = runQueueT $ case msg of
     SetupMainScheme -> do
       weapons <- filter ((== Just EncounterSet.ExperimentalWeapons) . cdEncounterSet . getCardDef) <$> getEncounterDeck
       createDeck experimentalWeaponsDeck weapons
+      pure ms
+    MainSchemeMessage ident RevealMainScheme | ident == mainSchemeId attrs -> do
+      you <- selectJust FirstPlayer
+      fromDeck experimentalWeaponsDeck (drawAndRevealEncounterCard you)
       pure ms
     AdvanceMainScheme ((== mainSchemeId attrs) -> True) -> ms <$ nextMainScheme (mainSchemeId attrs)
     _ -> AttackOnMountAthena <$> runMessage msg attrs
