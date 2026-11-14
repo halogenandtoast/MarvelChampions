@@ -76,6 +76,9 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             <div v-for="[stat, value] in stats" :key="stat" :class="`stat-${stat}`"><dt>{{ t(`game.stats.${stat}`) }}</dt><dd>{{ value }}</dd></div>
             <div><dt>{{ t('game.stats.hand') }}</dt><dd>{{ player.handSize }}</dd></div>
           </dl>
+          <!-- health directly under the card, however tall the stats beside it -->
+          <div class="hero-cards">
+          <div class="hero-faces">
           <BoardCard
             :id="player.id"
             :code="player.code"
@@ -105,8 +108,10 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
             :threat="identityCompanion.threat || null"
             :attached="facedown(identityCompanion)"
           />
+          </div>
+          <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :subtracting="assignedDamage[player.id] ?? 0" :max="player.hitPoints" />
+          </div>
         </div>
-        <Meter :label="t('game.hp')" :value="Math.max(0, player.hitPoints - player.damage)" :subtracting="assignedDamage[player.id] ?? 0" :max="player.hitPoints" />
       </div>
       <!-- what this player is asked, beneath the hero -->
       <div v-if="$slots.default" class="asked"><slot /></div>
@@ -267,18 +272,20 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .player-area.active { border-color: rgb(91 141 184 / 0.5); box-shadow: 0 0 0 1px rgb(91 141 184 / 0.25), 0 8px 30px rgb(91 141 184 / 0.08); }
 .identity-column { display: flex; flex-direction: column; gap: 12px; flex: none; align-self: stretch; width: calc(var(--card-width) + 164px); transition: width 0.4s ease; }
 .player-area.unfolded .identity-column { width: calc(var(--card-width) / var(--card-aspect) + 164px); }
-.player-area.unfolded .identity > :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
+.player-area.unfolded .hero-cards > :deep(.meter) { width: calc(var(--card-width) / var(--card-aspect)); }
 .player-area.horizontal .identity-column { width: calc(2 * var(--card-width) + 164px); }
-.player-area.horizontal .identity > :deep(.meter) { width: calc(2 * var(--card-width)); }
+.player-area.horizontal .hero-cards > :deep(.meter) { width: calc(2 * var(--card-width)); }
 .player-area.separated-identity .identity-column { width: calc(2 * var(--card-width) + 170px); }
-.player-area.separated-identity .identity > :deep(.meter) { width: calc(2 * var(--card-width) + 6px); }
+.player-area.separated-identity .hero-cards > :deep(.meter) { width: calc(2 * var(--card-width) + 6px); }
 /* above the hand that floats over the foot of the board */
 .asked { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
 .identity { display: flex; flex-direction: column; gap: 8px; align-self: flex-start; }
 /* a card's stats pinned to its left */
 .body { display: flex; gap: 6px; align-items: flex-start; }
+.hero-cards { display: flex; flex-direction: column; gap: 8px; }
+.hero-faces { display: flex; gap: 6px; align-items: flex-start; }
 /* health under the card alone, not its stats */
-.identity > :deep(.meter), .minion > :deep(.meter) { width: var(--card-width); align-self: flex-end; transition: width 0.4s ease; }
+.hero-cards > :deep(.meter), .minion > :deep(.meter) { width: var(--card-width); align-self: flex-end; transition: width 0.4s ease; }
 .stats { display: flex; flex-direction: column; gap: 4px; margin: 0; width: 44px; flex: none; }
 .stats div { padding: 5px 0 4px; border-radius: 7px; background: var(--stat-bg, var(--ink-0)); border: 1px solid var(--stat-bg, var(--line)); text-align: center; }
 .stats dt { font-size: 0.5rem; font-weight: 700; letter-spacing: 0.12em; color: var(--stat-label, var(--text-faint)); }
