@@ -210,8 +210,6 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
         <Pile v-for="holder in encounterHolders" :key="`tucked-${holder.id}`" :label="holder.name" :cards="holder.tuckedCards ?? []" />
         <Pile v-if="player.identityBoostCards" :label="t('game.piles.identityBoostCards')" back="encounter" :count="player.identityBoostCards" />
       </div>
-      <!-- encounter cards dealt face down, in the corner, above the hand -->
-      <Pile v-if="player.dealtEncounterCards" class="dealt" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" :pile="`dealt-${player.id}`" />
     </div>
     </div>
 
@@ -237,6 +235,8 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
         />
       </div>
     </div>
+    <!-- encounter cards dealt face down, at the far end of the row -->
+    <Pile v-if="player.dealtEncounterCards" class="dealt" :label="t('game.piles.dealt')" back="encounter" :count="player.dealtEncounterCards" :pile="`dealt-${player.id}`" />
     </div>
     </div>
     </div>
@@ -320,7 +320,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
 .ally-slot { width: var(--card-width); aspect-ratio: var(--card-aspect); border: 1px dashed var(--line); border-radius: 8px; }
 .side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; flex: none; align-self: stretch; }
 .piles { display: flex; gap: 10px; padding-top: 18px; }
-.dealt { position: relative; z-index: 1; margin-top: auto; }
+.tableau-row > .dealt { position: relative; z-index: 1; margin-left: auto; }
 .compact { padding: 10px 12px; }
 @media (max-width: 760px) {
   .player-area { padding: 12px; overflow: visible; }
@@ -331,7 +331,7 @@ const minionAttached = (m: MinionView) => [...minions.filter((a) => a.attachedTo
   .identity-column, .player-area.unfolded .identity-column, .player-area.horizontal .identity-column, .player-area.separated-identity .identity-column { width: 100%; }
   .tableau-row > .zone, .tableau-row > .zone.allies { flex: 1 1 100%; max-width: 100%; }
   .player-tableau .cards { flex-wrap: wrap; gap: 14px; }
-  .tableau-row > .side { margin-left: 0; }
+  .tableau-row > .side, .tableau-row > .dealt { margin-left: 0; }
   .zone-label { font-size: 0.75rem; color: var(--text-muted); }
   .zone.empty, .ally-slot { display: none; }
   .side { width: 100%; align-items: flex-start; }
