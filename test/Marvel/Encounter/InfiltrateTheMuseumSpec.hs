@@ -364,9 +364,9 @@ grandCollection = describe "The Grand Collection" do
       liftIO $ length [c | Just (_, cs) <- [options], c <- cs, isMainSchemeAbility m c] `shouldBe` 1
       choose "the main scheme's action" (isMainSchemeAbility m)
       offers (isLabel "$label.exhaustYourHero") `shouldReturn` True
-      offers (isLabel "$label.spendResources 2") `shouldReturn` True
+      offers (isLabel (countLabel "spendResources" 2)) `shouldReturn` True
       exhaustedNow you `shouldReturn` False
-      choose "spend two resources" (isLabel "$label.spendResources 2")
+      choose "spend two resources" (isLabel (countLabel "spendResources" 2))
       payWith [strength]
       chooseIf (isTargetChoice (CardIdRef $ pcCardId cat))
       collectionNow `shouldReturn` []

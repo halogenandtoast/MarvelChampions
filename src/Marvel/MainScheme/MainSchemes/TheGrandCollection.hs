@@ -28,7 +28,7 @@ newtype TheGrandCollection = TheGrandCollection (Attrs MainScheme)
 instance IsMainScheme TheGrandCollection where
   mainSchemeAbilities (TheGrandCollection a) =
     [ limited (EachPlayer (PerRound 1)) $ ability a 1 HeroAction CollectionHasCards
-        (AlternativeCost [("$label.exhaustYourHero", ExhaustCost), ("$label.spendResources 2", MultiResourceCost [Nothing, Nothing])])
+        (AlternativeCost [("$label.exhaustYourHero", ExhaustCost), (countLabel "spendResources" 2, MultiResourceCost [Nothing, Nothing])])
         (runAbility a 1)
     ]
 
