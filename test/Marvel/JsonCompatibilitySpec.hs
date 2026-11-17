@@ -6,12 +6,15 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.Aeson.Types (Parser, parseEither)
 import Data.UUID qualified as UUID
 import Marvel.Cost.Types qualified as Cost
+import Marvel.EncounterCard (allEncounterCards)
 import Marvel.Game.Base qualified as Game
 import Marvel.Message.Identity qualified as Identity
 import Marvel.Modifier.Types qualified as Modifier
 import Marvel.Obligation.Obligations.JessicaLuke qualified as JL
 import Marvel.Obligation.Types qualified as Obligation
+import Marvel.Name (Name (..))
 import Marvel.Phase (Phase (..))
+import Marvel.PlayerCard (allPlayerCards)
 import Marvel.Window.Types qualified as W
 import TestImport
 
@@ -53,6 +56,25 @@ spec = do
             Object fields -> Object $ KeyMap.insert "boostEntities" oldBoosts fields
             value -> value
       fromJSON oldSave `shouldBe` Success saved
+
+  describe "card definitions" do
+    let defs = HashMap.elems allPlayerCards <> HashMap.elems allEncounterCards
+    it "leave unset fields out and read back every card, compact or verbose" do
+      for_ defs $ \def -> do
+        eitherDecode (encode def) `shouldBe` Right def
+        fromJSON (genericToJSON defaultOptions def) `shouldBe` Success def
+    it "omit nothing, empty collections, false and zero" do
+      def <- maybe (expectationFailure "no player cards" >> error "no player cards") pure (headMay defs)
+      case toJSON def {cdTeamUp = Nothing, cdAlternateCardCodes = [], cdUnique = False, cdHazards = 0, cdCost = Just 0} of
+        Object fields -> do
+          for_ ["cdTeamUp", "cdAlternateCardCodes", "cdUnique", "cdHazards"] $ \key ->
+            KeyMap.lookup key fields `shouldBe` Nothing
+          KeyMap.lookup "cdCost" fields `shouldBe` Just (toJSON (0 :: Int))
+        _ -> expectationFailure "card definition did not encode as an object"
+    it "leave out a missing subtitle" do
+      toJSON (Name "Spider-Man" Nothing) `shouldBe` object ["title" .= ("Spider-Man" :: Text)]
+      eitherDecode (encode $ Name "Spider-Man" Nothing) `shouldBe` Right (Name "Spider-Man" Nothing)
+      fromJSON (object ["title" .= ("Spider-Man" :: Text), "subtitle" .= Null]) `shouldBe` Success (Name "Spider-Man" Nothing)
 
   describe "generated JSON compatibility" do
     let ident = IdentityId UUID.nil

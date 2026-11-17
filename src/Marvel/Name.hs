@@ -7,7 +7,12 @@ data Name = Name
   , subtitle :: Maybe Text
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, FromJSON, Hashable)
+  deriving anyclass (FromJSON, Hashable)
+
+-- | A missing subtitle parses back as none.
+instance ToJSON Name where
+  toJSON = genericToJSON defaultOptions {omitNothingFields = True}
+  toEncoding = genericToEncoding defaultOptions {omitNothingFields = True}
 
 (<:>) :: Text -> Text -> Name
 (<:>) t = Name t . Just

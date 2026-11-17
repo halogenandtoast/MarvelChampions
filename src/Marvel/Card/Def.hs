@@ -1,7 +1,7 @@
 module Marvel.Card.Def where
 
 import Marvel.Prelude
-import Data.Aeson.KeyMap qualified as KeyMap
+import Marvel.Json (sparseParseJSON, sparseToJSON)
 
 import Marvel.Ability.Types
 import Marvel.Aspect
@@ -174,12 +174,14 @@ data CardDef = CardDef
   , cdCanPayForOthersWithTrait :: Maybe Trait
   }
   deriving stock (Show, Eq, Generic)
-  deriving anyclass (ToJSON, Hashable)
+  deriving anyclass (Hashable)
+
+-- Every card carries its definition, so its unset fields are left out of saves.
+instance ToJSON CardDef where
+  toJSON = sparseToJSON defaultOptions
 
 instance FromJSON CardDef where
-  parseJSON = withObject "CardDef" $ \o -> genericParseJSON defaultOptions $ Object $
-    foldr (\(k, v) -> KeyMap.insertWith (\_ existing -> existing) k v) o
-      [("cdDoubleWildResources", Bool False), ("cdDoesNotCountTowardHandSize", Bool False), ("cdCanPayForOthersWithTrait", Null)]
+  parseJSON = sparseParseJSON defaultOptions
 
 -- | Generation doubles before wild resources are declared as their payment types.
 doubleWildResources :: Maybe CardDef -> [Resource] -> [Resource]
