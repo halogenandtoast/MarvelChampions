@@ -110,3 +110,25 @@ spec = describe "Taskmaster" do
         -- Spider-Man's ATK is 2
         damageOf p `shouldReturn` (damage + 2)
         encounterDiscardCodes >>= (`shouldSatisfy` elem "04104")
+
+    -- "a player attacks" is not "you": an ally's attack is its controller's (RR, You)
+    it "turns an ally's attack on Taskmaster back on its controller" do
+      tg <- taskmaster ["spider-man"]
+      let p = player1 tg
+      inGame tg do
+        resolve [IdentityMessage p (ChangedToForm A)]
+        _ <- revealNow p Attachments.photographicReflexes
+        pass
+        _ <- putIntoPlay p "01067"
+        maria <- allyIn "01067"
+        before <- villainDamageNow
+        damage <- damageOf p
+        vid <- villainIdNow
+        choose "attack with Maria Hill" (isAllyAttack maria)
+        choose "the target" (isTargetChoice vid)
+        choose "the forced interrupt" isAnyAbility
+        pass
+        villainDamageNow `shouldReturn` before
+        -- Maria Hill's ATK is 1
+        damageOf p `shouldReturn` (damage + 1)
+        encounterDiscardCodes >>= (`shouldSatisfy` elem "04104")

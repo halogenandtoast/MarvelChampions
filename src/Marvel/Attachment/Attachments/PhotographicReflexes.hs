@@ -12,6 +12,7 @@ import Marvel.Card.Code
 import Marvel.Cost
 import Marvel.Damage
 import Marvel.Entity
+import Marvel.Game.Source
 import Marvel.Id
 import Marvel.Matchers
 import Marvel.Message.Lifted
@@ -31,12 +32,13 @@ newtype PhotographicReflexes = PhotographicReflexes (Attrs Attachment)
 
 -- | "Forced Interrupt: when a player attacks Taskmaster, prevent all damage that would be
 -- dealt to Taskmaster and deal an equal amount of damage to that player's identity
--- instead. Then, discard Photographic Reflexes. (Max once per attack.)" A player's
--- attack is the hero's, by basic power or card; an ally is not the player.
+-- instead. Then, discard Photographic Reflexes. (Max once per attack.)" Only "you" is
+-- narrowed to the identity (RR, You): a player attacks with their hero or their allies,
+-- and an ally's attack turns back on its controller's identity.
 instance HasAbilities PhotographicReflexes where
   getAbilities (PhotographicReflexes a) = case attachmentEnemy a of
     Just (EnemyVillainId vid) ->
-      [ windowAbility a 1 (W.VillainDamagedBy W.When (VillainWithId vid) (AttackFromPlayer AnyIdentity)) ForcedInterrupt NoCost $
+      [ windowAbility a 1 (W.VillainDamagedBy W.When (VillainWithId vid) AnyAttack) ForcedInterrupt NoCost $
           RunAbility (toTarget a) 1
       ]
     _ -> []
@@ -51,13 +53,18 @@ instance RunMessage PhotographicReflexes where
           attachedTo villainId ident
           pure . PhotographicReflexes $ attrs & enemyL ?~ EnemyVillainId villainId
     RanAbility _ (isTarget attrs -> True) 1 windows _ -> do
-      for_ [(vid, p, damageAmount dmg) | W.DamagedVillain vid dmg <- windows, FromPlayerAttack p <- [damageSource dmg]] \(vid, p, n) -> do
+      for_ [(vid, dmg) | W.DamagedVillain vid dmg <- windows] \(vid, dmg) -> do
+        attacker <- case damageSource dmg of
+          FromPlayerAttack p -> pure (Just p)
+          FromAllyAttack aid -> getAllyControllerId aid
+          _ -> pure Nothing
+        let n = damageAmount dmg
         let theDamage = \case
               VillainMessage vid' (VillainDamaged _ _) -> vid' == vid
               _ -> False
         -- another copy may have prevented it already: once per attack
         pending <- isQueued theDamage
-        when pending do
+        for_ (guard pending *> attacker) \p -> do
           insteadOf theDamage $ damageIdentity p attrs (toDamage n FromAbility)
           removeFromPlay attrs
       pure a
