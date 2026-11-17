@@ -68,6 +68,8 @@ export const useChoiceLabel = () => {
   // elsewhere a button says what to
   return (choice: ChoiceView, cardName = '', named = false): string => {
     if (choice.label === '$label.revealBoostCards') return keyed('$label.revealBoostCard')
+    // a wild declared as a type: that type's icon
+    if (choice.kind === 'declareWild' && choice.label) return `{${choice.label.toLowerCase()}}`
     if (choice.label && choice.kind !== 'ability') return keyed(choice.label)
     if (choice.kind === 'ability') {
       const type = choice.abilityType ? (te(`game.abilityTypes.${choice.abilityType}`) ? t(`game.abilityTypes.${choice.abilityType}`) : choice.abilityType) : t('game.choices.ability')

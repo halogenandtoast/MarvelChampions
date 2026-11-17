@@ -351,9 +351,12 @@ const things = computed(() => {
 const boardChoices = computed(() => choices.value.filter((c) => c.target && onBoard.value.has(c.target)))
 // a player's choice is also a button, named for the player, as the first player is chosen
 const riverActions = computed(() => choices.value.filter(c => /^\$label\.(applyAttackDamage|placeActivationThreat)\b/.test(c.label ?? '')))
-const buttons = computed(() => choices.value.filter((c) => !riverActions.value.includes(c) && c.kind !== 'declareWild' && (!c.target || !onBoard.value.has(c.target) || c.kind === 'player')))
 // a wild paid is declared as a type on its icon in the paying tray
 const declares = computed(() => choices.value.filter((c) => c.kind === 'declareWild'))
+// unless declaring is all there is to answer, as for a wild an alliance contributor paid:
+// then its types are buttons too, or the question reads as nothing to decide
+const onlyDeclares = computed(() => declares.value.length > 0 && declares.value.length === choices.value.length)
+const buttons = computed(() => choices.value.filter((c) => !riverActions.value.includes(c) && (c.kind !== 'declareWild' || onlyDeclares.value) && (!c.target || !onBoard.value.has(c.target) || c.kind === 'player')))
 
 const choose = (index: number) => {
   if (answering.value && game.value) void answer(game.value.questionVersion, index, answering.value)
