@@ -122,6 +122,7 @@
     "delayCounters": "Recorded in the campaign log: {count} delay counters",
     "engaged": "Recorded in the campaign log: {player} is engaged with a minion",
     "removed": "Removed from the campaign: {card}",
+    "stayedBasic": "{player} was in alter-ego form, so keeps their Basic upgrade",
     "hitPoints": "Recorded in the campaign log: {player} has {count} hit points left",
     "scenarioWon": "The scenario is won and written in the campaign log",
     "units": "Recorded in the campaign log: {player} gains {count} units",

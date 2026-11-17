@@ -396,6 +396,9 @@ campaignNarration = \case
   RecordEngagedWithMinions who -> Just do
     p <- identityRef who
     one $ notice [ikeyPart "log.campaign.engaged" ["player" ~> p]]
+  RecordStayedBasic who -> Just do
+    p <- identityRef who
+    one $ notice [ikeyPart "log.campaign.stayedBasic" ["player" ~> p]]
   RecordAlliesRemoved codes | notNull codes -> Just $ one $ toned Bad $ notice [ikeyPart "log.campaign.removed" ["card" ~> map card codes]]
   RecordHitPoints who n -> Just do
     p <- identityRef who

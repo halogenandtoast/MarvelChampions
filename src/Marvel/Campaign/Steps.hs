@@ -233,7 +233,9 @@ victory c = do
         when (isNothing prison) $ for_ (zip survivors codes) \(ident, code) -> do
           hero <- selectAny $ IdentityWithId ident <> HeroIdentity
           let basic = any (("a" `T.isSuffixOf`) . unCardCode) ((.conditionUpgrade) =<< campaignPlayer code c)
-          when (hero && basic && code `elem` participants) $ offer MayImproveUpgrade code
+          -- only a player in hero form may; one in alter-ego form is told why not
+          when (basic && code `elem` participants) $
+            if hero then offer MayImproveUpgrade code else recordInCampaignLog (RecordStayedBasic code)
     | otherwise -> pure ()
   when (isExpertCampaign c) do
     for_ (zip survivors codes) \(ident, code) -> do

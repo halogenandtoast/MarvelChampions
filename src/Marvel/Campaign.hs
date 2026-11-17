@@ -464,6 +464,9 @@ data CampaignRecord
   | RecordDelayCounters Natural
   | RecordEngagedWithMinions CardCode
   | RecordAlliesRemoved [CardCode]
+  | -- | Zola: in alter-ego form as the scenario was won, so the "Basic" upgrade stays;
+    -- only told, it changes nothing
+    RecordStayedBasic CardCode
   | RecordRescuedAllies CardCode [CardCode]
   | RecordTechUpgrade CardCode CardCode
   | RecordConditionUpgrade CardCode CardCode
@@ -778,6 +781,7 @@ recordInLog r c = let mutant f = c {campaignLog = c.campaignLog {mutantGenesis =
         { alliesRemoved = nub (l.alliesRemoved <> codes)
         , players = [p {rescuedAllies = filter (`notElem` codes) p.rescuedAllies} | p <- l.players]
         }
+  RecordStayedBasic _ -> c
   RecordRescuedAllies ident codes -> player ident \p -> p {rescuedAllies = nub (p.rescuedAllies <> codes)}
   -- one copy of each: an upgrade another player holds is not theirs to take
   RecordTechUpgrade ident code

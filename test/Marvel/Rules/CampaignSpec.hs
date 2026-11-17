@@ -1,7 +1,9 @@
 module Marvel.Rules.CampaignSpec (spec) where
 
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.HashMap.Strict qualified as HashMap
 import Data.List qualified as List
+import Data.Text qualified as T
 import Marvel.Area (Pile (..), experimentalWeaponsDeck)
 import Marvel.Campaign
 import Marvel.Game.Public (publicGameFor)
@@ -218,6 +220,30 @@ spec = describe "The Rise of Red Skull campaign" do
       removed <- (.campaignLog.alliesRemoved) <$> campaignNow
       removed `shouldBe` map toCardCode (concat prison)
       (.pending) <$> spiderManNow `shouldReturn` []
+
+  it "Zola won with Hydra Prison gone: only a player in hero form may flip their Basic upgrade, one in alter-ego form is told why not" do
+    let c =
+          recordInLog (RecordConditionUpgrade captainMarvel "04160a") $
+            recordInLog (RecordConditionUpgrade spiderMan "04159a") $
+              (newCampaign StandardCampaign [spiderMan, captainMarvel]) {completed = 3}
+    tg <- dealScenario c [withCard "04159a" (starter "spider-man"), withCard "04160a" (starter "captain-marvel")]
+    inGame tg do
+      toFirstTurn
+      -- Spider-Man to hero form; Captain Marvel stays Carol Danvers
+      changeForm (player1 tg)
+      prisons <- getsGame (HashMap.keys . HashMap.filter ((== "04122") . toCardCode . getCardDef) . gameSideSchemes)
+      prisons `shouldSatisfy` (not . null)
+      resolve [SideSchemeMessage sid DefeatSideScheme | sid <- prisons]
+      win
+      void readStory
+      Just (who, _) <- asked
+      liftIO $ who `shouldBe` player1 tg
+      choose "improve it" (isCard "04159b")
+      offers (isCard "04160b") `shouldReturn` False
+      log' <- (.campaignLog.players) <$> campaignNow
+      map (.conditionUpgrade) log' `shouldMatchList` [Just "04159b", Just "04160a"]
+    text <- T.concat . map entryText <$> readIORef tg.logged
+    text `shouldSatisfy` T.isInfixOf "$log.campaign.stayedBasic"
 
   it "Crossbones won: each Experimental attachment that entered the game is recorded, and shuffled into the next encounter deck" do
     tg <- dealScenario (newCampaign StandardCampaign [spiderMan]) [starter "spider-man"]
