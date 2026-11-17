@@ -550,6 +550,37 @@ bandOfBadoonSpec = describe "Band of Badoon" do
       settle
       damageOf p `shouldReturn` 1
 
+  -- RR Retaliate: the character must be in play after the attack resolves
+  it "Badoon Sentry defeated by the attack does not retaliate" do
+    tg <- drangGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      m <- addMinion p MinionCards.badoonSentry
+      resolve [MinionMessage m $ MinionDamaged GameRef (toDamage 4 FromAbility)]
+      asHero p
+      choose "attack" (isHeroAttack p)
+      choose "the Sentry" (isTargetChoice m)
+      settle
+      minionDamageOf m `shouldReturn` Nothing
+      damageOf p `shouldReturn` 0
+
+  it "an ally that defeats Badoon Sentry takes only its consequential damage (#42)" do
+    tg <- drangGame ["spider-man"]
+    let p = player1 tg
+    inGame tg do
+      m <- addMinion p MinionCards.badoonSentry
+      resolve [MinionMessage m $ MinionDamaged GameRef (toDamage 3 FromAbility)]
+      _ <- putIntoPlay p "21047"
+      settle
+      quasar <- allyIn "21047"
+      resolve [AllyMessage (allyId quasar) (AllyDamaged GameRef (toDamage 1 FromAbility))]
+      choose "attack with Quasar" (isAllyAttack quasar)
+      choose "the Sentry" (isTargetChoice m)
+      settle
+      minionDamageOf m `shouldReturn` Nothing
+      -- 1 damage before, 1 consequential, no retaliate: 2 of his 3 hit points
+      (map allyDamage <$> alliesWith "21047") `shouldReturn` [2]
+
   it "Badoon Sentry's boost: the villain is made tough; already tough, +2 boost icons" do
     -- two players, so the scheme's threshold of 8 per player is not reached
     tg <- drangGame ["spider-man", "captain-marvel"]

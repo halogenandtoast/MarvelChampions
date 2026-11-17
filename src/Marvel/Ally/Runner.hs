@@ -324,8 +324,10 @@ instance RunMessage (Attrs Ally) where
           checkWindows [W.Window W.After $ W.AllyDefendedAgainst ident (attackEnemy attack')]
           cardSpecific a "ncDefenseComplete" (attackEnemy attack', allyDamage a)
         pure a
+      -- only while the ally is still in play after the attack (RR Retaliate)
       AllyRetaliates enemy n -> do
-        dealDamage enemy a (toDamage n FromRetaliate)
+        inPlay <- selectAny (AllyWithId ident)
+        when inPlay $ dealDamage enemy a (toDamage n FromRetaliate)
         pure a
       AllyDamaged source damage | piercesTough damage -> a <$ cardSpecific a "discardToughForPiercing" (source,damage)
       AllyDamaged source damage -> do

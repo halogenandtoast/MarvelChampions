@@ -381,11 +381,13 @@ runVillainMessage msg attrs = case msg of
             . min (unHp $ villainMaxHp attrs)
             . (+ fromIntegral n)
             . unHp
-  -- retaliate answers the attack whether or not a tough status card took its damage
+  -- retaliate answers the attack whether or not a tough status card took its damage, but
+  -- only while the villain is still in play after it (RR Retaliate)
   VillainRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
+    inPlay <- selectAny (VillainWithId $ villainId attrs)
     let amount = sum [n | Retaliate n <- keywords]
-    when (amount > 0) $ retaliate attrs attacker amount
+    when (inPlay && amount > 0) $ retaliate attrs attacker amount
     pure attrs
   VillainDamaged source dealt -> do
     modifiers <- getModifiers attrs

@@ -133,11 +133,13 @@ runMinionMessage msg attrs = case msg of
       traverse_ (\villain -> damageCharacter villain source (toDamage overkill FromOverkill)) =<< selectOne ActiveVillain
     checkWindows [W.Window W.After $ W.DefeatedMinion (minionId attrs) damage source overkill, W.Window W.After $ W.DefeatedEnemyWithUpgrades (toEnemyId attrs) attached damage source]
     pure attrs
-  -- retaliate answers the attack whether or not a tough status card took its damage
+  -- retaliate answers the attack whether or not a tough status card took its damage, but
+  -- only while the minion is still in play after it (RR Retaliate)
   MinionRetaliates attacker -> do
     keywords <- getModifiedKeywords attrs
+    inPlay <- selectAny (MinionWithId $ minionId attrs)
     let amount = sum [n | Retaliate n <- keywords]
-    when (amount > 0) $ retaliate attrs attacker amount
+    when (inPlay && amount > 0) $ retaliate attrs attacker amount
     pure attrs
   -- a stalwart minion cannot be stunned or confused (RR Stalwart)
   MinionStunned _ -> applyVulnerableStatus attrs StunnedStatus
