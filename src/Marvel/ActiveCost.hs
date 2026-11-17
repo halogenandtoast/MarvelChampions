@@ -691,13 +691,20 @@ payCostPartAs contributing activeCost cost = do
     let printed = printedResourceRequirements (activeCostCost activeCost)
         printedOnly = notNull printed && length printed == length (costResources $ activeCostCost activeCost)
         fromHandOnly = printedOnly || notNull [() | ResourcesFromHandCost _ <- flattenCosts (activeCostCost activeCost)]
+    -- the Milano exhausted to pay this cost cannot also be exhausted for its resource
+    milano <- getMilano
+    let notTheMilano a =
+          ExhaustMilanoCost
+            `notElem` flattenCosts (activeCostCost activeCost)
+            || Just (abilitySource a)
+            /= (SupportRef <$> milano)
     abilities <-
       if fromHandOnly
         then pure []
-        else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities originalPayer payer mcard
+        else filterM (fmap spendable . abilityResources) . filter notTheMilano =<< getPaymentResourceAbilities originalPayer payer mcard
     let canHelp p = do
           cs <- filterM (fmap spendable . (`resourcesFor` context)) . filter notTheSource =<< getPaymentSourcesFor iid p mcard
-          abs' <- if fromHandOnly then pure [] else filterM (fmap spendable . abilityResources) =<< getPaymentResourceAbilities iid p mcard
+          abs' <- if fromHandOnly then pure [] else filterM (fmap spendable . abilityResources) . filter notTheMilano =<< getPaymentResourceAbilities iid p mcard
           pure $ notNull cs || notNull abs'
     payers <- resourceCostPayers iid mcard
     helpers <- if contributor then pure [] else filterM canHelp (filter (/= iid) payers)

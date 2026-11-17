@@ -232,6 +232,20 @@ shipCommand = describe "Ship Command" do
       exhausted <- milanoExhausted
       liftIO $ (gone, exhausted) `shouldBe` (True, True)
 
+  it "Rogue Vessel's payment does not offer the Milano exhausted for it as a resource" do
+    tg <- gmwGame [ShipCommand] ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      card <- revealNow you EnvironmentCards.rogueVessel
+      let vessel = EnvironmentId (unCardId (ecCardId card))
+      clearHand you
+      a <- putInHand you "01090"
+      m <- milanoAttrs
+      choose "use Rogue Vessel" (isAbilityOf vessel)
+      milanoOffered <- offers (isAbilityOf (supportId m))
+      cardOffered <- offers (isPayWith a)
+      liftIO $ (milanoOffered, cardOffered) `shouldBe` (False, True)
+
   it "Rogue Vessel's 2 resources are not paid with the Milano exhausted for it" do
     tg <- gmwGame [ShipCommand] ["spider-man"]
     let you = player1 tg
