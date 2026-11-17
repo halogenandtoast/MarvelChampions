@@ -59,7 +59,7 @@ spec = do
 
   describe "card definitions" do
     let defs = HashMap.elems allPlayerCards <> HashMap.elems allEncounterCards
-    it "leave unset fields out and read back every card, compact or verbose" do
+    it "leave unset fields out and read back every card, compact or verbose" $ id @(IO ()) do
       for_ defs $ \def -> do
         eitherDecode (encode def) `shouldBe` Right def
         fromJSON (genericToJSON defaultOptions def) `shouldBe` Success def
@@ -71,7 +71,7 @@ spec = do
             KeyMap.lookup key fields `shouldBe` Nothing
           KeyMap.lookup "cdCost" fields `shouldBe` Just (toJSON (0 :: Int))
         _ -> expectationFailure "card definition did not encode as an object"
-    it "leave out a missing subtitle" do
+    it "leave out a missing subtitle" $ id @(IO ()) do
       toJSON (Name "Spider-Man" Nothing) `shouldBe` object ["title" .= ("Spider-Man" :: Text)]
       eitherDecode (encode $ Name "Spider-Man" Nothing) `shouldBe` Right (Name "Spider-Man" Nothing)
       fromJSON (object ["title" .= ("Spider-Man" :: Text), "subtitle" .= Null]) `shouldBe` Success (Name "Spider-Man" Nothing)
