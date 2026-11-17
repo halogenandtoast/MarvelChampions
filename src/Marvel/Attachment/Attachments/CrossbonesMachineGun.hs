@@ -30,12 +30,13 @@ newtype CrossbonesMachineGun = CrossbonesMachineGun (Attrs Attachment)
 
 -- | [star] Forced Interrupt: when Crossbones attacks you, remove 1 ammo counter and
 -- discard the top card of the encounter deck → take indirect damage equal to its boost
--- icons. It interrupts the attack as it is initiated, the moment Spider-Sense and other
--- "initiates an attack" interrupts answer, so as a forced interrupt it resolves first.
+-- icons. It interrupts the attack as it is initiated: after "would attack" interrupts,
+-- so an attack Webbed Up replaces never fires it, and with Spider-Sense and other
+-- "initiates an attack" interrupts, before which it resolves as a forced interrupt.
 instance HasAbilities CrossbonesMachineGun where
   getAbilities (CrossbonesMachineGun a) = case attachmentEnemy a of
     Just enemy | attachmentCounters a > 0 ->
-      [windowAbility a 1 (EnemyWouldAttack (EnemyWithId enemy) You) ForcedInterrupt NoCost $ runAbility a 1]
+      [windowAbility a 1 (EnemyInitiatesAttack (EnemyWithId enemy) You) ForcedInterrupt NoCost $ runAbility a 1]
     _ -> []
 
 -- | Attach to Crossbones. Uses (2[per_hero] ammo counters): with none left it is

@@ -124,6 +124,9 @@ data WindowMatcher
   | VillainWouldGainStatus VillainMatcher [StatusCard]
   | VillainWouldTakeDamageAtLeastFrom VillainMatcher DamageMatcher Natural
   | EnemyWouldAttack EnemyMatcher IdentityMatcher
+  | -- | "when … initiates an attack against you", "when … attacks you": as the attack
+    -- begins, after "would attack" interrupts, which may replace it (RR "Would")
+    EnemyInitiatesAttack EnemyMatcher IdentityMatcher
   | ThreatWouldBePlaced ThreatSource SchemeMatcher
   | EnemyAttacked WindowTiming EnemyMatcher IdentityMatcher
   | EnemyAttackedSurvivingCharacter EnemyMatcher

@@ -29,7 +29,7 @@ newtype SpiderSense = SpiderSense (Attrs Upgrade)
 -- | Hero Interrupt: When the villain initiates an attack against you, draw 1 card.
 instance HasAbilities SpiderSense where
   getAbilities a =
-    [limitedWindowAbility a 1 (W.EnemyWouldAttack VillainEnemy You) HeroInterrupt OwnsThis NoCost $ runAbility a 1]
+    [limitedWindowAbility a 1 (W.EnemyInitiatesAttack VillainEnemy You) HeroInterrupt OwnsThis NoCost $ runAbility a 1]
 
 instance RunMessage SpiderSense where
   runMessage msg u@(SpiderSense attrs) = runQueueT $ case msg of

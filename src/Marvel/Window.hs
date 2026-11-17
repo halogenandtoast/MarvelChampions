@@ -397,6 +397,13 @@ windowMatches matcher w source = case matcher of
           if not stillIdentity then pure False else
             (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
     _ -> pure False
+  EnemyInitiatesAttack enemyMatcher identityMatcher -> case windowType w of
+    EnemyAttack enemyId ident
+      | windowTiming w == When -> do
+          stillIdentity <- enemyAttackTargetsIdentity enemyId ident
+          if not stillIdentity then pure False else
+            (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId
+    _ -> pure False
   EnemyAttacked timing enemyMatcher identityMatcher -> case windowType w of
     EnemyAttackAlly enemyId _ ident | windowTiming w == timing ->
       (&&) <$> identityMatches identityMatcher ident <*> enemyMatches enemyMatcher enemyId

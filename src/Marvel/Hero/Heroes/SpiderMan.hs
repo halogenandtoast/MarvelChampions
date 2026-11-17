@@ -35,7 +35,7 @@ instance HasAbilities SpiderMan where
         limitedWindowAbility
           a
           1
-          (W.EnemyWouldAttack VillainEnemy You)
+          (W.EnemyInitiatesAttack VillainEnemy You)
           Interrupt
           IsSelf
           NoCost

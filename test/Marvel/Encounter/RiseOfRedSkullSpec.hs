@@ -18,7 +18,7 @@ import Marvel.Treachery.Cards qualified as TreacheryCards
 import Data.Aeson.KeyMap qualified as KeyMap
 import Data.Aeson.Types (parseEither)
 import Marvel.Attack (attack)
-import Marvel.Villain.Types (Villain (..), attackingL, getModifiedKeywords, overVillainAttrs)
+import Marvel.Villain.Types (Villain (..), attackingL, getModifiedKeywords, overVillainAttrs, villainStunned)
 import TestImport
 
 -- | Answer what is asked, taking no defender, until the turn comes back. Each question
@@ -125,6 +125,32 @@ spec = describe "The Rise of Red Skull" do
       offered <- untilSpiderSense 10
       after <- map attachmentCounters <$> gun
       liftIO $ (offered, after) `shouldBe` (True, [attachmentCounters g - 1])
+
+  it "Webbed Up, on Crossbones' would attack, replaces the attack before his Machine Gun fires" do
+    tg <- testGameAgainst "04058" ["spider-man"]
+    let you = player1 tg
+    inGame tg do
+      changeForm you
+      clearHand you
+      vid <- villainIdNow
+      starting <- getsGame (filter ((== Just (EnemyVillainId vid)) . attachmentEnemy) . map toAttrs . HashMap.elems . gameAttachments)
+      for_ starting \a -> resolve [RemoveFromPlay (AttachmentRef $ attachmentId a)]
+      _ <- revealNow you AttachmentCards.crossbonesMachineGun
+      webbed <- putInHand you "01009"
+      payment <- traverse (putInHand you) ["01088", "01090"]
+      playOn webbed vid payment
+      let gun = getsGame (map toAttrs . filter ((== "04064") . toCardCode . attachmentCardDef . toAttrs) . HashMap.elems . gameAttachments)
+      [g] <- gun
+      let isGun = isAbilityOf (AttachmentRef $ attachmentId g)
+      start [VillainMessage vid (VillainAttacks you)]
+      Just (_, first) <- asked
+      liftIO $ (any (isAbilityOfCard webbed) first, any isGun first) `shouldBe` (True, False)
+      choose "Webbed Up" (isAbilityOfCard webbed)
+      gunOffered <- offers isGun
+      senseOffered <- offers (isLabeledAbility "Spider-Sense")
+      after <- map attachmentCounters <$> gun
+      stunned <- villainStunned . toAttrs <$> getVillain
+      liftIO $ (gunOffered, senseOffered, after, stunned) `shouldBe` (False, False, [attachmentCounters g], True)
 
   it "a hero the Machine Gun defeats as Crossbones attacks is out of the game, and the attack ends without them" do
     tg <- testGameAgainst "04058" ["spider-man", "captain-marvel"]
