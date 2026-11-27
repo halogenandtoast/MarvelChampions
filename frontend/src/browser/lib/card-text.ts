@@ -14,7 +14,7 @@ export type TextToken =
   | { kind: 'emphasis'; style: 'bold' | 'italic'; children: TextToken[] }
 
 export const ICON_NAMES = [
-  'energy', 'mental', 'physical', 'wild', 'boost', 'star', 'per_hero', 'crisis', 'acceleration', 'amplify', 'hazard', 'cost', 'unique',
+  'energy', 'mental', 'physical', 'wild', 'boost', 'star', 'per_hero', 'per_group', 'crisis', 'acceleration', 'amplify', 'hazard', 'cost', 'unique',
 ] as const
 export type IconName = (typeof ICON_NAMES)[number]
 const ICONS = new Set<string>(ICON_NAMES)

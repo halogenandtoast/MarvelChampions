@@ -115,6 +115,11 @@
   color-scheme: dark;
 }
 
+:root:lang(zh-cn) {
+  --font-display: "Barlow Condensed", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-ui: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
 * { box-sizing: border-box; }
 /* alt text stays for screen readers but is never drawn while an image loads or fails */
 img { color: transparent; }
