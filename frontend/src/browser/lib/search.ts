@@ -10,7 +10,7 @@ export function normalize(text: string): string {
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, '')
 }
 
 export interface CardFilters {
@@ -61,12 +61,13 @@ export function searchTerms(query: string): string[] {
   return query.split(/\s+/).map(normalize).filter((t) => t.length > 0)
 }
 
-export function filterCards(cards: Card[], filters: CardFilters): Card[] {
+export function filterCards(cards: Card[], filters: CardFilters, englishByCode?: Map<string, Card>): Card[] {
   const terms = searchTerms(filters.search)
   const traits = filters.traits.map(normalize)
   const bounded = filters.costMin !== null || filters.costMax !== null
   return cards.filter((card) => {
-    if (terms.length && !terms.every((term) => haystack(card).includes(term))) return false
+    const english = englishByCode?.get(card.code)
+    if (terms.length && !terms.every((term) => haystack(card).includes(term) || (english && haystack(english).includes(term)))) return false
     if (filters.types.length && !filters.types.includes(card.type)) return false
     if (filters.factions.length && !filters.factions.includes(card.faction ?? '')) return false
     if (filters.packs.length && !filters.packs.includes(card.packCode)) return false

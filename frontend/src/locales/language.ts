@@ -1,6 +1,6 @@
 // The languages the interface has messages for. Add one with its folder of messages in
 // ./<code>, its ./<code>.ts and a loader in ./messages.ts.
-export const uiLocales = ['en'] as const
+export const uiLocales = ['en', 'zh-cn'] as const
 
 export type UiLocale = (typeof uiLocales)[number]
 

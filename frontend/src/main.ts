@@ -5,6 +5,7 @@ import { router } from './router'
 import { refreshUser } from './auth'
 import { loadLocaleMessages, normalizeLocale } from './locales/messages'
 import { preferredLanguage } from './locales/language'
+import { setActiveLocale } from './locales/activeLocale'
 import './style.css'
 
 async function bootstrap() {
@@ -20,6 +21,7 @@ async function bootstrap() {
     const current = await loadLocaleMessages(currentLocale)
     loadedMessages[current.locale] = current.messages
   }
+  setActiveLocale(currentLocale)
 
   const i18n = createI18n({
     locale: currentLocale,

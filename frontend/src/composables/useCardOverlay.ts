@@ -1,6 +1,7 @@
 import { computed, reactive, readonly, ref, shallowRef } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useCards, type Back } from '../cards'
+import { activeLocale } from '../locales/activeLocale'
 
 /** What the overlay draws: a card by its code, or a back, with the status cards on it. */
 export interface Preview {
@@ -18,12 +19,14 @@ const GAP = 10
 const PAD = 10
 // a status card beside the preview, printed landscape
 export const STATUS_WIDTH = 200
+export const DETAILS_WIDTH = 340
 
 interface Placement {
   top: number
   left: number
   width: number
   height: number
+  scale: number
 }
 
 const card = shallowRef<Preview | null>(null)
@@ -34,9 +37,12 @@ const side = ref<'left' | 'right'>('right')
 const anchor = shallowRef<HTMLElement | null>(null)
 // shown by a touch rather than a hover: centred, and up until the next touch
 const pinned = ref(false)
-const placement = reactive<Placement>({ top: 0, left: 0, width: OVERLAY_WIDTH, height: 0 })
-// what hangs below the preview (its errata), in pixels: kept on screen with the card
+const placement = reactive<Placement>({ top: 0, left: 0, width: OVERLAY_WIDTH, height: 0, scale: 1 })
+// what hangs below the preview (its details or errata), in pixels: kept on screen with the card
 const below = ref(0)
+const details = computed(() => activeLocale.value === 'zh-cn' && !!card.value?.code && !card.value.back)
+const narrowScreen = useMediaQuery('(max-width: 759px)')
+const detailsBelow = computed(() => details.value && narrowScreen.value)
 
 let frame: number | null = null
 let listening = false
@@ -56,12 +62,15 @@ const measure = () => {
   }
   const width = sideways.value ? OVERLAY_WIDTH / CARD_RATIO : OVERLAY_WIDTH
   const height = width / aspectRatio.value
-  const extra = card.value?.statuses?.length ? STATUS_WIDTH + GAP : 0
+  const statusWidth = card.value?.statuses?.length ? STATUS_WIDTH + GAP : 0
+  const detailsWidth = details.value && !detailsBelow.value ? DETAILS_WIDTH + GAP : 0
+  const extra = statusWidth + detailsWidth
 
   if (pinned.value) {
     // as big as fits, up to the hover size, in the middle of the screen, statuses and all
     const scale = Math.min(1, (window.innerWidth - 2 * PAD) / (width + extra), (window.innerHeight - 2 * PAD - below.value) / height)
     side.value = 'right'
+    placement.scale = scale
     placement.width = width * scale
     placement.height = height * scale
     placement.left = (window.innerWidth - placement.width - extra * scale) / 2
@@ -70,7 +79,7 @@ const measure = () => {
   }
 
   // Prefer the right of the card, flipping to its left when that would run off screen; the
-  // status cards go on the far side, so they need room too.
+  // status cards and Chinese details go on the far side, so they need room too.
   const toTheRight = rect.right + GAP
   const right = toTheRight + width + extra + PAD < window.innerWidth
   side.value = right ? 'right' : 'left'
@@ -81,6 +90,7 @@ const measure = () => {
   const maxTop = window.innerHeight - height - below.value - PAD
   const top = Math.max(PAD, Math.min(desiredTop, maxTop))
 
+  placement.scale = 1
   placement.top = top
   placement.left = Math.max(PAD, Math.min(left, window.innerWidth - width - PAD - (right ? extra : 0)))
   placement.width = width
@@ -104,12 +114,16 @@ const hide = () => {
   pinned.value = false
 }
 
+const insideOverlay = (target: EventTarget | null) => target instanceof Element && !!target.closest('[data-card-overlay]')
+
 const listen = () => {
   if (listening) return
   listening = true
   window.addEventListener('scroll', schedule, true)
   window.addEventListener('resize', schedule)
-  document.addEventListener('pointerdown', () => {
+  document.addEventListener('pointerdown', (event) => {
+    // A pinned, scrollable details panel is part of the preview, not an outside touch.
+    if (insideOverlay(event.target)) return
     pressing = true
     swallowClick = pinned.value
     if (pinned.value) hide()
@@ -118,6 +132,7 @@ const listen = () => {
   document.addEventListener('pointerup', release, true)
   document.addEventListener('pointercancel', release, true)
   document.addEventListener('click', (event) => {
+    if (insideOverlay(event.target)) return
     if (!swallowClick) return
     swallowClick = false
     event.stopPropagation()
@@ -133,6 +148,9 @@ export const useCardOverlay = () => (listen(), {
   sideways: readonly(sideways),
   side: readonly(side),
   placement,
+  details,
+  detailsBelow,
+  pinned: readonly(pinned),
   // Native modal dialogs live above the document regardless of z-index.
   teleportTarget: computed(() => anchor.value?.closest('dialog[open]') ?? 'body'),
   visible: computed(() => card.value !== null),

@@ -2,6 +2,7 @@ import { uiLocaleFor, type UiLocale } from './language'
 
 const localeLoaders = {
   en: () => import('./en'),
+  'zh-cn': () => import('./zh-cn'),
 } satisfies Record<UiLocale, () => Promise<unknown>>
 
 export type SupportedLocale = keyof typeof localeLoaders

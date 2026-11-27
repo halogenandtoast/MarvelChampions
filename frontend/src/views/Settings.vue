@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { currentUser, updateSettings } from '../auth'
 import { autoScale } from '../preferences'
 import { loadLocaleMessages, normalizeLocale, supportedLocales } from '../locales/messages'
+import { setActiveLocale } from '../locales/activeLocale'
 
 // The language is kept in this browser, its messages loaded the first time it is chosen.
 const { locale, availableLocales, setLocaleMessage } = useI18n({ useScope: 'global' })
@@ -18,7 +19,7 @@ const updateLanguage = async () => {
   }
   locale.value = chosen
   localStorage.setItem('language', chosen)
-  document.documentElement.lang = chosen
+  setActiveLocale(chosen)
 }
 
 const spectators = ref(currentUser.value?.allowSpectatorsByDefault === true)
